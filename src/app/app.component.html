@@ -1,18 +1,60 @@
 <div class="v-stretch-box">
   <div class="tb-top-bar">
-    <button pButton class="tb-setting-button" icon="pi pi-bars"
-      (click)="display = true" ></button>
+    <button pButton class="tb-setting-button" icon="fa fa-database"
+      (click)="display_sidebar = true" ></button>
       <img class="tb-logo" src="assets/logo.png" />
       <a href="https://www.cranfield.ac.uk/" target="_blank">
         <img class="cranfield-logo" src="assets/cranfield_logo.png" />
       </a>
   </div>
+  <div class="p-grid p-justify-between tb-toolbar">
+    <div class="p-col accession-selector">
+        <div class="label">Reference</div>
+        <div class="dropdown">
+          <p-dropdown [options]="accessions"
+                      [filter]="true"
+                      [autoWidth]="false"
+                      [style]="{'width':'100%'}"
+                      (onChange)="update_plot = true"
+                      [(ngModel)]="selected_accession"></p-dropdown>
+        </div>
+    </div>
+    <div class="p-col">
+      <p-dropdown [options]="chromosomes" (onChange)="update_plot = true"
+                  [style]="{'width':'100%'}"
+                  [(ngModel)]="selected_chromosome"></p-dropdown>
+    </div>
+    <div class="p-col binsize-selector">
+      Bin size: {{ selected_binsize }}
+      <p-slider [(ngModel)]="selected_binsize"
+                [style]="{'width':'100%'}"
+                (onSlideEnd)="update_plot = true"
+                [min]="binsize_min" [max]="binsize_max"
+                [step]="binsize_step"></p-slider>
+    </div>
+    <div class="p-col interval-selector">
+      Interval: {{ selected_interval[0] + ' - ' + selected_interval[1] }}
+      <p-slider [(ngModel)]="selected_interval" [range]="true"
+                [style]="{'width':'100%'}"
+                (onSlideEnd)="update_plot = true"
+                [min]="interval_min" [max]="interval_max"></p-slider>
+    </div>
+    <div class="p-col toolbar-buttons">
+        <button pButton label="Download" icon="fa fa-download"></button>
+        <button pButton label="Share" icon="fa fa-external-link"></button>
+    </div>
+  </div>
   <div class="v-stretch browser-container hbox">
     <i>S.&nbsp;lycopersicum</i>
-    <app-introgression-plot></app-introgression-plot>
+    <app-introgression-plot [chromosome]="selected_chromosome"
+      [interval]="selected_interval"
+      [accession]="selected_accession"
+      [binsize]="selected_binsize"
+      [(update)]="update_plot">
+    </app-introgression-plot>
   </div>
 </div>
 
-<p-sidebar [(visible)]="display" position="left">
+<p-sidebar [(visible)]="display_sidebar" position="left">
     Content
 </p-sidebar>

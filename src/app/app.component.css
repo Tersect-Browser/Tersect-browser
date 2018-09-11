@@ -1,7 +1,42 @@
 .tb-top-bar {
     background-image: linear-gradient(#1b4d32, #0d2417 60%, #0d2417);
-    box-shadow: 0px 5px 5px grey;
+    box-shadow: 0px 3px 3px grey;
     position: relative;
+}
+
+.tb-toolbar {
+    padding-top: 0.5em;
+    padding-left: 0.5em;
+    background-color: #f5f3e5;
+}
+
+.tb-toolbar .interval-selector {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.tb-toolbar .binsize-selector {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.accession-selector {
+    white-space: nowrap;
+    display: flex;
+}
+
+.accession-selector .label {
+    margin-top: 0.3em
+}
+
+.accession-selector .dropdown {
+    margin-left: 0.5em;
+    flex: 1;
+}
+
+.tb-toolbar .toolbar-buttons button {
+    margin: 0.1em;
+    float: right;
 }
 
 .tb-setting-button {
@@ -32,7 +67,15 @@
 .v-stretch {
     height: 100%;
     width: 100%;
-    background-color: blue;
+    /* background-color: blue; */
+}
+
+.box > div {
+    background-color: #cce4f7;
+    text-align: center;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    border-radius: 4px;
 }
 
 .v-stretch-box {

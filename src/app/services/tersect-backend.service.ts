@@ -11,7 +11,6 @@ export class TersectBackendService {
                start: number, stop: number, binsize: number): Observable<any[]> {
     const query = `http://localhost:8040/api/distances/${accession}/\
 ${chromosome}/${start}/${stop}/${binsize}`;
-    console.log(query);
     return this.http.get<any[]>(query);
   }
 

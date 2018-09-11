@@ -7,11 +7,14 @@ import { AppComponent } from './app.component';
 import { ButtonModule } from 'primeng/button';
 import { SidebarModule } from 'primeng/sidebar';
 import { DropdownModule } from 'primeng/dropdown';
+import { ToolbarModule } from 'primeng/toolbar';
+import { SliderModule } from 'primeng/slider';
 
 import { IntrogressionPlotComponent } from './introgression-plot/introgression-plot.component';
 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TersectBackendService } from './services/tersect-backend.service';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -22,9 +25,12 @@ import { TersectBackendService } from './services/tersect-backend.service';
     HttpClientModule,
     BrowserModule,
     BrowserAnimationsModule,
+    FormsModule,
     ButtonModule,
     SidebarModule,
-    DropdownModule
+    DropdownModule,
+    ToolbarModule,
+    SliderModule
   ],
   providers: [
     HttpClient,

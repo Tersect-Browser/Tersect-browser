@@ -17,12 +17,16 @@ router.route('/distances/:accession/:chromosome/:start/:stop/:binsize')
       .get((req, res) => {
     const options = {
         cwd: tersect_db_location,
-        maxBuffer: 20 * 1024 * 1024 // 20 megabytes
+        maxBuffer: 100 * 1024 * 1024 // 50 megabytes
     };
 
-    exec(`tersect dist ${req.params.accession} ${req.params.chromosome} \
+    const tersect_command = `tersect dist ${req.params.accession} \
+${req.params.chromosome} \
 ${req.params.start} ${req.params.stop} \
-${req.params.binsize}`,
+${req.params.binsize}`;
+    console.log(tersect_command);
+
+    exec(tersect_command,
          options, (err, stdout, stderr) => {
         if (err) {
             res.json(err);

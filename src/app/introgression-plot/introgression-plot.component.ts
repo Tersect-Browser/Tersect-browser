@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, Output, EventEmitter } from '@angular/core';
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
+import { Chromosome } from '../models/chromosome';
 
 @Component({
   selector: 'app-introgression-plot',
@@ -9,6 +10,57 @@ import { TersectBackendService } from '../services/tersect-backend.service';
 })
 export class IntrogressionPlotComponent implements OnInit {
   @ViewChild('plotCanvas') canvasRef: ElementRef;
+
+  private _autoupdate = false;
+
+  private _chromosome: Chromosome;
+  @Input()
+  set chromosome(chrom: Chromosome) {
+      this._chromosome = chrom;
+      if (this._autoupdate) {
+        this.generatePlot();
+      }
+  }
+
+  private _interval: number[];
+  @Input()
+  set interval(interval: number[]) {
+    this._interval = interval;
+    if (this._autoupdate) {
+      this.generatePlot();
+    }
+  }
+
+  private _accession: string;
+  @Input()
+  set accession(accession: string) {
+    this._accession = accession;
+    if (this._autoupdate) {
+      this.generatePlot();
+    }
+  }
+
+  private _binsize: number;
+  @Input()
+  set binsize(binsize: number) {
+    this._binsize = binsize;
+    if (this._autoupdate) {
+      this.generatePlot();
+    }
+  }
+
+  private _update: boolean;
+  @Input()
+  set update(update: boolean) {
+    this._update = update;
+    if (this._update) {
+      this.generatePlot();
+    }
+  }
+  @Output() updateChange = new EventEmitter<boolean>();
+  get update() {
+    return this._update;
+  }
 
   private distance_table = {};
 
@@ -36,9 +88,23 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.tersectBackendService.getDistances('TS-99.vcf', 'SL2.50ch01', 1, 100000000, 10000).subscribe(distances => {
+    this.generatePlot();
+  }
+
+  generatePlot() {
+    // TODO: deal with this more elegantly (on the back-end)
+    // const binsize = 10000;
+    if (this._interval[1] - this._interval[0] < this._binsize) {
+      this._interval[1] = this._interval[0] + this._binsize;
+    }
+    this.tersectBackendService.getDistances(this._accession, this._chromosome.name,
+                                            this._interval[0],
+                                            this._interval[1], this._binsize)
+                              .subscribe(distances => {
       this.distance_table = distances;
       this.drawPlot();
+      this._update = false;
+      this.updateChange.emit(this._update);
     });
   }
 
