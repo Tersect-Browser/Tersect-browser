@@ -1,4 +1,6 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { GreyscalePalette, RedPalette } from './DistancePalette';
+import { TersectBackendService } from '../services/tersect-backend.service';
 
 @Component({
   selector: 'app-introgression-plot',
@@ -8,50 +10,41 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 export class IntrogressionPlotComponent implements OnInit {
   @ViewChild('plotCanvas') canvasRef: ElementRef;
 
-  constructor() { }
+  private distance_table = {};
 
-  ngOnInit() {
-    // this.canvasRef.nativeElement.style.width = '100%';
-    // this.canvasRef.nativeElement.style.height = '100%';
-    /*console.log(this.canvasRef.nativeElement.parentElement.clientWidth);
-    this.canvasRef.nativeElement.width = this.canvasRef.nativeElement.parentElement.width;
-    this.canvasRef.nativeElement.height = 300;*/
+  constructor(private tersectBackendService: TersectBackendService) { }
 
+  drawPlot() {
+    /*this.canvasRef.nativeElement.style.width = '100%';
+    this.canvasRef.nativeElement.style.height = '100%';*/
+    this.canvasRef.nativeElement.width = this.canvasRef.nativeElement
+                                             .parentElement.parentElement
+                                             .offsetWidth;
+    this.canvasRef.nativeElement.height = this.canvasRef.nativeElement
+                                              .parentElement.parentElement
+                                              .offsetHeight;
     const ctx: CanvasRenderingContext2D = this.canvasRef
                                               .nativeElement
                                               .getContext('2d');
-
-    const img: ImageData = ctx.createImageData(1, 1);
-    img.data[0] = 255;
-    img.data[1] = 0;
-    img.data[2] = 0;
-    img.data[3] = 255;
-    for (let i = 0; i < 444; i++) {
-      for (let j = 0; j < 100000000 / 1000; j++) {
-        if (Math.random() > 0.8) {
-          ctx.putImageData(img, j, i);
-        }
-      }
-    }
-    /*const pixels: any[] = [];
-    for (let i = 0; i < 444; i++) {
-      for (let j = 0; j < 500; j++) {
-        pixels.push({
-          x: i,
-          y: j,
-          // tslint:disable-next-line:no-bitwise
-          r: Math.random() * 255 << 0,
-          // tslint:disable-next-line:no-bitwise
-          g: Math.random() * 255 << 0,
-          // tslint:disable-next-line:no-bitwise
-          b: Math.random() * 255 << 0,
-          // tslint:disable-next-line:no-bitwise
-          a: Math.random() * 128 << 0 + 128
-        });
-      }
-    }
-    for (const px of pixels) {
-      ctx.putImageData(px, px.x, px.y);
-    }*/
+    const palette = new GreyscalePalette(ctx);
+    Object.keys(this.distance_table).forEach((accession, accession_index) => {
+      palette.distanceToColors(this.distance_table[accession])
+             .forEach((color, bin_index) => {
+        ctx.putImageData(color, bin_index, accession_index);
+      });
+    });
   }
+
+  ngOnInit() {
+    this.tersectBackendService.getDistances('TS-99.vcf', 'SL2.50ch01', 1, 100000000, 10000).subscribe(distances => {
+      this.distance_table = distances;
+      this.drawPlot();
+    });
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.drawPlot();
+  }
+
 }

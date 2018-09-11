@@ -5,13 +5,13 @@
 }
 
 .tb-setting-button {
-    width: 4vh;
-    height: 4vh;
-    margin: 0.5vh;
+    width: 2em;
+    height: 2em;
+    margin: 0.2em;
 }
 
 .tb-logo {
-    height: 50%;
+    height: 60%;
     top: 50%;
     transform: translateY(-50%);
     position: absolute;
@@ -22,5 +22,56 @@
     top: 50%;
     transform: translateY(-50%);
     position: absolute;
-    right: .5%;
+    right: .5em;
+}
+
+.browser-container {
+    overflow: hidden;
+}
+
+.v-stretch {
+    height: 100%;
+    width: 100%;
+    background-color: blue;
+}
+
+.v-stretch-box {
+    height: 100%;
+    /* old */
+    display: -webkit-box;
+    display: -moz-box;
+    -webkit-box-orient: vertical;
+    -moz-box-orient: vertical;
+    -ms-box-orient: vertical;
+    box-orient: vertical;
+    /* new */
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    -moz-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+
+.hbox {
+    width: 100%;
+    /* old */
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-box;
+    -webkit-box-orient: horizontal;
+    -moz-box-orient: horizontal;
+    -ms-box-orient: horizontal;
+    box-orient: horizontal;
+    /* new */
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    -moz-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
 }
