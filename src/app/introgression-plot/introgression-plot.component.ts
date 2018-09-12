@@ -66,9 +66,26 @@ export class IntrogressionPlotComponent implements OnInit {
 
   constructor(private tersectBackendService: TersectBackendService) { }
 
+  /**
+   * Get an array of maximum distances per bin for a given distance table.
+   * @param distance_table
+   */
+  private getMaxDistances(distance_table: object) {
+    const max_distances = new Array(Object.values(distance_table)[0].length)
+                                   .fill(0);
+    Object.keys(distance_table).forEach(accession => {
+      distance_table[accession].forEach((dist, i) => {
+        if (dist > max_distances[i]) {
+          max_distances[i] = dist;
+        }
+      });
+    });
+    return max_distances;
+  }
+
   drawPlot() {
-    /*this.canvasRef.nativeElement.style.width = '100%';
-    this.canvasRef.nativeElement.style.height = '100%';*/
+    this.canvasRef.nativeElement.style.width = '100%';
+    this.canvasRef.nativeElement.style.height = '100%';
     this.canvasRef.nativeElement.width = this.canvasRef.nativeElement
                                              .parentElement.parentElement
                                              .offsetWidth;
@@ -79,10 +96,14 @@ export class IntrogressionPlotComponent implements OnInit {
                                               .nativeElement
                                               .getContext('2d');
     const palette = new GreyscalePalette(ctx);
+
+    const max_distances = this.getMaxDistances(this.distance_table);
+
     Object.keys(this.distance_table).forEach((accession, accession_index) => {
-      palette.distanceToColors(this.distance_table[accession])
+      palette.distanceToColors(this.distance_table[accession], max_distances)
              .forEach((color, bin_index) => {
         ctx.putImageData(color, bin_index, accession_index);
+        // TODO: save created image instead of printing it directly to the canvas
       });
     });
   }

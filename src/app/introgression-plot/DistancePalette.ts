@@ -5,14 +5,19 @@ export abstract class DistancePalette {
      * provided array of distances. The color scale depends on the specific
      * palette class.
      * @param distances array if numbers representing genetic distance
+     * @param max_distances list of maximum distances per bin, used for scaling
      */
     constructor() {}
-    abstract distanceToColors(distances: number[]): ImageData[];
-    protected _distanceToColors(distances: number[],
+    abstract distanceToColors(distances: number[],
+                              max_distances: number[]): ImageData[];
+    protected _distanceToColors(distances: number[], max_distances: number[],
                                 palette: ImageData[]): ImageData[] {
-        const max_distance = Math.max(...distances);
-        return distances.map(d => {
-            return palette[Math.round((d / max_distance)
+        // const max_distance = Math.max(...distances);
+        return distances.map((d, i) => {
+            if (max_distances[i] === 0) {
+                return palette[0];
+            }
+            return palette[Math.round((d / max_distances[i])
                                       * DistancePalette.MAX_DISTANCE)];
         });
     }
@@ -36,8 +41,9 @@ export class GreyscalePalette extends DistancePalette {
             }
         }
     }
-    distanceToColors(distances: number[]): ImageData[] {
-        return this._distanceToColors(distances,
+    distanceToColors(distances: number[],
+                     max_distances: number[]): ImageData[] {
+        return this._distanceToColors(distances, max_distances,
                                       GreyscalePalette.palette_pixels);
     }
 }
@@ -57,8 +63,9 @@ export class RedPalette extends DistancePalette {
             }
         }
     }
-    distanceToColors(distances: number[]): ImageData[] {
-        return this._distanceToColors(distances,
+    distanceToColors(distances: number[],
+                     max_distances: number[]): ImageData[] {
+        return this._distanceToColors(distances, max_distances,
                                       RedPalette.palette_pixels);
     }
 }
