@@ -20,6 +20,11 @@
     white-space: nowrap;
 }
 
+.tb-toolbar .zoom-selector button {
+    margin-top: 0.2em;
+    width: 2em;
+}
+
 .accession-selector {
     white-space: nowrap;
     display: flex;

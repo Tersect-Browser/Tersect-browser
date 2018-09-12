@@ -50,21 +50,32 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   /**
-   * Bin aspect ratio; by default twice as high as they are wide. This is to
-   * more easily fit accession labels without making the plot too wide.
+   * Bin aspect ratio (width / height). By default bins are twice as high as
+   * they are wide. This is to more easily fit accession labels without making
+   * the plot too wide.
    */
-  private aspect_ratio = 2 / 1;
+  private aspect_ratio = 1 / 2;
 
   /**
-   * Starting plot zoom level in percentages.
+   * Zoom level in percentages.
    */
-  private zoom_level = 100;
+  private _zoom_level = 100;
+  @Input()
+  set zoom_level(zoom_level: number) {
+    if (this._zoom_level !== zoom_level) {
+      this._zoom_level = zoom_level;
+      this.updatePlotZoom();
+    }
+  }
+  get zoom_level(): number {
+    return this._zoom_level;
+  }
 
   /**
    * True if an update is due (or in the process of being generated), set to
    * false once a plot is generated.
    */
-  private _update;
+  private _update = true;
   @Input()
   set update(update: boolean) {
     this._update = update;
@@ -98,10 +109,22 @@ export class IntrogressionPlotComponent implements OnInit {
     return max_distances;
   }
 
+  private updatePlotZoom() {
+    this.canvasRef.nativeElement.style.width = `${this._zoom_level}%`;
+    this.canvasRef.nativeElement.style.height = `${this._zoom_level
+                                                   / this.aspect_ratio}%`;
+  }
+
+  /**
+   * Zoom in ten percentage points at a time.
+   */
+  zoomIn() {
+    this.zoom_level += 10;
+    this.updatePlotZoom();
+  }
+
   drawPlot() {
-    this.canvasRef.nativeElement.style.width = `${this.aspect_ratio
-                                                  * this.zoom_level}%`;
-    this.canvasRef.nativeElement.style.height = `${this.zoom_level}%`;
+    this.updatePlotZoom();
     this.canvasRef.nativeElement.width = this.canvasRef.nativeElement
                                              .parentElement.parentElement
                                              .offsetWidth;
@@ -130,7 +153,6 @@ export class IntrogressionPlotComponent implements OnInit {
 
   generatePlot() {
     // TODO: deal with this more elegantly (on the back-end)
-    // const binsize = 10000;
     if (this._interval[1] - this._interval[0] < this._binsize) {
       this._interval[1] = this._interval[0] + this._binsize;
     }

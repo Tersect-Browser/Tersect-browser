@@ -39,6 +39,8 @@ export class AppComponent {
     return this._selected_accession;
   }
 
+  zoom_level = 100;
+
   display_sidebar = false;
   update_plot = false; // switch to true to trigger plot update
   interval_min = 1;
@@ -49,4 +51,19 @@ export class AppComponent {
   binsize_step = 1000;
   binsize_max = 100000;
   selected_binsize = 50000;
+
+  private readonly MAX_ZOOM_LEVEL = 1000;
+  private readonly MIN_ZOOM_LEVEL = 100;
+  zoomIn() {
+    this.zoom_level *= 1.20;
+    if (this.zoom_level > this.MAX_ZOOM_LEVEL) {
+      this.zoom_level = this.MAX_ZOOM_LEVEL;
+    }
+  }
+  zoomOut() {
+    this.zoom_level /= 1.20;
+    if (this.zoom_level < this.MIN_ZOOM_LEVEL) {
+      this.zoom_level = this.MIN_ZOOM_LEVEL;
+    }
+  }
 }
