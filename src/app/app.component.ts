@@ -48,5 +48,5 @@ export class AppComponent {
   binsize_min = 5000;
   binsize_step = 1000;
   binsize_max = 100000;
-  selected_binsize = 10000;
+  selected_binsize = 50000;
 }

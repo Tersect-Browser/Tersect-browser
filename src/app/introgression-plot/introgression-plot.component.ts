@@ -50,6 +50,17 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   /**
+   * Bin aspect ratio; by default twice as high as they are wide. This is to
+   * more easily fit accession labels without making the plot too wide.
+   */
+  private aspect_ratio = 2 / 1;
+
+  /**
+   * Starting plot zoom level in percentages.
+   */
+  private zoom_level = 100;
+
+  /**
    * True if an update is due (or in the process of being generated), set to
    * false once a plot is generated.
    */
@@ -88,8 +99,9 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   drawPlot() {
-    this.canvasRef.nativeElement.style.width = '100%';
-    this.canvasRef.nativeElement.style.height = '100%';
+    this.canvasRef.nativeElement.style.width = `${this.aspect_ratio
+                                                  * this.zoom_level}%`;
+    this.canvasRef.nativeElement.style.height = `${this.zoom_level}%`;
     this.canvasRef.nativeElement.width = this.canvasRef.nativeElement
                                              .parentElement.parentElement
                                              .offsetWidth;
