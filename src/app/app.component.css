@@ -60,8 +60,9 @@
     right: .5em;
 }
 
-.browser-container {
+.plot-container {
     overflow: hidden;
+    position: relative;
 }
 
 .v-stretch {

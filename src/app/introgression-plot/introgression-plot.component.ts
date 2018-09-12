@@ -49,7 +49,11 @@ export class IntrogressionPlotComponent implements OnInit {
     }
   }
 
-  private _update: boolean;
+  /**
+   * True if an update is due (or in the process of being generated), set to
+   * false once a plot is generated.
+   */
+  private _update;
   @Input()
   set update(update: boolean) {
     this._update = update;

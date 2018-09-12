@@ -9,6 +9,7 @@ import { SidebarModule } from 'primeng/sidebar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToolbarModule } from 'primeng/toolbar';
 import { SliderModule } from 'primeng/slider';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { IntrogressionPlotComponent } from './introgression-plot/introgression-plot.component';
 
@@ -30,7 +31,8 @@ import { FormsModule } from '@angular/forms';
     SidebarModule,
     DropdownModule,
     ToolbarModule,
-    SliderModule
+    SliderModule,
+    ProgressSpinnerModule
   ],
   providers: [
     HttpClient,
