@@ -66,4 +66,12 @@ export class AppComponent {
       this.zoom_level = this.MIN_ZOOM_LEVEL;
     }
   }
+  scrollWheel(event: WheelEvent) {
+    if (event.deltaY > 0) {
+      this.zoomOut();
+    } else {
+      this.zoomIn();
+    }
+  }
+
 }

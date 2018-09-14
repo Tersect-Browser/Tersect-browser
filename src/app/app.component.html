@@ -55,7 +55,8 @@
       [accession]="selected_accession"
       [binsize]="selected_binsize"
       [zoom_level]="zoom_level"
-      [(update)]="update_plot">
+      [(update)]="update_plot"
+      (wheel)="scrollWheel($event)">
     </app-introgression-plot>
   </div>
 </div>

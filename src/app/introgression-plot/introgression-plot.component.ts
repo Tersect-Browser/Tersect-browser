@@ -2,16 +2,33 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, Output, 
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
+import { PlotPosition } from '../models/plot';
 
 @Component({
   selector: 'app-introgression-plot',
   templateUrl: './introgression-plot.component.html',
   styleUrls: ['./introgression-plot.component.css']
 })
+
 export class IntrogressionPlotComponent implements OnInit {
   @ViewChild('plotCanvas') canvasRef: ElementRef;
 
   private _autoupdate = false;
+
+  /**
+   * True if plot is currently being dragged.
+   */
+  private dragging_plot = false;
+
+  /**
+   *  Used to keep track of the previous position during dragging.
+   */
+  private previous_drag_position = { x: 0, y: 0 };
+
+  /**
+   * Current position / offset of the introgression plot.
+   */
+  private plot_position: PlotPosition = { x: 0, y: 0 };
 
   private _chromosome: Chromosome;
   @Input()
@@ -141,7 +158,9 @@ export class IntrogressionPlotComponent implements OnInit {
     Object.keys(this.distance_table).forEach((accession, accession_index) => {
       palette.distanceToColors(this.distance_table[accession], max_distances)
              .forEach((color, bin_index) => {
-        ctx.putImageData(color, bin_index, accession_index);
+        ctx.putImageData(color,
+                         bin_index + this.plot_position.x,           // x axis
+                         accession_index + this.plot_position.y);    // y axis
         // TODO: save created image instead of printing it directly to the canvas
       });
     });
@@ -165,6 +184,41 @@ export class IntrogressionPlotComponent implements OnInit {
       this._update = false;
       this.updateChange.emit(this._update);
     });
+  }
+
+  startDrag(event) {
+    // drag on left mouse button
+    if (event.buttons === 1) {
+      this.dragging_plot = true;
+      this.previous_drag_position = { x: event.clientX, y: event.clientY };
+    }
+  }
+
+  drag(event) {
+    if (event.buttons !== 1) {
+      this.stopDrag(event);
+      return;
+    }
+    if (this.dragging_plot) {
+      console.log(event);
+      this.plot_position.x += (event.clientX - this.previous_drag_position.x)
+                              * 100 / this.zoom_level;
+      this.plot_position.y += (event.clientY - this.previous_drag_position.y)
+                              * this.aspect_ratio
+                              * 100 / this.zoom_level;
+      if (this.plot_position.x > 0) {
+        this.plot_position.x = 0;
+      }
+      if (this.plot_position.y > 0) {
+        this.plot_position.y = 0;
+      }
+      this.previous_drag_position = { x: event.clientX, y: event.clientY };
+      this.drawPlot();
+    }
+  }
+
+  stopDrag(event) {
+    this.dragging_plot = false;
   }
 
   @HostListener('window:resize', ['$event'])
