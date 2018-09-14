@@ -191,6 +191,7 @@ export class IntrogressionPlotComponent implements OnInit {
   startDrag(event) {
     // drag on left mouse button
     if (event.buttons === 1) {
+      this.canvasRef.nativeElement.style.cursor = 'move';
       this.dragging_plot = true;
       this.previous_drag_position = { x: event.clientX, y: event.clientY };
     }
@@ -220,6 +221,7 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   stopDrag(event) {
+    this.canvasRef.nativeElement.style.cursor = 'auto';
     this.dragging_plot = false;
   }
 
