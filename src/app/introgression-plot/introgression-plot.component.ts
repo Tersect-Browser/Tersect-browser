@@ -172,6 +172,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
   generatePlot() {
     // TODO: deal with this more elegantly (on the back-end)
+    this.canvasRef.nativeElement.parentElement.style.cursor = 'progress';
     if (this._interval[1] - this._interval[0] < this._binsize) {
       this._interval[1] = this._interval[0] + this._binsize;
     }
@@ -183,6 +184,7 @@ export class IntrogressionPlotComponent implements OnInit {
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);
+      this.canvasRef.nativeElement.parentElement.style.cursor = 'auto';
     });
   }
 
