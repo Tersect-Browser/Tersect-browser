@@ -52,8 +52,8 @@ export class AppComponent {
   binsize_max = 100000;
   selected_binsize = 50000;
 
-  private readonly MAX_ZOOM_LEVEL = 1000;
-  private readonly MIN_ZOOM_LEVEL = 100;
+  readonly MAX_ZOOM_LEVEL = 1000;
+  readonly MIN_ZOOM_LEVEL = 100;
   zoomIn() {
     this.zoom_level *= 1.20;
     if (this.zoom_level > this.MAX_ZOOM_LEVEL) {

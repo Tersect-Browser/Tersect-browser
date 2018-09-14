@@ -40,8 +40,12 @@
                 [min]="interval_min" [max]="interval_max"></p-slider>
     </div>
     <div class="p-col zoom-selector">
-        <button pButton icon="fa fa-search-minus" (click)="zoomOut()"></button>
-        <button pButton icon="fa fa-search-plus" (click)="zoomIn()"></button>
+        <button pButton icon="fa fa-search-minus"
+                [disabled]="zoom_level <= MIN_ZOOM_LEVEL"
+                (click)="zoomOut()"></button>
+        <button pButton icon="fa fa-search-plus"
+                [disabled]="zoom_level >= MAX_ZOOM_LEVEL"
+                (click)="zoomIn()"></button>
     </div>
     <div class="p-col-2 toolbar-buttons">
         <button pButton label="Download" icon="fa fa-download"></button>
