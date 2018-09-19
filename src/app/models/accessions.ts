@@ -446,3 +446,21 @@ export const accessions_510 = [
     { label: 'S.gal LA1044', value: 'RF_104_SZAXPI008751-74.vcf.gz.snpeff.vcf' },
     { label: 'S.lyc LA1479', value: 'RF_105_SZAXPI009358-45.vcf.gz.snpeff.vcf' }
 ];
+
+export function filename_to_label(filename: string): string {
+    for (let i = 0; i < accessions_510.length; i++) {
+        if (accessions_510[i].value === filename) {
+            return accessions_510[i].label;
+        }
+    }
+    return null;
+}
+
+export function label_to_filename(label: string): string {
+    for (let i = 0; i < accessions_510.length; i++) {
+        if (accessions_510[i].label === label) {
+            return accessions_510[i].value;
+        }
+    }
+    return null;
+}

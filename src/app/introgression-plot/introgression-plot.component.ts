@@ -3,6 +3,7 @@ import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
 import { PlotPosition } from '../models/plot';
+import { filename_to_label } from '../models/accessions';
 
 @Component({
   selector: 'app-introgression-plot',
@@ -12,6 +13,7 @@ import { PlotPosition } from '../models/plot';
 
 export class IntrogressionPlotComponent implements OnInit {
   @ViewChild('plotCanvas') plotCanvas: ElementRef;
+  @ViewChild('guiCanvas') guiCanvas: ElementRef;
 
   private _autoupdate = false;
 
@@ -29,6 +31,11 @@ export class IntrogressionPlotComponent implements OnInit {
    * Current position / offset of the introgression plot.
    */
   private plot_position: PlotPosition = { x: 0, y: 0 };
+
+  /**
+   * Width of the accession labels.
+   */
+  private label_width = 0;
 
   private _chromosome: Chromosome;
   @Input()
@@ -130,6 +137,7 @@ export class IntrogressionPlotComponent implements OnInit {
     this.plotCanvas.nativeElement.style.width = `${this._zoom_level}%`;
     this.plotCanvas.nativeElement.style.height = `${this._zoom_level
                                                    / this.aspect_ratio}%`;
+    this.updateGUI();
   }
 
   /**
@@ -140,14 +148,45 @@ export class IntrogressionPlotComponent implements OnInit {
     this.updatePlotZoom();
   }
 
+  private updateCanvasSize() {
+    const canvas_width = this.plotCanvas.nativeElement.parentElement
+                                                       .parentElement
+                                                       .offsetWidth;
+    const canvas_height = this.plotCanvas.nativeElement.parentElement
+                                                      .parentElement
+                                                      .offsetHeight;
+    this.plotCanvas.nativeElement.width = canvas_width;
+    this.plotCanvas.nativeElement.height = canvas_height;
+    this.guiCanvas.nativeElement.width = canvas_width;
+    this.guiCanvas.nativeElement.height = canvas_height;
+  }
+
+  private updateGUI() {
+    const ctx: CanvasRenderingContext2D = this.guiCanvas
+                                              .nativeElement
+                                              .getContext('2d');
+    const accession_filenames = Object.keys(this.distance_table);
+    const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
+    ctx.font = `${text_height}px Arial`;
+    ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
+                  this.guiCanvas.nativeElement.height);
+    // TODO: simplify this
+    const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
+    this.label_width = 0;
+    accession_filenames.forEach((filename, index) => {
+      const label = filename_to_label(filename);
+      ctx.fillText(label, 0,
+                   yoffset + (1 + index) * text_height - 2);
+      const text_width = ctx.measureText(label).width;
+      if (text_width > this.label_width) {
+        this.label_width = text_width;
+      }
+    });
+  }
+
   drawPlot() {
     this.updatePlotZoom();
-    this.plotCanvas.nativeElement.width = this.plotCanvas.nativeElement
-                                             .parentElement.parentElement
-                                             .offsetWidth;
-    this.plotCanvas.nativeElement.height = this.plotCanvas.nativeElement
-                                              .parentElement.parentElement
-                                              .offsetHeight;
+    this.updateCanvasSize();
     const ctx: CanvasRenderingContext2D = this.plotCanvas
                                               .nativeElement
                                               .getContext('2d');
@@ -164,6 +203,7 @@ export class IntrogressionPlotComponent implements OnInit {
         // TODO: save created image instead of printing it directly to the canvas
       });
     });
+    this.updateGUI();
   }
 
   ngOnInit() {
@@ -203,21 +243,21 @@ export class IntrogressionPlotComponent implements OnInit {
       return;
     }
     if (this.dragging_plot) {
-      console.log(event);
       this.plot_position.x += (event.clientX - this.previous_drag_position.x)
                               * 100 / this.zoom_level;
       this.plot_position.y += (event.clientY - this.previous_drag_position.y)
                               * this.aspect_ratio
                               * 100 / this.zoom_level;
-      if (this.plot_position.x > 0) {
-        this.plot_position.x = 0;
-      }
+      /*if (this.plot_position.x > this.label_width) {
+        this.plot_position.x = this.label_width;
+      }*/
       if (this.plot_position.y > 0) {
         this.plot_position.y = 0;
       }
       this.previous_drag_position = { x: event.clientX, y: event.clientY };
       this.drawPlot();
     }
+    this.updateGUI();
   }
 
   stopDrag(event) {

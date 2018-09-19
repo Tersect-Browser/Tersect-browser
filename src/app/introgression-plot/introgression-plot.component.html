@@ -4,8 +4,10 @@
     </div>
     <div class="update-shadow"></div>
 </div>
-<canvas #plotCanvas class="sharp-canvas"
-                    (mousedown)="startDrag($event)"
-                    (mouseup)="stopDrag($event)"
-                    (mousemove)="drag($event)">
+<canvas #plotCanvas class="sharp-canvas">
+</canvas>
+<canvas #guiCanvas class="gui-canvas"
+                   (mousedown)="startDrag($event)"
+                   (mouseup)="stopDrag($event)"
+                   (mousemove)="drag($event)">
 </canvas>
