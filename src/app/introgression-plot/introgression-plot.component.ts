@@ -11,7 +11,7 @@ import { PlotPosition } from '../models/plot';
 })
 
 export class IntrogressionPlotComponent implements OnInit {
-  @ViewChild('plotCanvas') canvasRef: ElementRef;
+  @ViewChild('plotCanvas') plotCanvas: ElementRef;
 
   private _autoupdate = false;
 
@@ -127,8 +127,8 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   private updatePlotZoom() {
-    this.canvasRef.nativeElement.style.width = `${this._zoom_level}%`;
-    this.canvasRef.nativeElement.style.height = `${this._zoom_level
+    this.plotCanvas.nativeElement.style.width = `${this._zoom_level}%`;
+    this.plotCanvas.nativeElement.style.height = `${this._zoom_level
                                                    / this.aspect_ratio}%`;
   }
 
@@ -142,13 +142,13 @@ export class IntrogressionPlotComponent implements OnInit {
 
   drawPlot() {
     this.updatePlotZoom();
-    this.canvasRef.nativeElement.width = this.canvasRef.nativeElement
+    this.plotCanvas.nativeElement.width = this.plotCanvas.nativeElement
                                              .parentElement.parentElement
                                              .offsetWidth;
-    this.canvasRef.nativeElement.height = this.canvasRef.nativeElement
+    this.plotCanvas.nativeElement.height = this.plotCanvas.nativeElement
                                               .parentElement.parentElement
                                               .offsetHeight;
-    const ctx: CanvasRenderingContext2D = this.canvasRef
+    const ctx: CanvasRenderingContext2D = this.plotCanvas
                                               .nativeElement
                                               .getContext('2d');
     const palette = new GreyscalePalette(ctx);
@@ -172,7 +172,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
   generatePlot() {
     // TODO: deal with this more elegantly (on the back-end)
-    this.canvasRef.nativeElement.parentElement.style.cursor = 'progress';
+    this.plotCanvas.nativeElement.parentElement.style.cursor = 'progress';
     if (this._interval[1] - this._interval[0] < this._binsize) {
       this._interval[1] = this._interval[0] + this._binsize;
     }
@@ -184,14 +184,14 @@ export class IntrogressionPlotComponent implements OnInit {
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);
-      this.canvasRef.nativeElement.parentElement.style.cursor = 'auto';
+      this.plotCanvas.nativeElement.parentElement.style.cursor = 'auto';
     });
   }
 
   startDrag(event) {
     // drag on left mouse button
     if (event.buttons === 1) {
-      this.canvasRef.nativeElement.style.cursor = 'move';
+      this.plotCanvas.nativeElement.style.cursor = 'move';
       this.dragging_plot = true;
       this.previous_drag_position = { x: event.clientX, y: event.clientY };
     }
@@ -221,7 +221,7 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   stopDrag(event) {
-    this.canvasRef.nativeElement.style.cursor = 'auto';
+    this.plotCanvas.nativeElement.style.cursor = 'auto';
     this.dragging_plot = false;
   }
 
