@@ -42,7 +42,7 @@ router.route('/matrix/:chromosome/:start/:stop')
       .get((req, res) => {
     const options = {
         cwd: tersect_db_location,
-        maxBuffer: 100 * 1024 * 1024 // 50 megabytes
+        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
     };
 
     const tersect_command = `tersect matrix ${req.params.chromosome} \
