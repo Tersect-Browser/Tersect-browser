@@ -37,7 +37,8 @@ ${chromosome}/${start}/${stop}/${binsize}`;
    */
   getDistanceMatrix(chromosome: string,
                     start: number, stop: number): Observable<DistanceMatrix> {
-    const query = `tersect matrix ${chromosome} ${start} ${stop}`;
+    const query = `http://localhost:8040/api/matrix/${chromosome}/${start}/\
+${stop}`;
     return this.http.get<DistanceMatrix>(query);
   }
 

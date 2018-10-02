@@ -4,6 +4,8 @@ import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
 import { PlotPosition } from '../models/PlotPosition';
 import { filename_to_label } from '../models/accessions';
+import { forkJoin } from 'rxjs/observable/forkJoin';
+import { DistanceMatrix } from '../models/DistanceMatrix';
 
 @Component({
   selector: 'app-introgression-plot',
@@ -112,7 +114,8 @@ export class IntrogressionPlotComponent implements OnInit {
     return this._update;
   }
 
-  private distance_table = {};
+  private distanceBins = {};
+  private distanceMatrix: DistanceMatrix = null;
 
   constructor(private tersectBackendService: TersectBackendService) { }
 
@@ -165,7 +168,7 @@ export class IntrogressionPlotComponent implements OnInit {
     const ctx: CanvasRenderingContext2D = this.guiCanvas
                                               .nativeElement
                                               .getContext('2d');
-    const accession_filenames = Object.keys(this.distance_table);
+    const accession_filenames = Object.keys(this.distanceBins);
     const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
     ctx.font = `${text_height}px Arial`;
     ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
@@ -192,10 +195,10 @@ export class IntrogressionPlotComponent implements OnInit {
                                               .getContext('2d');
     const palette = new GreyscalePalette(ctx);
 
-    const max_distances = this.getMaxDistances(this.distance_table);
+    const max_distances = this.getMaxDistances(this.distanceBins);
 
-    Object.keys(this.distance_table).forEach((accession, accession_index) => {
-      palette.distanceToColors(this.distance_table[accession], max_distances)
+    Object.keys(this.distanceBins).forEach((accession, accession_index) => {
+      palette.distanceToColors(this.distanceBins[accession], max_distances)
              .forEach((color, bin_index) => {
         ctx.putImageData(color,
                          bin_index + this.plot_position.x,           // x axis
@@ -216,13 +219,19 @@ export class IntrogressionPlotComponent implements OnInit {
     if (this._interval[1] - this._interval[0] < this._binsize) {
       this._interval[1] = this._interval[0] + this._binsize;
     }
-    this.tersectBackendService.getRefDistanceBins(this._accession,
-                                                  this._chromosome.name,
-                                                  this._interval[0],
-                                                  this._interval[1],
-                                                  this._binsize)
-                              .subscribe(distances => {
-      this.distance_table = distances;
+    const bins_fetch = this.tersectBackendService
+                           .getRefDistanceBins(this._accession,
+                                               this._chromosome.name,
+                                               this._interval[0],
+                                               this._interval[1],
+                                               this._binsize);
+    const matrix_fetch = this.tersectBackendService
+                             .getDistanceMatrix(this._chromosome.name,
+                                                this._interval[0],
+                                                this._interval[1]);
+    forkJoin([bins_fetch, matrix_fetch]).subscribe(([bins, distance_matrix]) => {
+      this.distanceBins = bins;
+      this.distanceMatrix = distance_matrix;
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);
