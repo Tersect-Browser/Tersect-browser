@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, Output, 
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition } from '../models/plot';
+import { PlotPosition } from '../models/PlotPosition';
 import { filename_to_label } from '../models/accessions';
 
 @Component({
@@ -216,9 +216,11 @@ export class IntrogressionPlotComponent implements OnInit {
     if (this._interval[1] - this._interval[0] < this._binsize) {
       this._interval[1] = this._interval[0] + this._binsize;
     }
-    this.tersectBackendService.getDistances(this._accession, this._chromosome.name,
-                                            this._interval[0],
-                                            this._interval[1], this._binsize)
+    this.tersectBackendService.getRefDistanceBins(this._accession,
+                                                  this._chromosome.name,
+                                                  this._interval[0],
+                                                  this._interval[1],
+                                                  this._binsize)
                               .subscribe(distances => {
       this.distance_table = distances;
       this.drawPlot();

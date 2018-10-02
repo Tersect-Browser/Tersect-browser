@@ -54,14 +54,14 @@ ${req.params.start} ${req.params.stop}`;
         if (err) {
             res.json(err);
         }
-        // res.json(JSON.parse(stdout));
-        const output = JSON.parse(stdout);
+        res.json(JSON.parse(stdout));
+        /*const output = JSON.parse(stdout);
         const accessions = output.samples.map((x) => {
             return { name: x };
         });
         const RNJ = new nj.RapidNeighborJoining(output.matrix, accessions);
         RNJ.run();
-        res.json(RNJ.getAsNewick());
+        res.json(RNJ.getAsNewick());*/
     });
 
     /*const D = [
