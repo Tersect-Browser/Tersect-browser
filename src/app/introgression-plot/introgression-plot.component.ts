@@ -6,6 +6,7 @@ import { PlotPosition } from '../models/PlotPosition';
 import { filename_to_label } from '../models/accessions';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { DistanceMatrix } from '../models/DistanceMatrix';
+import { njTreeSortAccessions } from '../clustering/clustering';
 
 @Component({
   selector: 'app-introgression-plot',
@@ -114,8 +115,24 @@ export class IntrogressionPlotComponent implements OnInit {
     return this._update;
   }
 
+  /**
+   * Genetic distance bins between reference and other accessions for currently
+   * viewed interval, fetched from tersect.
+   */
   private distanceBins = {};
+
+  /**
+   * Pairwise genetic distance matrix between all accessions in database for
+   * currently viewed interval, fetched from database or tersect.
+   */
   private distanceMatrix: DistanceMatrix = null;
+
+  /**
+   * Accession names (as used by tersect, i.e. filenames) sorted in the order to
+   * be displayed on the drawn plot. Generally this is the order based on
+   * the neighbor joining tree clustering.
+   */
+  private sortedAccessions: string[] = [];
 
   constructor(private tersectBackendService: TersectBackendService) { }
 
@@ -176,7 +193,8 @@ export class IntrogressionPlotComponent implements OnInit {
     // TODO: simplify this
     const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
     this.label_width = 0;
-    accession_filenames.forEach((filename, index) => {
+    // accession_filenames.forEach((filename, index) => {
+    this.sortedAccessions.forEach((filename, index) => {
       const label = filename_to_label(filename);
       ctx.fillText(label, 0,
                    yoffset + (1 + index) * text_height - 2);
@@ -197,7 +215,8 @@ export class IntrogressionPlotComponent implements OnInit {
 
     const max_distances = this.getMaxDistances(this.distanceBins);
 
-    Object.keys(this.distanceBins).forEach((accession, accession_index) => {
+    // Object.keys(this.distanceBins).forEach((accession, accession_index) => {
+    this.sortedAccessions.forEach((accession, accession_index) => {
       palette.distanceToColors(this.distanceBins[accession], max_distances)
              .forEach((color, bin_index) => {
         ctx.putImageData(color,
@@ -232,6 +251,7 @@ export class IntrogressionPlotComponent implements OnInit {
     forkJoin([bins_fetch, matrix_fetch]).subscribe(([bins, distance_matrix]) => {
       this.distanceBins = bins;
       this.distanceMatrix = distance_matrix;
+      this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix);
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);
