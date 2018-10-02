@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import { exec } from 'child_process';
+// declare var RapidNeighborJoining: any;
+
+import nj = require('neighbor-joining');
 
 export const router = Router();
 
@@ -33,4 +36,47 @@ ${req.params.binsize}`;
         }
         res.json(JSON.parse(stdout));
     });
+});
+
+router.route('/matrix/:chromosome/:start/:stop')
+      .get((req, res) => {
+    const options = {
+        cwd: tersect_db_location,
+        maxBuffer: 100 * 1024 * 1024 // 50 megabytes
+    };
+
+    const tersect_command = `tersect matrix ${req.params.chromosome} \
+${req.params.start} ${req.params.stop}`;
+    console.log(tersect_command);
+
+    exec(tersect_command,
+         options, (err, stdout, stderr) => {
+        if (err) {
+            res.json(err);
+        }
+        // res.json(JSON.parse(stdout));
+        const output = JSON.parse(stdout);
+        const accessions = output.samples.map((x) => {
+            return { name: x };
+        });
+        const RNJ = new nj.RapidNeighborJoining(output.matrix, accessions);
+        RNJ.run();
+        res.json(RNJ.getAsNewick());
+    });
+
+    /*const D = [
+        [0,  5,  9,  9, 8],
+        [5,  0, 10, 10, 9],
+        [9, 10,  0,  8, 7],
+        [9, 10,  8,  0, 3],
+        [8,  9,  7,  3, 0]
+    ];
+    const names = ['A', 'B', 'C', 'D', 'F'];
+    const taxa = names.map((x) => {
+        return { name: x };
+    });
+    const RNJ = new nj.RapidNeighborJoining(D, taxa);
+    RNJ.run();
+    // res.json(RNJ.getAsObject());
+    res.json(RNJ.getAsNewick());*/
 });
