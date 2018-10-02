@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { exec } from 'child_process';
 // declare var RapidNeighborJoining: any;
 
-import nj = require('neighbor-joining');
 import { DBMatrix } from './db/dbmatrix';
 
 export const router = Router();
