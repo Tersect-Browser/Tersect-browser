@@ -15,11 +15,37 @@ function newickToSortedList(newick_tree: string): string[] {
     return sorted_accessions;
 }
 
-export function njTreeSortAccessions(distance_matrix: DistanceMatrix): string[] {
-    const accessions = distance_matrix.samples.map((x) => {
+export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
+                                     accessions_to_plot: string[]): string[] {
+    // console.log(accessions_to_plot);
+    // console.log(distance_matrix.matrix);
+
+    // Find indices of accessions to plot
+    const plotted_indices = accessions_to_plot.map(acc => {
+        return distance_matrix.samples.indexOf(acc);
+    });
+
+    const filtered_matrices = plotted_indices.map(ind => {
+        return plotted_indices.map(inner_ind => {
+            return distance_matrix.matrix[ind][inner_ind];
+        });
+    });
+    const filtered_accession_names = plotted_indices.map(ind => {
+        return distance_matrix.samples[ind];
+    });
+
+    /*console.log(plotted_indices);
+    console.log(filtered_matrices);
+    console.log(filtered_accession_names);*/
+
+    /*const accessions = distance_matrix.samples.map((x) => {
         return { name: x };
     });
-    const RNJ = new nj.RapidNeighborJoining(distance_matrix.matrix, accessions);
+    const RNJ = new nj.RapidNeighborJoining(distance_matrix.matrix, accessions);*/
+    const accessions = filtered_accession_names.map((x) => {
+        return { name: x };
+    });
+    const RNJ = new nj.RapidNeighborJoining(filtered_matrices, accessions);
     RNJ.run();
     // return distance_matrix.samples; // all samples
     return newickToSortedList(RNJ.getAsNewick());

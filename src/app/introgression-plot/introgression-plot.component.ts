@@ -76,6 +76,15 @@ export class IntrogressionPlotComponent implements OnInit {
     }
   }
 
+  private _plotted_accessions: string[];
+  @Input()
+  set plotted_accessions(accessions: string[]) {
+    this._plotted_accessions = accessions;
+    if (this._autoupdate) {
+      this.generatePlot();
+    }
+  }
+
   /**
    * Bin aspect ratio (width / height). By default bins are twice as high as
    * they are wide. This is to more easily fit accession labels without making
@@ -251,7 +260,8 @@ export class IntrogressionPlotComponent implements OnInit {
     forkJoin([bins_fetch, matrix_fetch]).subscribe(([bins, distance_matrix]) => {
       this.distanceBins = bins;
       this.distanceMatrix = distance_matrix;
-      this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix);
+      this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
+                                                   this._plotted_accessions);
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);

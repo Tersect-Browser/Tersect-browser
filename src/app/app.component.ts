@@ -39,6 +39,15 @@ export class AppComponent {
     return this._selected_accession;
   }
 
+  _included_accessions = this.accessions.map(acc => acc.value);
+  @Input()
+  set included_accessions(accessions: SelectItem[]) {
+    this._included_accessions = accessions;
+  }
+  get included_accessions(): SelectItem[] {
+    return this._included_accessions;
+  }
+
   zoom_level = 100;
 
   display_sidebar = false;
@@ -72,6 +81,10 @@ export class AppComponent {
     } else {
       this.zoomIn();
     }
+  }
+
+  update_selection() {
+    this.update_plot = true;
   }
 
 }
