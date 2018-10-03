@@ -69,29 +69,7 @@ ${req.params.start} ${req.params.stop}`;
                     stored_matrix.save();
                     res.json(tersect_output);
                 }
-               /*const output = JSON.parse(stdout);
-               const accessions = output.samples.map((x) => {
-                   return { name: x };
-               });
-               const RNJ = new nj.RapidNeighborJoining(output.matrix, accessions);
-               RNJ.run();
-               res.json(RNJ.getAsNewick());*/
            });
         }
     });
-    /*const D = [
-        [0,  5,  9,  9, 8],
-        [5,  0, 10, 10, 9],
-        [9, 10,  0,  8, 7],
-        [9, 10,  8,  0, 3],
-        [8,  9,  7,  3, 0]
-    ];
-    const names = ['A', 'B', 'C', 'D', 'F'];
-    const taxa = names.map((x) => {
-        return { name: x };
-    });
-    const RNJ = new nj.RapidNeighborJoining(D, taxa);
-    RNJ.run();
-    // res.json(RNJ.getAsObject());
-    res.json(RNJ.getAsNewick());*/
 });
