@@ -22,7 +22,7 @@ export class TersectBackendService {
   getRefDistanceBins(accession: string, chromosome: string,
                      start: number, stop: number,
                      binsize: number): Observable<any[]> {
-    const query = `http://localhost:8040/api/distances/${accession}/\
+    const query = `http://localhost:8060/tbapi/distances/${accession}/\
 ${chromosome}/${start}/${stop}/${binsize}`;
     return this.http.get<any[]>(query);
   }
@@ -37,7 +37,7 @@ ${chromosome}/${start}/${stop}/${binsize}`;
    */
   getDistanceMatrix(chromosome: string,
                     start: number, stop: number): Observable<DistanceMatrix> {
-    const query = `http://localhost:8040/api/matrix/${chromosome}/${start}/\
+    const query = `http://localhost:8060/tbapi/matrix/${chromosome}/${start}/\
 ${stop}`;
     return this.http.get<DistanceMatrix>(query);
   }
