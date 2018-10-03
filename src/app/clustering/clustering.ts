@@ -1,5 +1,5 @@
 import { DistanceMatrix } from '../models/DistanceMatrix';
-import nj = require('neighbor-joining');
+import * as nj from 'neighbor-joining';
 
 /**
  * Return a list of accessions in the order they appear in a Newick tree format
