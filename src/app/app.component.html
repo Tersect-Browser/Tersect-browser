@@ -33,7 +33,12 @@
                 [step]="binsize_step"></p-slider>
     </div>
     <div class="p-col-3 interval-selector">
-      Interval: {{ selected_interval[0] + ' - ' + selected_interval[1] }}
+      Interval:
+      <input type="text" pKeyFilter="pint" [(ngModel)]="selected_interval[0]"
+             (input)="updatePlot()">
+      -
+      <input type="text" pKeyFilter="pint" [(ngModel)]="selected_interval[1]"
+             (input)="updatePlot()">
       <p-slider [(ngModel)]="selected_interval" [range]="true"
                 [style]="{'width':'100%'}"
                 (onSlideEnd)="update_plot = true"

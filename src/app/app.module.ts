@@ -11,6 +11,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { SliderModule } from 'primeng/slider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ListboxModule } from 'primeng/listbox';
+import { KeyFilterModule } from 'primeng/keyfilter';
 
 import { IntrogressionPlotComponent } from './introgression-plot/introgression-plot.component';
 
@@ -34,7 +35,8 @@ import { FormsModule } from '@angular/forms';
     ToolbarModule,
     SliderModule,
     ProgressSpinnerModule,
-    ListboxModule
+    ListboxModule,
+    KeyFilterModule
   ],
   providers: [
     HttpClient,

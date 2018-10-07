@@ -48,6 +48,22 @@ export class AppComponent {
     return this._included_accessions;
   }
 
+  /**
+   * Number of miliseconds of delay between a plot update being requested
+   * and the plot being redrawn. Further update requests during this period will
+   * reset the delay timer so that multiple successive updates can happen
+   * all at once instead of having the plot be redrawn multiple times.
+   * This is particularly important for typed inputs (e.g. chromosomal
+   * interval bounds) chanigng, as without a delay every keystroke would
+   * case a redreaw.
+   */
+  readonly UPDATE_DELAY = 750;
+
+  /**
+   * Timer used to keep track of plot update delay.
+   */
+  private plot_update_timer;
+
   zoom_level = 100;
 
   display_sidebar = false;
@@ -83,8 +99,17 @@ export class AppComponent {
     }
   }
 
+  /**
+   * Temporary (for updating sidebar accession selection)
+   */
   update_selection() {
     this.update_plot = true;
+  }
+
+  updatePlot() {
+    clearTimeout(this.plot_update_timer);
+    this.plot_update_timer = setTimeout(() => this.update_plot = true,
+                                        this.UPDATE_DELAY);
   }
 
 }
