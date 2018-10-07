@@ -28,7 +28,7 @@
       Bin size: {{ selected_binsize }}
       <p-slider [(ngModel)]="selected_binsize"
                 [style]="{'width':'100%'}"
-                (onSlideEnd)="update_plot = true"
+                (onChange)="updatePlot()"
                 [min]="binsize_min" [max]="binsize_max"
                 [step]="binsize_step"></p-slider>
     </div>
@@ -41,7 +41,7 @@
              (input)="updatePlot()">
       <p-slider [(ngModel)]="selected_interval" [range]="true"
                 [style]="{'width':'100%'}"
-                (onSlideEnd)="update_plot = true"
+                (onChange)="updatePlot()"
                 [min]="interval_min" [max]="interval_max"></p-slider>
     </div>
     <div class="p-col zoom-selector">
