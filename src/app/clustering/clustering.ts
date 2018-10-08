@@ -10,16 +10,21 @@ function newickToSortedList(newick_tree: string): string[] {
     const sorted_accessions = newick_tree.split(',').map(accession => {
         // Remove leading opening parentheses and anything after a colon
         accession = accession.substr(accession.lastIndexOf('(') + 1);
-        return accession.substr(0, accession.indexOf(':'));
+        let trailing_index = accession.indexOf(':');
+        if (trailing_index !== -1) {
+            accession = accession.substr(0, trailing_index);
+        }
+        trailing_index = accession.indexOf(')');
+        if (trailing_index !== -1) {
+            accession = accession.substr(0, trailing_index);
+        }
+        return accession;
     });
     return sorted_accessions;
 }
 
 export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
                                      accessions_to_plot: string[]): string[] {
-    // console.log(accessions_to_plot);
-    // console.log(distance_matrix.matrix);
-
     // Find indices of accessions to plot
     const plotted_indices = accessions_to_plot.map(acc => {
         return distance_matrix.samples.indexOf(acc);
@@ -33,10 +38,6 @@ export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
     const filtered_accession_names = plotted_indices.map(ind => {
         return distance_matrix.samples[ind];
     });
-
-    /*console.log(plotted_indices);
-    console.log(filtered_matrices);
-    console.log(filtered_accession_names);*/
 
     /*const accessions = distance_matrix.samples.map((x) => {
         return { name: x };
