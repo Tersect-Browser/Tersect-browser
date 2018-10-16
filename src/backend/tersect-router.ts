@@ -6,7 +6,7 @@ import { DBMatrix } from './db/dbmatrix';
 
 export const router = Router();
 
-const tersect_db_location = '/home/tom/genome_version_control/tersect2/test/full/';
+const tersect_db_location = '/home/tom/genome_version_control/tersect2/test/full/hom';
 
 // CORS middleware
 router.use((req, res, next) => {
