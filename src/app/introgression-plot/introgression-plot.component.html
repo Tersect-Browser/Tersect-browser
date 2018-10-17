@@ -7,7 +7,7 @@
 <canvas #plotCanvas class="sharp-canvas">
 </canvas>
 <canvas #guiCanvas class="gui-canvas"
-                   (mousedown)="startDrag($event)"
-                   (mouseup)="stopDrag($event)"
-                   (mousemove)="drag($event)">
+                   (mousedown)="guiMouseDown($event)"
+                   (mouseup)="guiMouseUp($event)"
+                   (mousemove)="guiMouseMove($event)">
 </canvas>

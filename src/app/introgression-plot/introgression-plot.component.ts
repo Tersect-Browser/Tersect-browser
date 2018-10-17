@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, Output, 
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition } from '../models/PlotPosition';
+import { PlotPosition, BinPosition } from '../models/PlotPosition';
 import { filename_to_label } from '../models/accessions';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { DistanceMatrix } from '../models/DistanceMatrix';
@@ -32,6 +32,13 @@ export class IntrogressionPlotComponent implements OnInit {
    *  Used to keep track of the previous position during dragging.
    */
   private previous_drag_position = { x: 0, y: 0 };
+
+  /**
+   * Used to keep remember the position of a mouse press.
+   * This is necessary to distinguish clicks (where the position doesn't change
+   * between the press and release) from drags (where it does).
+   */
+  private mouse_down_position = { x: 0, y: 0 };
 
   /**
    * Current position / offset of the introgression plot.
@@ -104,6 +111,7 @@ export class IntrogressionPlotComponent implements OnInit {
     if (this._zoom_level !== zoom_level) {
       this._zoom_level = zoom_level;
       this.updatePlotZoom();
+      this.drawGUI();
     }
   }
   get zoom_level(): number {
@@ -169,15 +177,6 @@ export class IntrogressionPlotComponent implements OnInit {
     this.plotCanvas.nativeElement.style.width = `${this._zoom_level}%`;
     this.plotCanvas.nativeElement.style.height = `${this._zoom_level
                                                    / this.aspect_ratio}%`;
-    this.updateGUI();
-  }
-
-  /**
-   * Zoom in ten percentage points at a time.
-   */
-  zoomIn() {
-    this.zoom_level += 10;
-    this.updatePlotZoom();
   }
 
   private updateCanvasSize() {
@@ -193,7 +192,7 @@ export class IntrogressionPlotComponent implements OnInit {
     this.guiCanvas.nativeElement.height = canvas_height;
   }
 
-  private updateGUI() {
+  private drawGUI() {
     const ctx: CanvasRenderingContext2D = this.guiCanvas
                                               .nativeElement
                                               .getContext('2d');
@@ -226,15 +225,13 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   drawPlot() {
-    this.updatePlotZoom();
-    this.updateCanvasSize();
     const ctx: CanvasRenderingContext2D = this.plotCanvas
                                               .nativeElement
                                               .getContext('2d');
+    ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
+                  this.plotCanvas.nativeElement.height);
     const palette = new GreyscalePalette(ctx);
-
     const max_distances = this.getMaxDistances(this.distanceBins);
-
     // Object.keys(this.distanceBins).forEach((accession, accession_index) => {
     this.sortedAccessions.forEach((accession, accession_index) => {
       palette.distanceToColors(this.distanceBins[accession], max_distances)
@@ -245,7 +242,6 @@ export class IntrogressionPlotComponent implements OnInit {
         // TODO: save created image instead of printing it directly to the canvas
       });
     });
-    this.updateGUI();
   }
 
   ngOnInit() {
@@ -273,6 +269,15 @@ export class IntrogressionPlotComponent implements OnInit {
       this.distanceMatrix = distance_matrix;
       this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
                                                    this._plotted_accessions);
+      this.updateCanvasSize();
+      this.updatePlotZoom();
+      this.drawGUI();
+      if (this.plot_position.x === 0 && this.plot_position.y === 0) {
+        this.plot_position = {
+          x: this.label_width / (this._zoom_level / 100),
+          y: 0
+        };
+      }
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);
@@ -280,36 +285,67 @@ export class IntrogressionPlotComponent implements OnInit {
     });
   }
 
+  guiMouseMove(event) {
+    if (this.dragging_plot) {
+      this.dragPlot(event);
+    } else {
+      // console.log(event);
+    }
+  }
+
+  guiMouseDown(event) {
+    this.mouse_down_position = { x: event.layerX, y: event.layerY };
+    this.startDrag(event);
+  }
+
+  guiMouseUp(event) {
+    if (this.mouse_down_position.x === event.layerX
+        && this.mouse_down_position.y === event.layerY) {
+      console.log(this.plotToBinPosition(this.mouse_down_position));
+    }
+    this.stopDrag(event);
+  }
+
+  private plotToBinPosition(position: PlotPosition): BinPosition {
+    const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
+    // TODO: simplify this
+    const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
+    const label_index = Math.floor((position.y - 2 - yoffset) / text_height);
+    return {
+      accession: this.sortedAccessions[label_index],
+      start_position: this.plot_position.x,
+      end_position: 10000
+    };
+  }
+
+  private dragPlot(event) {
+    if (event.buttons !== 1) {
+      this.stopDrag(event);
+      return;
+    }
+    this.plot_position.x += (event.layerX - this.previous_drag_position.x)
+                            * 100 / this.zoom_level;
+    this.plot_position.y += (event.layerY - this.previous_drag_position.y)
+                            * this.aspect_ratio
+                            * 100 / this.zoom_level;
+    /*if (this.plot_position.x > this.label_width) {
+      this.plot_position.x = this.label_width;
+    }*/
+    if (this.plot_position.y > 0) {
+      this.plot_position.y = 0;
+    }
+    this.previous_drag_position = { x: event.layerX, y: event.layerY };
+    this.drawGUI();
+    this.drawPlot();
+  }
+
   startDrag(event) {
     // drag on left mouse button
     if (event.buttons === 1) {
       this.plotCanvas.nativeElement.style.cursor = 'move';
       this.dragging_plot = true;
-      this.previous_drag_position = { x: event.clientX, y: event.clientY };
+      this.previous_drag_position = { x: event.layerX, y: event.layerY };
     }
-  }
-
-  drag(event) {
-    if (event.buttons !== 1) {
-      this.stopDrag(event);
-      return;
-    }
-    if (this.dragging_plot) {
-      this.plot_position.x += (event.clientX - this.previous_drag_position.x)
-                              * 100 / this.zoom_level;
-      this.plot_position.y += (event.clientY - this.previous_drag_position.y)
-                              * this.aspect_ratio
-                              * 100 / this.zoom_level;
-      /*if (this.plot_position.x > this.label_width) {
-        this.plot_position.x = this.label_width;
-      }*/
-      if (this.plot_position.y > 0) {
-        this.plot_position.y = 0;
-      }
-      this.previous_drag_position = { x: event.clientX, y: event.clientY };
-      this.drawPlot();
-    }
-    this.updateGUI();
   }
 
   stopDrag(event) {
@@ -319,6 +355,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {
+    this.drawGUI();
     this.drawPlot();
   }
 
