@@ -34,6 +34,11 @@ export class IntrogressionPlotComponent implements OnInit {
   private previous_drag_position = { x: 0, y: 0 };
 
   /**
+   * Displacement of initial plot position based on GUI size.
+   */
+  private gui_offset = { x: 0, y: 0 };
+
+  /**
    * Used to keep remember the position of a mouse press.
    * This is necessary to distinguish clicks (where the position doesn't change
    * between the press and release) from drags (where it does).
@@ -199,6 +204,10 @@ export class IntrogressionPlotComponent implements OnInit {
     ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                   this.guiCanvas.nativeElement.height);
     this.drawAccessionLabels(this.guiCanvas);
+    this.gui_offset = {
+      x: this.label_width / (this._zoom_level / 100),
+      y: 0
+    };
   }
 
   private drawAccessionLabels(canvas: ElementRef) {
@@ -237,8 +246,10 @@ export class IntrogressionPlotComponent implements OnInit {
       palette.distanceToColors(this.distanceBins[accession], max_distances)
              .forEach((color, bin_index) => {
         ctx.putImageData(color,
-                         bin_index + this.plot_position.x,           // x axis
-                         accession_index + this.plot_position.y);    // y axis
+                         bin_index + this.plot_position.x
+                         + this.gui_offset.x,
+                         accession_index + this.plot_position.y
+                         + this.gui_offset.y);
         // TODO: save created image instead of printing it directly to the canvas
       });
     });
@@ -272,12 +283,12 @@ export class IntrogressionPlotComponent implements OnInit {
       this.updateCanvasSize();
       this.updatePlotZoom();
       this.drawGUI();
-      if (this.plot_position.x === 0 && this.plot_position.y === 0) {
+      /*if (this.plot_position.x === 0 && this.plot_position.y === 0) {
         this.plot_position = {
           x: this.label_width / (this._zoom_level / 100),
           y: 0
         };
-      }
+      }*/
       this.drawPlot();
       this._update = false;
       this.updateChange.emit(this._update);
@@ -302,19 +313,35 @@ export class IntrogressionPlotComponent implements OnInit {
     if (this.mouse_down_position.x === event.layerX
         && this.mouse_down_position.y === event.layerY) {
       console.log(this.plotToBinPosition(this.mouse_down_position));
+      // this.plotToBinPosition(this.mouse_down_position);
     }
     this.stopDrag(event);
   }
 
   private plotToBinPosition(position: PlotPosition): BinPosition {
+    const bin_width = this._zoom_level / 100;
     const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
     // TODO: simplify this
     const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
     const label_index = Math.floor((position.y - 2 - yoffset) / text_height);
+    if (label_index >= this.sortedAccessions.length) {
+      return null;
+    }
+    const bin_index = Math.floor((position.x - this.label_width) / bin_width
+                                 - this.plot_position.x - 0.5);
+    const start_pos = this._interval[0] + bin_index * this._binsize;
+    let end_pos = this._interval[0] + (bin_index + 1) * this._binsize;
+    if (start_pos > this._interval[1]) {
+      return null;
+    }
+    if (end_pos > this._interval[1]) {
+      end_pos = this._interval[1];
+    }
+    console.log(this._interval);
     return {
       accession: this.sortedAccessions[label_index],
-      start_position: this.plot_position.x,
-      end_position: 10000
+      start_position: start_pos,
+      end_position: end_pos
     };
   }
 
