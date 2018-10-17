@@ -18,6 +18,9 @@ export class IntrogressionPlotComponent implements OnInit {
   @ViewChild('plotCanvas') plotCanvas: ElementRef;
   @ViewChild('guiCanvas') guiCanvas: ElementRef;
 
+  readonly GUI_BG_COLOR = '#FFFFFF';
+  readonly GUI_TEXT_COLOR = '#000000';
+
   private _autoupdate = false;
 
   /**
@@ -194,23 +197,31 @@ export class IntrogressionPlotComponent implements OnInit {
     const ctx: CanvasRenderingContext2D = this.guiCanvas
                                               .nativeElement
                                               .getContext('2d');
-    const accession_filenames = Object.keys(this.distanceBins);
-    const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
-    ctx.font = `${text_height}px Arial`;
     ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                   this.guiCanvas.nativeElement.height);
+    this.drawAccessionLabels(this.guiCanvas);
+  }
+
+  private drawAccessionLabels(canvas: ElementRef) {
+    const ctx: CanvasRenderingContext2D = canvas.nativeElement.getContext('2d');
+    const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
+    ctx.font = `${text_height}px Arial`;
+
     // TODO: simplify this
     const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
-    this.label_width = 0;
-    // accession_filenames.forEach((filename, index) => {
-    this.sortedAccessions.forEach((filename, index) => {
-      const label = filename_to_label(filename);
+    const accession_labels = this.sortedAccessions
+                                 .map(f => filename_to_label(f));
+    this.label_width = Math.max(
+      ...accession_labels.map(label => ctx.measureText(label).width)
+    );
+    // Draw background
+    ctx.fillStyle = this.GUI_BG_COLOR;
+    ctx.fillRect(0, 0, this.label_width, canvas.nativeElement.height);
+    // Draw labels
+    accession_labels.forEach((label, index) => {
+      ctx.fillStyle = this.GUI_TEXT_COLOR;
       ctx.fillText(label, 0,
                    yoffset + (1 + index) * text_height - 2);
-      const text_width = ctx.measureText(label).width;
-      if (text_width > this.label_width) {
-        this.label_width = text_width;
-      }
     });
   }
 
