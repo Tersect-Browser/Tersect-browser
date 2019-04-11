@@ -329,15 +329,15 @@ export class IntrogressionPlotComponent implements OnInit {
     }
     const bin_index = Math.floor((position.x - this.label_width) / bin_width
                                  - this.plot_position.x - 0.5);
+    console.log(bin_index);
     const start_pos = this._interval[0] + bin_index * this._binsize;
-    let end_pos = this._interval[0] + (bin_index + 1) * this._binsize;
-    if (start_pos > this._interval[1]) {
+    if (start_pos < 1 || start_pos > this._interval[1]) {
       return null;
     }
+    let end_pos = this._interval[0] + (bin_index + 1) * this._binsize;
     if (end_pos > this._interval[1]) {
       end_pos = this._interval[1];
     }
-    console.log(this._interval);
     return {
       accession: this.sortedAccessions[label_index],
       start_position: start_pos,
