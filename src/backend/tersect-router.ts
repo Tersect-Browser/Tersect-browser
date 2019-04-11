@@ -82,6 +82,30 @@ router.route('/dist/:accession/:chromosome/:start/:stop/:binsize')
     });
 });
 
+router.route('/distall/:chromosome/:start/:stop')
+      .get((req, res) => {
+    const startpos = parseInt(req.params.start, 10);
+    const stoppos = parseInt(req.params.stop, 10);
+    const options = {
+        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
+    };
+    const tersect_command = `tersect dist -j ${tersect_db_location} \
+${req.params.chromosome}:${startpos}-${stoppos}`;
+    exec(tersect_command, options, (error, stdout, stderr) => {
+        if (error) {
+            res.json(error);
+        } else if (stderr) {
+            res.json(stderr);
+        } else {
+            const output = JSON.parse(stdout.trim());
+            output['samples'] = output['rows'];
+            output['rows'] = undefined;
+            output['columns'] = undefined;
+            res.json(output);
+        }
+    });
+});
+
 router.route('/distances/:accession/:chromosome/:start/:stop/:binsize')
       .get((req, res) => {
     const options = {
