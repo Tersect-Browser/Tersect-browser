@@ -1,0 +1,14 @@
+{
+    "tsi_location": "/home/tom/genome_version_control/tersect2/test/dbs/tomato_fd_hom_snps.tsi",
+    "hostname": "mongodb://localhost",
+    "port": 27017,
+    "db_name": "tersect",
+    "collection": "matrices",
+    "index_partitions": [
+        50000000,
+        25000000,
+        10000000,
+        5000000,
+        1000000
+    ]
+}
