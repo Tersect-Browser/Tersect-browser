@@ -220,6 +220,14 @@ router.route('/distall/:chromosome/:start/:stop')
         start: start_pos, end: stop_pos
     }, chromosome_partitions[chromosome]);
 
+    // Skip partitions which lie entirely outiside the chromosome
+    partitions.indexed = partitions.indexed.filter(
+        p => p.start <= chromosome_partitions[chromosome][0]
+    );
+    partitions.nonindexed = partitions.nonindexed.filter(
+        p => p.start <= chromosome_partitions[chromosome][0]
+    );
+
     const tersect_calls = partitions.nonindexed.map(interval => {
         const command = `tersect dist -j ${config.tsi_location} \
 "${chromosome}:${interval.start}-${interval.end}"`;
