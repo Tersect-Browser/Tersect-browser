@@ -180,6 +180,7 @@ function _partitionInterval(input: Interval,
 
 function partitionInterval(input: Interval,
                            partition_sizes: number[]): IntervalPartitions {
+    partition_sizes = [...partition_sizes]; // cloning
     partition_sizes.sort((a, b) => a - b); // Ascending order
     let part_size = partition_sizes.pop();
     const intervals = _partitionInterval(input, part_size);
