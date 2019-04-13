@@ -75,7 +75,11 @@ cfg = {
     'db_name': 'tersect',
     'collection': 'matrices',
     'index_partitions': [
-        # 20000000
+        50000000,
+        25000000,
+        10000000,
+        5000000,
+        1000000
     ]
 }
 
