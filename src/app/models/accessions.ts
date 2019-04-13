@@ -1,6 +1,8 @@
 // Tomato accessions from the 150 genome and 360 genome projects
 // temporariliy hard-coded (will be fetched from tersect)
 export const accessions_510 = [
+    { label: 'fruitDrop', value: 'fruitDrop' },
+    { label: 'AilsaCraig', value: 'AilsaCraig'},
     { label: 'S.lyc B TS-1', value: 'TS-1.vcf' },
     { label: 'S.lyc B TS-10', value: 'TS-10.vcf' },
     { label: 'S.lyc B TS-100', value: 'TS-100.vcf' },

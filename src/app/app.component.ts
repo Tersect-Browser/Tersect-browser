@@ -30,7 +30,7 @@ export class AppComponent {
     return this._selected_chromosome;
   }
 
-  _selected_accession = this.accessions[0].value;
+  _selected_accession = this.accessions[0].label;
   @Input()
   set selected_accession(accession: string) {
     this._selected_accession = accession;
@@ -39,12 +39,12 @@ export class AppComponent {
     return this._selected_accession;
   }
 
-  _included_accessions = this.accessions.map(acc => acc.value);
+  _included_accessions = this.accessions.map(acc => acc.label);
   @Input()
-  set included_accessions(accessions: SelectItem[]) {
+  set included_accessions(accessions: string[]) {
     this._included_accessions = accessions;
   }
-  get included_accessions(): SelectItem[] {
+  get included_accessions(): string[] {
     return this._included_accessions;
   }
 
