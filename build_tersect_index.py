@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+import os
 import subprocess
 from pymongo import MongoClient
 from math import ceil
@@ -18,11 +19,10 @@ def add_tersect_index(collection, chromosome_name, start_pos, end_pos,
         print(error)
         return False
     output = json.loads(output)
-    output['samples'] = output.pop('rows')
-    del output['columns']
     collection.insert({
-        'command': region,
-        'tersect_output': output
+        'region': region,
+        'samples': output['rows'],
+        'matrix': output['matrix']
     })
     return True
 
@@ -68,19 +68,10 @@ def generate_indices(cfg, verbose=False):
     if verbose:
         print("Index generation completed in: " + str(timer() - start))
 
-cfg = {
-    'tsi_location': '/home/tom/genome_version_control/tersect2/test/dbs/tomato_fd_hom_snps.tsi',
-    'hostname': 'mongodb://localhost',
-    'port': 27017,
-    'db_name': 'tersect',
-    'collection': 'matrices',
-    'index_partitions': [
-        50000000,
-        25000000,
-        10000000,
-        5000000,
-        1000000
-    ]
-}
+tb_path = os.path.dirname(os.path.realpath(__file__))
+cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
+
+with open(cfg_path, 'r') as cfg_file:
+    cfg = json.load(cfg_file)
 
 generate_indices(cfg, verbose=True)
