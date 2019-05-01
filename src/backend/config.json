@@ -1,5 +1,5 @@
 {
-    "tsi_location": "/home/tom/genome_version_control/tersect2/test/dbs/tomato_fd_hom_snps.tsi",
+    "tsi_location": "/home/tom/genome_version_control/tersect/test/dbs/tomato_fd_hom_snps.tsi",
     "hostname": "mongodb://localhost",
     "port": 27017,
     "db_name": "tersect",
