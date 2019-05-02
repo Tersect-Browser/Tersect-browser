@@ -210,12 +210,9 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   private drawAccessionLabels(canvas: ElementRef) {
-    console.log('DRAWING LABELS');
     const ctx: CanvasRenderingContext2D = canvas.nativeElement.getContext('2d');
     const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
     ctx.font = `${text_height}px Arial`;
-
-    console.log(canvas.nativeElement.height);
 
     // TODO: simplify this
     const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
