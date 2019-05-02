@@ -191,9 +191,10 @@ export class IntrogressionPlotComponent implements OnInit {
                                                       .parentElement
                                                       .offsetHeight;
     this.plotCanvas.nativeElement.width = canvas_width;
-    this.plotCanvas.nativeElement.height = canvas_height;
+    this.plotCanvas.nativeElement.height = canvas_width;
     this.guiCanvas.nativeElement.width = canvas_width;
     this.guiCanvas.nativeElement.height = canvas_height;
+    console.log(canvas_width);
   }
 
   private drawGUI() {
@@ -380,6 +381,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {
+    this.updateCanvasSize();
     this.drawGUI();
     this.drawPlot();
   }
