@@ -236,47 +236,30 @@ router.route('/distall/:chromosome/:start/:stop')
 
     const index_calls = partitions.indexed.map(interval => {
         const region = `${chromosome}:${interval.start}-${interval.end}`;
-        return DBMatrix.findOne({ command: region }).exec();
+        return DBMatrix.findOne({ region: region }).exec();
     });
 
     const all_promises = tersect_calls.concat(index_calls);
 
+    const all_types = partitions.nonindexed.map(x => x.type).concat(
+                      partitions.indexed.map(x => x.type));
+
     Promise.all(all_promises).then((results) => {
+        // The field containing sample names is called 'rows' in tersect results
+        // but 'samples' in the MongoDB collection.
+        // Using whichever is in the first result.
+        const sample_field_name = tersect_calls.length ? 'rows' : 'samples';
+
         let output: { matrix: number[][]; samples: string[]; };
-        if (tersect_calls.length) {
-            const sample_num = results[0]['rows'].length;
-            output = init_distance_matrix(sample_num);
-            output.samples = results[0]['rows'];
-        } else if (index_calls.length) {
-            // No tersect calls, initializing based on index calls
-            const sample_num = results[0]['tersect_output']['samples'].length;
-            output = init_distance_matrix(sample_num);
-            output.samples = results[0]['tersect_output']['samples'];
-        } else {
-            // No calls at all, this shouldn't happen
-            res.json(output);
-            return;
-        }
-        // Adding up index call results
-        for (let i = 0; i < tersect_calls.length; i++) {
-            const type = partitions.nonindexed[i].type;
+        const sample_num = results[0][sample_field_name].length;
+        output = init_distance_matrix(sample_num);
+        output.samples = results[0][sample_field_name];
+
+        // Adding up results
+        for (let i = 0; i < all_promises.length; i++) {
             results[i]['matrix'].forEach((row, row_idx) => {
                 row.forEach((col, col_idx) => {
-                    if (type === 'subtract') {
-                        output.matrix[row_idx][col_idx] -= col;
-                    } else {
-                        output.matrix[row_idx][col_idx] += col;
-                    }
-                });
-            });
-        }
-        // Adding up index call results
-        for (let i = 0; i < index_calls.length; i++) {
-            const type = partitions.indexed[i].type;
-            results[tersect_calls.length + i]
-                   ['tersect_output']['matrix'].forEach((row, row_idx) => {
-                row.forEach((col, col_idx) => {
-                    if (type === 'subtract') {
+                    if (all_types[i] === 'subtract') {
                         output.matrix[row_idx][col_idx] -= col;
                     } else {
                         output.matrix[row_idx][col_idx] += col;
@@ -285,62 +268,5 @@ router.route('/distall/:chromosome/:start/:stop')
             });
         }
         res.json(output);
-    });
-});
-
-router.route('/distances/:accession/:chromosome/:start/:stop/:binsize')
-      .get((req, res) => {
-    const options = {
-        cwd: config.tsi_location,
-        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
-    };
-
-    const tersect_command = `tersect dist ${req.params.accession} \
-${req.params.chromosome} \
-${req.params.start} ${req.params.stop} \
-${req.params.binsize}`;
-
-    exec(tersect_command,
-         options, (err, stdout, stderr) => {
-        if (err) {
-            res.json(err);
-        }
-        res.json(JSON.parse(stdout));
-    });
-});
-
-router.route('/matrix/:chromosome/:start/:stop')
-      .get((req, res) => {
-    const options = {
-        cwd: config.tsi_location,
-        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
-    };
-
-    const tersect_command = `tersect matrix ${req.params.chromosome} \
-${req.params.start} ${req.params.stop}`;
-    console.log(tersect_command);
-    // Matrix is fetched from database if possible, requested from tersect
-    // otherwise
-    DBMatrix.findOne({ command: tersect_command }).exec((db_err, result) => {
-        if (db_err) { res.send(db_err); }
-        if (result !== null) {
-            res.json(result.get('tersect_output'));
-        } else {
-            exec(tersect_command, options, (err, stdout, stderr) => {
-                if (err) {
-                    res.json(err);
-                } else if (stderr) {
-                    res.json(stderr);
-                } else {
-                    const tersect_output = JSON.parse(stdout);
-                    const stored_matrix = new DBMatrix({
-                        command: tersect_command,
-                        tersect_output: tersect_output
-                    });
-                    stored_matrix.save();
-                    res.json(tersect_output);
-                }
-           });
-        }
     });
 });
