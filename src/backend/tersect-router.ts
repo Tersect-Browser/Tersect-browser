@@ -52,15 +52,6 @@ function execPromise(command: string, options = {}) {
     });
 }
 
-const zip = rows => rows[0].map((_, c) => rows.map(row => row[c]));
-
-function build_command(accession: string, chromosome: string,
-                       start_pos: number, end_pos: number) {
-    const tersect_command = `tersect dist -j ${config.tsi_location} \
--a "${accession}" "${chromosome}:${start_pos}-${end_pos}"`;
-    return tersect_command;
-}
-
 // CORS middleware
 router.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -87,28 +78,37 @@ router.route('/samples')
 
 router.route('/dist/:accession/:chromosome/:start/:stop/:binsize')
       .get((req, res) => {
-    const startpos = parseInt(req.params.start, 10);
-    const stoppos = parseInt(req.params.stop, 10);
+    const accession = req.params.accession;
+    const chromosome = req.params.chromosome;
+    const start_pos = parseInt(req.params.start, 10);
+    const stop_pos = parseInt(req.params.stop, 10);
     const binsize = parseInt(req.params.binsize, 10);
+    const options = {
+        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
+    };
 
-    const all_promises = [];
+    const tersect_command = `tersect dist -j ${config.tsi_location} \
+-a "${accession}" ${chromosome}:${start_pos}-${stop_pos} -B ${binsize}`;
 
-    let pos: number;
-    for (pos = startpos; pos < stoppos - binsize; pos += binsize) {
-        all_promises.push(execPromise(build_command(req.params.accession,
-                                                    req.params.chromosome,
-                                                    pos, pos + binsize)));
-    }
-    all_promises.push(execPromise(build_command(req.params.accession,
-                                                req.params.chromosome,
-                                                pos, stoppos)));
-    const dist = {};
-    Promise.all(all_promises).then((bin_results) => {
-        const accessions = bin_results[0]['columns'];
-        zip(bin_results.map(x => x['matrix'][0])).forEach((m, i) => {
-            dist[accessions[i]] = m;
-        });
-        res.json(dist);
+    const output = {};
+    exec(tersect_command, options, (err, stdout, stderr) => {
+        if (err) {
+            res.json(err);
+        } else if (stderr) {
+            res.json(stderr);
+        } else {
+            const tersect_output = JSON.parse(stdout);
+            const accessions = tersect_output['columns'];
+            accessions.forEach(accession_name => {
+                output[accession_name] = [];
+            });
+            tersect_output['matrix'].forEach(bin_matrix => {
+                bin_matrix[0].forEach((dist: number, i: number) => {
+                    output[accessions[i]].push(dist);
+                });
+            });
+            res.json(output);
+        }
     });
 });
 
