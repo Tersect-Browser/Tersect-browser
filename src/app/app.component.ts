@@ -1,17 +1,20 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
 import { accessions_510 } from './models/accessions';
+import { TersectBackendService } from './services/tersect-backend.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'app';
   chromosomes: SelectItem[] = SL2_50_chromosomes;
-  accessions: SelectItem[] = accessions_510;
+  accessions: SelectItem[];
+
+  constructor(private tersectBackendService: TersectBackendService) { }
 
   _selected_chromosome: Chromosome = this.chromosomes[0].value;
   @Input()
@@ -30,7 +33,7 @@ export class AppComponent {
     return this._selected_chromosome;
   }
 
-  _selected_accession = this.accessions[0].label;
+  _selected_accession: string;
   @Input()
   set selected_accession(accession: string) {
     this._selected_accession = accession;
@@ -39,7 +42,7 @@ export class AppComponent {
     return this._selected_accession;
   }
 
-  _included_accessions = this.accessions.map(acc => acc.label);
+  _included_accessions: string[];
   @Input()
   set included_accessions(accessions: string[]) {
     this._included_accessions = accessions;
@@ -97,6 +100,19 @@ export class AppComponent {
     } else {
       this.zoomIn();
     }
+  }
+
+  ngOnInit() {
+    this.loadAccessions();
+  }
+
+  loadAccessions() {
+    this.tersectBackendService.getAccessionNames().subscribe(acc_names => {
+      this.accessions = acc_names.map(n => ({ label: n, value: n }));
+      this.included_accessions = this.accessions.map(acc => acc.label);
+      this.selected_accession = this.included_accessions[0];
+      this.update_plot = true;
+    });
   }
 
   /**

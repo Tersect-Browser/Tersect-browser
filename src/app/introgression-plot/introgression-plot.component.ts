@@ -260,6 +260,7 @@ export class IntrogressionPlotComponent implements OnInit {
   }
 
   generatePlot() {
+    if (!this._accession) { return; }
     // TODO: deal with this more elegantly (on the back-end)
     this.plotCanvas.nativeElement.parentElement.style.cursor = 'progress';
     if (this._interval[1] - this._interval[0] < this._binsize) {
