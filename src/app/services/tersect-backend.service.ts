@@ -42,4 +42,12 @@ ${chromosome}/${start}/${stop}`;
     return this.http.get<DistanceMatrix>(query);
   }
 
+  /**
+   * Retrieve list of accessions in the Tersect database.
+   */
+  getAccessionNames(): Observable<string[]> {
+    const query = `http://localhost:8060/tbapi/samples`;
+    return this.http.get<string[]>(query);
+  }
+
 }
