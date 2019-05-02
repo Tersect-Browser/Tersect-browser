@@ -3,7 +3,6 @@ import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
 import { PlotPosition, BinPosition } from '../models/PlotPosition';
-import { filename_to_label } from '../models/accessions';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
@@ -217,16 +216,14 @@ export class IntrogressionPlotComponent implements OnInit {
 
     // TODO: simplify this
     const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
-    const accession_labels = this.sortedAccessions
-                                 .map(f => filename_to_label(f));
     this.label_width = Math.max(
-      ...accession_labels.map(label => ctx.measureText(label).width)
+      ...this.sortedAccessions.map(label => ctx.measureText(label).width)
     );
     // Draw background
     ctx.fillStyle = this.GUI_BG_COLOR;
     ctx.fillRect(0, 0, this.label_width, canvas.nativeElement.height);
     // Draw labels
-    accession_labels.forEach((label, index) => {
+    this.sortedAccessions.forEach((label, index) => {
       ctx.fillStyle = this.GUI_TEXT_COLOR;
       ctx.fillText(label, 0,
                    yoffset + (1 + index) * text_height - 2);

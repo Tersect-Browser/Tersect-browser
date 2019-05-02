@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
-import { accessions_510 } from './models/accessions';
 import { TersectBackendService } from './services/tersect-backend.service';
 
 @Component({
