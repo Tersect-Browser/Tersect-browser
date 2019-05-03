@@ -214,8 +214,10 @@ export class IntrogressionPlotComponent implements OnInit {
     const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
     ctx.font = `${text_height}px Arial`;
 
-    // TODO: simplify this
-    const yoffset = Math.floor(((this.plot_position.y * (this._zoom_level / 100) / this.aspect_ratio) / text_height)) * text_height;
+    let yoffset = this.plot_position.y * (this._zoom_level / 100)
+                  / this.aspect_ratio;
+    yoffset = Math.floor(yoffset / text_height) * text_height;
+
     this.label_width = Math.max(
       ...this.sortedAccessions.map(label => ctx.measureText(label).width)
     );
