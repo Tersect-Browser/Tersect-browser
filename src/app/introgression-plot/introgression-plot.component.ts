@@ -240,18 +240,25 @@ export class IntrogressionPlotComponent implements OnInit {
                   this.plotCanvas.nativeElement.height);
     const palette = new GreyscalePalette(ctx);
     const max_distances = this.getMaxDistances(this.distanceBins);
-    // Object.keys(this.distanceBins).forEach((accession, accession_index) => {
+
+    const row_num = this.sortedAccessions.length;
+    const col_num = this.distanceBins[this.sortedAccessions[0]].length;
+    const arr = new Uint8ClampedArray(4 * row_num * col_num);
+
     this.sortedAccessions.forEach((accession, accession_index) => {
       palette.distanceToColors(this.distanceBins[accession], max_distances)
              .forEach((color, bin_index) => {
-        ctx.putImageData(color,
-                         bin_index + this.plot_position.x
-                         + this.gui_offset.x,
-                         accession_index + this.plot_position.y
-                         + this.gui_offset.y);
+        const pos = 4 * (bin_index + col_num * accession_index);
+        arr[pos] = color.data[0];
+        arr[pos + 1] = color.data[1];
+        arr[pos + 2] = color.data[2];
+        arr[pos + 3] = color.data[3];
         // TODO: save created image instead of printing it directly to the canvas
       });
     });
+    ctx.putImageData(new ImageData(arr, col_num, row_num),
+                     this.plot_position.x + this.gui_offset.x,
+                     this.plot_position.y + this.gui_offset.y);
   }
 
   ngOnInit() {
