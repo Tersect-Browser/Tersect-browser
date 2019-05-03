@@ -4,127 +4,127 @@ import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
 import { TersectBackendService } from './services/tersect-backend.service';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'app';
-  chromosomes: SelectItem[] = SL2_50_chromosomes;
-  accessions: SelectItem[];
+    title = 'app';
+    chromosomes: SelectItem[] = SL2_50_chromosomes;
+    accessions: SelectItem[];
 
-  constructor(private tersectBackendService: TersectBackendService) { }
+    constructor(private tersectBackendService: TersectBackendService) { }
 
-  _selected_chromosome: Chromosome = this.chromosomes[0].value;
-  @Input()
-  set selected_chromosome(chrom: Chromosome) {
-    // retaining the same selection proportions
-    this.interval_max = chrom.size;
-    if (this.selected_interval[0] >= this.interval_max - 10000) {
-      this.selected_interval[0] = this.interval_max - 10000;
+    _selected_chromosome: Chromosome = this.chromosomes[0].value;
+    @Input()
+    set selected_chromosome(chrom: Chromosome) {
+        // retaining the same selection proportions
+        this.interval_max = chrom.size;
+        if (this.selected_interval[0] >= this.interval_max - 10000) {
+            this.selected_interval[0] = this.interval_max - 10000;
+        }
+        if (this.selected_interval[1] > this.interval_max) {
+            this.selected_interval[1] = this.interval_max;
+        }
+        this._selected_chromosome = chrom;
     }
-    if (this.selected_interval[1] > this.interval_max) {
-      this.selected_interval[1] = this.interval_max;
+    get selected_chromosome(): Chromosome {
+        return this._selected_chromosome;
     }
-    this._selected_chromosome = chrom;
-  }
-  get selected_chromosome(): Chromosome {
-    return this._selected_chromosome;
-  }
 
-  _selected_accession: string;
-  @Input()
-  set selected_accession(accession: string) {
-    this._selected_accession = accession;
-  }
-  get selected_accession() {
-    return this._selected_accession;
-  }
-
-  _included_accessions: string[];
-  @Input()
-  set included_accessions(accessions: string[]) {
-    this._included_accessions = accessions;
-  }
-  get included_accessions(): string[] {
-    return this._included_accessions;
-  }
-
-  /**
-   * Number of miliseconds of delay between a plot update being requested
-   * and the plot being redrawn. Further update requests during this period will
-   * reset the delay timer so that multiple successive updates can happen
-   * all at once instead of having the plot be redrawn multiple times.
-   * This is particularly important for typed inputs (e.g. chromosomal
-   * interval bounds) chanigng, as without a delay every keystroke would
-   * case a redreaw.
-   */
-  readonly UPDATE_DELAY = 750;
-
-  /**
-   * Timer used to keep track of plot update delay.
-   */
-  private plot_update_timer;
-
-  zoom_level = 100;
-
-  display_sidebar = false;
-  update_plot = false; // switch to true to trigger plot update
-  interval_min = 1;
-  interval_max = this.selected_chromosome.size;
-  selected_interval = [this.interval_min, this.interval_max];
-
-  binsize_min = 5000;
-  binsize_step = 1000;
-  binsize_max = 100000;
-  selected_binsize = 50000;
-
-  readonly MAX_ZOOM_LEVEL = 1000;
-  readonly MIN_ZOOM_LEVEL = 100;
-  zoomIn() {
-    this.zoom_level *= 1.20;
-    if (this.zoom_level > this.MAX_ZOOM_LEVEL) {
-      this.zoom_level = this.MAX_ZOOM_LEVEL;
+    _selected_accession: string;
+    @Input()
+    set selected_accession(accession: string) {
+        this._selected_accession = accession;
     }
-  }
-  zoomOut() {
-    this.zoom_level /= 1.20;
-    if (this.zoom_level < this.MIN_ZOOM_LEVEL) {
-      this.zoom_level = this.MIN_ZOOM_LEVEL;
+    get selected_accession() {
+        return this._selected_accession;
     }
-  }
-  scrollWheel(event: WheelEvent) {
-    if (event.deltaY > 0) {
-      this.zoomOut();
-    } else {
-      this.zoomIn();
+
+    _included_accessions: string[];
+    @Input()
+    set included_accessions(accessions: string[]) {
+        this._included_accessions = accessions;
     }
-  }
+    get included_accessions(): string[] {
+        return this._included_accessions;
+    }
 
-  ngOnInit() {
-    this.loadAccessions();
-  }
+    /**
+     * Number of miliseconds of delay between a plot update being requested
+     * and the plot being redrawn. Further update requests during this period will
+     * reset the delay timer so that multiple successive updates can happen
+     * all at once instead of having the plot be redrawn multiple times.
+     * This is particularly important for typed inputs (e.g. chromosomal
+     * interval bounds) chanigng, as without a delay every keystroke would
+     * case a redreaw.
+     */
+    readonly UPDATE_DELAY = 750;
 
-  loadAccessions() {
-    this.tersectBackendService.getAccessionNames().subscribe(acc_names => {
-      this.accessions = acc_names.map(n => ({ label: n, value: n }));
-      this.included_accessions = this.accessions.map(acc => acc.label);
-      this.selected_accession = this.included_accessions[0];
-      this.update_plot = true;
-    });
-  }
+    /**
+     * Timer used to keep track of plot update delay.
+     */
+    private plot_update_timer;
 
-  /**
-   * Temporary (for updating sidebar accession selection)
-   */
-  update_selection() {
-    this.update_plot = true;
-  }
+    zoom_level = 100;
 
-  updatePlot() {
-    clearTimeout(this.plot_update_timer);
-    this.plot_update_timer = setTimeout(() => this.update_plot = true,
-                                        this.UPDATE_DELAY);
-  }
+    display_sidebar = false;
+    update_plot = false; // switch to true to trigger plot update
+    interval_min = 1;
+    interval_max = this.selected_chromosome.size;
+    selected_interval = [this.interval_min, this.interval_max];
+
+    binsize_min = 5000;
+    binsize_step = 1000;
+    binsize_max = 100000;
+    selected_binsize = 50000;
+
+    readonly MAX_ZOOM_LEVEL = 1000;
+    readonly MIN_ZOOM_LEVEL = 100;
+    zoomIn() {
+        this.zoom_level *= 1.20;
+        if (this.zoom_level > this.MAX_ZOOM_LEVEL) {
+            this.zoom_level = this.MAX_ZOOM_LEVEL;
+        }
+    }
+    zoomOut() {
+        this.zoom_level /= 1.20;
+        if (this.zoom_level < this.MIN_ZOOM_LEVEL) {
+            this.zoom_level = this.MIN_ZOOM_LEVEL;
+        }
+    }
+    scrollWheel(event: WheelEvent) {
+        if (event.deltaY > 0) {
+            this.zoomOut();
+        } else {
+            this.zoomIn();
+        }
+    }
+
+    ngOnInit() {
+        this.loadAccessions();
+    }
+
+    loadAccessions() {
+        this.tersectBackendService.getAccessionNames().subscribe(acc_names => {
+            this.accessions = acc_names.map(n => ({ label: n, value: n }));
+            this.included_accessions = this.accessions.map(acc => acc.label);
+            this.selected_accession = this.included_accessions[0];
+            this.update_plot = true;
+        });
+    }
+
+    /**
+     * Temporary (for updating sidebar accession selection)
+     */
+    update_selection() {
+        this.update_plot = true;
+    }
+
+    updatePlot() {
+        clearTimeout(this.plot_update_timer);
+        this.plot_update_timer = setTimeout(() => this.update_plot = true,
+                                            this.UPDATE_DELAY);
+    }
 
 }

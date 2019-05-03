@@ -1,81 +1,84 @@
 <div class="v-stretch-box">
-  <div class="tb-top-bar">
-    <button pButton class="tb-setting-button" icon="fa fa-database"
-      (click)="display_sidebar = true" ></button>
-      <img class="tb-logo" src="assets/logo.png" />
-      <a href="https://www.cranfield.ac.uk/" target="_blank">
-        <img class="cranfield-logo" src="assets/cranfield_logo.png" />
-      </a>
-  </div>
-  <div class="p-grid p-justify-between tb-toolbar">
-    <div class="p-col-2 accession-selector">
-        <div class="label">Reference</div>
-        <div class="dropdown">
-          <p-dropdown [options]="accessions"
-                      [filter]="true"
-                      [autoWidth]="false"
-                      [style]="{'width':'100%'}"
-                      (onChange)="update_plot = true"
-                      [(ngModel)]="selected_accession"></p-dropdown>
+    <div class="tb-top-bar">
+        <button pButton class="tb-setting-button" icon="fa fa-database"
+        (click)="display_sidebar = true" ></button>
+        <img class="tb-logo" src="assets/logo.png" />
+        <a href="https://www.cranfield.ac.uk/" target="_blank">
+            <img class="cranfield-logo" src="assets/cranfield_logo.png" />
+        </a>
+    </div>
+
+    <div class="p-grid p-justify-between tb-toolbar">
+        <div class="p-col-2 accession-selector">
+            <div class="label">Reference</div>
+            <div class="dropdown">
+                <p-dropdown [options]="accessions"
+                            [filter]="true"
+                            [autoWidth]="false"
+                            [style]="{'width':'100%'}"
+                            (onChange)="update_plot = true"
+                            [(ngModel)]="selected_accession"></p-dropdown>
+            </div>
+        </div>
+        <div class="p-col-2">
+            <p-dropdown [options]="chromosomes" (onChange)="update_plot = true"
+                        [style]="{'width':'100%'}"
+                        [(ngModel)]="selected_chromosome"></p-dropdown>
+        </div>
+        <div class="p-col-1 binsize-selector">
+            Bin size: {{ selected_binsize }}
+            <p-slider [(ngModel)]="selected_binsize"
+                        [style]="{'width':'100%'}"
+                        (onChange)="updatePlot()"
+                        [min]="binsize_min" [max]="binsize_max"
+                        [step]="binsize_step"></p-slider>
+        </div>
+        <div class="p-col-3 interval-selector">
+            Interval:
+            <input type="text" pKeyFilter="pint"
+                   [(ngModel)]="selected_interval[0]" (input)="updatePlot()">
+            -
+            <input type="text" pKeyFilter="pint"
+                   [(ngModel)]="selected_interval[1]" (input)="updatePlot()">
+            <p-slider [(ngModel)]="selected_interval" [range]="true"
+                        [style]="{'width':'100%'}"
+                        (onChange)="updatePlot()"
+                        [min]="interval_min" [max]="interval_max"></p-slider>
+        </div>
+        <div class="p-col zoom-selector">
+            <button pButton icon="fa fa-search-minus"
+                    [disabled]="zoom_level <= MIN_ZOOM_LEVEL"
+                    (click)="zoomOut()"></button>
+            <button pButton icon="fa fa-search-plus"
+                    [disabled]="zoom_level >= MAX_ZOOM_LEVEL"
+                    (click)="zoomIn()"></button>
+        </div>
+        <div class="p-col-2 toolbar-buttons">
+            <button pButton label="Download" icon="fa fa-download"></button>
+            <button pButton label="Share" icon="fa fa-external-link"></button>
         </div>
     </div>
-    <div class="p-col-2">
-      <p-dropdown [options]="chromosomes" (onChange)="update_plot = true"
-                  [style]="{'width':'100%'}"
-                  [(ngModel)]="selected_chromosome"></p-dropdown>
+
+    <div class="v-stretch plot-container hbox">
+        <!--<i>S.&nbsp;lycopersicum</i>-->
+        <app-introgression-plot [chromosome]="selected_chromosome"
+            [plotted_accessions]="included_accessions"
+            [interval]="selected_interval"
+            [accession]="selected_accession"
+            [binsize]="selected_binsize"
+            [zoom_level]="zoom_level"
+            [(update)]="update_plot"
+            (wheel)="scrollWheel($event)">
+        </app-introgression-plot>
     </div>
-    <div class="p-col-1 binsize-selector">
-      Bin size: {{ selected_binsize }}
-      <p-slider [(ngModel)]="selected_binsize"
-                [style]="{'width':'100%'}"
-                (onChange)="updatePlot()"
-                [min]="binsize_min" [max]="binsize_max"
-                [step]="binsize_step"></p-slider>
-    </div>
-    <div class="p-col-3 interval-selector">
-      Interval:
-      <input type="text" pKeyFilter="pint" [(ngModel)]="selected_interval[0]"
-             (input)="updatePlot()">
-      -
-      <input type="text" pKeyFilter="pint" [(ngModel)]="selected_interval[1]"
-             (input)="updatePlot()">
-      <p-slider [(ngModel)]="selected_interval" [range]="true"
-                [style]="{'width':'100%'}"
-                (onChange)="updatePlot()"
-                [min]="interval_min" [max]="interval_max"></p-slider>
-    </div>
-    <div class="p-col zoom-selector">
-        <button pButton icon="fa fa-search-minus"
-                [disabled]="zoom_level <= MIN_ZOOM_LEVEL"
-                (click)="zoomOut()"></button>
-        <button pButton icon="fa fa-search-plus"
-                [disabled]="zoom_level >= MAX_ZOOM_LEVEL"
-                (click)="zoomIn()"></button>
-    </div>
-    <div class="p-col-2 toolbar-buttons">
-        <button pButton label="Download" icon="fa fa-download"></button>
-        <button pButton label="Share" icon="fa fa-external-link"></button>
-    </div>
-  </div>
-  <div class="v-stretch plot-container hbox">
-    <!--<i>S.&nbsp;lycopersicum</i>-->
-    <app-introgression-plot [chromosome]="selected_chromosome"
-      [plotted_accessions]="included_accessions"
-      [interval]="selected_interval"
-      [accession]="selected_accession"
-      [binsize]="selected_binsize"
-      [zoom_level]="zoom_level"
-      [(update)]="update_plot"
-      (wheel)="scrollWheel($event)">
-    </app-introgression-plot>
-  </div>
 </div>
 
-<p-sidebar [(visible)]="display_sidebar" position="left" (onHide)="update_selection()">
-  <b>Displayed accessions</b>
-  <p-listbox [options]="accessions" [(ngModel)]="included_accessions"
-             filter="true" multiple="true" checkbox="true"
-             [style]="{'width': '100%', 'height': '95%'}"
-             [listStyle]="{'max-height':'100%'}">
-  </p-listbox>
+<p-sidebar [(visible)]="display_sidebar" position="left"
+           (onHide)="update_selection()">
+    <b>Displayed accessions</b>
+    <p-listbox [options]="accessions" [(ngModel)]="included_accessions"
+               filter="true" multiple="true" checkbox="true"
+               [style]="{'width': '100%', 'height': '95%'}"
+               [listStyle]="{'max-height':'100%'}">
+    </p-listbox>
 </p-sidebar>

@@ -20,28 +20,28 @@ import { TersectBackendService } from './services/tersect-backend.service';
 import { FormsModule } from '@angular/forms';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    IntrogressionPlotComponent
-  ],
-  imports: [
-    HttpClientModule,
-    BrowserModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ButtonModule,
-    SidebarModule,
-    DropdownModule,
-    ToolbarModule,
-    SliderModule,
-    ProgressSpinnerModule,
-    ListboxModule,
-    KeyFilterModule
-  ],
-  providers: [
-    HttpClient,
-    TersectBackendService
-  ],
-  bootstrap: [AppComponent]
+    declarations: [
+        AppComponent,
+        IntrogressionPlotComponent
+    ],
+    imports: [
+        HttpClientModule,
+        BrowserModule,
+        BrowserAnimationsModule,
+        FormsModule,
+        ButtonModule,
+        SidebarModule,
+        DropdownModule,
+        ToolbarModule,
+        SliderModule,
+        ProgressSpinnerModule,
+        ListboxModule,
+        KeyFilterModule
+    ],
+    providers: [
+        HttpClient,
+        TersectBackendService
+    ],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }
