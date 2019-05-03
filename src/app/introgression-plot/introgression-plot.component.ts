@@ -161,20 +161,18 @@ export class IntrogressionPlotComponent implements OnInit {
   constructor(private tersectBackendService: TersectBackendService) { }
 
   /**
-   * Get an array of maximum distances per bin for a given distance table.
-   * @param distance_table
+   * Get an array of maximum distances per bin for a given set of accessions.
    */
-  private getMaxDistances(distance_table: object) {
-    const max_distances = new Array(Object.values(distance_table)[0].length)
-                                   .fill(0);
-    Object.keys(distance_table).forEach(accession => {
-      distance_table[accession].forEach((dist, i) => {
-        if (dist > max_distances[i]) {
-          max_distances[i] = dist;
+  private getMaxDistances(accessionBins: number[][]): number[] {
+    const bin_max_distances = new Array(accessionBins[0].length).fill(0);
+    accessionBins.forEach(acc_bin => {
+      acc_bin.forEach((dist, i) => {
+        if (dist > bin_max_distances[i]) {
+          bin_max_distances[i] = dist;
         }
       });
     });
-    return max_distances;
+    return bin_max_distances;
   }
 
   private updatePlotZoom() {
@@ -239,14 +237,17 @@ export class IntrogressionPlotComponent implements OnInit {
     ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
                   this.plotCanvas.nativeElement.height);
     const palette = new GreyscalePalette(ctx);
-    const max_distances = this.getMaxDistances(this.distanceBins);
+    const accessionBins = this.sortedAccessions
+                              .map(accession => this.distanceBins[accession]);
+
+    const bin_max_distances = this.getMaxDistances(accessionBins);
 
     const row_num = this.sortedAccessions.length;
-    const col_num = this.distanceBins[this.sortedAccessions[0]].length;
+    const col_num = accessionBins[0].length;
     const arr = new Uint8ClampedArray(4 * row_num * col_num);
 
-    this.sortedAccessions.forEach((accession, accession_index) => {
-      palette.distanceToColors(this.distanceBins[accession], max_distances)
+    accessionBins.forEach((accession_bin, accession_index) => {
+      palette.distanceToColors(accession_bin, bin_max_distances)
              .forEach((color, bin_index) => {
         const pos = 4 * (bin_index + col_num * accession_index);
         arr[pos] = color.data[0];
