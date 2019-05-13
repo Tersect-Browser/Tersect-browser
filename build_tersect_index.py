@@ -53,6 +53,7 @@ def generate_indices(cfg, verbose=False):
     client = MongoClient(cfg['hostname'], cfg['port'])
     tindex = client[cfg['db_name']][cfg['collection']]
     tindex.drop()
+    tindex.create_index('region')
 
     for chrom in chromosomes:
         if verbose:
