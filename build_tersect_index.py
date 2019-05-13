@@ -60,6 +60,7 @@ def generate_indices(cfg, verbose=False):
             print('Generating indices for %s' % chrom['name'])
         add_tersect_index(tindex, chrom['name'], 1, chrom['size'],
                           cfg['tsi_location'], verbose)
+        cfg['index_partitions'].sort()
         for part_size in cfg['index_partitions']:
             if part_size < chrom['size']:
                 generate_partition_indices(cfg, tindex, chrom, part_size,
