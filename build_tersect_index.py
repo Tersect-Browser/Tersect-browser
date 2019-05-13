@@ -92,13 +92,13 @@ def generate_partition_indices(cfg, tindex, chrom, part_size,
             add_region_index_tersect(tindex, chrom['name'], start_pos, pos,
                                      cfg['tsi_location'], verbose)
 
-def generate_indices(cfg, verbose=False):
+def generate_indices(cfg, temporary_collection_name='tmp', verbose=False):
     start = timer()
     chromosomes = get_chromosome_sizes(cfg['tsi_location'])
     if (chromosomes == None):
         return None
     client = MongoClient(cfg['hostname'], cfg['port'])
-    tindex = client[cfg['db_name']][cfg['collection']]
+    tindex = client[cfg['db_name']][temporary_collection_name]
     tindex.drop()
     tindex.create_index('region')
 
@@ -123,6 +123,9 @@ def generate_indices(cfg, verbose=False):
         else:
             add_region_index_tersect(tindex, chrom['name'], 1, chrom['size'],
                                      cfg['tsi_location'], verbose)
+    # Overwriting old collection if it exists
+    client[cfg['db_name']][temporary_collection_name].rename(cfg['collection'],
+                                                             dropTarget=True)
     client.close()
 
     if verbose:
