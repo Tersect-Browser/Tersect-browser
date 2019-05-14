@@ -280,7 +280,6 @@ export class IntrogressionPlotComponent implements OnInit {
 
     generatePlot() {
         if (!this._accession) { return; }
-        // TODO: deal with this more elegantly (on the back-end)
         this.plotCanvas.nativeElement.parentElement.style.cursor = 'progress';
         if (this._interval[1] - this._interval[0] < this._binsize) {
             this._interval[1] = this._interval[0] + this._binsize;
@@ -300,16 +299,10 @@ export class IntrogressionPlotComponent implements OnInit {
             this.distanceBins = bins;
             this.distanceMatrix = distance_matrix;
             this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
-                                                    this._plotted_accessions);
+                                                         this._plotted_accessions);
             this.updateCanvasSize();
             this.updatePlotZoom();
             this.drawGUI();
-            /*if (this.plot_position.x === 0 && this.plot_position.y === 0) {
-                this.plot_position = {
-                    x: this.label_width / (this._zoom_level / 100),
-                    y: 0
-                };
-            }*/
             this.generatePlotArray();
             this.drawPlot();
             this._update = false;
