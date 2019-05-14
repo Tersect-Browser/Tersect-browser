@@ -54,6 +54,11 @@ export class IntrogressionPlotComponent implements OnInit {
      */
     private label_width = 0;
 
+    /**
+     * Clamped array used to represent the distance plot.
+     */
+    private plot_array: Uint8ClampedArray;
+
     private _chromosome: Chromosome;
     @Input()
     set chromosome(chrom: Chromosome) {
@@ -230,12 +235,10 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
-    drawPlot() {
+    generatePlotArray() {
         const ctx: CanvasRenderingContext2D = this.plotCanvas
                                                   .nativeElement
                                                   .getContext('2d');
-        ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
-                      this.plotCanvas.nativeElement.height);
         const palette = new GreyscalePalette(ctx);
         const accessionBins = this.sortedAccessions
                                   .map(accession => this.distanceBins[accession]);
@@ -244,21 +247,29 @@ export class IntrogressionPlotComponent implements OnInit {
 
         const row_num = this.sortedAccessions.length;
         const col_num = accessionBins[0].length;
-        const arr = new Uint8ClampedArray(4 * row_num * col_num);
+        this.plot_array = new Uint8ClampedArray(4 * row_num * col_num);
 
         accessionBins.forEach((accession_bin, accession_index) => {
             palette.distanceToColors(accession_bin, bin_max_distances)
                    .forEach((color, bin_index) => {
                 const pos = 4 * (bin_index + col_num * accession_index);
-                arr[pos] = color.data[0];
-                arr[pos + 1] = color.data[1];
-                arr[pos + 2] = color.data[2];
-                arr[pos + 3] = color.data[3];
-                // TODO: save created image instead of printing it directly
-                // to the canvas
+                this.plot_array[pos] = color.data[0];
+                this.plot_array[pos + 1] = color.data[1];
+                this.plot_array[pos + 2] = color.data[2];
+                this.plot_array[pos + 3] = color.data[3];
             });
         });
-        ctx.putImageData(new ImageData(arr, col_num, row_num),
+    }
+
+    drawPlot() {
+        const row_num = this.sortedAccessions.length;
+        const col_num = this.distanceBins[this.sortedAccessions[0]].length;
+        const ctx: CanvasRenderingContext2D = this.plotCanvas
+                                                  .nativeElement
+                                                  .getContext('2d');
+        ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
+                      this.plotCanvas.nativeElement.height);
+        ctx.putImageData(new ImageData(this.plot_array, col_num, row_num),
                          this.plot_position.x + this.gui_offset.x,
                          this.plot_position.y + this.gui_offset.y);
     }
@@ -299,6 +310,7 @@ export class IntrogressionPlotComponent implements OnInit {
                     y: 0
                 };
             }*/
+            this.generatePlotArray();
             this.drawPlot();
             this._update = false;
             this.updateChange.emit(this._update);
