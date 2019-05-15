@@ -20,6 +20,8 @@ export class IntrogressionPlotComponent implements OnInit {
     readonly GUI_BG_COLOR = '#FFFFFF';
     readonly GUI_TEXT_COLOR = '#000000';
 
+    readonly DEFAULT_BIN_SIZE = 50000;
+
     private _autoupdate = false;
 
     /**
@@ -57,7 +59,7 @@ export class IntrogressionPlotComponent implements OnInit {
     /**
      * Clamped array used to represent the distance plot.
      */
-    private plot_array: Uint8ClampedArray;
+    private plot_array: Uint8ClampedArray = null;
 
     private _chromosome: Chromosome;
     @Input()
@@ -68,7 +70,7 @@ export class IntrogressionPlotComponent implements OnInit {
         }
     }
 
-    private _interval: number[];
+    private _interval: number[] = [];
     @Input()
     set interval(interval: number[]) {
         this._interval = interval;
@@ -86,7 +88,7 @@ export class IntrogressionPlotComponent implements OnInit {
         }
     }
 
-    private _binsize: number;
+    private _binsize: number = this.DEFAULT_BIN_SIZE;
     @Input()
     set binsize(binsize: number) {
         this._binsize = binsize;
@@ -120,6 +122,7 @@ export class IntrogressionPlotComponent implements OnInit {
         if (this._zoom_level !== zoom_level) {
             this._zoom_level = zoom_level;
             this.updatePlotZoom();
+            // No need to redraw bins when zooming
             this.drawGUI();
         }
     }
@@ -157,7 +160,7 @@ export class IntrogressionPlotComponent implements OnInit {
     private distanceMatrix: DistanceMatrix = null;
 
     /**
-     * Accession names (as used by tersect, i.e. filenames) sorted in the order to
+     * Accession names (as used by tersect) sorted in the order to
      * be displayed on the drawn plot. Generally this is the order based on
      * the neighbor joining tree clustering.
      */
@@ -261,7 +264,7 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
-    drawPlot() {
+    drawBins() {
         const row_num = this.sortedAccessions.length;
         const col_num = this.distanceBins[this.sortedAccessions[0]].length;
         const ctx: CanvasRenderingContext2D = this.plotCanvas
@@ -274,8 +277,14 @@ export class IntrogressionPlotComponent implements OnInit {
                          this.plot_position.y + this.gui_offset.y);
     }
 
+    drawPlot() {
+        this.drawGUI();
+        this.drawBins();
+    }
+
     ngOnInit() {
-        this.generatePlot();
+        this.updateCanvasSize();
+        this.updatePlotZoom();
     }
 
     generatePlot() {
@@ -300,9 +309,6 @@ export class IntrogressionPlotComponent implements OnInit {
             this.distanceMatrix = distance_matrix;
             this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
                                                          this._plotted_accessions);
-            this.updateCanvasSize();
-            this.updatePlotZoom();
-            this.drawGUI();
             this.generatePlotArray();
             this.drawPlot();
             this._update = false;
@@ -381,7 +387,6 @@ export class IntrogressionPlotComponent implements OnInit {
             this.plot_position.y = 0;
         }
         this.previous_drag_position = { x: event.layerX, y: event.layerY };
-        this.drawGUI();
         this.drawPlot();
     }
 
@@ -402,7 +407,6 @@ export class IntrogressionPlotComponent implements OnInit {
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.updateCanvasSize();
-        this.drawGUI();
         this.drawPlot();
     }
 
