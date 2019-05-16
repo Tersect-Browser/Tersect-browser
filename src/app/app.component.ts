@@ -95,8 +95,14 @@ export class AppComponent implements OnInit {
     typeInterval(event) {
         // fix to possible PrimeNG bug
         // numbers typed into text box are sometimes interpreted as strings
-        this.selected_interval[0] = parseInt(this.selected_interval[0].toString(), 10);
-        this.selected_interval[1] = parseInt(this.selected_interval[1].toString(), 10);
+        const interval_start = parseInt(this.selected_interval[0].toString(), 10);
+        const interval_end = parseInt(this.selected_interval[1].toString(), 10);
+        if (!isNaN(interval_start)) {
+            this.selected_interval[0] = interval_start;
+        }
+        if (!isNaN(interval_end)) {
+            this.selected_interval[1] = interval_end;
+        }
         // fix end
         clearTimeout(this.interval_input_timeout);
         this.interval_input_timeout = setTimeout(() => this.updateInterval(),

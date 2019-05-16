@@ -269,7 +269,9 @@ export class IntrogressionPlotComponent implements OnInit {
             return false;
         }
         const interval = this.interval_source.getValue();
-        if (interval[1] - interval[0] < this.binsize_source.getValue()) {
+        if (isNaN(parseInt(interval[0].toString(), 10))
+            || isNaN(parseInt(interval[1].toString(), 10))
+            || interval[1] - interval[0] < this.binsize_source.getValue()) {
             this.error_message = 'Invalid interval';
             return false;
         }
