@@ -27,6 +27,7 @@
         <div class="p-col-1 binsize-selector">
             Bin size: {{ widget_binsize }}
             <p-slider [(ngModel)]="widget_binsize"
+                      [animate]="true"
                       [style]="{'width':'100%'}"
                       [min]="binsize_min" [max]="binsize_max"
                       [step]="binsize_step"
@@ -42,6 +43,7 @@
                    [(ngModel)]="selected_interval[1]"
                    (input)="typeInterval($event)" pInputText>
             <p-slider [(ngModel)]="selected_interval" [range]="true"
+                      [animate]="true"
                       [style]="{'width':'100%'}"
                       (onSlideEnd)="updateInterval()"
                       [min]="interval_min" [max]="interval_max"></p-slider>
