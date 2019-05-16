@@ -32,67 +32,45 @@ export class AppComponent implements OnInit {
         return this._selected_chromosome;
     }
 
-    _selected_accession: string;
-    @Input()
-    set selected_accession(accession: string) {
-        this._selected_accession = accession;
-    }
-    get selected_accession() {
-        return this._selected_accession;
-    }
+    selected_reference: string;
 
-    _included_accessions: string[];
-    @Input()
-    set included_accessions(accessions: string[]) {
-        this._included_accessions = accessions;
-    }
-    get included_accessions(): string[] {
-        return this._included_accessions;
-    }
-
-    /**
-     * Number of miliseconds of delay between a plot update being requested
-     * and the plot being redrawn. Further update requests during this period will
-     * reset the delay timer so that multiple successive updates can happen
-     * all at once instead of having the plot be redrawn multiple times.
-     * This is particularly important for typed inputs (e.g. chromosomal
-     * interval bounds) chanigng, as without a delay every keystroke would
-     * case a redreaw.
-     */
-    readonly UPDATE_DELAY = 750;
-
-    /**
-     * Timer used to keep track of plot update delay.
-     */
-    private plot_update_timer;
+    widget_accessions: string[];
+    selected_accessions: string[];
 
     zoom_level = 100;
 
     display_sidebar = false;
-    update_plot = false; // switch to true to trigger plot update
+
     interval_min = 1;
     interval_max = this.selected_chromosome.size;
-    selected_interval = [this.interval_min, this.interval_max];
+    selected_interval: number[] = [this.interval_min, this.interval_max];
 
-    binsize_min = 5000;
+    binsize_min = 1000;
     binsize_step = 1000;
     binsize_max = 100000;
     selected_binsize = 50000;
+    widget_binsize = this.selected_binsize;
+
+    readonly TYPING_DELAY = 750;
+    private interval_input_timeout;
 
     readonly MAX_ZOOM_LEVEL = 1000;
     readonly MIN_ZOOM_LEVEL = 100;
+
     zoomIn() {
         this.zoom_level *= 1.20;
         if (this.zoom_level > this.MAX_ZOOM_LEVEL) {
             this.zoom_level = this.MAX_ZOOM_LEVEL;
         }
     }
+
     zoomOut() {
         this.zoom_level /= 1.20;
         if (this.zoom_level < this.MIN_ZOOM_LEVEL) {
             this.zoom_level = this.MIN_ZOOM_LEVEL;
         }
     }
+
     scrollWheel(event: WheelEvent) {
         if (event.deltaY > 0) {
             this.zoomOut();
@@ -108,23 +86,37 @@ export class AppComponent implements OnInit {
     loadAccessions() {
         this.tersectBackendService.getAccessionNames().subscribe(acc_names => {
             this.accessions = acc_names.map(n => ({ label: n, value: n }));
-            this.included_accessions = this.accessions.map(acc => acc.label);
-            this.selected_accession = this.included_accessions[0];
-            this.update_plot = true;
+            this.widget_accessions = this.accessions.map(acc => acc.label);
+            this.selected_accessions = this.widget_accessions;
+            this.selected_reference = this.widget_accessions[0];
         });
     }
 
-    /**
-     * Temporary (for updating sidebar accession selection)
-     */
-    update_selection() {
-        this.update_plot = true;
+    typeInterval(event) {
+        // fix to possible PrimeNG bug
+        // numbers typed into text box are sometimes interpreted as strings
+        this.selected_interval[0] = parseInt(this.selected_interval[0].toString(), 10);
+        this.selected_interval[1] = parseInt(this.selected_interval[1].toString(), 10);
+        // fix end
+        clearTimeout(this.interval_input_timeout);
+        this.interval_input_timeout = setTimeout(() => this.updateInterval(),
+                                                 this.TYPING_DELAY);
     }
 
-    updatePlot() {
-        clearTimeout(this.plot_update_timer);
-        this.plot_update_timer = setTimeout(() => this.update_plot = true,
-                                            this.UPDATE_DELAY);
+    updateInterval() {
+        this.selected_interval = [this.selected_interval[0],
+                                  this.selected_interval[1]];
+    }
+
+    updateAccessions() {
+        if (!this.widget_accessions.includes(this.selected_reference)) {
+            this.selected_reference = this.widget_accessions[0];
+        }
+        this.selected_accessions = this.widget_accessions.slice(0);
+    }
+
+    updateBinsize() {
+        this.selected_binsize = this.widget_binsize;
     }
 
 }

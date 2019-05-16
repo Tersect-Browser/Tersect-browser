@@ -16,34 +16,35 @@
                             [filter]="true"
                             [autoWidth]="false"
                             [style]="{'width':'100%'}"
-                            (onChange)="update_plot = true"
-                            [(ngModel)]="selected_accession"></p-dropdown>
+                            [(ngModel)]="selected_reference"></p-dropdown>
             </div>
         </div>
         <div class="p-col-2">
-            <p-dropdown [options]="chromosomes" (onChange)="update_plot = true"
+            <p-dropdown [options]="chromosomes"
                         [style]="{'width':'100%'}"
                         [(ngModel)]="selected_chromosome"></p-dropdown>
         </div>
         <div class="p-col-1 binsize-selector">
-            Bin size: {{ selected_binsize }}
-            <p-slider [(ngModel)]="selected_binsize"
-                        [style]="{'width':'100%'}"
-                        (onChange)="updatePlot()"
-                        [min]="binsize_min" [max]="binsize_max"
-                        [step]="binsize_step"></p-slider>
+            Bin size: {{ widget_binsize }}
+            <p-slider [(ngModel)]="widget_binsize"
+                      [style]="{'width':'100%'}"
+                      [min]="binsize_min" [max]="binsize_max"
+                      [step]="binsize_step"
+                      (onSlideEnd)="updateBinsize()"></p-slider>
         </div>
         <div class="p-col-3 interval-selector">
             Interval:
             <input type="text" pKeyFilter="pint"
-                   [(ngModel)]="selected_interval[0]" (input)="updatePlot()">
+                   [(ngModel)]="selected_interval[0]"
+                   (input)="typeInterval($event)" pInputText>
             -
             <input type="text" pKeyFilter="pint"
-                   [(ngModel)]="selected_interval[1]" (input)="updatePlot()">
+                   [(ngModel)]="selected_interval[1]"
+                   (input)="typeInterval($event)" pInputText>
             <p-slider [(ngModel)]="selected_interval" [range]="true"
-                        [style]="{'width':'100%'}"
-                        (onChange)="updatePlot()"
-                        [min]="interval_min" [max]="interval_max"></p-slider>
+                      [style]="{'width':'100%'}"
+                      (onSlideEnd)="updateInterval()"
+                      [min]="interval_min" [max]="interval_max"></p-slider>
         </div>
         <div class="p-col zoom-selector">
             <button pButton icon="fa fa-search-minus"
@@ -65,21 +66,20 @@
 
     <div class="v-stretch plot-container hbox">
         <app-introgression-plot [chromosome]="selected_chromosome"
-            [plotted_accessions]="included_accessions"
+            [accessions]="selected_accessions"
             [interval]="selected_interval"
-            [accession]="selected_accession"
+            [reference]="selected_reference"
             [binsize]="selected_binsize"
             [zoom_level]="zoom_level"
-            [(update)]="update_plot"
             (wheel)="scrollWheel($event)">
         </app-introgression-plot>
     </div>
 </div>
 
 <p-sidebar [(visible)]="display_sidebar" position="left"
-           (onHide)="update_selection()">
+           (onHide)="updateAccessions()">
     <b>Displayed accessions</b>
-    <p-listbox [options]="accessions" [(ngModel)]="included_accessions"
+    <p-listbox [options]="accessions" [(ngModel)]="widget_accessions"
                filter="true" multiple="true" checkbox="true"
                [style]="{'width': '100%', 'height': '95%'}"
                [listStyle]="{'max-height':'100%'}">

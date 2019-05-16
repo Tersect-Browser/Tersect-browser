@@ -91,6 +91,7 @@ router.route('/dist/:accession/:chromosome/:start/:stop/:binsize')
 -a "${accession}" ${chromosome}:${start_pos}-${stop_pos} -B ${binsize}`;
 
     const output = {
+        reference: accession,
         region: `${chromosome}:${start_pos}-${stop_pos}`,
         bins: {}
     };

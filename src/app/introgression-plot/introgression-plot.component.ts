@@ -1,11 +1,17 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, Input } from '@angular/core';
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
 import { PlotPosition, BinPosition } from '../models/PlotPosition';
-import { forkJoin } from 'rxjs/observable/forkJoin';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
+import { Observable } from 'rxjs/Observable';
+import { combineLatest } from 'rxjs/observable/combineLatest';
+import { switchMap } from 'rxjs/operators/switchMap';
+import { debounceTime, filter, tap } from 'rxjs/operators';
+import { isNullOrUndefined } from 'util';
+import { sameElements } from '../utils/utils';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -21,8 +27,7 @@ export class IntrogressionPlotComponent implements OnInit {
     readonly GUI_TEXT_COLOR = '#000000';
 
     readonly DEFAULT_BIN_SIZE = 50000;
-
-    private _autoupdate = false;
+    readonly DEBOUNCE_TIME = 700;
 
     /**
      * True if plot is currently being dragged.
@@ -61,50 +66,38 @@ export class IntrogressionPlotComponent implements OnInit {
      */
     private plot_array: Uint8ClampedArray = null;
 
-    private _chromosome: Chromosome;
     @Input()
-    set chromosome(chrom: Chromosome) {
-        this._chromosome = chrom;
-        if (this._autoupdate) {
-            this.generatePlot();
-        }
+    set chromosome(chromosome: Chromosome) {
+        this.chromosome_source.next(chromosome);
     }
+    chromosome_source = new BehaviorSubject<Chromosome>(undefined);
 
-    private _interval: number[] = [];
     @Input()
     set interval(interval: number[]) {
-        this._interval = interval;
-        if (this._autoupdate) {
-            this.generatePlot();
-        }
+        this.interval_source.next(interval);
     }
+    interval_source = new BehaviorSubject<number[]>(undefined);
 
-    private _accession: string;
     @Input()
-    set accession(accession: string) {
-        this._accession = accession;
-        if (this._autoupdate) {
-            this.generatePlot();
-        }
+    set reference(reference_accession: string) {
+        this.reference_source.next(reference_accession);
     }
+    reference_source = new BehaviorSubject<string>(undefined);
 
-    private _binsize: number = this.DEFAULT_BIN_SIZE;
     @Input()
     set binsize(binsize: number) {
-        this._binsize = binsize;
-        if (this._autoupdate) {
-            this.generatePlot();
-        }
+        this.binsize_source.next(binsize);
     }
+    binsize_source = new BehaviorSubject<number>(this.DEFAULT_BIN_SIZE);
+    binsize$: Observable<number>;
 
-    private _plotted_accessions: string[];
     @Input()
-    set plotted_accessions(accessions: string[]) {
-        this._plotted_accessions = accessions;
-        if (this._autoupdate) {
-            this.generatePlot();
+    set accessions(accessions: string[]) {
+        if (!sameElements(accessions, this.sortedAccessions)) {
+            this.accessions_source.next(accessions);
         }
     }
+    accessions_source = new BehaviorSubject<string[]>(undefined);
 
     /**
      * Bin aspect ratio (width / height). By default bins are twice as high as
@@ -130,22 +123,7 @@ export class IntrogressionPlotComponent implements OnInit {
         return this._zoom_level;
     }
 
-    /**
-     * True if an update is due (or in the process of being generated), set to
-     * false once a plot is generated.
-     */
-    private _update = true;
-    @Input()
-    set update(update: boolean) {
-        this._update = update;
-        if (this._update) {
-            this.generatePlot();
-        }
-    }
-    @Output() updateChange = new EventEmitter<boolean>();
-    get update() {
-        return this._update;
-    }
+    plot_loading = true;
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -154,17 +132,16 @@ export class IntrogressionPlotComponent implements OnInit {
     private distanceBins = {};
 
     /**
-     * Pairwise genetic distance matrix between all accessions in database for
-     * currently viewed interval, fetched from database or tersect.
-     */
-    private distanceMatrix: DistanceMatrix = null;
-
-    /**
      * Accession names (as used by tersect) sorted in the order to
      * be displayed on the drawn plot. Generally this is the order based on
      * the neighbor joining tree clustering.
      */
     private sortedAccessions: string[] = [];
+
+    /**
+     * Pairwise distance matrix between all the accessions.
+     */
+    private distanceMatrix: DistanceMatrix;
 
     constructor(private tersectBackendService: TersectBackendService) { }
 
@@ -280,42 +257,81 @@ export class IntrogressionPlotComponent implements OnInit {
     drawPlot() {
         this.drawGUI();
         this.drawBins();
+        this.stopLoading();
     }
 
     ngOnInit() {
         this.updateCanvasSize();
         this.updatePlotZoom();
-    }
 
-    generatePlot() {
-        if (!this._accession) { return; }
-        this.plotCanvas.nativeElement.parentElement.style.cursor = 'progress';
-        if (this._interval[1] - this._interval[0] < this._binsize) {
-            this._interval[1] = this._interval[0] + this._binsize;
-        }
-        const bins_fetch = this.tersectBackendService
-                               .getRefDistanceBins(this._accession,
-                                                   this._chromosome.name,
-                                                   this._interval[0],
-                                                   this._interval[1],
-                                                   this._binsize);
-        const matrix_fetch = this.tersectBackendService
-                                 .getDistanceMatrix(this._chromosome.name,
-                                                    this._interval[0],
-                                                    this._interval[1]);
-        forkJoin([bins_fetch,
-                  matrix_fetch]).subscribe(([bins, distance_matrix]) => {
-            this.distanceBins = bins;
-            this.distanceMatrix = distance_matrix;
-            this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
-                                                         this._plotted_accessions);
+        const ref_distance_bins$ = combineLatest(this.reference_source,
+                                                 this.chromosome_source,
+                                                 this.interval_source,
+                                                 this.binsize_source).pipe(
+            filter(([ref, chrom, interval, binsize]) =>
+                !isNullOrUndefined(ref)
+                && !isNullOrUndefined(chrom)
+                && !isNullOrUndefined(interval)
+                && !isNullOrUndefined(binsize)),
+            filter(([, , interval, binsize]) => interval[1] - interval[0]
+                                                > binsize),
+            tap(this.startLoading),
+            debounceTime(this.DEBOUNCE_TIME),
+            switchMap(([ref, chrom, interval, binsize]) =>
+                this.tersectBackendService
+                    .getRefDistanceBins(ref, chrom.name,
+                                        interval[0], interval[1], binsize)
+            )
+        );
+
+        const distance_matrix$ = combineLatest(this.chromosome_source,
+                                               this.interval_source).pipe(
+            filter(([chrom, interval]) =>
+                !isNullOrUndefined(chrom)
+                && !isNullOrUndefined(interval)),
+            filter(([, interval]) => interval[1] - interval[0]
+                                     > this.binsize_source.getValue()),
+            tap(this.startLoading),
+            debounceTime(this.DEBOUNCE_TIME),
+            switchMap(([chrom, interval]) =>
+                this.tersectBackendService
+                    .getDistanceMatrix(chrom.name, interval[0], interval[1])
+            )
+        );
+
+        const accessions$ = this.accessions_source.pipe(
+            filter((accessions) => !isNullOrUndefined(accessions)),
+            tap(this.startLoading),
+            debounceTime(this.DEBOUNCE_TIME)
+        );
+
+        combineLatest(ref_distance_bins$,
+                      distance_matrix$,
+                      accessions$).pipe(
+            filter(([ref_dist, dist_mat, accessions]) =>
+                !isNullOrUndefined(ref_dist)
+                && !isNullOrUndefined(dist_mat)
+                && !isNullOrUndefined(accessions)),
+            tap(this.startLoading),
+            filter(([ref_dist, dist_mat, ]) =>
+                   ref_dist['region'] === dist_mat['region']
+                   && ref_dist['reference'] === this.reference_source.getValue()
+            )
+        ).subscribe(([ref_dist, dist_mat, accessions]) => {
+            this.distanceBins = ref_dist['bins'];
+            if (!sameElements(accessions, this.sortedAccessions)
+                || this.distanceMatrix !== dist_mat) {
+                this.distanceMatrix = dist_mat;
+                this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
+                                                             accessions);
+            }
             this.generatePlotArray();
             this.drawPlot();
-            this._update = false;
-            this.updateChange.emit(this._update);
-            this.plotCanvas.nativeElement.parentElement.style.cursor = 'auto';
         });
     }
+
+    startLoading = () => this.plot_loading = true;
+    stopLoading = () => this.plot_loading = false;
 
     guiMouseMove(event) {
         if (this.dragging_plot) {
@@ -334,7 +350,6 @@ export class IntrogressionPlotComponent implements OnInit {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
             console.log(this.plotToBinPosition(this.mouse_down_position));
-            // this.plotToBinPosition(this.mouse_down_position);
         }
         this.stopDrag(event);
     }
@@ -352,16 +367,19 @@ export class IntrogressionPlotComponent implements OnInit {
         if (label_index >= this.sortedAccessions.length) {
             return null;
         }
+
+        const interval = this.interval_source.getValue();
+        const binsize = this.binsize_source.getValue();
         const bin_index = Math.floor((position.x - this.label_width) / bin_width
                                      - this.plot_position.x - 0.5);
-        console.log(bin_index);
-        const start_pos = this._interval[0] + bin_index * this._binsize;
-        if (start_pos < 1 || start_pos > this._interval[1]) {
+        // console.log(bin_index);
+        const start_pos = interval[0] + bin_index * binsize;
+        if (start_pos < 1 || start_pos > interval[1]) {
             return null;
         }
-        let end_pos = this._interval[0] + (bin_index + 1) * this._binsize;
-        if (end_pos > this._interval[1]) {
-            end_pos = this._interval[1];
+        let end_pos = interval[0] + (bin_index + 1) * binsize;
+        if (end_pos > interval[1]) {
+            end_pos = interval[1];
         }
         return {
             accession: this.sortedAccessions[label_index],
