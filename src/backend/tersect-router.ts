@@ -84,13 +84,17 @@ router.route('/dist/:accession/:chromosome/:start/:stop/:binsize')
     const stop_pos = parseInt(req.params.stop, 10);
     const binsize = parseInt(req.params.binsize, 10);
     const options = {
-        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
+        maxBuffer: 200 * 1024 * 1024 // 200 megabytes
     };
 
     const tersect_command = `tersect dist -j ${config.tsi_location} \
 -a "${accession}" ${chromosome}:${start_pos}-${stop_pos} -B ${binsize}`;
 
-    const output = {};
+    const output = {
+        region: `${chromosome}:${start_pos}-${stop_pos}`,
+        bins: {}
+    };
+
     exec(tersect_command, options, (err, stdout, stderr) => {
         if (err) {
             res.json(err);
@@ -100,11 +104,11 @@ router.route('/dist/:accession/:chromosome/:start/:stop/:binsize')
             const tersect_output = JSON.parse(stdout);
             const accessions = tersect_output['columns'];
             accessions.forEach(accession_name => {
-                output[accession_name] = [];
+                output.bins[accession_name] = [];
             });
             tersect_output['matrix'].forEach(bin_matrix => {
                 bin_matrix[0].forEach((dist: number, i: number) => {
-                    output[accessions[i]].push(dist);
+                    output.bins[accessions[i]].push(dist);
                 });
             });
             res.json(output);
@@ -250,10 +254,11 @@ router.route('/distall/:chromosome/:start/:stop')
         // Using whichever is in the first result.
         const sample_field_name = tersect_calls.length ? 'rows' : 'samples';
 
-        let output: { matrix: number[][]; samples: string[]; };
+        let output: { matrix: number[][]; samples: string[]; region?: string};
         const sample_num = results[0][sample_field_name].length;
         output = init_distance_matrix(sample_num);
         output.samples = results[0][sample_field_name];
+        output.region = `${chromosome}:${start_pos}-${stop_pos}`;
 
         // Adding up results
         for (let i = 0; i < all_promises.length; i++) {

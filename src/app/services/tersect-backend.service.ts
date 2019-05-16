@@ -24,7 +24,7 @@ export class TersectBackendService {
                        binsize: number): Observable<any[]> {
         const query = `http://localhost:8060/tbapi/dist/${accession}/\
 ${chromosome}/${start}/${stop}/${binsize}`;
-        return this.http.get<any[]>(query);
+        return this.http.get<any>(query);
     }
 
     /**
