@@ -143,6 +143,8 @@ export class IntrogressionPlotComponent implements OnInit {
      */
     private distanceMatrix: DistanceMatrix;
 
+    error_message = '';
+
     constructor(private tersectBackendService: TersectBackendService) { }
 
     /**
@@ -260,6 +262,21 @@ export class IntrogressionPlotComponent implements OnInit {
         this.stopLoading();
     }
 
+    validateInputs = () => {
+        const accessions = this.accessions_source.getValue();
+        if (!isNullOrUndefined(accessions) && accessions.length < 2) {
+            this.error_message = 'At least two accessions must be selected';
+            return false;
+        }
+        const interval = this.interval_source.getValue();
+        if (interval[1] - interval[0] < this.binsize_source.getValue()) {
+            this.error_message = 'Invalid interval';
+            return false;
+        }
+        this.error_message = '';
+        return true;
+    }
+
     ngOnInit() {
         this.updateCanvasSize();
         this.updatePlotZoom();
@@ -273,8 +290,7 @@ export class IntrogressionPlotComponent implements OnInit {
                 && !isNullOrUndefined(chrom)
                 && !isNullOrUndefined(interval)
                 && !isNullOrUndefined(binsize)),
-            filter(([, , interval, binsize]) => interval[1] - interval[0]
-                                                > binsize),
+            filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([ref, chrom, interval, binsize]) =>
@@ -289,8 +305,7 @@ export class IntrogressionPlotComponent implements OnInit {
             filter(([chrom, interval]) =>
                 !isNullOrUndefined(chrom)
                 && !isNullOrUndefined(interval)),
-            filter(([, interval]) => interval[1] - interval[0]
-                                     > this.binsize_source.getValue()),
+            filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([chrom, interval]) =>
@@ -301,6 +316,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
         const accessions$ = this.accessions_source.pipe(
             filter((accessions) => !isNullOrUndefined(accessions)),
+            filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME)
         );

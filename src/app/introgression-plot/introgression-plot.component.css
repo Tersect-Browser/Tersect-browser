@@ -21,6 +21,17 @@
     transform: translateY(-50%);
 }
 
+.error-message {
+    background-color: black;
+    color: white;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1500;
+}
+
 .update-shadow {
     position: absolute;
     top: 0;
