@@ -45,6 +45,7 @@
             <p-slider [(ngModel)]="selected_interval" [range]="true"
                       [animate]="true"
                       [style]="{'width':'100%'}"
+                      (onChange)="intervalSliderChange($event)"
                       (onSlideEnd)="updateInterval()"
                       [min]="interval_min" [max]="interval_max"></p-slider>
         </div>

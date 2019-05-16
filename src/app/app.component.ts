@@ -125,4 +125,10 @@ export class AppComponent implements OnInit {
         this.selected_binsize = this.widget_binsize;
     }
 
+    intervalSliderChange($event) {
+        if ($event.event.type === 'click') {
+            this.updateInterval();
+        }
+    }
+
 }
