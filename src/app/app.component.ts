@@ -54,6 +54,9 @@ export class AppComponent implements OnInit {
     readonly TYPING_DELAY = 750;
     private interval_input_timeout;
 
+    readonly BINSIZE_SLIDER_DELAY = 750;
+    private binsize_slider_timeout;
+
     readonly MAX_ZOOM_LEVEL = 1000;
     readonly MIN_ZOOM_LEVEL = 100;
 
@@ -129,6 +132,12 @@ export class AppComponent implements OnInit {
         if ($event.event.type === 'click') {
             this.updateInterval();
         }
+    }
+
+    binsizeSliderChange($event) {
+        clearTimeout(this.binsize_slider_timeout);
+        this.binsize_slider_timeout = setTimeout(() => this.updateBinsize(),
+                                                 this.BINSIZE_SLIDER_DELAY);
     }
 
 }
