@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input } from '@
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition, BinPosition } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
@@ -42,14 +42,14 @@ export class IntrogressionPlotComponent implements OnInit {
     /**
      * Displacement of initial plot position based on GUI size.
      */
-    private gui_offset = { x: 0, y: 0 };
+    private gui_margins = { top: 0, right: 0, bottom: 0, left: 0 };
 
     /**
      * Used to keep remember the position of a mouse press.
      * This is necessary to distinguish clicks (where the position doesn't
      * change between the press and release) from drags (where it does).
      */
-    private mouse_down_position = { x: 0, y: 0 };
+    private mouse_down_position: PlotPosition = { x: 0, y: 0 };
 
     /**
      * Current position / offset of the introgression plot.
@@ -188,10 +188,7 @@ export class IntrogressionPlotComponent implements OnInit {
         ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                       this.guiCanvas.nativeElement.height);
         this.drawAccessionLabels(this.guiCanvas);
-        this.gui_offset = {
-            x: this.label_width / (this._zoom_level / 100),
-            y: 0
-        };
+        this.gui_margins.left = this.label_width / (this._zoom_level / 100);
     }
 
     private drawAccessionLabels(canvas: ElementRef) {
@@ -252,8 +249,8 @@ export class IntrogressionPlotComponent implements OnInit {
         ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
                       this.plotCanvas.nativeElement.height);
         ctx.putImageData(new ImageData(this.plot_array, col_num, row_num),
-                         this.plot_position.x + this.gui_offset.x,
-                         this.plot_position.y + this.gui_offset.y);
+                         this.plot_position.x + this.gui_margins.left,
+                         this.plot_position.y + this.gui_margins.top);
     }
 
     drawPlot() {
@@ -361,18 +358,32 @@ export class IntrogressionPlotComponent implements OnInit {
 
     guiMouseDown(event) {
         this.mouse_down_position = { x: event.layerX, y: event.layerY };
-        this.startDrag(event);
+        if (this.getPositionTarget(this.mouse_down_position).type === 'bin') {
+            this.startDrag(event);
+        }
     }
 
     guiMouseUp(event) {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
-            console.log(this.plotToBinPosition(this.mouse_down_position));
+            console.log(this.getPositionTarget(this.mouse_down_position));
         }
         this.stopDrag(event);
     }
 
-    private plotToBinPosition(position: PlotPosition): BinPosition {
+    private getPositionTarget(position: PlotPosition): PlotBin | PlotAccession {
+        if (position.x / (this._zoom_level / 100) > this.gui_margins.left
+            && position.y / (this._zoom_level / 100) > this.gui_margins.right) {
+            return this.plotToBinPosition(position);
+        } else {
+            return {
+                type: 'accession',
+                accession: 'ACCESSION'
+            };
+        }
+    }
+
+    private plotToBinPosition(position: PlotPosition): PlotBin {
         const bin_width = this._zoom_level / 100;
         const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
 
@@ -400,6 +411,7 @@ export class IntrogressionPlotComponent implements OnInit {
             end_pos = interval[1];
         }
         return {
+            type: 'bin',
             accession: this.sortedAccessions[label_index],
             start_position: start_pos,
             end_position: end_pos

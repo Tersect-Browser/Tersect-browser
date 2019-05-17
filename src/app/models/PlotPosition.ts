@@ -3,8 +3,14 @@ export interface PlotPosition {
     y: number;
 }
 
-export interface BinPosition {
+export interface PlotBin {
+    type: 'bin';
     accession: string;
     start_position: number;
     end_position: number;
+}
+
+export interface PlotAccession {
+    type: 'accession';
+    accession: string;
 }
