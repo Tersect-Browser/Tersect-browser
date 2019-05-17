@@ -341,6 +341,7 @@ export class IntrogressionPlotComponent implements OnInit {
                                                              accessions);
             }
             this.generatePlotArray();
+            this.plot_position = { x: 0, y: 0 };
             this.drawPlot();
         });
     }
