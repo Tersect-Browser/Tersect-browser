@@ -224,8 +224,8 @@ export class IntrogressionPlotComponent implements OnInit {
 
         const bin_max_distances = this.getMaxDistances(accessionBins);
 
-        const row_num = this.sortedAccessions.length;
-        const col_num = accessionBins[0].length;
+        const row_num = this.getRowNum();
+        const col_num = this.getColNum();
         this.plot_array = new Uint8ClampedArray(4 * row_num * col_num);
 
         accessionBins.forEach((accession_bin, accession_index) => {
@@ -240,15 +240,22 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
+    getRowNum() {
+        return this.sortedAccessions.length;
+    }
+
+    getColNum() {
+        return this.distanceBins[this.sortedAccessions[0]].length;
+    }
+
     drawBins() {
-        const row_num = this.sortedAccessions.length;
-        const col_num = this.distanceBins[this.sortedAccessions[0]].length;
         const ctx: CanvasRenderingContext2D = this.plotCanvas
                                                   .nativeElement
                                                   .getContext('2d');
         ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
                       this.plotCanvas.nativeElement.height);
-        ctx.putImageData(new ImageData(this.plot_array, col_num, row_num),
+        ctx.putImageData(new ImageData(this.plot_array, this.getColNum(),
+                                       this.getRowNum()),
                          this.plot_position.x + this.gui_margins.left,
                          this.plot_position.y + this.gui_margins.top);
     }
