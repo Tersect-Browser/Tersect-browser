@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input } from '@
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition, PlotBin, PlotAccession } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotBackground } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
@@ -358,7 +358,8 @@ export class IntrogressionPlotComponent implements OnInit {
 
     guiMouseDown(event) {
         this.mouse_down_position = { x: event.layerX, y: event.layerY };
-        if (this.getPositionTarget(this.mouse_down_position).type === 'bin') {
+        const target = this.getPositionTarget(this.mouse_down_position);
+        if (target.type === 'bin' || target.type === 'background') {
             this.startDrag(event);
         }
     }
@@ -371,15 +372,24 @@ export class IntrogressionPlotComponent implements OnInit {
         this.stopDrag(event);
     }
 
-    private getPositionTarget(position: PlotPosition): PlotBin | PlotAccession {
-        if (position.x / (this._zoom_level / 100) > this.gui_margins.left
-            && position.y / (this._zoom_level / 100) > this.gui_margins.right) {
+    private getPositionTarget(position: PlotPosition): PlotArea {
+        const inner_position = {
+            x: position.x / (this._zoom_level / 100) - this.gui_margins.left,
+            y: position.y / (this._zoom_level / 100) - this.gui_margins.top
+        };
+        if (inner_position.x > 0 && inner_position.y > 0) {
+            if (inner_position.x < this.plot_position.x) {
+                return {
+                    type: 'background'
+                };
+            }
             return this.plotToBinPosition(position);
         } else {
-            return {
+            const res: PlotAccession = {
                 type: 'accession',
                 accession: 'ACCESSION'
             };
+            return res;
         }
     }
 
@@ -428,9 +438,9 @@ export class IntrogressionPlotComponent implements OnInit {
         this.plot_position.y += (event.layerY - this.previous_drag_position.y)
                                 * this.aspect_ratio
                                 * 100 / this.zoom_level;
-        /*if (this.plot_position.x > this.label_width) {
-            this.plot_position.x = this.label_width;
-        }*/
+        if (this.plot_position.x > 0) {
+            this.plot_position.x = 0;
+        }
         if (this.plot_position.y > 0) {
             this.plot_position.y = 0;
         }
