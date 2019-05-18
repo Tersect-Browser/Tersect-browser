@@ -284,9 +284,6 @@ export class IntrogressionPlotComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.updateCanvasSize();
-        this.updatePlotZoom();
-
         const ref_distance_bins$ = combineLatest(this.reference_source,
                                                  this.chromosome_source,
                                                  this.interval_source,
@@ -399,6 +396,11 @@ export class IntrogressionPlotComponent implements OnInit {
             };
             return res;
         }
+    }
+
+    ngAfterViewInit() {
+        this.updateCanvasSize();
+        this.updatePlotZoom();
     }
 
     private plotToBinPosition(position: PlotPosition): PlotBin {
