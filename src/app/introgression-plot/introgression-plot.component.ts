@@ -6,7 +6,6 @@ import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotBackground } from '
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
-import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
@@ -28,6 +27,25 @@ export class IntrogressionPlotComponent implements OnInit {
 
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
+
+    /**
+     * Bin aspect ratio (width / height). By default bins are twice as high as
+     * they are wide. This is to more easily fit accession labels without making
+     * the plot too wide.
+     */
+    private aspect_ratio = 1 / 2;
+
+    /**
+     * Plot load status (when true, spinner overlay is displayed, unless an
+     * error message is displayed).
+     */
+    plot_loading = true;
+
+    /**
+     * Error message string. When not an empty string, error message overlay is 
+     * displayed. 
+     */
+    error_message = '';
 
     /**
      * True if plot is currently being dragged.
@@ -70,26 +88,25 @@ export class IntrogressionPlotComponent implements OnInit {
     set chromosome(chromosome: Chromosome) {
         this.chromosome_source.next(chromosome);
     }
-    chromosome_source = new BehaviorSubject<Chromosome>(undefined);
+    private chromosome_source = new BehaviorSubject<Chromosome>(undefined);
 
     @Input()
     set interval(interval: number[]) {
         this.interval_source.next(interval);
     }
-    interval_source = new BehaviorSubject<number[]>(undefined);
+    private interval_source = new BehaviorSubject<number[]>(undefined);
 
     @Input()
     set reference(reference_accession: string) {
         this.reference_source.next(reference_accession);
     }
-    reference_source = new BehaviorSubject<string>(undefined);
+    private reference_source = new BehaviorSubject<string>(undefined);
 
     @Input()
     set binsize(binsize: number) {
         this.binsize_source.next(binsize);
     }
-    binsize_source = new BehaviorSubject<number>(this.DEFAULT_BIN_SIZE);
-    binsize$: Observable<number>;
+    private binsize_source = new BehaviorSubject<number>(this.DEFAULT_BIN_SIZE);
 
     @Input()
     set accessions(accessions: string[]) {
@@ -97,14 +114,7 @@ export class IntrogressionPlotComponent implements OnInit {
             this.accessions_source.next(accessions);
         }
     }
-    accessions_source = new BehaviorSubject<string[]>(undefined);
-
-    /**
-     * Bin aspect ratio (width / height). By default bins are twice as high as
-     * they are wide. This is to more easily fit accession labels without making
-     * the plot too wide.
-     */
-    private aspect_ratio = 1 / 2;
+    private accessions_source = new BehaviorSubject<string[]>(undefined);
 
     /**
      * Zoom level in percentages.
@@ -121,8 +131,6 @@ export class IntrogressionPlotComponent implements OnInit {
     get zoom_level(): number {
         return this._zoom_level;
     }
-
-    plot_loading = true;
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -141,10 +149,6 @@ export class IntrogressionPlotComponent implements OnInit {
      * Pairwise distance matrix between all the accessions.
      */
     private distanceMatrix: DistanceMatrix;
-
-    error_message = '';
-
-    constructor(private tersectBackendService: TersectBackendService) { }
 
     /**
      * Get an array of maximum distances per bin for a given set of accessions.
@@ -214,7 +218,7 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
-    generatePlotArray() {
+    private generatePlotArray() {
         const ctx: CanvasRenderingContext2D = this.plotCanvas
                                                   .nativeElement
                                                   .getContext('2d');
@@ -240,15 +244,15 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
-    getRowNum() {
+    private getRowNum() {
         return this.sortedAccessions.length;
     }
 
-    getColNum() {
+    private getColNum() {
         return this.distanceBins[this.sortedAccessions[0]].length;
     }
 
-    drawBins() {
+    private drawBins() {
         const ctx: CanvasRenderingContext2D = this.plotCanvas
                                                   .nativeElement
                                                   .getContext('2d');
@@ -260,13 +264,13 @@ export class IntrogressionPlotComponent implements OnInit {
                          this.plot_position.y + this.gui_margins.top);
     }
 
-    drawPlot() {
+    private drawPlot() {
         this.drawGUI();
         this.drawBins();
         this.stopLoading();
     }
 
-    validateInputs = () => {
+    private validateInputs = () => {
         const accessions = this.accessions_source.getValue();
         if (!isNullOrUndefined(accessions) && accessions.length < 2) {
             this.error_message = 'At least two accessions must be selected';
@@ -282,6 +286,102 @@ export class IntrogressionPlotComponent implements OnInit {
         this.error_message = '';
         return true;
     }
+
+    private startLoading = () => this.plot_loading = true;
+    private stopLoading = () => this.plot_loading = false;
+
+    private getPositionTarget(position: PlotPosition): PlotArea {
+        const inner_position = {
+            x: position.x / (this._zoom_level / 100) - this.gui_margins.left,
+            y: position.y / (this._zoom_level / 100) - this.gui_margins.top
+        };
+        // console.log(inner_position);
+        if (inner_position.x > 0 && inner_position.y > 0) {
+            if (inner_position.x < this.plot_position.x) {
+                return {
+                    type: 'background'
+                };
+            }
+            return this.plotToBinPosition(position);
+        } else {
+            const res: PlotAccession = {
+                type: 'accession',
+                accession: 'ACCESSION'
+            };
+            return res;
+        }
+    }
+
+    private plotToBinPosition(position: PlotPosition): PlotBin {
+        const bin_width = this._zoom_level / 100;
+        const bin_height = ((this._zoom_level / this.aspect_ratio) / 100);
+
+        let yoffset = this.plot_position.y * (this._zoom_level / 100)
+                      / this.aspect_ratio;
+        yoffset = Math.ceil(yoffset / bin_height) * bin_height;
+
+        const accession_index = Math.floor((position.y - 2 - bin_height)
+                                       / bin_height);
+        if (accession_index >= this.sortedAccessions.length) {
+            return null;
+        }
+
+        const interval = this.interval_source.getValue();
+        const binsize = this.binsize_source.getValue();
+        const bin_index = Math.floor((position.x - this.label_width) / bin_width
+                                     - this.plot_position.x - 0.5);
+        // console.log(bin_index);
+        const start_pos = interval[0] + bin_index * binsize;
+        if (start_pos < 1 || start_pos > interval[1]) {
+            return null;
+        }
+        let end_pos = interval[0] + (bin_index + 1) * binsize;
+        if (end_pos > interval[1]) {
+            end_pos = interval[1];
+        }
+        return {
+            type: 'bin',
+            accession: this.sortedAccessions[accession_index],
+            start_position: start_pos,
+            end_position: end_pos
+        };
+    }
+
+    private dragPlot(event) {
+        if (event.buttons !== 1) {
+            this.stopDrag(event);
+            return;
+        }
+        this.plot_position.x += (event.layerX - this.previous_drag_position.x)
+                                * 100 / this.zoom_level;
+        this.plot_position.y += (event.layerY - this.previous_drag_position.y)
+                                * this.aspect_ratio
+                                * 100 / this.zoom_level;
+        if (this.plot_position.x > 0) {
+            this.plot_position.x = 0;
+        }
+        if (this.plot_position.y > 0) {
+            this.plot_position.y = 0;
+        }
+        this.previous_drag_position = { x: event.layerX, y: event.layerY };
+        this.drawPlot();
+    }
+
+    private startDrag(event) {
+        // drag on left mouse button
+        if (event.buttons === 1) {
+            this.plotCanvas.nativeElement.style.cursor = 'move';
+            this.dragging_plot = true;
+            this.previous_drag_position = { x: event.layerX, y: event.layerY };
+        }
+    }
+
+    private stopDrag(event) {
+        this.plotCanvas.nativeElement.style.cursor = 'auto';
+        this.dragging_plot = false;
+    }
+
+    constructor(private tersectBackendService: TersectBackendService) { }
 
     ngOnInit() {
         const ref_distance_bins$ = combineLatest(this.reference_source,
@@ -350,8 +450,16 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
-    startLoading = () => this.plot_loading = true;
-    stopLoading = () => this.plot_loading = false;
+    ngAfterViewInit() {
+        this.updateCanvasSize();
+        this.updatePlotZoom();
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        this.updateCanvasSize();
+        this.drawPlot();
+    }
 
     guiMouseMove(event) {
         if (this.dragging_plot) {
@@ -375,107 +483,6 @@ export class IntrogressionPlotComponent implements OnInit {
             console.log(this.getPositionTarget(this.mouse_down_position));
         }
         this.stopDrag(event);
-    }
-
-    private getPositionTarget(position: PlotPosition): PlotArea {
-        const inner_position = {
-            x: position.x / (this._zoom_level / 100) - this.gui_margins.left,
-            y: position.y / (this._zoom_level / 100) - this.gui_margins.top
-        };
-        if (inner_position.x > 0 && inner_position.y > 0) {
-            if (inner_position.x < this.plot_position.x) {
-                return {
-                    type: 'background'
-                };
-            }
-            return this.plotToBinPosition(position);
-        } else {
-            const res: PlotAccession = {
-                type: 'accession',
-                accession: 'ACCESSION'
-            };
-            return res;
-        }
-    }
-
-    ngAfterViewInit() {
-        this.updateCanvasSize();
-        this.updatePlotZoom();
-    }
-
-    private plotToBinPosition(position: PlotPosition): PlotBin {
-        const bin_width = this._zoom_level / 100;
-        const bin_height = ((this._zoom_level / this.aspect_ratio) / 100);
-
-        let yoffset = this.plot_position.y * (this._zoom_level / 100)
-                      / this.aspect_ratio;
-        yoffset = Math.ceil(yoffset / bin_height) * bin_height;
-
-        const accession_index = Math.floor((position.y - 2 - bin_height)
-                                       / bin_height);
-        if (accession_index >= this.sortedAccessions.length) {
-            return null;
-        }
-
-        const interval = this.interval_source.getValue();
-        const binsize = this.binsize_source.getValue();
-        const bin_index = Math.floor((position.x - this.label_width) / bin_width
-                                     - this.plot_position.x - 0.5);
-        // console.log(bin_index);
-        const start_pos = interval[0] + bin_index * binsize;
-        if (start_pos < 1 || start_pos > interval[1]) {
-            return null;
-        }
-        let end_pos = interval[0] + (bin_index + 1) * binsize;
-        if (end_pos > interval[1]) {
-            end_pos = interval[1];
-        }
-        return {
-            type: 'bin',
-            accession: this.sortedAccessions[accession_index],
-            start_position: start_pos,
-            end_position: end_pos
-        };
-    }
-
-    private dragPlot(event) {
-        if (event.buttons !== 1) {
-            this.stopDrag(event);
-            return;
-        }
-        this.plot_position.x += (event.layerX - this.previous_drag_position.x)
-                                * 100 / this.zoom_level;
-        this.plot_position.y += (event.layerY - this.previous_drag_position.y)
-                                * this.aspect_ratio
-                                * 100 / this.zoom_level;
-        if (this.plot_position.x > 0) {
-            this.plot_position.x = 0;
-        }
-        if (this.plot_position.y > 0) {
-            this.plot_position.y = 0;
-        }
-        this.previous_drag_position = { x: event.layerX, y: event.layerY };
-        this.drawPlot();
-    }
-
-    startDrag(event) {
-        // drag on left mouse button
-        if (event.buttons === 1) {
-            this.plotCanvas.nativeElement.style.cursor = 'move';
-            this.dragging_plot = true;
-            this.previous_drag_position = { x: event.layerX, y: event.layerY };
-        }
-    }
-
-    stopDrag(event) {
-        this.plotCanvas.nativeElement.style.cursor = 'auto';
-        this.dragging_plot = false;
-    }
-
-    @HostListener('window:resize', ['$event'])
-    onResize(event) {
-        this.updateCanvasSize();
-        this.drawPlot();
     }
 
 }
