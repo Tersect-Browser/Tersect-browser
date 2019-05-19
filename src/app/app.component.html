@@ -8,8 +8,8 @@
         </a>
     </div>
 
-    <div class="p-grid p-justify-between tb-toolbar">
-        <div class="p-col-2 accession-selector">
+    <div class="p-grid p-justify-between tb-toolbar p-nogutter">
+        <div class="p-col-2 accession-selector tb-toolbar-control">
             <div class="label">Reference</div>
             <div class="dropdown">
                 <p-dropdown [options]="accessions"
@@ -19,12 +19,12 @@
                             [(ngModel)]="selected_reference"></p-dropdown>
             </div>
         </div>
-        <div class="p-col-2">
+        <div class="p-col-2 tb-toolbar-control">
             <p-dropdown [options]="chromosomes"
                         [style]="{'width':'100%'}"
                         [(ngModel)]="selected_chromosome"></p-dropdown>
         </div>
-        <div class="p-col-1 binsize-selector">
+        <div class="p-col-1 binsize-selector tb-toolbar-control">
             Bin size: {{ widget_binsize }}
             <p-slider [(ngModel)]="widget_binsize"
                       [animate]="true"
@@ -34,7 +34,7 @@
                       (onChange)="binsizeSliderChange($event)"
                       (onSlideEnd)="updateBinsize()"></p-slider>
         </div>
-        <div class="p-col-3 interval-selector">
+        <div class="p-col-3 interval-selector tb-toolbar-control">
             Interval:
             <input type="text" pKeyFilter="pint"
                    [(ngModel)]="selected_interval[0]"
@@ -50,7 +50,7 @@
                       (onSlideEnd)="updateInterval()"
                       [min]="interval_min" [max]="interval_max"></p-slider>
         </div>
-        <div class="p-col zoom-selector">
+        <div class="p-col-1 zoom-selector tb-toolbar-control">
             <button pButton icon="fa fa-search-minus"
                     [disabled]="zoom_level <= MIN_ZOOM_LEVEL"
                     (click)="zoomOut()"></button>
@@ -58,7 +58,7 @@
                     [disabled]="zoom_level >= MAX_ZOOM_LEVEL"
                     (click)="zoomIn()"></button>
         </div>
-        <div class="p-col-2 toolbar-buttons">
+        <div class="p-col-2 toolbar-buttons tb-toolbar-control">
             <button pButton label="Download" icon="fa fa-download"
                 disabled="true">
             </button>
