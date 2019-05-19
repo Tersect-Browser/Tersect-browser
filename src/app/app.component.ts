@@ -10,7 +10,6 @@ import { ceilTo, floorTo } from './utils/utils';
     styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-    title = 'app';
     chromosomes: SelectItem[] = SL2_50_chromosomes;
     accessions: SelectItem[];
 
