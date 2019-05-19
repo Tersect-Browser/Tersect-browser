@@ -75,11 +75,6 @@ export class IntrogressionPlotComponent implements OnInit {
     private plot_position: PlotPosition = { x: 0, y: 0 };
 
     /**
-     * Width of the accession labels.
-     */
-    private label_width = 0;
-
-    /**
      * Clamped array used to represent the distance plot.
      */
     private plot_array: Uint8ClampedArray = null;
@@ -191,8 +186,6 @@ export class IntrogressionPlotComponent implements OnInit {
         ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                       this.guiCanvas.nativeElement.height);
         this.drawAccessionLabels(this.guiCanvas);
-        this.gui_margins.left = Math.ceil(this.label_width
-                                          / (this._zoom_level / 100));
     }
 
     private drawAccessionLabels(canvas: ElementRef) {
@@ -205,12 +198,14 @@ export class IntrogressionPlotComponent implements OnInit {
                       / this.aspect_ratio;
         yoffset = Math.ceil(yoffset / text_height) * text_height;
 
-        this.label_width = Math.max(
+        const label_width = Math.max(
             ...this.sortedAccessions.map(label => ctx.measureText(label).width)
         );
+        this.gui_margins.left = Math.ceil(label_width
+                                          / (this._zoom_level / 100));
         // Draw background
         ctx.fillStyle = this.GUI_BG_COLOR;
-        ctx.fillRect(0, 0, this.label_width, canvas.nativeElement.height);
+        ctx.fillRect(0, 0, label_width, canvas.nativeElement.height);
         // Draw labels
         this.sortedAccessions.forEach((label, index) => {
             ctx.fillStyle = this.GUI_TEXT_COLOR;
@@ -328,7 +323,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
         const interval = this.interval_source.getValue();
         const binsize = this.binsize_source.getValue();
-        const bin_index = Math.floor((position.x - this.label_width) / bin_width
+        const bin_index = Math.floor((position.x - this.gui_margins.left) / bin_width
                                      - this.plot_position.x - 0.5);
         // console.log(bin_index);
         const start_pos = interval[0] + bin_index * binsize;
