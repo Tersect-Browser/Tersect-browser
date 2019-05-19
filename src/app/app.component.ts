@@ -59,16 +59,22 @@ export class AppComponent implements OnInit {
 
     readonly MAX_ZOOM_LEVEL = 1000;
     readonly MIN_ZOOM_LEVEL = 100;
+    readonly ZOOM_FACTOR = 1.25;
+    readonly ZOOM_ROUND_TO = 50;
 
     zoomIn() {
-        this.zoom_level *= 1.20;
+        this.zoom_level *= this.ZOOM_FACTOR;
+        this.zoom_level = Math.ceil(this.zoom_level / this.ZOOM_ROUND_TO)
+                                    * this.ZOOM_ROUND_TO;
         if (this.zoom_level > this.MAX_ZOOM_LEVEL) {
             this.zoom_level = this.MAX_ZOOM_LEVEL;
         }
     }
 
     zoomOut() {
-        this.zoom_level /= 1.20;
+        this.zoom_level /= this.ZOOM_FACTOR;
+        this.zoom_level = Math.ceil(this.zoom_level / this.ZOOM_ROUND_TO)
+                                    * this.ZOOM_ROUND_TO;
         if (this.zoom_level < this.MIN_ZOOM_LEVEL) {
             this.zoom_level = this.MIN_ZOOM_LEVEL;
         }
