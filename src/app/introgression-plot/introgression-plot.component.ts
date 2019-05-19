@@ -209,7 +209,8 @@ export class IntrogressionPlotComponent implements OnInit {
         // Draw labels
         this.sortedAccessions.forEach((label, index) => {
             ctx.fillStyle = this.GUI_TEXT_COLOR;
-            ctx.fillText(label, 0, yoffset + (1 + index) * text_height - 2);
+            ctx.textBaseline = 'top';
+            ctx.fillText(label, 0, yoffset + index * text_height);
         });
     }
 
