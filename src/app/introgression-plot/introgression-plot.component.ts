@@ -198,14 +198,17 @@ export class IntrogressionPlotComponent implements OnInit {
                       / this.aspect_ratio;
         yoffset = Math.ceil(yoffset / text_height) * text_height;
 
-        const label_width = Math.max(
+        const max_label_width = Math.max(
             ...this.sortedAccessions.map(label => ctx.measureText(label).width)
         );
-        this.gui_margins.left = Math.ceil(label_width
+        this.gui_margins.left = Math.ceil(max_label_width
                                           / (this._zoom_level / 100));
+        const background_width = this.gui_margins.left * this._zoom_level / 100;
+
         // Draw background
         ctx.fillStyle = this.GUI_BG_COLOR;
-        ctx.fillRect(0, 0, label_width, canvas.nativeElement.height);
+        ctx.fillRect(0, 0, background_width, canvas.nativeElement.height);
+        
         // Draw labels
         this.sortedAccessions.forEach((label, index) => {
             ctx.fillStyle = this.GUI_TEXT_COLOR;
