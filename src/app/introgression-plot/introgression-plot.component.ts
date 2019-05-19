@@ -10,7 +10,7 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements } from '../utils/utils';
+import { sameElements, ceilTo } from '../utils/utils';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -194,9 +194,8 @@ export class IntrogressionPlotComponent implements OnInit {
         const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
         ctx.font = `${text_height}px Arial`;
 
-        let yoffset = this.plot_position.y * (this._zoom_level / 100)
-                      / this.aspect_ratio;
-        yoffset = Math.ceil(yoffset / text_height) * text_height;
+        const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
+                               / this.aspect_ratio, text_height)
 
         const max_label_width = Math.max(
             ...this.sortedAccessions.map(label => ctx.measureText(label).width)
@@ -315,12 +314,11 @@ export class IntrogressionPlotComponent implements OnInit {
         const bin_width = this._zoom_level / 100;
         const bin_height = ((this._zoom_level / this.aspect_ratio) / 100);
 
-        let yoffset = this.plot_position.y * (this._zoom_level / 100)
-                      / this.aspect_ratio;
-        yoffset = Math.ceil(yoffset / bin_height) * bin_height;
+        const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
+                               / this.aspect_ratio, bin_height);
 
         const accession_index = Math.floor((position.y - 2 - bin_height)
-                                       / bin_height);
+                                           / bin_height);
         if (accession_index >= this.sortedAccessions.length) {
             return null;
         }

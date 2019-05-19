@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
 import { TersectBackendService } from './services/tersect-backend.service';
+import { ceilTo, floorTo } from './utils/utils';
 
 @Component({
     selector: 'app-root',
@@ -64,8 +65,7 @@ export class AppComponent implements OnInit {
 
     zoomIn() {
         this.zoom_level *= this.ZOOM_FACTOR;
-        this.zoom_level = Math.ceil(this.zoom_level / this.ZOOM_ROUND_TO)
-                                    * this.ZOOM_ROUND_TO;
+        this.zoom_level = ceilTo(this.zoom_level, this.ZOOM_ROUND_TO);
         if (this.zoom_level > this.MAX_ZOOM_LEVEL) {
             this.zoom_level = this.MAX_ZOOM_LEVEL;
         }
@@ -73,8 +73,7 @@ export class AppComponent implements OnInit {
 
     zoomOut() {
         this.zoom_level /= this.ZOOM_FACTOR;
-        this.zoom_level = Math.floor(this.zoom_level / this.ZOOM_ROUND_TO)
-                                    * this.ZOOM_ROUND_TO;
+        this.zoom_level = floorTo(this.zoom_level, this.ZOOM_ROUND_TO);
         if (this.zoom_level < this.MIN_ZOOM_LEVEL) {
             this.zoom_level = this.MIN_ZOOM_LEVEL;
         }
