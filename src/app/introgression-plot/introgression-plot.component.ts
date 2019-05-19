@@ -339,10 +339,10 @@ export class IntrogressionPlotComponent implements OnInit {
             return;
         }
         this.plot_position.x = (event.layerX - this.drag_start_position.x)
-                               * 100 / this.zoom_level;
+                               / (this.zoom_level / 100)
         this.plot_position.y = (event.layerY - this.drag_start_position.y)
                                * this.aspect_ratio
-                               * 100 / this.zoom_level;
+                               / (this.zoom_level / 100);
         this.plot_position.x = Math.round(this.plot_position.x);
         this.plot_position.y = Math.round(this.plot_position.y);
         if (this.plot_position.x > 0) {
@@ -360,8 +360,11 @@ export class IntrogressionPlotComponent implements OnInit {
             this.plotCanvas.nativeElement.style.cursor = 'move';
             this.dragging_plot = true;
             this.drag_start_position = {
-                x: event.layerX - this.plot_position.x,
-                y: event.layerY - this.plot_position.y / this.aspect_ratio
+                x: event.layerX - this.plot_position.x
+                                  * this.zoom_level / 100,
+                y: event.layerY - this.plot_position.y
+                                  / this.aspect_ratio
+                                  * this.zoom_level / 100
             };
         }
     }
