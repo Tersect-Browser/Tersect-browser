@@ -115,8 +115,7 @@ export class IntrogressionPlotComponent implements OnInit {
         if (this._zoom_level !== zoom_level) {
             this._zoom_level = zoom_level;
             this.updatePlotZoom();
-            // No need to redraw bins when zooming
-            this.drawGUI();
+            this.drawPlot();
         }
     }
     get zoom_level(): number {
@@ -188,7 +187,8 @@ export class IntrogressionPlotComponent implements OnInit {
         ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                       this.guiCanvas.nativeElement.height);
         this.drawAccessionLabels(this.guiCanvas);
-        this.gui_margins.left = this.label_width / (this._zoom_level / 100);
+        this.gui_margins.left = Math.ceil(this.label_width
+                                          / (this._zoom_level / 100));
     }
 
     private drawAccessionLabels(canvas: ElementRef) {
@@ -382,7 +382,6 @@ export class IntrogressionPlotComponent implements OnInit {
             x: position.x / (this._zoom_level / 100) - this.gui_margins.left,
             y: position.y / (this._zoom_level / 100) - this.gui_margins.top
         };
-        console.log(inner_position);
         if (inner_position.x > 0 && inner_position.y > 0) {
             if (inner_position.x < this.plot_position.x) {
                 return {
