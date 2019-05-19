@@ -306,54 +306,31 @@ export class IntrogressionPlotComponent implements OnInit {
                - this.plot_position.y
         };
 
-        if (inner_position.x > 0 && inner_position.y > 0) {
-            if (inner_position.x < this.plot_position.x) {
-                return {
-                    type: 'background'
-                };
+        if (inner_position.x > this.getColNum()
+            || inner_position.y > this.getRowNum()) {
+            return {
+                type: 'background'
             }
-            return this.plotToBinPosition(mouse_position);
-        } else {
+        }
+
+        if (inner_position.x + this.plot_position.x < 0) {
             const res: PlotAccession = {
                 type: 'accession',
-                accession: 'ACCESSION'
+                accession: this.sortedAccessions[inner_position.y]
             };
             return res;
-        }
-    }
-
-    private plotToBinPosition(position: PlotPosition): PlotBin {
-        const bin_width = this._zoom_level / 100;
-        const bin_height = ((this._zoom_level / this.aspect_ratio) / 100);
-
-        const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
-                               / this.aspect_ratio, bin_height);
-
-        const accession_index = Math.floor((position.y - 2 - bin_height)
-                                           / bin_height);
-        if (accession_index >= this.sortedAccessions.length) {
-            return null;
         }
 
         const interval = this.interval_source.getValue();
         const binsize = this.binsize_source.getValue();
-        const bin_index = Math.floor((position.x - this.gui_margins.left) / bin_width
-                                     - this.plot_position.x - 0.5);
-        // console.log(bin_index);
-        const start_pos = interval[0] + bin_index * binsize;
-        if (start_pos < 1 || start_pos > interval[1]) {
-            return null;
-        }
-        let end_pos = interval[0] + (bin_index + 1) * binsize;
-        if (end_pos > interval[1]) {
-            end_pos = interval[1];
-        }
-        return {
+
+        const res: PlotBin = {
             type: 'bin',
-            accession: this.sortedAccessions[accession_index],
-            start_position: start_pos,
-            end_position: end_pos
+            accession: this.sortedAccessions[inner_position.y],
+            start_position: interval[0] + inner_position.x * binsize,
+            end_position: interval[0] + (inner_position.x + 1) * binsize - 1
         };
+        return res;
     }
 
     private dragPlot(event) {
@@ -485,15 +462,15 @@ export class IntrogressionPlotComponent implements OnInit {
     guiMouseDown(event) {
         this.mouse_down_position = { x: event.layerX, y: event.layerY };
         const target = this.getPositionTarget(this.mouse_down_position);
-        // if (target.type === 'bin' || target.type === 'background') {
+        if (target.type === 'bin' || target.type === 'background') {
             this.startDrag(event);
-        // }
+        }
     }
 
     guiMouseUp(event) {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
-            // console.log(this.getPositionTarget(this.mouse_down_position));
+            console.log(this.getPositionTarget(this.mouse_down_position));
         }
         this.stopDrag(event);
     }
