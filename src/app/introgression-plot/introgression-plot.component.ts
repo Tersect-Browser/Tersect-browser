@@ -196,7 +196,7 @@ export class IntrogressionPlotComponent implements OnInit {
                                                     .getContext('2d');
         const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
         ctx.font = `${text_height}px Arial`;
-        
+
         let yoffset = this.plot_position.y * (this._zoom_level / 100)
                       / this.aspect_ratio;
         yoffset = Math.ceil(yoffset / text_height) * text_height;
@@ -382,6 +382,7 @@ export class IntrogressionPlotComponent implements OnInit {
             x: position.x / (this._zoom_level / 100) - this.gui_margins.left,
             y: position.y / (this._zoom_level / 100) - this.gui_margins.top
         };
+        console.log(inner_position);
         if (inner_position.x > 0 && inner_position.y > 0) {
             if (inner_position.x < this.plot_position.x) {
                 return {
@@ -405,15 +406,15 @@ export class IntrogressionPlotComponent implements OnInit {
 
     private plotToBinPosition(position: PlotPosition): PlotBin {
         const bin_width = this._zoom_level / 100;
-        const text_height = ((this._zoom_level / this.aspect_ratio) / 100);
+        const bin_height = ((this._zoom_level / this.aspect_ratio) / 100);
 
         let yoffset = this.plot_position.y * (this._zoom_level / 100)
                       / this.aspect_ratio;
-        yoffset = Math.floor(yoffset / text_height) * text_height;
+        yoffset = Math.ceil(yoffset / bin_height) * bin_height;
 
-        const label_index = Math.floor((position.y - 2 - yoffset)
-                                       / text_height);
-        if (label_index >= this.sortedAccessions.length) {
+        const accession_index = Math.floor((position.y - 2 - bin_height)
+                                       / bin_height);
+        if (accession_index >= this.sortedAccessions.length) {
             return null;
         }
 
@@ -432,7 +433,7 @@ export class IntrogressionPlotComponent implements OnInit {
         }
         return {
             type: 'bin',
-            accession: this.sortedAccessions[label_index],
+            accession: this.sortedAccessions[accession_index],
             start_position: start_pos,
             end_position: end_pos
         };
