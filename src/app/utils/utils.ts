@@ -12,7 +12,7 @@ export function sameElements(arrA: any[], arrB: any[]): boolean {
 }
 
 /**
- * Return the smallest multiple of the second argument larger or equal to the 
+ * Return the smallest multiple of the second argument larger or equal to the
  * first argument, i.e. round it up to the nearest 5, 10, 50, etc.
  */
 export function ceilTo(x: number, a: number): number {
@@ -20,9 +20,17 @@ export function ceilTo(x: number, a: number): number {
 }
 
 /**
- * Return the largest multiple of the second argument smaller or equal to the 
+ * Return the largest multiple of the second argument smaller or equal to the
  * first argument, i.e. round it down to the nearest 5, 10, 50, etc.
  */
 export function floorTo(x: number, a: number): number {
     return Math.floor(x / a) * a;
+}
+
+/**
+ * Format genomic position in terms of base pairs into a string with comma
+ * separators for thousands.
+ */
+export function formatPosition(genome_position: number): string {
+    return genome_position.toLocaleString('en');
 }

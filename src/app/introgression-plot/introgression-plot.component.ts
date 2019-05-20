@@ -10,7 +10,7 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements, ceilTo } from '../utils/utils';
+import { sameElements, ceilTo, formatPosition } from '../utils/utils';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -21,12 +21,23 @@ import { sameElements, ceilTo } from '../utils/utils';
 export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
     @ViewChild('guiCanvas') guiCanvas: ElementRef;
+    @ViewChild('tooltip') tooltip: ElementRef;
 
     readonly GUI_BG_COLOR = '#FFFFFF';
     readonly GUI_TEXT_COLOR = '#000000';
 
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
+
+    /**
+     * Tooltip position relative to mouse.
+     */
+    readonly tooltip_offset: PlotPosition = { x: 0, y: 20 };
+
+    /**
+     * Delay before a tooltip appears.
+     */
+    readonly TOOLTIP_DELAY: 200;
 
     /**
      * Bin aspect ratio (width / height). By default bins are twice as high as
@@ -78,6 +89,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
      * Clamped array used to represent the distance plot.
      */
     private plot_array: Uint8ClampedArray = null;
+
+    /**
+     * Timer used to delay displaying a tooltip.
+     */
+    private tooltip_timer;
 
     @Input()
     set chromosome(chromosome: Chromosome) {
@@ -161,6 +177,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private updatePlotZoom() {
+        this.hideTooltip();
         this.plotCanvas.nativeElement.style.width = `${this._zoom_level}%`;
         this.plotCanvas.nativeElement.style.height = `${this._zoom_level
                                                      / this.aspect_ratio}%`;
@@ -453,12 +470,54 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         this.drawPlot();
     }
 
+    private showTooltip(mouse_position: PlotPosition, content: string) {
+        this.tooltip.nativeElement.style.left = `${mouse_position.x
+                                                   + this.tooltip_offset.x}px`;
+        this.tooltip.nativeElement.style.top = `${mouse_position.y
+                                                  + this.tooltip_offset.y}px`;
+        this.tooltip.nativeElement.style.visibility = 'visible';
+        this.tooltip.nativeElement.innerHTML = content;
+    }
+
+    private hideTooltip() {
+        clearTimeout(this.tooltip_timer);
+        this.tooltip.nativeElement.style.visibility = 'hidden';
+    }
+
+    private formatBinTooltip(target: PlotBin): string {
+        return `${target.accession}<br>${formatPosition(target.start_position)}
+- ${formatPosition(target.end_position)}`;
+    }
+
+    private prepareTooltip(event) {
+        this.hideTooltip();
+        const pos = { x: event.layerX, y: event.layerY };
+        const area = this.getPositionTarget(pos);
+        if (area.type === 'background') { return; }
+
+        let content = '';
+        if (area.type === 'bin') {
+            content = this.formatBinTooltip(area as PlotBin);
+        } else if (area.type === 'accession') {
+            content = `${(area as PlotAccession).accession}`;
+        }
+
+        clearTimeout(this.tooltip_timer);
+        this.tooltip_timer = setTimeout(() => this.showTooltip(pos, content),
+                                        this.TOOLTIP_DELAY);
+    }
+
     guiMouseMove(event) {
+        this.prepareTooltip(event);
         if (this.dragging_plot) {
             this.dragPlot(event);
         } else {
             // console.log(event);
         }
+    }
+
+    guiMouseLeave(event) {
+        this.hideTooltip();
     }
 
     guiMouseDown(event) {
