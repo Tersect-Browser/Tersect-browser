@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterViewInit } from '@angular/core';
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
@@ -18,7 +18,7 @@ import { sameElements, ceilTo } from '../utils/utils';
     styleUrls: ['./introgression-plot.component.css']
 })
 
-export class IntrogressionPlotComponent implements OnInit {
+export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
     @ViewChild('guiCanvas') guiCanvas: ElementRef;
 
@@ -42,8 +42,8 @@ export class IntrogressionPlotComponent implements OnInit {
     plot_loading = true;
 
     /**
-     * Error message string. When not an empty string, error message overlay is 
-     * displayed. 
+     * Error message string. When not an empty string, error message overlay is
+     * displayed.
      */
     error_message = '';
 
@@ -195,7 +195,7 @@ export class IntrogressionPlotComponent implements OnInit {
         ctx.font = `${text_height}px Arial`;
 
         const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
-                               / this.aspect_ratio, text_height)
+                               / this.aspect_ratio, text_height);
 
         const max_label_width = Math.max(
             ...this.sortedAccessions.map(label => ctx.measureText(label).width)
@@ -207,7 +207,7 @@ export class IntrogressionPlotComponent implements OnInit {
         // Draw background
         ctx.fillStyle = this.GUI_BG_COLOR;
         ctx.fillRect(0, 0, background_width, canvas.nativeElement.height);
-        
+
         // Draw labels
         this.sortedAccessions.forEach((label, index) => {
             ctx.fillStyle = this.GUI_TEXT_COLOR;
@@ -308,29 +308,28 @@ export class IntrogressionPlotComponent implements OnInit {
 
         if (inner_position.x > this.getColNum()
             || inner_position.y > this.getRowNum()) {
-            return {
-                type: 'background'
-            }
+            const res_bg: PlotBackground = { type: 'background' };
+            return res_bg;
         }
 
         if (inner_position.x + this.plot_position.x < 0) {
-            const res: PlotAccession = {
+            const res_acc: PlotAccession = {
                 type: 'accession',
                 accession: this.sortedAccessions[inner_position.y]
             };
-            return res;
+            return res_acc;
         }
 
         const interval = this.interval_source.getValue();
         const binsize = this.binsize_source.getValue();
 
-        const res: PlotBin = {
+        const res_bin: PlotBin = {
             type: 'bin',
             accession: this.sortedAccessions[inner_position.y],
             start_position: interval[0] + inner_position.x * binsize,
             end_position: interval[0] + (inner_position.x + 1) * binsize - 1
         };
-        return res;
+        return res_bin;
     }
 
     private dragPlot(event) {
@@ -339,7 +338,7 @@ export class IntrogressionPlotComponent implements OnInit {
             return;
         }
         this.plot_position.x = (event.layerX - this.drag_start_position.x)
-                               / (this.zoom_level / 100)
+                               / (this.zoom_level / 100);
         this.plot_position.y = (event.layerY - this.drag_start_position.y)
                                * this.aspect_ratio
                                / (this.zoom_level / 100);
