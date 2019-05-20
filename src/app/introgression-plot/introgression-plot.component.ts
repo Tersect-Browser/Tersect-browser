@@ -323,8 +323,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                - this.plot_position.y
         };
 
-        if (inner_position.x > this.getColNum()
-            || inner_position.y > this.getRowNum()) {
+        if (inner_position.x >= this.getColNum()
+            || inner_position.y >= this.getRowNum()) {
             const res_bg: PlotBackground = { type: 'background' };
             return res_bg;
         }
