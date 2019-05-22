@@ -30,10 +30,19 @@
 
 .tb-toolbar .interval-selector .interval-label {
     margin-top: 0.1em;
+    width: 100%;
+}
+
+.tb-toolbar .interval-selector .interval-label .interval-input {
+    text-align: left;
+    width: 6em;
+    display: inline-block;
 }
 
 .tb-toolbar .interval-selector .interval-slider {
     margin-top: 0.4em;
+    width: 100%;
+    display: inline-block;
 }
 
 .tb-toolbar .zoom-selector button {

@@ -38,11 +38,11 @@
         <div class="p-col interval-selector tb-toolbar-control">
             <div class="interval-label">
                 Interval:
-                <input type="text" pKeyFilter="pint"
+                <input class="interval-input" type="text" pKeyFilter="pint"
                     [(ngModel)]="selected_interval[0]"
                     (input)="typeInterval($event)" pInputText>
                 -
-                <input type="text" pKeyFilter="pint"
+                <input class="interval-input" type="text" pKeyFilter="pint"
                     [(ngModel)]="selected_interval[1]"
                     (input)="typeInterval($event)" pInputText>
             </div>
