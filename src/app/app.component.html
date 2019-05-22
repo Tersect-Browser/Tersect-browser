@@ -27,29 +27,33 @@
             <div class="slider-label">Bin size: {{ widget_binsize }}</div>
             <div class="binsize-slider">
                 <p-slider [(ngModel)]="widget_binsize"
-                        [animate]="true"
-                        [style]="{'width':'100%'}"
-                        [min]="binsize_min" [max]="binsize_max"
-                        [step]="binsize_step"
-                        (onChange)="binsizeSliderChange($event)"
-                        (onSlideEnd)="updateBinsize()"></p-slider>
+                          [animate]="true"
+                          [style]="{'width':'100%'}"
+                          [min]="binsize_min" [max]="binsize_max"
+                          [step]="binsize_step"
+                          (onChange)="binsizeSliderChange($event)"
+                          (onSlideEnd)="updateBinsize()"></p-slider>
             </div>
         </div>
         <div class="p-col-3 interval-selector tb-toolbar-control">
-            Interval:
-            <input type="text" pKeyFilter="pint"
-                   [(ngModel)]="selected_interval[0]"
-                   (input)="typeInterval($event)" pInputText>
-            -
-            <input type="text" pKeyFilter="pint"
-                   [(ngModel)]="selected_interval[1]"
-                   (input)="typeInterval($event)" pInputText>
-            <p-slider [(ngModel)]="selected_interval" [range]="true"
-                      [animate]="true"
-                      [style]="{'width':'100%'}"
-                      (onChange)="intervalSliderChange($event)"
-                      (onSlideEnd)="updateInterval()"
-                      [min]="interval_min" [max]="interval_max"></p-slider>
+            <div class="interval-label">
+                Interval:
+                <input type="text" pKeyFilter="pint"
+                    [(ngModel)]="selected_interval[0]"
+                    (input)="typeInterval($event)" pInputText>
+                -
+                <input type="text" pKeyFilter="pint"
+                    [(ngModel)]="selected_interval[1]"
+                    (input)="typeInterval($event)" pInputText>
+            </div>
+            <div class="interval-slider">
+                <p-slider [(ngModel)]="selected_interval" [range]="true"
+                          [animate]="true"
+                          [style]="{'width':'100%'}"
+                          (onChange)="intervalSliderChange($event)"
+                          (onSlideEnd)="updateInterval()"
+                          [min]="interval_min" [max]="interval_max"></p-slider>
+            </div>
         </div>
         <div class="p-col-1 zoom-selector tb-toolbar-control">
             <button pButton icon="fa fa-search-minus"

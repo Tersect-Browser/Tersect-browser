@@ -28,6 +28,14 @@
     margin-top: 0.4em;
 }
 
+.tb-toolbar .interval-selector .interval-label {
+    margin-top: 0.1em;
+}
+
+.tb-toolbar .interval-selector .interval-slider {
+    margin-top: 0.4em;
+}
+
 .tb-toolbar .zoom-selector button {
     margin-top: 0.2em;
     width: 2em;
