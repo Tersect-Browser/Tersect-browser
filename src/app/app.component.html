@@ -9,7 +9,7 @@
     </div>
 
     <div class="p-grid p-justify-between tb-toolbar p-nogutter">
-        <div class="p-col-2 accession-selector tb-toolbar-control">
+        <div class="p-col accession-selector tb-toolbar-control">
             <div class="dropdown-label">Reference</div>
             <p-dropdown [options]="accessions"
                         [filter]="true"
@@ -17,13 +17,13 @@
                         [style]="{'width':'100%'}"
                         [(ngModel)]="selected_reference"></p-dropdown>
         </div>
-        <div class="p-col-2 tb-toolbar-control">
+        <div class="p-col tb-toolbar-control">
             <div class="dropdown-label">Chromosome</div>
             <p-dropdown [options]="chromosomes"
                         [style]="{'width':'100%'}"
                         [(ngModel)]="selected_chromosome"></p-dropdown>
         </div>
-        <div class="p-col-1 binsize-selector tb-toolbar-control">
+        <div class="p-col binsize-selector tb-toolbar-control">
             <div class="slider-label">Bin size: {{ widget_binsize }}</div>
             <div class="binsize-slider">
                 <p-slider [(ngModel)]="widget_binsize"
@@ -35,7 +35,7 @@
                           (onSlideEnd)="updateBinsize()"></p-slider>
             </div>
         </div>
-        <div class="p-col-3 interval-selector tb-toolbar-control">
+        <div class="p-col interval-selector tb-toolbar-control">
             <div class="interval-label">
                 Interval:
                 <input type="text" pKeyFilter="pint"
@@ -55,7 +55,7 @@
                           [min]="interval_min" [max]="interval_max"></p-slider>
             </div>
         </div>
-        <div class="p-col-1 zoom-selector tb-toolbar-control">
+        <div class="p-col zoom-selector tb-toolbar-control">
             <button pButton icon="fa fa-search-minus"
                     [disabled]="zoom_level <= MIN_ZOOM_LEVEL"
                     (click)="zoomOut()"></button>
@@ -63,7 +63,7 @@
                     [disabled]="zoom_level >= MAX_ZOOM_LEVEL"
                     (click)="zoomIn()"></button>
         </div>
-        <div class="p-col-2 toolbar-buttons tb-toolbar-control">
+        <div class="p-col toolbar-buttons tb-toolbar-control">
             <button pButton label="Download" icon="fa fa-download"
                 disabled="true">
             </button>
