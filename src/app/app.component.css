@@ -20,6 +20,14 @@
     white-space: nowrap;
 }
 
+.tb-toolbar .binsize-selector .slider-label {
+    margin-top: 0.2em;
+}
+
+.tb-toolbar .binsize-selector .binsize-slider {
+    margin-top: 0.4em;
+}
+
 .tb-toolbar .zoom-selector button {
     margin-top: 0.2em;
     width: 2em;
