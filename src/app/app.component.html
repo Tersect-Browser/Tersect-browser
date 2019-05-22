@@ -10,16 +10,15 @@
 
     <div class="p-grid p-justify-between tb-toolbar p-nogutter">
         <div class="p-col-2 accession-selector tb-toolbar-control">
-            <div class="label">Reference</div>
-            <div class="dropdown">
-                <p-dropdown [options]="accessions"
-                            [filter]="true"
-                            [autoWidth]="false"
-                            [style]="{'width':'100%'}"
-                            [(ngModel)]="selected_reference"></p-dropdown>
-            </div>
+            <div class="dropdown-label">Reference</div>
+            <p-dropdown [options]="accessions"
+                        [filter]="true"
+                        [autoWidth]="false"
+                        [style]="{'width':'100%'}"
+                        [(ngModel)]="selected_reference"></p-dropdown>
         </div>
         <div class="p-col-2 tb-toolbar-control">
+            <div class="dropdown-label">Chromosome</div>
             <p-dropdown [options]="chromosomes"
                         [style]="{'width':'100%'}"
                         [(ngModel)]="selected_chromosome"></p-dropdown>

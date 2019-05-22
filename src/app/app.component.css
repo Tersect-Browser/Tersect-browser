@@ -26,21 +26,15 @@
 }
 
 .tb-toolbar-control {
-    margin: 0.3em 0.5em 0.3em 0.5em;
+    margin: 0.0em 0.5em 0.3em 0.5em;
 }
 
 .accession-selector {
-    white-space: nowrap;
-    display: flex;
+    padding-bottom: 0.3em;
 }
 
-.accession-selector .label {
-    margin-top: 0.3em
-}
-
-.accession-selector .dropdown {
-    margin-left: 0.5em;
-    flex: 1;
+.dropdown-label {
+    font-size: 80%;
 }
 
 .tb-toolbar .toolbar-buttons button {
