@@ -464,6 +464,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         this.updatePlotZoom();
     }
 
+    @HostListener('window:orientationchange', ['$event'])
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.updateCanvasSize();
