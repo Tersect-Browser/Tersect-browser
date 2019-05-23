@@ -144,4 +144,8 @@ export class AppComponent implements OnInit {
                                                  this.BINSIZE_SLIDER_DELAY);
     }
 
+    plotSelection($event) {
+        console.log($event);
+    }
+
 }

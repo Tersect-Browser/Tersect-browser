@@ -8,17 +8,18 @@ export interface PlotArea {
 }
 
 export interface PlotBin extends PlotArea {
-    type: 'bin';
     accession: string;
     start_position: number;
     end_position: number;
 }
 
 export interface PlotAccession extends PlotArea {
-    type: 'accession';
     accession: string;
 }
 
-export interface PlotBackground extends PlotArea {
-    type: 'background';
+export interface PlotSelectionEvent {
+     x: number;
+     y: number;
+     type: 'bin' | 'accession';
+     selection: PlotBin | PlotAccession[];
 }

@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterViewInit, Output, EventEmitter } from '@angular/core';
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotBackground } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotSelectionEvent } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
@@ -126,6 +126,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         }
     }
     private accessions_source = new BehaviorSubject<string[]>(undefined);
+
+    /**
+     * Emitted when plot elements (bins, accessions) are selected.
+     */
+    @Output() plotSelection = new EventEmitter<PlotSelectionEvent>();
 
     /**
      * Zoom level in percentages.
@@ -325,7 +330,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
         if (inner_position.x >= this.getColNum()
             || inner_position.y >= this.getRowNum()) {
-            const res_bg: PlotBackground = { type: 'background' };
+            const res_bg = { type: 'background' };
             return res_bg;
         }
 
@@ -508,7 +513,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                                         this.TOOLTIP_DELAY);
     }
 
-    guiMouseMove(event) {
+    guiMouseMove() {
         this.prepareTooltip(event);
         if (this.dragging_plot) {
             this.dragPlot(event);
@@ -532,7 +537,17 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     guiMouseUp(event) {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
-            console.log(this.getPositionTarget(this.mouse_down_position));
+            const target = this.getPositionTarget(this.mouse_down_position);
+            if (target.type === 'bin' || target.type === 'accession') {
+                this.plotSelection.emit({
+                    x: event.layerX,
+                    y: event.layerY,
+                    type: target.type,
+                    selection: target.type === 'bin' ? target as PlotBin
+                                                     : [ target as PlotAccession ]
+                });
+            }
+            console.log(target);
         }
         this.stopDrag(event);
     }

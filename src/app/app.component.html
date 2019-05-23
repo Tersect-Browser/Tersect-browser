@@ -80,6 +80,7 @@
             [reference]="selected_reference"
             [binsize]="selected_binsize"
             [zoom_level]="zoom_level"
+            (plotSelection)="plotSelection($event)"
             (wheel)="scrollWheel($event)">
         </app-introgression-plot>
     </div>
