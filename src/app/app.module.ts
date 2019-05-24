@@ -11,12 +11,13 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { SliderModule } from 'primeng/slider';
 import { ListboxModule } from 'primeng/listbox';
 import { KeyFilterModule } from 'primeng/keyfilter';
-import { MenuModule } from 'primeng/menu';
 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TersectBackendService } from './services/tersect-backend.service';
 import { FormsModule } from '@angular/forms';
+
 import { IntrogressionPlotModule } from './introgression-plot/introgression-plot.module';
+import { PlotClickMenuModule } from './plot-click-menu/plot-click-menu.module';
 
 @NgModule({
     declarations: [
@@ -34,8 +35,8 @@ import { IntrogressionPlotModule } from './introgression-plot/introgression-plot
         SliderModule,
         ListboxModule,
         KeyFilterModule,
-        MenuModule,
-        IntrogressionPlotModule
+        IntrogressionPlotModule,
+        PlotClickMenuModule
     ],
     providers: [
         HttpClient,
