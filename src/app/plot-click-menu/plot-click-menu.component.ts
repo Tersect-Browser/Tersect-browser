@@ -1,5 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
+import { PlotClickEvent, PlotAccession, PlotBin } from '../models/PlotPosition';
+import { formatPosition } from '../utils/utils';
 
 @Component({
     selector: 'app-plot-click-menu',
@@ -8,28 +10,47 @@ import { MenuItem } from 'primeng/components/common/menuitem';
 })
 
 export class PlotClickMenuComponent {
-    items: MenuItem[] = [
-        {
-            label: 'Accession',
+    menuItems: MenuItem[] = [];
+
+    @ViewChild('clickMenu') clickMenu: ElementRef;
+
+    private getAccessionItem(accession: PlotAccession): MenuItem {
+        return {
+            label: accession.accession,
             items: [
                 { label: 'Set as reference', icon: 'fa fa-star-o' },
                 { label: 'Remove from plot', icon: 'fa fa-remove' }
             ]
-        },
-        {
-            label: 'Bin',
+        };
+    }
+
+    private getBinItem(bin: PlotBin): MenuItem {
+        return {
+            label: `${formatPosition(bin.start_position)}
+- ${formatPosition(bin.end_position)}`,
             items: [
                 { label: 'Set as interval start', icon: 'fa fa-chevron-left'},
                 { label: 'Set as interval end', icon: 'fa fa-chevron-right'}
             ]
+        };
+    }
+
+    show($event: PlotClickEvent) {
+        if ($event.target.type === 'accession') {
+            this.menuItems = [
+                this.getAccessionItem($event.target as PlotAccession)
+            ];
+        } else if ($event.target.type === 'bin') {
+            this.menuItems = [
+                this.getAccessionItem($event.target as PlotAccession),
+                this.getBinItem($event.target as PlotBin)
+            ];
+        } else {
+            // Menu not visible for types other than 'bin' or 'accession'
+            return;
         }
-    ];
-
-    @ViewChild('clickMenu') clickMenu: ElementRef;
-
-    show(x_pos: number, y_pos: number) {
-        this.clickMenu.nativeElement.style.left = `${x_pos}px`;
-        this.clickMenu.nativeElement.style.top = `${y_pos}px`;
+        this.clickMenu.nativeElement.style.left = `${$event.x}px`;
+        this.clickMenu.nativeElement.style.top = `${$event.y}px`;
         this.clickMenu.nativeElement.style.visibility = 'visible';
     }
 

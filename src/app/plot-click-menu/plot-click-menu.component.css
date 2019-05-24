@@ -4,6 +4,7 @@
     position: absolute;
     visibility: hidden;
     font-size: 80%;
+    white-space: nowrap;
 }
 
 .modal-mask {

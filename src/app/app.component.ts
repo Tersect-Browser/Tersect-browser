@@ -151,12 +151,8 @@ export class AppComponent implements OnInit {
 
     plotClick($event: PlotClickEvent) {
         if ($event.target.type !== 'background') {
-            this.showClickMenu($event.x, $event.y);
+            this.plotClickMenu.show($event);
         }
-    }
-
-    private showClickMenu(x_pos: number, y_pos: number) {
-        this.plotClickMenu.show(x_pos, y_pos);
     }
 
 }
