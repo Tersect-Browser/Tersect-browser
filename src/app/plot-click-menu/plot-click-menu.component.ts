@@ -38,4 +38,8 @@ export class PlotClickMenuComponent {
         this.clickMenu.nativeElement.style.left = '0px';
         this.clickMenu.nativeElement.style.visibility = 'hidden';
     }
+
+    clickMask($event) {
+        this.hide();
+    }
 }
