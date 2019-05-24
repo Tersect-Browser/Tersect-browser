@@ -17,9 +17,8 @@ export interface PlotAccession extends PlotArea {
     accession: string;
 }
 
-export interface PlotSelectionEvent {
-     x: number;
-     y: number;
-     type: 'bin' | 'accession';
-     selection: PlotBin | PlotAccession[];
+export interface PlotClickEvent {
+    x: number;
+    y: number;
+    target: PlotArea;
 }

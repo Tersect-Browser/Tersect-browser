@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterVie
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotSelectionEvent } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotClickEvent } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { njTreeSortAccessions } from '../clustering/clustering';
@@ -128,9 +128,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     private accessions_source = new BehaviorSubject<string[]>(undefined);
 
     /**
-     * Emitted when plot elements (bins, accessions) are selected.
+     * Emitted when plot elements (bins, accessions) are clicked.
      */
-    @Output() plotSelection = new EventEmitter<PlotSelectionEvent>();
+    @Output() plotClick = new EventEmitter<PlotClickEvent>();
 
     /**
      * Zoom level in percentages.
@@ -538,15 +538,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
             const target = this.getPositionTarget(this.mouse_down_position);
-            if (target.type === 'bin' || target.type === 'accession') {
-                this.plotSelection.emit({
-                    x: event.layerX,
-                    y: event.layerY,
-                    type: target.type,
-                    selection: target.type === 'bin' ? target as PlotBin
-                                                     : [ target as PlotAccession ]
-                });
-            }
+            this.plotClick.emit({
+                x: event.layerX,
+                y: event.layerY,
+                target: target,
+            });
             console.log(target);
         }
         this.stopDrag(event);

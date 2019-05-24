@@ -1,8 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
 import { TersectBackendService } from './services/tersect-backend.service';
 import { ceilTo, floorTo } from './utils/utils';
+import { MenuItem } from 'primeng/components/common/menuitem';
+import { PlotClickEvent } from './models/PlotPosition';
 
 @Component({
     selector: 'app-root',
@@ -10,6 +12,25 @@ import { ceilTo, floorTo } from './utils/utils';
     styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+    items: MenuItem[] = [
+        {
+            label: 'Accession',
+            items: [
+                { label: 'Set as reference', icon: 'fa fa-star-o' },
+                { label: 'Remove from plot', icon: 'fa fa-remove' }
+            ]
+        },
+        {
+            label: 'Bin',
+            items: [
+                { label: 'Set as interval start', icon: 'fa fa-chevron-left'},
+                { label: 'Set as interval end', icon: 'fa fa-chevron-right'}
+            ]
+        }
+    ];
+
+    @ViewChild('clickMenu') clickMenu: ElementRef;
+
     chromosomes: SelectItem[] = SL2_50_chromosomes;
     accessions: SelectItem[];
 
@@ -144,8 +165,22 @@ export class AppComponent implements OnInit {
                                                  this.BINSIZE_SLIDER_DELAY);
     }
 
-    plotSelection($event) {
-        console.log($event);
+    plotClick($event: PlotClickEvent) {
+        this.showClickMenu($event.x, $event.y);
+    }
+
+    plotMouseDown($event) {
+        this.hideClickMenu();
+    }
+
+    private showClickMenu(x_pos: number, y_pos: number) {
+        this.clickMenu.nativeElement.style.left = `${x_pos}px`;
+        this.clickMenu.nativeElement.style.top = `${y_pos}px`;
+        this.clickMenu.nativeElement.style.visibility = 'visible';
+    }
+
+    private hideClickMenu() {
+        this.clickMenu.nativeElement.style.visibility = 'hidden';
     }
 
 }

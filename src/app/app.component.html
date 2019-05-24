@@ -73,16 +73,22 @@
         </div>
     </div>
 
-    <div class="v-stretch plot-container hbox">
-        <app-introgression-plot [chromosome]="selected_chromosome"
+    <div #plotContainer class="v-stretch plot-container hbox">
+        <app-introgression-plot
+            [chromosome]="selected_chromosome"
             [accessions]="selected_accessions"
             [interval]="selected_interval"
             [reference]="selected_reference"
             [binsize]="selected_binsize"
             [zoom_level]="zoom_level"
-            (plotSelection)="plotSelection($event)"
+            (plotClick)="plotClick($event)"
+            (mousedown)="plotMouseDown($event)"
             (wheel)="scrollWheel($event)">
         </app-introgression-plot>
+
+        <div #clickMenu class="plot-clickmenu">
+            <p-menu [model]="items"></p-menu>
+        </div>
     </div>
 </div>
 
