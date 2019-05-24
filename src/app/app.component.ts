@@ -150,7 +150,9 @@ export class AppComponent implements OnInit {
     }
 
     plotClick($event: PlotClickEvent) {
-        this.showClickMenu($event.x, $event.y);
+        if ($event.target.type !== 'background') {
+            this.showClickMenu($event.x, $event.y);
+        }
     }
 
     plotMouseDown($event) {
