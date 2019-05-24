@@ -155,4 +155,26 @@ export class AppComponent implements OnInit {
         }
     }
 
+    setReference($event) {
+        this.selected_reference = $event;
+    }
+
+    removeAccession($event) {
+        this.widget_accessions.splice(
+            this.widget_accessions.findIndex((acc) => acc === $event), 1
+        );
+        this.widget_accessions = this.widget_accessions.slice(0);
+        this.updateAccessions();
+    }
+
+    setIntervalStart($event) {
+        this.selected_interval[0] = $event;
+        this.updateInterval();
+    }
+
+    setIntervalEnd($event) {
+        this.selected_interval[1] = $event;
+        this.updateInterval();
+    }
+
 }

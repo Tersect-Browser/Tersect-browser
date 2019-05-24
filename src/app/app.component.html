@@ -85,7 +85,12 @@
             (wheel)="scrollWheel($event)">
         </app-introgression-plot>
 
-        <app-plot-click-menu></app-plot-click-menu>
+        <app-plot-click-menu
+            (setReference)="setReference($event)"
+            (removeAccession)="removeAccession($event)"
+            (setIntervalStart)="setIntervalStart($event)"
+            (setIntervalEnd)="setIntervalEnd($event)">
+        </app-plot-click-menu>
 
     </div>
 </div>

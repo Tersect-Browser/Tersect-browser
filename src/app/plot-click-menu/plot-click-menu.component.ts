@@ -73,6 +73,7 @@ export class PlotClickMenuComponent implements OnInit {
                     icon: 'fa fa-star-o',
                     command: () => {
                         this.setReference.emit(accession.accession);
+                        this.hide();
                     }
                 },
                 {
@@ -80,6 +81,7 @@ export class PlotClickMenuComponent implements OnInit {
                     icon: 'fa fa-remove',
                     command: () => {
                         this.removeAccession.emit(accession.accession);
+                        this.hide();
                     }
                 }
             ]
@@ -96,13 +98,15 @@ export class PlotClickMenuComponent implements OnInit {
                     icon: 'fa fa-chevron-left',
                     command: () => {
                         this.setIntervalStart.emit(bin.start_position);
+                        this.hide();
                     }
                 },
                 {
                     label: 'Set as interval end',
                     icon: 'fa fa-chevron-right',
                     command: () => {
-                        this.setIntervalStart.emit(bin.end_position);
+                        this.setIntervalEnd.emit(bin.end_position);
+                        this.hide();
                     }
                 }
             ]
