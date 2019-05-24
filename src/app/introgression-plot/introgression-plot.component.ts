@@ -543,7 +543,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 y: event.layerY,
                 target: target,
             });
-            console.log(target);
         }
         this.stopDrag(event);
     }

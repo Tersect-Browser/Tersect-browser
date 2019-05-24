@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
 import { PlotClickEvent, PlotAccession, PlotBin } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
@@ -9,10 +9,55 @@ import { formatPosition } from '../utils/utils';
     styleUrls: ['./plot-click-menu.component.css']
 })
 
-export class PlotClickMenuComponent {
+export class PlotClickMenuComponent implements OnInit {
+    @ViewChild('menuContainer') menuContainer: ElementRef;
+
     menuItems: MenuItem[] = [];
 
-    @ViewChild('clickMenu') clickMenu: ElementRef;
+    private _position = { x: 0, y: 0 };
+    private set position(pos: { x: number, y: number }) {
+        this._position = pos;
+        this.menuContainer.nativeElement.style.left = `${this._position.x}px`;
+        this.menuContainer.nativeElement.style.top = `${this._position.y}px`;
+    }
+
+    private observer = new MutationObserver(() => { this.adjustPosition(); });
+
+    ngOnInit() {
+        this.observer.observe(this.menuContainer.nativeElement,
+                              { attributes: true });
+    }
+
+    /**
+     * Adjusts menu position so that is does not overflow.
+     */
+    private adjustPosition() {
+        const plot_width = this.menuContainer.nativeElement
+                                             .parentElement
+                                             .parentElement.clientWidth;
+        const plot_height = this.menuContainer.nativeElement
+                                              .parentElement
+                                              .parentElement.clientHeight;
+        const menu_width = this.menuContainer.nativeElement.offsetWidth;
+        const menu_height = this.menuContainer.nativeElement.offsetHeight;
+
+        if (menu_width > plot_width || menu_height > plot_height) {
+            // No way to fit the menu inside the plot area
+            return;
+        }
+
+        const x_overflow = this._position.x + menu_width - plot_width;
+        const y_overflow = this._position.y + menu_height - plot_height;
+
+        if (x_overflow > 0 || y_overflow > 0) {
+            this.position = {
+                x: x_overflow > 0 ? this._position.x - x_overflow
+                                  : this._position.x,
+                y: y_overflow > 0 ? this._position.y - menu_height
+                                  : this._position.y
+            };
+        }
+    }
 
     private getAccessionItem(accession: PlotAccession): MenuItem {
         return {
@@ -49,15 +94,14 @@ export class PlotClickMenuComponent {
             // Menu not visible for types other than 'bin' or 'accession'
             return;
         }
-        this.clickMenu.nativeElement.style.left = `${$event.x}px`;
-        this.clickMenu.nativeElement.style.top = `${$event.y}px`;
-        this.clickMenu.nativeElement.style.visibility = 'visible';
+
+        this.position = { x: $event.x, y: $event.y };
+        this.menuContainer.nativeElement.style.visibility = 'visible';
     }
 
     hide() {
-        this.clickMenu.nativeElement.style.left = '0px';
-        this.clickMenu.nativeElement.style.left = '0px';
-        this.clickMenu.nativeElement.style.visibility = 'hidden';
+        this.position = { x: 0, y: 0 };
+        this.menuContainer.nativeElement.style.visibility = 'hidden';
     }
 
     clickMask($event) {
