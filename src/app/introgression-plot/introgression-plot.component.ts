@@ -359,6 +359,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             this.stopDrag(event);
             return;
         }
+        if (this.guiCanvas.nativeElement.style.cursor !== 'move') {
+            this.guiCanvas.nativeElement.style.cursor = 'move';
+        }
         this.plot_position.x = (event.layerX - this.drag_start_position.x)
                                / (this.zoom_level / 100);
         this.plot_position.y = (event.layerY - this.drag_start_position.y)
@@ -378,7 +381,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     private startDrag(event) {
         // drag on left mouse button
         if (event.buttons === 1) {
-            this.guiCanvas.nativeElement.style.cursor = 'move';
             this.dragging_plot = true;
             this.drag_start_position = {
                 x: event.layerX - this.plot_position.x
@@ -513,7 +515,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                                         this.TOOLTIP_DELAY);
     }
 
-    guiMouseMove() {
+    guiMouseMove(event) {
         this.prepareTooltip(event);
         if (this.dragging_plot) {
             this.dragPlot(event);
