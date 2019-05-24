@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
 import { PlotClickEvent, PlotAccession, PlotBin } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
@@ -11,6 +11,11 @@ import { formatPosition } from '../utils/utils';
 
 export class PlotClickMenuComponent implements OnInit {
     @ViewChild('menuContainer') menuContainer: ElementRef;
+
+    @Output() setReference = new EventEmitter<string>();
+    @Output() removeAccession = new EventEmitter<string>();
+    @Output() setIntervalStart = new EventEmitter<number>();
+    @Output() setIntervalEnd = new EventEmitter<number>();
 
     menuItems: MenuItem[] = [];
 
@@ -63,8 +68,20 @@ export class PlotClickMenuComponent implements OnInit {
         return {
             label: accession.accession,
             items: [
-                { label: 'Set as reference', icon: 'fa fa-star-o' },
-                { label: 'Remove from plot', icon: 'fa fa-remove' }
+                {
+                    label: 'Set as reference',
+                    icon: 'fa fa-star-o',
+                    command: () => {
+                        this.setReference.emit(accession.accession);
+                    }
+                },
+                {
+                    label: 'Remove from plot',
+                    icon: 'fa fa-remove',
+                    command: () => {
+                        this.removeAccession.emit(accession.accession);
+                    }
+                }
             ]
         };
     }
@@ -74,8 +91,20 @@ export class PlotClickMenuComponent implements OnInit {
             label: `${formatPosition(bin.start_position)}
 - ${formatPosition(bin.end_position)}`,
             items: [
-                { label: 'Set as interval start', icon: 'fa fa-chevron-left'},
-                { label: 'Set as interval end', icon: 'fa fa-chevron-right'}
+                {
+                    label: 'Set as interval start',
+                    icon: 'fa fa-chevron-left',
+                    command: () => {
+                        this.setIntervalStart.emit(bin.start_position);
+                    }
+                },
+                {
+                    label: 'Set as interval end',
+                    icon: 'fa fa-chevron-right',
+                    command: () => {
+                        this.setIntervalStart.emit(bin.end_position);
+                    }
+                }
             ]
         };
     }
