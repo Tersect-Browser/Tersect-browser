@@ -155,16 +155,8 @@ export class AppComponent implements OnInit {
         }
     }
 
-    plotMouseDown($event) {
-        this.hideClickMenu();
-    }
-
     private showClickMenu(x_pos: number, y_pos: number) {
         this.plotClickMenu.show(x_pos, y_pos);
-    }
-
-    private hideClickMenu() {
-        this.plotClickMenu.hide();
     }
 
 }
