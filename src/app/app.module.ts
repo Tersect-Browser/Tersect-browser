@@ -9,21 +9,18 @@ import { SidebarModule } from 'primeng/sidebar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToolbarModule } from 'primeng/toolbar';
 import { SliderModule } from 'primeng/slider';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ListboxModule } from 'primeng/listbox';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { MenuModule } from 'primeng/menu';
 
-import { IntrogressionPlotComponent } from './introgression-plot/introgression-plot.component';
-
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TersectBackendService } from './services/tersect-backend.service';
 import { FormsModule } from '@angular/forms';
+import { IntrogressionPlotModule } from './introgression-plot/introgression-plot.module';
 
 @NgModule({
     declarations: [
-        AppComponent,
-        IntrogressionPlotComponent
+        AppComponent
     ],
     imports: [
         HttpClientModule,
@@ -35,10 +32,10 @@ import { FormsModule } from '@angular/forms';
         DropdownModule,
         ToolbarModule,
         SliderModule,
-        ProgressSpinnerModule,
         ListboxModule,
         KeyFilterModule,
-        MenuModule
+        MenuModule,
+        IntrogressionPlotModule
     ],
     providers: [
         HttpClient,
