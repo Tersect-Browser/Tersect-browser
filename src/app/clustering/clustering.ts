@@ -2,25 +2,24 @@ import { DistanceMatrix } from '../models/DistanceMatrix';
 import * as nj from 'neighbor-joining';
 
 /**
- * Return a list of accessions in the order they appear in a Newick tree format
- * string
- * @param newick_tree
+ * Extract am ordered list of accessions from a tree object. The order
+ * represents the vertical position (top to bottom) of the accession in a drawn
+ * tree.
  */
-function newickToSortedList(newick_tree: string): string[] {
-    const sorted_accessions = newick_tree.split(',').map(accession => {
-        // Remove leading opening parentheses and anything after a colon
-        accession = accession.substr(accession.lastIndexOf('(') + 1);
-        let trailing_index = accession.indexOf(':');
-        if (trailing_index !== -1) {
-            accession = accession.substr(0, trailing_index);
+function treeToSortedList(tree): string[] {
+    const output: string[] = [];
+    _treeToSortedList(tree, output);
+    return output;
+}
+
+function _treeToSortedList(subtree, output: string[]) {
+    if (subtree.children.length) {
+        for (const child of subtree.children) {
+            _treeToSortedList(child, output);
         }
-        trailing_index = accession.indexOf(')');
-        if (trailing_index !== -1) {
-            accession = accession.substr(0, trailing_index);
-        }
-        return accession;
-    });
-    return sorted_accessions;
+    } else {
+        output.push(subtree.taxon.name);
+    }
 }
 
 export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
@@ -49,5 +48,5 @@ export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
     const RNJ = new nj.RapidNeighborJoining(filtered_matrices, accessions);
     RNJ.run();
     // return distance_matrix.samples; // all samples
-    return newickToSortedList(RNJ.getAsNewick());
+    return treeToSortedList(RNJ.getAsObject());
 }
