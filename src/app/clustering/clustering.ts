@@ -6,7 +6,7 @@ import * as nj from 'neighbor-joining';
  * represents the vertical position (top to bottom) of the accession in a drawn
  * tree.
  */
-function treeToSortedList(tree): string[] {
+export function treeToSortedList(tree): string[] {
     const output: string[] = [];
     _treeToSortedList(tree, output);
     return output;
@@ -22,8 +22,11 @@ function _treeToSortedList(subtree, output: string[]) {
     }
 }
 
-export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
-                                     accessions_to_plot: string[]): string[] {
+/**
+ * Build a neighbor-joining tree.
+ */
+export function buildNJTree(distance_matrix: DistanceMatrix,
+                            accessions_to_plot: string[]) {
     // Find indices of accessions to plot
     const plotted_indices = accessions_to_plot.map(acc => {
         return distance_matrix.samples.indexOf(acc);
@@ -38,15 +41,10 @@ export function njTreeSortAccessions(distance_matrix: DistanceMatrix,
         return distance_matrix.samples[ind];
     });
 
-    /*const accessions = distance_matrix.samples.map((x) => {
-        return { name: x };
-    });
-    const RNJ = new nj.RapidNeighborJoining(distance_matrix.matrix, accessions);*/
     const accessions = filtered_accession_names.map((x) => {
         return { name: x };
     });
     const RNJ = new nj.RapidNeighborJoining(filtered_matrices, accessions);
     RNJ.run();
-    // return distance_matrix.samples; // all samples
-    return treeToSortedList(RNJ.getAsObject());
+    return RNJ.getAsObject();
 }

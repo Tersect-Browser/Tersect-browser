@@ -5,7 +5,7 @@ import { Chromosome } from '../models/chromosome';
 import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotClickEvent } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
-import { njTreeSortAccessions } from '../clustering/clustering';
+import { buildNJTree, treeToSortedList } from '../clustering/clustering';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
@@ -160,6 +160,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
      * the neighbor joining tree clustering.
      */
     private sortedAccessions: string[] = [];
+
+    /**
+     * Neighbor joining tree built for the selected accessions.
+     */
+    private njTree;
 
     /**
      * Pairwise distance matrix between all the accessions.
@@ -457,8 +462,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             if (!sameElements(accessions, this.sortedAccessions)
                 || this.distanceMatrix !== dist_mat) {
                 this.distanceMatrix = dist_mat;
-                this.sortedAccessions = njTreeSortAccessions(this.distanceMatrix,
-                                                             accessions);
+                this.njTree = buildNJTree(this.distanceMatrix, accessions);
+                this.sortedAccessions = treeToSortedList(this.njTree);
             }
             this.generatePlotArray();
             this.plot_position = { x: 0, y: 0 };
