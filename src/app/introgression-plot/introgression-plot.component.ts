@@ -604,7 +604,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     guiMouseDown(event) {
         this.mouse_down_position = { x: event.layerX, y: event.layerY };
         const target = this.getPositionTarget(this.mouse_down_position);
-        if (target.type === 'bin' || target.type === 'background') {
+        if (target.type === 'bin' || target.type === 'background'
+            || (target.type === 'accession' && this._drawTree)) {
             this.startDrag(event);
         }
     }
