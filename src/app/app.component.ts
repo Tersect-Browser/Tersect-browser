@@ -37,6 +37,8 @@ export class AppComponent implements OnInit {
         return this._selected_chromosome;
     }
 
+    display_tree = false;
+
     selected_reference: string;
 
     widget_accessions: string[];

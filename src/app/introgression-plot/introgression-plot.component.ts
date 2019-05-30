@@ -130,8 +130,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     @Input()
     set drawTree(draw_tree: boolean) {
-        this._drawTree = draw_tree;
-        this.drawPlot();
+        if (draw_tree !== this._drawTree) {
+            this._drawTree = draw_tree;
+            this.drawPlot();
+        }
     }
     private _drawTree = false;
 

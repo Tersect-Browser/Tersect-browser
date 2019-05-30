@@ -9,6 +9,11 @@
     </div>
 
     <div class="p-grid p-justify-between tb-toolbar p-nogutter">
+        <p-toggleButton [(ngModel)]="display_tree"
+                        [style]="{'width': '2em', 'margin-top': '1em'}"
+                        onLabel="" offLabel=""
+                        offIcon="fa fa-tree"
+                        onIcon="fa fa-tree"></p-toggleButton>
         <div class="p-col accession-selector tb-toolbar-control">
             <div class="dropdown-label">Reference</div>
             <p-dropdown [options]="accessions"
@@ -75,6 +80,7 @@
 
     <div #plotContainer class="v-stretch plot-container hbox">
         <app-introgression-plot
+            [drawTree]="display_tree"
             [chromosome]="selected_chromosome"
             [accessions]="selected_accessions"
             [interval]="selected_interval"

@@ -11,6 +11,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { SliderModule } from 'primeng/slider';
 import { ListboxModule } from 'primeng/listbox';
 import { KeyFilterModule } from 'primeng/keyfilter';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TersectBackendService } from './services/tersect-backend.service';
@@ -35,6 +36,7 @@ import { PlotClickMenuModule } from './plot-click-menu/plot-click-menu.module';
         SliderModule,
         ListboxModule,
         KeyFilterModule,
+        ToggleButtonModule,
         IntrogressionPlotModule,
         PlotClickMenuModule
     ],
