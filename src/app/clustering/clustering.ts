@@ -22,6 +22,24 @@ function _treeToSortedList(subtree, output: string[]) {
     }
 }
 
+export function getTreeDepth(tree): number {
+    const output = { max_depth: 0 };
+    _getTreeDepth(tree, 0, output);
+    return output.max_depth;
+}
+
+function _getTreeDepth(subtree, depth, output: { max_depth: number }) {
+    if (subtree.children.length) {
+        for (const child of subtree.children) {
+            _getTreeDepth(child, depth + 1, output);
+        }
+    } else {
+        if (depth > output.max_depth) {
+            output.max_depth = depth;
+        }
+    }
+}
+
 /**
  * Build a neighbor-joining tree.
  */

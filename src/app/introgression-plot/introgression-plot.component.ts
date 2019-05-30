@@ -5,7 +5,7 @@ import { Chromosome } from '../models/chromosome';
 import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotClickEvent } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
-import { buildNJTree, treeToSortedList } from '../clustering/clustering';
+import { buildNJTree, treeToSortedList, getTreeDepth } from '../clustering/clustering';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
@@ -25,6 +25,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     readonly GUI_BG_COLOR = '#FFFFFF';
     readonly GUI_TEXT_COLOR = '#000000';
+    readonly GUI_TREE_STEP_WIDTH = 2;
 
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
@@ -127,6 +128,13 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
     private accessions_source = new BehaviorSubject<string[]>(undefined);
 
+    @Input()
+    set drawTree(draw_tree: boolean) {
+        this._drawTree = draw_tree;
+        this.drawPlot();
+    }
+    private _drawTree = false;
+
     /**
      * Emitted when plot elements (bins, accessions) are clicked.
      */
@@ -224,11 +232,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
                                / this.aspect_ratio, text_height);
 
-        const max_label_width = Math.max(
-            ...this.sortedAccessions.map(label => ctx.measureText(label).width)
-        );
-        this.gui_margins.left = Math.ceil(max_label_width
-                                          / (this._zoom_level / 100));
+        this.gui_margins.left = this.getLabelsWidth(ctx, this._drawTree);
         const background_width = this.gui_margins.left * this._zoom_level / 100;
 
         // Draw background
@@ -236,11 +240,73 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.fillRect(0, 0, background_width, canvas.nativeElement.height);
 
         // Draw labels
+        if (this._drawTree) {
+            this.drawLabelTree(ctx, text_height, yoffset);
+        } else {
+            this.drawSimpleLabels(ctx, text_height, yoffset);
+        }
+    }
+
+    private _drawLabelTree(subtree, depth, ctx: CanvasRenderingContext2D,
+                           text_height: number, yoffset: number,
+                           draw_state: { current_row: number }) {
+        const xpos = depth * this.GUI_TREE_STEP_WIDTH
+                     * (this._zoom_level / 100);
+        const ypos = [ yoffset + draw_state.current_row * text_height ];
+
+        if (subtree.children.length) {
+            this._drawLabelTree(subtree.children[0], depth + 1, ctx,
+                                text_height, yoffset, draw_state);
+            ypos.push(yoffset + draw_state.current_row * text_height);
+
+            this._drawLabelTree(subtree.children[1], depth + 1, ctx,
+                                text_height, yoffset, draw_state);
+            ypos.push(yoffset + draw_state.current_row * text_height);
+
+            ctx.beginPath();
+            ctx.moveTo(xpos + this.GUI_TREE_STEP_WIDTH
+                              * (this._zoom_level / 100),
+                       (ypos[0] + ypos[1]) / 2);
+            ctx.lineTo(xpos, (ypos[0] + ypos[1]) / 2);
+            ctx.lineTo(xpos, (ypos[1] + ypos[2]) / 2);
+            ctx.lineTo(xpos + this.GUI_TREE_STEP_WIDTH
+                              * (this._zoom_level / 100),
+                       (ypos[1] + ypos[2]) / 2);
+            ctx.stroke();
+        } else {
+            ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
+            draw_state.current_row++;
+        }
+    }
+
+    private drawLabelTree(ctx: CanvasRenderingContext2D,
+                          text_height: number, yoffset: number) {
+        ctx.fillStyle = this.GUI_TEXT_COLOR;
+        ctx.textBaseline = 'top';
+        const draw_state = { current_row: 0 };
+        this._drawLabelTree(this.njTree, 1, ctx, text_height, yoffset,
+                            draw_state);
+    }
+
+    private drawSimpleLabels(ctx: CanvasRenderingContext2D,
+                             text_height: number, yoffset: number) {
+        ctx.fillStyle = this.GUI_TEXT_COLOR;
+        ctx.textBaseline = 'top';
         this.sortedAccessions.forEach((label, index) => {
-            ctx.fillStyle = this.GUI_TEXT_COLOR;
-            ctx.textBaseline = 'top';
             ctx.fillText(label, 0, yoffset + index * text_height);
         });
+    }
+
+    private getLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
+        const max_label_width = Math.max(
+            ...this.sortedAccessions.map(label => ctx.measureText(label).width)
+        );
+        let gui_left_width = max_label_width / (this._zoom_level / 100);
+        if (tree) {
+            gui_left_width += (getTreeDepth(this.njTree) + 1)
+                              * this.GUI_TREE_STEP_WIDTH;
+        }
+        return Math.ceil(gui_left_width);
     }
 
     private generatePlotArray() {
