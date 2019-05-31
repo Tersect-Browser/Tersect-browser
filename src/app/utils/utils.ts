@@ -31,8 +31,18 @@ export function floorTo(x: number, a: number): number {
  * Format genomic position in terms of base pairs into a string with comma
  * separators for thousands.
  */
-export function formatPosition(genome_position: number): string {
-    return genome_position.toLocaleString('en');
+export function formatPosition(genome_position: number,
+                               unit?: 'kbp' | 'Mbp'): string {
+    const pos = Math.abs(genome_position); // preventing -0
+    if (isNullOrUndefined(unit)) {
+        return pos.toLocaleString('en');
+    } else {
+        if (unit === 'Mbp') {
+            return `${(pos / 1e6).toLocaleString('en')} Mbp`;
+        } else {
+            return `${(pos / 1e3).toLocaleString('en')} kbp`;
+        }
+    }
 }
 
 /**

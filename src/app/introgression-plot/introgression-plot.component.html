@@ -8,12 +8,17 @@
     <div class="error-message">{{ error_message }}</div>
     <div class="update-shadow"></div>
 </div>
-<canvas #plotCanvas class="sharp-canvas">
+<canvas #topGuiCanvas class="top-gui"
+    [style.height.px]="gui_margins.top">
+</canvas>
+<canvas #plotCanvas class="sharp-canvas"
+    [style.top.px]="gui_margins.top">
 </canvas>
 <canvas #guiCanvas class="gui-canvas"
-                   (mousedown)="guiMouseDown($event)"
-                   (mouseup)="guiMouseUp($event)"
-                   (mousemove)="guiMouseMove($event)"
-                   (mouseleave)="guiMouseLeave($event)">
+    [style.top.px]="gui_margins.top"
+    (mousedown)="guiMouseDown($event)"
+    (mouseup)="guiMouseUp($event)"
+    (mousemove)="guiMouseMove($event)"
+    (mouseleave)="guiMouseLeave($event)">
 </canvas>
 <div #tooltip class="plot-tooltip no-select"></div>

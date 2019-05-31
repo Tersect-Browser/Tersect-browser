@@ -10,7 +10,7 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements, ceilTo, formatPosition } from '../utils/utils';
+import { sameElements, ceilTo, formatPosition, findClosest } from '../utils/utils';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -19,13 +19,33 @@ import { sameElements, ceilTo, formatPosition } from '../utils/utils';
 })
 
 export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
+    @ViewChild('topGuiCanvas') topGuiCanvas: ElementRef;
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
     @ViewChild('guiCanvas') guiCanvas: ElementRef;
     @ViewChild('tooltip') tooltip: ElementRef;
 
     readonly GUI_BG_COLOR = '#FFFFFF';
+    readonly GUI_LABEL_FONT = 'Courier New';
     readonly GUI_TEXT_COLOR = '#000000';
     readonly GUI_TREE_STEP_WIDTH = 2;
+
+    readonly GUI_SCALE_COLOR = '#327e04';
+    readonly GUI_SCALE_SIZE = 24;
+    readonly GUI_SCALE_FONT_SIZE = 13;
+    readonly GUI_SCALE_FONT = 'Arial';
+    readonly GUI_SCALE_TICK_SIZES = [
+        2500, 5000, 10000,
+        25000, 50000, 100000,
+        250000, 500000, 1000000,
+        2500000, 5000000, 10000000
+    ];
+    readonly GUI_TICK_LENGTH = 6;
+
+    /**
+     * Optimal large tick distance in pixels. Ticks will be drawn as close to
+     * this distance as possible using one of the GUI_SCALE_TICK_SIZES.
+     */
+    readonly GUI_TICK_DISTANCE = 120;
 
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
@@ -72,7 +92,12 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     /**
      * Displacement of initial plot position based on GUI size.
      */
-    private gui_margins = { top: 0, right: 0, bottom: 0, left: 0 };
+    private gui_margins = {
+        top: this.GUI_SCALE_SIZE,
+        right: 0,
+        bottom: 0,
+        left: 0
+    };
 
     /**
      * Used to keep remember the position of a mouse press.
@@ -108,6 +133,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
     private interval_source = new BehaviorSubject<number[]>(undefined);
 
+    get interval(): number[] {
+        return this.interval_source.getValue();
+    }
+
     @Input()
     set reference(reference_accession: string) {
         this.reference_source.next(reference_accession);
@@ -119,6 +148,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         this.binsize_source.next(binsize);
     }
     private binsize_source = new BehaviorSubject<number>(this.DEFAULT_BIN_SIZE);
+
+    get binsize(): number {
+        return this.binsize_source.getValue();
+    }
 
     @Input()
     set accessions(accessions: string[]) {
@@ -223,14 +256,99 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                       this.guiCanvas.nativeElement.height);
         this.drawAccessionLabels(this.guiCanvas);
+        this.drawScale();
+    }
+
+    private _drawScaleTick(ctx: CanvasRenderingContext2D,
+                           position: number, useLabel: boolean,
+                           unit?: 'Mbp' | 'kbp') {
+        const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
+        const bp_per_pixel = this.binsize / (this._zoom_level / 100);
+        const tick_x = (this.plot_position.x * this.binsize + position
+                        - this.interval[0])
+                       / bp_per_pixel;
+        ctx.beginPath();
+        ctx.moveTo(tick_x, canvas_height - 1);
+        ctx.lineTo(tick_x, canvas_height - this.GUI_TICK_LENGTH - 1);
+        ctx.stroke();
+        if (useLabel) {
+            const label = formatPosition(position, unit);
+            const half_label_width = ctx.measureText(label).width / 2;
+
+            const label_pos = tick_x - half_label_width;
+            if (label_pos < 0) {
+                if (- label_pos > half_label_width) {
+                    ctx.fillText(label, tick_x + half_label_width, 2);
+                } else {
+                    ctx.fillText(label, tick_x - label_pos, 2);
+                }
+            } else {
+                ctx.fillText(label, tick_x, 2);
+            }
+        }
+    }
+
+    private drawScale() {
+        const canvas_width = this.topGuiCanvas.nativeElement.offsetWidth;
+        const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
+        this.topGuiCanvas.nativeElement.width = canvas_width;
+        this.topGuiCanvas.nativeElement.height = canvas_height;
+        const ctx: CanvasRenderingContext2D = this.topGuiCanvas
+                                                  .nativeElement
+                                                  .getContext('2d');
+        ctx.clearRect(0, 0, canvas_width, canvas_height);
+
+        // Correct for canvas positioning (no scale over label column)
+        // and canvas pixel positioning (offset by 0.5 by default)
+        const effective_width = canvas_width - this.gui_margins.left
+                                               * (this._zoom_level / 100);
+        ctx.translate(0.5 + canvas_width - effective_width, 0.5);
+
+        ctx.strokeStyle = this.GUI_SCALE_COLOR;
+        ctx.lineWidth = 1;
+
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'center';
+        ctx.font = `${this.GUI_SCALE_FONT_SIZE}px ${this.GUI_SCALE_FONT}`;
+
+        const bp_per_pixel = this.binsize / (this._zoom_level / 100);
+        const tick_size = findClosest(this.GUI_TICK_DISTANCE * bp_per_pixel,
+                                      this.GUI_SCALE_TICK_SIZES);
+        const unit = tick_size < 100000 ? 'kbp' : 'Mbp';
+
+        const x_start = (this.plot_position.x * this.binsize)
+                        / bp_per_pixel;
+        const x_end = (this.plot_position.x * this.binsize
+                       + this.interval[1] - this.interval[0])
+                      / bp_per_pixel;
+
+        // Baseline
+        ctx.beginPath();
+        ctx.moveTo(x_start, canvas_height - 1);
+        ctx.lineTo(x_end, canvas_height - 1);
+        ctx.stroke();
+
+        this._drawScaleTick(ctx, this.interval[0], false);
+        this._drawScaleTick(ctx, this.interval[1], false);
+
+        const first_tick = ceilTo(this.interval[0] - 1, tick_size);
+        for (let pos = first_tick; pos < this.interval[1]; pos += tick_size) {
+            this._drawScaleTick(ctx, pos, true, unit);
+        }
+
+        // Hide scale over labels
+        ctx.clearRect(-(canvas_width - effective_width) - 0.5, 0,
+                      this.gui_margins.left * (this._zoom_level / 100),
+                      canvas_height);
     }
 
     private drawAccessionLabels(canvas: ElementRef) {
         const ctx: CanvasRenderingContext2D = canvas.nativeElement
                                                     .getContext('2d');
         const text_height = this.getRowHeight();
-        ctx.font = `${text_height}px Arial`;
+        ctx.font = `${text_height}px ${this.GUI_LABEL_FONT}`;
 
+        // Offset due to plot scroll
         const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
                                / this.aspect_ratio, text_height);
 
@@ -362,7 +480,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.putImageData(new ImageData(this.plot_array, this.getColNum(),
                                        this.getRowNum()),
                          this.plot_position.x + this.gui_margins.left,
-                         this.plot_position.y + this.gui_margins.top);
+                         this.plot_position.y);
     }
 
     private drawPlot() {
@@ -397,7 +515,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                - this.gui_margins.left
                - this.plot_position.x,
             y: Math.floor(mouse_position.y / this.getRowHeight())
-               - this.gui_margins.top
                - this.plot_position.y
         };
 
@@ -592,8 +709,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         this.prepareTooltip(event);
         if (this.dragging_plot) {
             this.dragPlot(event);
-        } else {
-            // console.log(event);
         }
     }
 
