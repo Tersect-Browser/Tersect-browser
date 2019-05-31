@@ -34,3 +34,19 @@ export function floorTo(x: number, a: number): number {
 export function formatPosition(genome_position: number): string {
     return genome_position.toLocaleString('en');
 }
+
+/**
+ * Find the closest value to x among the provided choices.
+ */
+export function findClosest(x: number, choices: number[]): number {
+    let result = NaN;
+    let min_distance = Infinity;
+    choices.forEach((choice) => {
+        const dist = Math.abs(x - choice);
+        if (dist < min_distance) {
+            min_distance = dist;
+            result = choice;
+        }
+    });
+    return result;
+}
