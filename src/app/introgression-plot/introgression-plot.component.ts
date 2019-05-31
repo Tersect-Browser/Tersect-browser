@@ -92,7 +92,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     /**
      * Displacement of initial plot position based on GUI size.
      */
-    private gui_margins = {
+    gui_margins = {
         top: this.GUI_SCALE_SIZE,
         right: 0,
         bottom: 0,
