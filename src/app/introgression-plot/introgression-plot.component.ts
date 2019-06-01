@@ -373,7 +373,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     private _drawLabelTree(subtree: TreeNode, depth: number,
                            ctx: CanvasRenderingContext2D,
-                           text_height: number, yoffset: number,
+                           background_width: number, text_height: number,
+                           yoffset: number,
                            draw_state: { current_row: number }) {
         const xpos = depth * this.GUI_TREE_STEP_WIDTH
                      * (this._zoom_level / 100);
@@ -381,14 +382,18 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
         if (subtree.children.length) {
             this._drawLabelTree(subtree.children[0], depth + 1, ctx,
-                                text_height, yoffset, draw_state);
+                                background_width, text_height, yoffset,
+                                draw_state);
             ypos.push(yoffset + draw_state.current_row * text_height);
 
             this._drawLabelTree(subtree.children[1], depth + 1, ctx,
-                                text_height, yoffset, draw_state);
+                                background_width, text_height, yoffset,
+                                draw_state);
             ypos.push(yoffset + draw_state.current_row * text_height);
 
             ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.setLineDash([]);
             ctx.moveTo(xpos + this.GUI_TREE_STEP_WIDTH
                               * (this._zoom_level / 100),
                        (ypos[0] + ypos[1]) / 2);
@@ -400,6 +405,13 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             ctx.stroke();
         } else {
             ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
+            ctx.beginPath();
+            ctx.lineWidth = 0.5;
+            ctx.setLineDash([1, 3]);
+            ctx.moveTo(xpos + ctx.measureText(subtree.taxon.name).width,
+                       ypos[0] + text_height / 2);
+            ctx.lineTo(background_width, ypos[0] + text_height / 2);
+            ctx.stroke();
             draw_state.current_row++;
         }
     }
@@ -409,8 +421,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.fillStyle = this.GUI_TEXT_COLOR;
         ctx.textBaseline = 'top';
         const draw_state = { current_row: 0 };
-        this._drawLabelTree(this.njTree, 1, ctx, text_height, yoffset,
-                            draw_state);
+        const background_width = this.gui_margins.left * this._zoom_level / 100;
+        this._drawLabelTree(this.njTree, 1, ctx, background_width, text_height,
+                            yoffset, draw_state);
     }
 
     private drawSimpleLabels(ctx: CanvasRenderingContext2D,
