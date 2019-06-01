@@ -260,16 +260,19 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private _drawScaleTick(ctx: CanvasRenderingContext2D,
-                           position: number, useLabel: boolean = false,
+                           position: number, type: 'major' | 'minor',
+                           useLabel: boolean = false,
                            unit?: 'Mbp' | 'kbp') {
         const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
         const bp_per_pixel = this.binsize / (this._zoom_level / 100);
         const tick_x = (this.plot_position.x * this.binsize + position
                         - this.interval[0])
                        / bp_per_pixel;
+        const tick_size = type === 'major' ? this.GUI_TICK_LENGTH
+                                           : this.GUI_TICK_LENGTH / 2;
         ctx.beginPath();
         ctx.moveTo(tick_x, canvas_height - 1);
-        ctx.lineTo(tick_x, canvas_height - this.GUI_TICK_LENGTH - 1);
+        ctx.lineTo(tick_x, canvas_height - tick_size - 1);
         ctx.stroke();
         if (useLabel) {
             const label = formatPosition(position, unit);
@@ -329,12 +332,12 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.lineTo(x_end, canvas_height - 1);
         ctx.stroke();
 
-        this._drawScaleTick(ctx, this.interval[0]);
-        this._drawScaleTick(ctx, this.interval[1]);
+        this._drawScaleTick(ctx, this.interval[0], 'major');
+        this._drawScaleTick(ctx, this.interval[1], 'major');
 
         const first_tick = ceilTo(this.interval[0] - 1, tick_size);
         for (let pos = first_tick; pos < this.interval[1]; pos += tick_size) {
-            this._drawScaleTick(ctx, pos, true, unit);
+            this._drawScaleTick(ctx, pos, 'major', true, unit);
         }
 
         // Hide scale over labels
