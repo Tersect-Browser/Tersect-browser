@@ -1,18 +1,24 @@
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import * as nj from 'neighbor-joining';
 
+export type TreeNode = {
+    taxon: { name: string, genotype?: string },
+    length: number,
+    children: TreeNode[]
+};
+
 /**
  * Extract am ordered list of accessions from a tree object. The order
  * represents the vertical position (top to bottom) of the accession in a drawn
  * tree.
  */
-export function treeToSortedList(tree): string[] {
+export function treeToSortedList(tree: TreeNode): string[] {
     const output: string[] = [];
     _treeToSortedList(tree, output);
     return output;
 }
 
-function _treeToSortedList(subtree, output: string[]) {
+function _treeToSortedList(subtree: TreeNode, output: string[]) {
     if (subtree.children.length) {
         for (const child of subtree.children) {
             _treeToSortedList(child, output);
@@ -22,13 +28,14 @@ function _treeToSortedList(subtree, output: string[]) {
     }
 }
 
-export function getTreeDepth(tree): number {
+export function getTreeDepth(tree: TreeNode): number {
     const output = { max_depth: 0 };
     _getTreeDepth(tree, 0, output);
     return output.max_depth;
 }
 
-function _getTreeDepth(subtree, depth, output: { max_depth: number }) {
+function _getTreeDepth(subtree: TreeNode, depth: number,
+                       output: { max_depth: number }) {
     if (subtree.children.length) {
         for (const child of subtree.children) {
             _getTreeDepth(child, depth + 1, output);
