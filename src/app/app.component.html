@@ -28,18 +28,6 @@
                         [style]="{'width':'100%'}"
                         [(ngModel)]="selected_chromosome"></p-dropdown>
         </div>
-        <div class="p-col binsize-selector tb-toolbar-control">
-            <div class="slider-label">Bin size: {{ widget_binsize }}</div>
-            <div class="binsize-slider">
-                <p-slider [(ngModel)]="widget_binsize"
-                          [animate]="true"
-                          [style]="{'width':'100%'}"
-                          [min]="binsize_min" [max]="binsize_max"
-                          [step]="binsize_step"
-                          (onChange)="binsizeSliderChange($event)"
-                          (onSlideEnd)="updateBinsize()"></p-slider>
-            </div>
-        </div>
         <div class="p-col interval-selector tb-toolbar-control">
             <div class="interval-label">
                 Interval:
@@ -58,6 +46,18 @@
                           (onChange)="intervalSliderChange($event)"
                           (onSlideEnd)="updateInterval()"
                           [min]="interval_min" [max]="interval_max"></p-slider>
+            </div>
+        </div>
+        <div class="p-col binsize-selector tb-toolbar-control">
+            <div class="slider-label">Bin size: {{ widget_binsize }}</div>
+            <div class="binsize-slider">
+                <p-slider [(ngModel)]="widget_binsize"
+                          [animate]="true"
+                          [style]="{'width':'100%'}"
+                          [min]="binsize_min" [max]="binsize_max"
+                          [step]="binsize_step"
+                          (onChange)="binsizeSliderChange($event)"
+                          (onSlideEnd)="updateBinsize()"></p-slider>
             </div>
         </div>
         <div class="p-col zoom-selector tb-toolbar-control">
