@@ -12,6 +12,13 @@ import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
 import { sameElements, ceilTo, formatPosition, findClosest } from '../utils/utils';
 
+export interface ScaleTick {
+    position: number,
+    type: 'major' | 'minor',
+    useLabel: boolean,
+    unit?: 'Mbp' | 'kbp'
+}
+
 @Component({
     selector: 'app-introgression-plot',
     templateUrl: './introgression-plot.component.html',
@@ -264,22 +271,20 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private _drawScaleTick(ctx: CanvasRenderingContext2D,
-                           position: number, type: 'major' | 'minor',
-                           useLabel: boolean = false,
-                           unit?: 'Mbp' | 'kbp') {
+                           tick: ScaleTick) {
         const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
         const bp_per_pixel = this.binsize / (this._zoom_level / 100);
-        const tick_x = (this.plot_position.x * this.binsize + position
+        const tick_x = (this.plot_position.x * this.binsize + tick.position
                         - this.interval[0])
                        / bp_per_pixel;
-        const tick_size = type === 'major' ? this.GUI_TICK_LENGTH
-                                           : this.GUI_TICK_LENGTH / 2;
+        const tick_size = tick.type === 'major' ? this.GUI_TICK_LENGTH
+                                                : this.GUI_TICK_LENGTH / 2;
         ctx.beginPath();
         ctx.moveTo(tick_x, canvas_height - 1);
         ctx.lineTo(tick_x, canvas_height - tick_size - 1);
         ctx.stroke();
-        if (useLabel) {
-            const label = formatPosition(position, unit);
+        if (tick.useLabel) {
+            const label = formatPosition(tick.position, tick.unit);
             let label_x = tick_x;
 
             // Shifting first label if it does not fit in the viewing area
@@ -336,12 +341,37 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.lineTo(x_end, canvas_height - 1);
         ctx.stroke();
 
-        this._drawScaleTick(ctx, this.interval[0], 'major');
-        this._drawScaleTick(ctx, this.interval[1], 'major');
+        // Start / end ticks
+        this._drawScaleTick(ctx, {
+            position: this.interval[0],
+            type: 'major',
+            useLabel: false
+        });
+        this._drawScaleTick(ctx, {
+            position: this.interval[1],
+            type: 'major',
+            useLabel: false
+        });
 
-        const first_tick = ceilTo(this.interval[0] - 1, tick_size);
-        for (let pos = first_tick; pos < this.interval[1]; pos += tick_size) {
-            this._drawScaleTick(ctx, pos, 'major', true, unit);
+        // Major ticks
+        for (let pos = ceilTo(this.interval[0] - 1, tick_size);
+                 pos < this.interval[1]; pos += tick_size) {
+            this._drawScaleTick(ctx, {
+                position: pos,
+                type: 'major',
+                useLabel: true, 
+                unit: unit
+            });
+        }
+
+        // Minor ticks
+        for (let pos = ceilTo(this.interval[0] - 1, tick_size / 5);
+                 pos < this.interval[1]; pos += tick_size / 5) {
+            this._drawScaleTick(ctx, {
+                position: pos,
+                type: 'minor',
+                useLabel: false
+            })
         }
 
         // Hide scale over labels
