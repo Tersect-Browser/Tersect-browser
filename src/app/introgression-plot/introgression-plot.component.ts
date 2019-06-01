@@ -119,7 +119,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     /**
      * Timer used to delay displaying a tooltip.
      */
-    private tooltip_timer;
+    private tooltip_timer: NodeJS.Timer;
 
     @Input()
     set chromosome(chromosome: Chromosome) {

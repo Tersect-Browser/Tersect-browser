@@ -59,10 +59,10 @@ export class AppComponent implements OnInit {
     widget_binsize = this.selected_binsize;
 
     readonly TYPING_DELAY = 750;
-    private interval_input_timeout;
+    private interval_input_timeout: NodeJS.Timer;
 
     readonly BINSIZE_SLIDER_DELAY = 750;
-    private binsize_slider_timeout;
+    private binsize_slider_timeout: NodeJS.Timer;
 
     readonly MAX_ZOOM_LEVEL = 1000;
     readonly MIN_ZOOM_LEVEL = 100;
