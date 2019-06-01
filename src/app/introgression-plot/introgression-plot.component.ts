@@ -260,7 +260,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private _drawScaleTick(ctx: CanvasRenderingContext2D,
-                           position: number, useLabel: boolean,
+                           position: number, useLabel: boolean = false,
                            unit?: 'Mbp' | 'kbp') {
         const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
         const bp_per_pixel = this.binsize / (this._zoom_level / 100);
@@ -273,18 +273,19 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.stroke();
         if (useLabel) {
             const label = formatPosition(position, unit);
-            const half_label_width = ctx.measureText(label).width / 2;
+            let label_x = tick_x;
 
-            const label_pos = tick_x - half_label_width;
-            if (label_pos < 0) {
-                if (- label_pos > half_label_width) {
-                    ctx.fillText(label, tick_x + half_label_width, 2);
+            // Shifting first label if it does not fit in the viewing area
+            const half_label_width = ctx.measureText(label).width / 2;
+            const label_overflow = tick_x - half_label_width;
+            if (label_overflow < 0) {
+                if (-label_overflow > half_label_width) {
+                    label_x += half_label_width;
                 } else {
-                    ctx.fillText(label, tick_x - label_pos, 2);
+                    label_x -= label_overflow;
                 }
-            } else {
-                ctx.fillText(label, tick_x, 2);
             }
+            ctx.fillText(label, label_x, 2);
         }
     }
 
@@ -328,8 +329,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.lineTo(x_end, canvas_height - 1);
         ctx.stroke();
 
-        this._drawScaleTick(ctx, this.interval[0], false);
-        this._drawScaleTick(ctx, this.interval[1], false);
+        this._drawScaleTick(ctx, this.interval[0]);
+        this._drawScaleTick(ctx, this.interval[1]);
 
         const first_tick = ceilTo(this.interval[0] - 1, tick_size);
         for (let pos = first_tick; pos < this.interval[1]; pos += tick_size) {
