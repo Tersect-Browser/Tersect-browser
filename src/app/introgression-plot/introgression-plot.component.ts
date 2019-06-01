@@ -371,7 +371,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         }
     }
 
-    private _drawLabelTree(subtree, depth, ctx: CanvasRenderingContext2D,
+    private _drawLabelTree(subtree: TreeNode, depth: number,
+                           ctx: CanvasRenderingContext2D,
                            text_height: number, yoffset: number,
                            draw_state: { current_row: number }) {
         const xpos = depth * this.GUI_TREE_STEP_WIDTH
