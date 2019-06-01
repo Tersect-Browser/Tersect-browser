@@ -694,8 +694,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     private prepareTooltip(event) {
         this.hideTooltip();
-        const pos = { x: event.layerX, y: event.layerY };
-        const area = this.getPositionTarget(pos);
+        const tooltip_pos = { x: event.clientX, y: event.clientY };
+        const plot_pos = { x: event.layerX, y: event.layerY }
+        const area = this.getPositionTarget(plot_pos);
         if (area.type === 'background') { return; }
 
         let content = '';
@@ -706,8 +707,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         }
 
         clearTimeout(this.tooltip_timer);
-        this.tooltip_timer = setTimeout(() => this.showTooltip(pos, content),
-                                        this.TOOLTIP_DELAY);
+        this.tooltip_timer = setTimeout(
+            () => this.showTooltip(tooltip_pos, content), this.TOOLTIP_DELAY
+        );
     }
 
     guiMouseMove(event) {
