@@ -28,6 +28,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     readonly GUI_LABEL_FONT = 'Courier New';
     readonly GUI_TEXT_COLOR = '#000000';
     readonly GUI_TREE_STEP_WIDTH = 2;
+    readonly GUI_TREE_LINE_WIDTH = 0.2;
+    readonly GUI_TREE_LINE_DASH = [0.2, 0.2];
+    readonly GUI_TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
+    readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
 
     readonly GUI_SCALE_COLOR = '#327e04';
     readonly GUI_SCALE_SIZE = 24;
@@ -392,7 +396,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             ypos.push(yoffset + draw_state.current_row * text_height);
 
             ctx.beginPath();
-            ctx.lineWidth = 1;
+            ctx.lineWidth = this.GUI_TREE_LINE_WIDTH
+                            * this._zoom_level / 100;
+            ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
             ctx.moveTo(xpos + this.GUI_TREE_STEP_WIDTH
                               * (this._zoom_level / 100),
@@ -406,11 +412,15 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         } else {
             ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
             ctx.beginPath();
-            ctx.lineWidth = 0.5;
-            ctx.setLineDash([1, 3]);
-            ctx.moveTo(xpos + ctx.measureText(subtree.taxon.name).width,
-                       ypos[0] + text_height / 2);
-            ctx.lineTo(background_width, ypos[0] + text_height / 2);
+            ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
+                            * this._zoom_level / 100;
+            ctx.strokeStyle = this.GUI_TREE_LINE_DASH_STYLE;
+            ctx.setLineDash(this.GUI_TREE_LINE_DASH.map(
+                x => x * this._zoom_level / 100
+            ));
+            ctx.moveTo(xpos + ctx.measureText(subtree.taxon.name).width + 5,
+                       ypos[0] + text_height / 2 - 0.5);
+            ctx.lineTo(background_width, ypos[0] + text_height / 2 - 0.5);
             ctx.stroke();
             draw_state.current_row++;
         }
