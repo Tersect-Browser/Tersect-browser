@@ -737,8 +737,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             && this.mouse_down_position.y === event.layerY) {
             const target = this.getPositionTarget(this.mouse_down_position);
             this.plotClick.emit({
-                x: event.layerX,
-                y: event.layerY,
+                x: event.clientX,
+                y: event.clientY,
                 target: target,
             });
         }

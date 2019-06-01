@@ -37,22 +37,17 @@ export class PlotClickMenuComponent implements OnInit {
      * Adjusts menu position so that is does not overflow.
      */
     private adjustPosition() {
-        const plot_width = this.menuContainer.nativeElement
-                                             .parentElement
-                                             .parentElement.clientWidth;
-        const plot_height = this.menuContainer.nativeElement
-                                              .parentElement
-                                              .parentElement.clientHeight;
         const menu_width = this.menuContainer.nativeElement.offsetWidth;
         const menu_height = this.menuContainer.nativeElement.offsetHeight;
 
-        if (menu_width > plot_width || menu_height > plot_height) {
+        if (menu_width > window.innerWidth
+            || menu_height > window.innerHeight) {
             // No way to fit the menu inside the plot area
             return;
         }
 
-        const x_overflow = this._position.x + menu_width - plot_width;
-        const y_overflow = this._position.y + menu_height - plot_height;
+        const x_overflow = this._position.x + menu_width - window.innerWidth;
+        const y_overflow = this._position.y + menu_height - window.innerHeight;
 
         if (x_overflow > 0 || y_overflow > 0) {
             this.position = {
