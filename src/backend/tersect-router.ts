@@ -5,6 +5,7 @@ import { Router } from 'express';
 import { exec, execSync } from 'child_process';
 
 import { DBMatrix } from './db/dbmatrix';
+import { GapIndex } from './db/gapindex';
 
 export const router = Router();
 
@@ -72,6 +73,18 @@ router.route('/samples')
             // Strip the last, empty element
             const samples = stdout.split('\n').slice(0, -1);
             res.json(samples);
+        }
+    });
+});
+
+router.route('/gaps/:chromosome')
+      .get((req, res) => {
+    GapIndex.findOne({ chromosome: req.params.chromosome })
+            .exec((err, gaps) => {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(gaps['gaps']);
         }
     });
 });
