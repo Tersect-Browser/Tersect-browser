@@ -10,7 +10,8 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements, ceilTo, formatPosition, findClosest } from '../utils/utils';
+import { sameElements, ceilTo, formatPosition, findClosest, floorTo } from '../utils/utils';
+import { SequenceGap } from '../models/GapIndex';
 
 export interface ScaleTick {
     position: number,
@@ -30,6 +31,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
     @ViewChild('guiCanvas') guiCanvas: ElementRef;
     @ViewChild('tooltip') tooltip: ElementRef;
+
+    // R, G, B, A color
+    readonly GAP_COLOR = [240, 180, 180, 255];
 
     readonly GUI_BG_COLOR = '#FFFFFF';
     readonly GUI_LABEL_FONT = 'Courier New';
@@ -214,6 +218,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
      * the neighbor joining tree clustering.
      */
     private sortedAccessions: string[] = [];
+
+    /**
+     * List of sequence gaps in the current chromosome.
+     */
+    private sequenceGaps: SequenceGap[];
 
     /**
      * Neighbor joining tree built for the selected accessions.
@@ -511,6 +520,43 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 this.plot_array[pos + 3] = color.data[3];
             });
         });
+        this.drawGaps();
+    }
+
+    /**
+     * Add gaps to existing plot array.
+     */
+    private drawGaps() {
+        this.sequenceGaps.forEach(gap => {
+            if (gap.size >= this.binsize) {
+                this.drawGap(gap);
+            }
+        })
+    }
+
+    private drawGap(gap: SequenceGap) {
+        const row_num = this.getRowNum();
+        const col_num = this.getColNum();
+        const start_pos = gap.start > this.interval[0] ? gap.start
+                                                       : this.interval[0];
+        const end_pos = gap.end < this.interval[1] ? gap.end
+                                                   : this.interval[1];
+        const bin_start = ceilTo(start_pos - this.interval[0], this.binsize)
+                          / this.binsize;
+        // NOTE: bin_end index is exclusive while gap.end position is inclusive
+        const bin_end = floorTo(end_pos - this.interval[0] + 1, this.binsize)
+                        / this.binsize;
+        for (let accession_index = 0;
+                 accession_index < row_num;
+                 accession_index++) {
+            for (let bin_index = bin_start; bin_index < bin_end; bin_index++) {
+                const pos = 4 * (bin_index + col_num * accession_index);
+                this.plot_array[pos] = this.GAP_COLOR[0];
+                this.plot_array[pos + 1] = this.GAP_COLOR[1];
+                this.plot_array[pos + 2] = this.GAP_COLOR[2];
+                this.plot_array[pos + 3] = this.GAP_COLOR[3];
+            }
+        }
     }
 
     private getColWidth() {
@@ -688,25 +734,36 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             debounceTime(this.DEBOUNCE_TIME)
         );
 
+        const gaps$ = this.chromosome_source.pipe(
+            filter((chrom) => !isNullOrUndefined(chrom)),
+            tap(this.startLoading),
+            debounceTime(this.DEBOUNCE_TIME),
+            switchMap((chrom) => this.tersectBackendService
+                                     .getGapIndex(chrom.name))
+        );
+
         combineLatest(ref_distance_bins$,
                       distance_matrix$,
-                      accessions$).pipe(
-            filter(([ref_dist, dist_mat, accessions]) =>
+                      accessions$,
+                      gaps$).pipe(
+            filter(([ref_dist, dist_mat, accessions, gaps]) =>
                 !isNullOrUndefined(ref_dist)
                 && !isNullOrUndefined(dist_mat)
-                && !isNullOrUndefined(accessions)),
+                && !isNullOrUndefined(accessions)
+                && !isNullOrUndefined(gaps)),
             tap(this.startLoading),
-            filter(([ref_dist, dist_mat, ]) =>
+            filter(([ref_dist, dist_mat,,]) =>
                    ref_dist['region'] === dist_mat['region']
                    && ref_dist['reference'] === this.reference_source.getValue()
             )
-        ).subscribe(([ref_dist, dist_mat, accessions]) => {
+        ).subscribe(([ref_dist, dist_mat, accessions, gaps]) => {
             this.distanceBins = ref_dist['bins'];
             if (!sameElements(accessions, this.sortedAccessions)
                 || this.distanceMatrix !== dist_mat) {
                 this.distanceMatrix = dist_mat;
                 this.njTree = buildNJTree(this.distanceMatrix, accessions);
                 this.sortedAccessions = treeToSortedList(this.njTree);
+                this.sequenceGaps = gaps;
             }
             this.generatePlotArray();
             this.plot_position = { x: 0, y: 0 };
