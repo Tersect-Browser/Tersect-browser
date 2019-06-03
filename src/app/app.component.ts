@@ -31,6 +31,7 @@ export class AppComponent implements OnInit {
         if (this.selected_interval[1] > this.interval_max) {
             this.selected_interval[1] = this.interval_max;
         }
+        this.updateInterval();
         this._selected_chromosome = chrom;
     }
     get selected_chromosome(): Chromosome {
