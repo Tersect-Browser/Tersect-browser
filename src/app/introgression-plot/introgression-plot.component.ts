@@ -14,10 +14,10 @@ import { sameElements, ceilTo, formatPosition, findClosest, floorTo } from '../u
 import { SequenceGap } from '../models/GapIndex';
 
 export interface ScaleTick {
-    position: number,
-    type: 'major' | 'minor',
-    useLabel: boolean,
-    unit?: 'Mbp' | 'kbp'
+    position: number;
+    type: 'major' | 'minor';
+    useLabel: boolean;
+    unit?: 'Mbp' | 'kbp';
 }
 
 @Component({
@@ -372,7 +372,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             this._drawScaleTick(ctx, {
                 position: pos,
                 type: 'major',
-                useLabel: true, 
+                useLabel: true,
                 unit: unit
             });
         }
@@ -384,7 +384,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 position: pos,
                 type: 'minor',
                 useLabel: false
-            })
+            });
         }
 
         // Hide scale over labels
@@ -535,7 +535,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             if (gap.size >= this.binsize) {
                 this.drawGap(gap);
             }
-        })
+        });
     }
 
     private drawGap(gap: SequenceGap) {
@@ -756,7 +756,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 && !isNullOrUndefined(accessions)
                 && !isNullOrUndefined(gaps)),
             tap(this.startLoading),
-            filter(([ref_dist, dist_mat,,]) =>
+            filter(([ref_dist, dist_mat, , ]) =>
                    ref_dist['region'] === dist_mat['region']
                    && ref_dist['region'].split(':')[0] === this.chromosome.name
                    && ref_dist['reference'] === this.reference_source.getValue()
@@ -810,7 +810,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     private prepareTooltip(event) {
         this.hideTooltip();
         const tooltip_pos = { x: event.clientX, y: event.clientY };
-        const plot_pos = { x: event.layerX, y: event.layerY }
+        const plot_pos = { x: event.layerX, y: event.layerY };
         const area = this.getPositionTarget(plot_pos);
         if (area.type === 'background') { return; }
 
