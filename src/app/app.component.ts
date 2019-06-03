@@ -23,14 +23,9 @@ export class AppComponent implements OnInit {
     _selected_chromosome: Chromosome = this.chromosomes[0].value;
     @Input()
     set selected_chromosome(chrom: Chromosome) {
-        // retaining the same selection proportions
         this.interval_max = chrom.size;
-        if (this.selected_interval[0] >= this.interval_max - 10000) {
-            this.selected_interval[0] = this.interval_max - 10000;
-        }
-        if (this.selected_interval[1] > this.interval_max) {
-            this.selected_interval[1] = this.interval_max;
-        }
+        this.selected_interval[0] = 1;
+        this.selected_interval[1] = this.interval_max;
         this.updateInterval();
         this._selected_chromosome = chrom;
     }
