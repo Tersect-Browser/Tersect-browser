@@ -142,6 +142,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
     private chromosome_source = new BehaviorSubject<Chromosome>(undefined);
 
+    get chromosome() {
+        return this.chromosome_source.getValue();
+    }
+
     @Input()
     set interval(interval: number[]) {
         this.interval_source.next(interval);
@@ -754,6 +758,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             tap(this.startLoading),
             filter(([ref_dist, dist_mat,,]) =>
                    ref_dist['region'] === dist_mat['region']
+                   && ref_dist['region'].split(':')[0] === this.chromosome.name
                    && ref_dist['reference'] === this.reference_source.getValue()
             )
         ).subscribe(([ref_dist, dist_mat, accessions, gaps]) => {
