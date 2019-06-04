@@ -13,6 +13,7 @@ import { isNullOrUndefined } from 'util';
 import { sameElements, ceilTo, formatPosition, floorTo } from '../utils/utils';
 import { SequenceGap } from '../models/GapIndex';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
+import { IntrogressionPlotService } from '../services/introgression-plot.service';
 
 export interface ScaleTick {
     position: number;
@@ -24,7 +25,8 @@ export interface ScaleTick {
 @Component({
     selector: 'app-introgression-plot',
     templateUrl: './introgression-plot.component.html',
-    styleUrls: ['./introgression-plot.component.css']
+    styleUrls: ['./introgression-plot.component.css'],
+    providers: [ IntrogressionPlotService ]
 })
 
 export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
@@ -45,8 +47,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     readonly GUI_TREE_LINE_DASH = [0.2, 0.2];
     readonly GUI_TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
-
-    readonly GUI_SCALE_BAR_SIZE = 24;
 
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
@@ -91,26 +91,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     private drag_start_position = { x: 0, y: 0 };
 
     /**
-     * Displacement of initial plot position based on GUI size.
-     */
-    gui_margins = {
-        top: this.GUI_SCALE_BAR_SIZE,
-        right: 0,
-        bottom: 0,
-        left: 0
-    };
-
-    /**
      * Used to keep remember the position of a mouse press.
      * This is necessary to distinguish clicks (where the position doesn't
      * change between the press and release) from drags (where it does).
      */
     private mouse_down_position: PlotPosition = { x: 0, y: 0 };
-
-    /**
-     * Current position / offset of the introgression plot.
-     */
-    private plot_position: PlotPosition = { x: 0, y: 0 };
 
     /**
      * Clamped array used to represent the distance plot.
@@ -134,6 +119,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     @Input()
     set interval(interval: number[]) {
+        this.plotService.interval = interval;
         this.interval_source.next(interval);
     }
     private interval_source = new BehaviorSubject<number[]>(undefined);
@@ -150,6 +136,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     @Input()
     set binsize(binsize: number) {
+        this.plotService.binsize = binsize;
         this.binsize_source.next(binsize);
     }
     private binsize_source = new BehaviorSubject<number>(this.DEFAULT_BIN_SIZE);
@@ -183,17 +170,13 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     /**
      * Zoom level in percentages.
      */
-    private _zoom_level = 100;
     @Input()
     set zoom_level(zoom_level: number) {
-        if (this._zoom_level !== zoom_level) {
-            this._zoom_level = zoom_level;
+        if (zoom_level !== this.plotService.zoom_level) {
+            this.plotService.zoom_level = zoom_level;
             this.updatePlotZoom();
             this.drawPlot();
         }
-    }
-    get zoom_level(): number {
-        return this._zoom_level;
     }
 
     /**
@@ -241,9 +224,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     private updatePlotZoom() {
         this.hideTooltip();
-        this.plotCanvas.nativeElement.style.width = `${this._zoom_level}%`;
-        this.plotCanvas.nativeElement.style.height = `${this._zoom_level
-                                                     / this.aspect_ratio}%`;
+        this.plotCanvas.nativeElement.style.width = `${this.plotService.zoom_level}%`;
+        this.plotCanvas.nativeElement.style.height = `${this.plotService.zoom_level
+                                                        / this.aspect_ratio}%`;
     }
 
     private updateCanvasSize() {
@@ -277,15 +260,16 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.font = `${text_height}px ${this.GUI_LABEL_FONT}`;
 
         // Offset due to plot scroll
-        const yoffset = ceilTo(this.plot_position.y * (this._zoom_level / 100)
-                               / this.aspect_ratio, text_height);
+        const yoffset = ceilTo(this.plotService.plot_position.y * text_height,
+                               text_height);
 
-        this.gui_margins.left = this.getLabelsWidth(ctx, this._drawTree);
-        const background_width = this.gui_margins.left * this._zoom_level / 100;
+        this.plotService.gui_margins.left = this.calcLabelsWidth(ctx,
+                                                                 this._drawTree);
 
         // Draw background
         ctx.fillStyle = this.GUI_BG_COLOR;
-        ctx.fillRect(0, 0, background_width, canvas.nativeElement.height);
+        ctx.fillRect(0, 0, this.plotService.labels_width,
+                     canvas.nativeElement.height);
 
         // Draw labels
         if (this._drawTree) {
@@ -301,7 +285,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                            yoffset: number,
                            draw_state: { current_row: number }) {
         const xpos = depth * this.GUI_TREE_STEP_WIDTH
-                     * (this._zoom_level / 100);
+                     * this.plotService.zoom_factor;
         const ypos = [ yoffset + draw_state.current_row * text_height ];
 
         if (subtree.children.length) {
@@ -317,26 +301,26 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_WIDTH
-                            * this._zoom_level / 100;
+                            * this.plotService.zoom_factor;
             ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
             ctx.moveTo(xpos + this.GUI_TREE_STEP_WIDTH
-                              * (this._zoom_level / 100),
+                              * this.plotService.zoom_factor,
                        (ypos[0] + ypos[1]) / 2);
             ctx.lineTo(xpos, (ypos[0] + ypos[1]) / 2);
             ctx.lineTo(xpos, (ypos[1] + ypos[2]) / 2);
             ctx.lineTo(xpos + this.GUI_TREE_STEP_WIDTH
-                              * (this._zoom_level / 100),
+                              * this.plotService.zoom_factor,
                        (ypos[1] + ypos[2]) / 2);
             ctx.stroke();
         } else {
             ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
-                            * this._zoom_level / 100;
+                            * this.plotService.zoom_factor;
             ctx.strokeStyle = this.GUI_TREE_LINE_DASH_STYLE;
             ctx.setLineDash(this.GUI_TREE_LINE_DASH.map(
-                x => x * this._zoom_level / 100
+                x => x * this.plotService.zoom_factor
             ));
             ctx.moveTo(xpos + ctx.measureText(subtree.taxon.name).width + 5,
                        ypos[0] + text_height / 2 - 0.5);
@@ -351,9 +335,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.fillStyle = this.GUI_TEXT_COLOR;
         ctx.textBaseline = 'top';
         const draw_state = { current_row: 0 };
-        const background_width = this.gui_margins.left * this._zoom_level / 100;
-        this._drawLabelTree(this.njTree, 1, ctx, background_width, text_height,
-                            yoffset, draw_state);
+        this._drawLabelTree(this.njTree, 1, ctx, this.plotService.labels_width,
+                            text_height, yoffset, draw_state);
     }
 
     private drawSimpleLabels(ctx: CanvasRenderingContext2D,
@@ -365,11 +348,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         });
     }
 
-    private getLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
+    private calcLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
         const max_label_width = Math.max(
             ...this.sortedAccessions.map(label => ctx.measureText(label).width)
         );
-        let gui_left_width = max_label_width / (this._zoom_level / 100);
+        let gui_left_width = max_label_width / this.plotService.zoom_factor;
         if (tree) {
             gui_left_width += (getTreeDepth(this.njTree) + 1)
                               * this.GUI_TREE_STEP_WIDTH;
@@ -441,11 +424,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private getColWidth() {
-        return (this._zoom_level / 100);
+        return this.plotService.zoom_factor;
     }
 
     private getRowHeight() {
-        return (this._zoom_level / 100) / this.aspect_ratio;
+        return this.plotService.zoom_factor / this.aspect_ratio;
     }
 
     private getRowNum() {
@@ -464,8 +447,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                       this.plotCanvas.nativeElement.height);
         ctx.putImageData(new ImageData(this.plot_array, this.getColNum(),
                                        this.getRowNum()),
-                         this.plot_position.x + this.gui_margins.left,
-                         this.plot_position.y);
+                         this.plotService.plot_position.x + this.plotService
+                                                                .gui_margins
+                                                                .left,
+                         this.plotService.plot_position.y);
     }
 
     private drawPlot() {
@@ -497,10 +482,10 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     private getPositionTarget(mouse_position: PlotPosition): PlotArea {
         const inner_position = {
             x: Math.floor(mouse_position.x / this.getColWidth())
-               - this.gui_margins.left
-               - this.plot_position.x,
+               - this.plotService.gui_margins.left
+               - this.plotService.plot_position.x,
             y: Math.floor(mouse_position.y / this.getRowHeight())
-               - this.plot_position.y
+               - this.plotService.plot_position.y
         };
 
         if (inner_position.x >= this.getColNum()
@@ -509,7 +494,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
             return res_bg;
         }
 
-        if (inner_position.x + this.plot_position.x < 0) {
+        if (inner_position.x + this.plotService.plot_position.x < 0) {
             const res_acc: PlotAccession = {
                 type: 'accession',
                 accession: this.sortedAccessions[inner_position.y]
@@ -537,18 +522,20 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         if (this.guiCanvas.nativeElement.style.cursor !== 'move') {
             this.guiCanvas.nativeElement.style.cursor = 'move';
         }
-        this.plot_position.x = (event.layerX - this.drag_start_position.x)
-                               / (this.zoom_level / 100);
-        this.plot_position.y = (event.layerY - this.drag_start_position.y)
+        this.plotService.plot_position.x = (event.layerX - this.drag_start_position.x)
+                               / this.plotService.zoom_factor;
+        this.plotService.plot_position.y = (event.layerY - this.drag_start_position.y)
                                * this.aspect_ratio
-                               / (this.zoom_level / 100);
-        this.plot_position.x = Math.round(this.plot_position.x);
-        this.plot_position.y = Math.round(this.plot_position.y);
-        if (this.plot_position.x > 0) {
-            this.plot_position.x = 0;
+                               / this.plotService.zoom_factor;
+        this.plotService.plot_position.x = Math.round(this.plotService
+                                                          .plot_position.x);
+        this.plotService.plot_position.y = Math.round(this.plotService
+                                                          .plot_position.y);
+        if (this.plotService.plot_position.x > 0) {
+            this.plotService.plot_position.x = 0;
         }
-        if (this.plot_position.y > 0) {
-            this.plot_position.y = 0;
+        if (this.plotService.plot_position.y > 0) {
+            this.plotService.plot_position.y = 0;
         }
         this.drawPlot();
     }
@@ -558,11 +545,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         if (event.buttons === 1) {
             this.dragging_plot = true;
             this.drag_start_position = {
-                x: event.layerX - this.plot_position.x
-                                  * this.zoom_level / 100,
-                y: event.layerY - this.plot_position.y
+                x: event.layerX - this.plotService.plot_position.x
+                                  * this.plotService.zoom_factor,
+                y: event.layerY - this.plotService.plot_position.y
                                   / this.aspect_ratio
-                                  * this.zoom_level / 100
+                                  * this.plotService.zoom_factor
             };
         }
     }
@@ -572,7 +559,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         this.dragging_plot = false;
     }
 
-    constructor(private tersectBackendService: TersectBackendService) { }
+    constructor(private tersectBackendService: TersectBackendService,
+                private plotService: IntrogressionPlotService) { }
 
     ngOnInit() {
         const ref_distance_bins$ = combineLatest(this.reference_source,
@@ -648,7 +636,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 this.sequenceGaps = gaps;
             }
             this.generatePlotArray();
-            this.plot_position = { x: 0, y: 0 };
+            this.plotService.plot_position = { x: 0, y: 0 };
             this.drawPlot();
         });
     }

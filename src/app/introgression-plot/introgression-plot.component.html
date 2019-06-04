@@ -8,18 +8,12 @@
     <div class="error-message">{{ error_message }}</div>
     <div class="update-shadow"></div>
 </div>
-<app-scale-bar
-    [interval]="interval"
-    [binsize]="binsize"
-    [zoom_level]="zoom_level"
-    [plot_position]="plot_position"
-    [gui_margins]="gui_margins">
-</app-scale-bar>
+<app-scale-bar></app-scale-bar>
 <canvas #plotCanvas class="sharp-canvas"
-    [style.top.px]="gui_margins.top">
+    [style.top.px]="plotService.gui_margins.top">
 </canvas>
 <canvas #guiCanvas class="gui-canvas"
-    [style.top.px]="gui_margins.top"
+    [style.top.px]="plotService.gui_margins.top"
     (mousedown)="guiMouseDown($event)"
     (mouseup)="guiMouseUp($event)"
     (mousemove)="guiMouseMove($event)"

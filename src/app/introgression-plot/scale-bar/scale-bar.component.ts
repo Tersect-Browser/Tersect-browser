@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, Input } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { ScaleTick } from '../introgression-plot.component';
-import { PlotPosition } from '../../models/PlotPosition';
+import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 
 @Component({
     selector: 'app-scale-bar',
@@ -29,32 +29,16 @@ export class ScaleBarComponent {
      */
     readonly GUI_TICK_DISTANCE = 120;
 
-    @Input()
-    binsize: number;
-
-    @Input()
-    zoom_level: number;
-
-    @Input()
-    plot_position: PlotPosition;
-
-    @Input()
-    interval: number[];
-
-    @Input()
-    gui_margins: {
-        top: number,
-        right: number,
-        bottom: number,
-        left: number
-    };
+    constructor(private plotService: IntrogressionPlotService) {}
 
     private _drawScaleTick(ctx: CanvasRenderingContext2D,
                            tick: ScaleTick) {
         const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
-        const bp_per_pixel = this.binsize / (this.zoom_level / 100);
-        const tick_x = (this.plot_position.x * this.binsize + tick.position
-                        - this.interval[0])
+        const bp_per_pixel = this.plotService.binsize
+                             / this.plotService.zoom_factor;
+        const tick_x = (this.plotService.plot_position.x
+                        * this.plotService.binsize
+                        + tick.position - this.plotService.interval[0])
                        / bp_per_pixel;
         const tick_size = tick.type === 'major' ? this.GUI_TICK_LENGTH
                                                 : this.GUI_TICK_LENGTH / 2;
@@ -92,8 +76,7 @@ export class ScaleBarComponent {
 
         // Correct for canvas positioning (no scale over label column)
         // and canvas pixel positioning (offset by 0.5 by default)
-        const effective_width = canvas_width - this.gui_margins.left
-                                               * (this.zoom_level / 100);
+        const effective_width = canvas_width - this.plotService.labels_width;
         ctx.translate(0.5 + canvas_width - effective_width, 0.5);
 
         ctx.strokeStyle = this.GUI_SCALE_COLOR;
@@ -103,15 +86,19 @@ export class ScaleBarComponent {
         ctx.textAlign = 'center';
         ctx.font = `${this.GUI_SCALE_FONT_SIZE}px ${this.GUI_SCALE_FONT}`;
 
-        const bp_per_pixel = this.binsize / (this.zoom_level / 100);
+        const bp_per_pixel = this.plotService.binsize
+                             / this.plotService.zoom_factor;
         const tick_size = findClosest(this.GUI_TICK_DISTANCE * bp_per_pixel,
                                       this.GUI_SCALE_TICK_SIZES);
         const unit = tick_size < 100000 ? 'kbp' : 'Mbp';
 
-        const x_start = (this.plot_position.x * this.binsize)
+        const x_start = (this.plotService.plot_position.x
+                         * this.plotService.binsize)
                         / bp_per_pixel;
-        const x_end = (this.plot_position.x * this.binsize
-                       + this.interval[1] - this.interval[0])
+        const x_end = (this.plotService.plot_position.x
+                       * this.plotService.binsize
+                       + this.plotService.interval[1]
+                       - this.plotService.interval[0])
                       / bp_per_pixel;
 
         // Baseline
@@ -122,19 +109,19 @@ export class ScaleBarComponent {
 
         // Start / end ticks
         this._drawScaleTick(ctx, {
-            position: this.interval[0],
+            position: this.plotService.interval[0],
             type: 'major',
             useLabel: false
         });
         this._drawScaleTick(ctx, {
-            position: this.interval[1],
+            position: this.plotService.interval[1],
             type: 'major',
             useLabel: false
         });
 
         // Major ticks
-        for (let pos = ceilTo(this.interval[0] - 1, tick_size);
-                 pos < this.interval[1]; pos += tick_size) {
+        for (let pos = ceilTo(this.plotService.interval[0] - 1, tick_size);
+                 pos < this.plotService.interval[1]; pos += tick_size) {
             this._drawScaleTick(ctx, {
                 position: pos,
                 type: 'major',
@@ -144,8 +131,8 @@ export class ScaleBarComponent {
         }
 
         // Minor ticks
-        for (let pos = ceilTo(this.interval[0] - 1, tick_size / 5);
-                 pos < this.interval[1]; pos += tick_size / 5) {
+        for (let pos = ceilTo(this.plotService.interval[0] - 1, tick_size / 5);
+                 pos < this.plotService.interval[1]; pos += tick_size / 5) {
             this._drawScaleTick(ctx, {
                 position: pos,
                 type: 'minor',
@@ -155,7 +142,7 @@ export class ScaleBarComponent {
 
         // Hide scale over labels
         ctx.clearRect(-(canvas_width - effective_width) - 0.5, 0,
-                      this.gui_margins.left * (this.zoom_level / 100),
+                      this.plotService.labels_width,
                       canvas_height);
     }
 
