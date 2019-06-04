@@ -10,7 +10,7 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements, ceilTo, formatPosition, floorTo } from '../utils/utils';
+import { sameElements, ceilTo, floorTo } from '../utils/utils';
 import { SequenceGap } from '../models/GapIndex';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
