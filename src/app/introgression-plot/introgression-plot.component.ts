@@ -15,13 +15,6 @@ import { SequenceGap } from '../models/GapIndex';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 
-export interface ScaleTick {
-    position: number;
-    type: 'major' | 'minor';
-    useLabel: boolean;
-    unit?: 'Mbp' | 'kbp';
-}
-
 @Component({
     selector: 'app-introgression-plot',
     templateUrl: './introgression-plot.component.html',

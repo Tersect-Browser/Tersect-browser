@@ -1,7 +1,13 @@
 import { Component, ElementRef, ViewChild, Input } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
-import { ScaleTick } from '../introgression-plot.component';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
+
+interface ScaleTick {
+    position: number;
+    type: 'major' | 'minor';
+    useLabel: boolean;
+    unit?: 'Mbp' | 'kbp';
+}
 
 @Component({
     selector: 'app-scale-bar',
