@@ -22,3 +22,9 @@ export interface PlotClickEvent {
     y: number;
     target: PlotArea;
 }
+
+export interface PlotHoverEvent {
+    x: number;
+    y: number;
+    target: PlotArea;
+}

@@ -88,7 +88,10 @@
             [binsize]="selected_binsize"
             [zoom_level]="zoom_level"
             (plotClick)="plotClick($event)"
-            (wheel)="scrollWheel($event)">
+            (plotHover)="tooltip.show($event)"
+            (wheel)="scrollWheel($event)"
+            (mousemove)="tooltip.hide()"
+            (mouseleave)="tooltip.hide()">
         </app-introgression-plot>
 
         <app-plot-click-menu
@@ -97,6 +100,8 @@
             (setIntervalStart)="setIntervalStart($event)"
             (setIntervalEnd)="setIntervalEnd($event)">
         </app-plot-click-menu>
+
+        <app-tooltip></app-tooltip>
 
     </div>
 </div>

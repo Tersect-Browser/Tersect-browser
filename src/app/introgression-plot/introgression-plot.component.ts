@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterVie
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotClickEvent } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotClickEvent, PlotHoverEvent } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { buildNJTree, treeToSortedList, getTreeDepth, TreeNode } from '../clustering/clustering';
@@ -32,7 +32,6 @@ export interface ScaleTick {
 export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
     @ViewChild('guiCanvas') guiCanvas: ElementRef;
-    @ViewChild('tooltip') tooltip: ElementRef;
 
     @ViewChild(ScaleBarComponent) scaleBar: ScaleBarComponent;
 
@@ -52,14 +51,14 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     readonly DEBOUNCE_TIME = 700;
 
     /**
-     * Tooltip position relative to mouse.
+     * Delay (ms) before a tooltip appears.
      */
-    readonly tooltip_offset: PlotPosition = { x: 0, y: 20 };
+    readonly HOVER_DELAY: 200;
 
     /**
-     * Delay before a tooltip appears.
+     * Timer used to delay emitting a hover event (used to display a tooltip).
      */
-    readonly TOOLTIP_DELAY: 200;
+    private hover_timer: NodeJS.Timer;
 
     /**
      * Bin aspect ratio (width / height). By default bins are twice as high as
@@ -101,11 +100,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
      * Clamped array used to represent the distance plot.
      */
     private plot_array: Uint8ClampedArray = null;
-
-    /**
-     * Timer used to delay displaying a tooltip.
-     */
-    private tooltip_timer: NodeJS.Timer;
 
     @Input()
     set chromosome(chromosome: Chromosome) {
@@ -168,6 +162,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     @Output() plotClick = new EventEmitter<PlotClickEvent>();
 
     /**
+     * Emitted when mouse hovers over a plot element.
+     */
+    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
+
+    /**
      * Zoom level in percentages.
      */
     @Input()
@@ -223,7 +222,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private updatePlotZoom() {
-        this.hideTooltip();
+        // this.hideTooltip();
         this.plotCanvas.nativeElement.style.width = `${this.plotService.zoom_level}%`;
         this.plotCanvas.nativeElement.style.height = `${this.plotService.zoom_level
                                                         / this.aspect_ratio}%`;
@@ -655,43 +654,21 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         this.drawPlot();
     }
 
-    private showTooltip(mouse_position: PlotPosition, content: string) {
-        this.tooltip.nativeElement.style.left = `${mouse_position.x
-                                                   + this.tooltip_offset.x}px`;
-        this.tooltip.nativeElement.style.top = `${mouse_position.y
-                                                  + this.tooltip_offset.y}px`;
-        this.tooltip.nativeElement.style.visibility = 'visible';
-        this.tooltip.nativeElement.innerHTML = content;
-    }
-
-    private hideTooltip() {
-        clearTimeout(this.tooltip_timer);
-        this.tooltip.nativeElement.style.visibility = 'hidden';
-    }
-
-    private formatBinTooltip(target: PlotBin): string {
-        return `${target.accession}<br>${formatPosition(target.start_position)}
-- ${formatPosition(target.end_position)}`;
-    }
-
     private prepareTooltip(event) {
-        this.hideTooltip();
-        const tooltip_pos = { x: event.clientX, y: event.clientY };
-        const plot_pos = { x: event.layerX, y: event.layerY };
-        const area = this.getPositionTarget(plot_pos);
-        if (area.type === 'background') { return; }
-
-        let content = '';
-        if (area.type === 'bin') {
-            content = this.formatBinTooltip(area as PlotBin);
-        } else if (area.type === 'accession') {
-            content = `${(area as PlotAccession).accession}`;
+        clearTimeout(this.hover_timer);
+        const target = this.getPositionTarget({
+            x: event.layerX, y: event.layerY
+        });
+        if (target.type !== 'background') {
+            this.hover_timer = setTimeout(
+                () => this.plotHover.emit({
+                    x: event.clientX,
+                    y: event.clientY,
+                    target: target
+                }),
+                this.HOVER_DELAY
+            );
         }
-
-        clearTimeout(this.tooltip_timer);
-        this.tooltip_timer = setTimeout(
-            () => this.showTooltip(tooltip_pos, content), this.TOOLTIP_DELAY
-        );
     }
 
     guiMouseMove(event) {
@@ -699,10 +676,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         if (this.dragging_plot) {
             this.dragPlot(event);
         }
-    }
-
-    guiMouseLeave(event) {
-        this.hideTooltip();
     }
 
     guiMouseDown(event) {

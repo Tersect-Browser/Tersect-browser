@@ -5,6 +5,7 @@ import { TersectBackendService } from './services/tersect-backend.service';
 import { ceilTo, floorTo } from './utils/utils';
 import { PlotClickEvent } from './models/PlotPosition';
 import { PlotClickMenuComponent } from './plot-click-menu/plot-click-menu.component';
+import { TooltipComponent } from './tooltip/tooltip.component';
 
 @Component({
     selector: 'app-root',
@@ -12,8 +13,8 @@ import { PlotClickMenuComponent } from './plot-click-menu/plot-click-menu.compon
     styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-
     @ViewChild(PlotClickMenuComponent) plotClickMenu: PlotClickMenuComponent;
+    @ViewChild(TooltipComponent) tooltip: TooltipComponent;
 
     chromosomes: SelectItem[] = SL2_50_chromosomes;
     accessions: SelectItem[];

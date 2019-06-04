@@ -19,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 
 import { IntrogressionPlotModule } from './introgression-plot/introgression-plot.module';
 import { PlotClickMenuModule } from './plot-click-menu/plot-click-menu.module';
+import { TooltipModule } from './tooltip/tooltip.module';
 
 @NgModule({
     declarations: [
@@ -38,7 +39,8 @@ import { PlotClickMenuModule } from './plot-click-menu/plot-click-menu.module';
         KeyFilterModule,
         ToggleButtonModule,
         IntrogressionPlotModule,
-        PlotClickMenuModule
+        PlotClickMenuModule,
+        TooltipModule
     ],
     providers: [
         HttpClient,
