@@ -10,8 +10,9 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements, ceilTo, formatPosition, findClosest, floorTo } from '../utils/utils';
+import { sameElements, ceilTo, formatPosition, floorTo } from '../utils/utils';
 import { SequenceGap } from '../models/GapIndex';
+import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 
 export interface ScaleTick {
     position: number;
@@ -27,10 +28,11 @@ export interface ScaleTick {
 })
 
 export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
-    @ViewChild('topGuiCanvas') topGuiCanvas: ElementRef;
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
     @ViewChild('guiCanvas') guiCanvas: ElementRef;
     @ViewChild('tooltip') tooltip: ElementRef;
+
+    @ViewChild(ScaleBarComponent) scaleBar: ScaleBarComponent;
 
     // R, G, B, A color
     readonly GAP_COLOR = [240, 180, 180, 255];
@@ -44,23 +46,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     readonly GUI_TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
 
-    readonly GUI_SCALE_COLOR = '#327e04';
-    readonly GUI_SCALE_SIZE = 24;
-    readonly GUI_SCALE_FONT_SIZE = 13;
-    readonly GUI_SCALE_FONT = 'Arial';
-    readonly GUI_SCALE_TICK_SIZES = [
-        2500, 5000, 10000,
-        25000, 50000, 100000,
-        250000, 500000, 1000000,
-        2500000, 5000000, 10000000
-    ];
-    readonly GUI_TICK_LENGTH = 6;
-
-    /**
-     * Optimal large tick distance in pixels. Ticks will be drawn as close to
-     * this distance as possible using one of the GUI_SCALE_TICK_SIZES.
-     */
-    readonly GUI_TICK_DISTANCE = 120;
+    readonly GUI_SCALE_BAR_SIZE = 24;
 
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
@@ -108,7 +94,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
      * Displacement of initial plot position based on GUI size.
      */
     gui_margins = {
-        top: this.GUI_SCALE_SIZE,
+        top: this.GUI_SCALE_BAR_SIZE,
         right: 0,
         bottom: 0,
         left: 0
@@ -280,117 +266,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                       this.guiCanvas.nativeElement.height);
         this.drawAccessionLabels(this.guiCanvas);
-        this.drawScale();
-    }
-
-    private _drawScaleTick(ctx: CanvasRenderingContext2D,
-                           tick: ScaleTick) {
-        const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
-        const bp_per_pixel = this.binsize / (this._zoom_level / 100);
-        const tick_x = (this.plot_position.x * this.binsize + tick.position
-                        - this.interval[0])
-                       / bp_per_pixel;
-        const tick_size = tick.type === 'major' ? this.GUI_TICK_LENGTH
-                                                : this.GUI_TICK_LENGTH / 2;
-        ctx.beginPath();
-        ctx.moveTo(tick_x, canvas_height - 1);
-        ctx.lineTo(tick_x, canvas_height - tick_size - 1);
-        ctx.stroke();
-        if (tick.useLabel) {
-            const label = formatPosition(tick.position, tick.unit);
-            let label_x = tick_x;
-
-            // Shifting first label if it does not fit in the viewing area
-            const half_label_width = ctx.measureText(label).width / 2;
-            const label_overflow = tick_x - half_label_width;
-            if (label_overflow < 0) {
-                if (-label_overflow > half_label_width) {
-                    label_x += half_label_width;
-                } else {
-                    label_x -= label_overflow;
-                }
-            }
-            ctx.fillText(label, label_x, 2);
-        }
-    }
-
-    private drawScale() {
-        const canvas_width = this.topGuiCanvas.nativeElement.offsetWidth;
-        const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
-        this.topGuiCanvas.nativeElement.width = canvas_width;
-        this.topGuiCanvas.nativeElement.height = canvas_height;
-        const ctx: CanvasRenderingContext2D = this.topGuiCanvas
-                                                  .nativeElement
-                                                  .getContext('2d');
-        ctx.clearRect(0, 0, canvas_width, canvas_height);
-
-        // Correct for canvas positioning (no scale over label column)
-        // and canvas pixel positioning (offset by 0.5 by default)
-        const effective_width = canvas_width - this.gui_margins.left
-                                               * (this._zoom_level / 100);
-        ctx.translate(0.5 + canvas_width - effective_width, 0.5);
-
-        ctx.strokeStyle = this.GUI_SCALE_COLOR;
-        ctx.lineWidth = 1;
-
-        ctx.textBaseline = 'top';
-        ctx.textAlign = 'center';
-        ctx.font = `${this.GUI_SCALE_FONT_SIZE}px ${this.GUI_SCALE_FONT}`;
-
-        const bp_per_pixel = this.binsize / (this._zoom_level / 100);
-        const tick_size = findClosest(this.GUI_TICK_DISTANCE * bp_per_pixel,
-                                      this.GUI_SCALE_TICK_SIZES);
-        const unit = tick_size < 100000 ? 'kbp' : 'Mbp';
-
-        const x_start = (this.plot_position.x * this.binsize)
-                        / bp_per_pixel;
-        const x_end = (this.plot_position.x * this.binsize
-                       + this.interval[1] - this.interval[0])
-                      / bp_per_pixel;
-
-        // Baseline
-        ctx.beginPath();
-        ctx.moveTo(x_start, canvas_height - 1);
-        ctx.lineTo(x_end, canvas_height - 1);
-        ctx.stroke();
-
-        // Start / end ticks
-        this._drawScaleTick(ctx, {
-            position: this.interval[0],
-            type: 'major',
-            useLabel: false
-        });
-        this._drawScaleTick(ctx, {
-            position: this.interval[1],
-            type: 'major',
-            useLabel: false
-        });
-
-        // Major ticks
-        for (let pos = ceilTo(this.interval[0] - 1, tick_size);
-                 pos < this.interval[1]; pos += tick_size) {
-            this._drawScaleTick(ctx, {
-                position: pos,
-                type: 'major',
-                useLabel: true,
-                unit: unit
-            });
-        }
-
-        // Minor ticks
-        for (let pos = ceilTo(this.interval[0] - 1, tick_size / 5);
-                 pos < this.interval[1]; pos += tick_size / 5) {
-            this._drawScaleTick(ctx, {
-                position: pos,
-                type: 'minor',
-                useLabel: false
-            });
-        }
-
-        // Hide scale over labels
-        ctx.clearRect(-(canvas_width - effective_width) - 0.5, 0,
-                      this.gui_margins.left * (this._zoom_level / 100),
-                      canvas_height);
+        // this.drawScale();
+        this.scaleBar.drawScale();
     }
 
     private drawAccessionLabels(canvas: ElementRef) {

@@ -6,11 +6,12 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TersectBackendService } from '../services/tersect-backend.service';
 
 import { IntrogressionPlotComponent } from './introgression-plot.component';
-
+import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 
 @NgModule({
     declarations: [
-        IntrogressionPlotComponent
+        IntrogressionPlotComponent,
+        ScaleBarComponent
     ],
     exports: [
         IntrogressionPlotComponent

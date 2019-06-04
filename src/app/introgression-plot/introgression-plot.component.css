@@ -14,12 +14,6 @@
     left: 0px;
 }
 
-.top-gui {
-    display: block;
-    width: 100%;
-    height: 0px;
-}
-
 .plot-tooltip {
     position: fixed;
     visibility: hidden;

@@ -8,9 +8,13 @@
     <div class="error-message">{{ error_message }}</div>
     <div class="update-shadow"></div>
 </div>
-<canvas #topGuiCanvas class="top-gui"
-    [style.height.px]="gui_margins.top">
-</canvas>
+<app-scale-bar
+    [interval]="interval"
+    [binsize]="binsize"
+    [zoom_level]="zoom_level"
+    [plot_position]="plot_position"
+    [gui_margins]="gui_margins">
+</app-scale-bar>
 <canvas #plotCanvas class="sharp-canvas"
     [style.top.px]="gui_margins.top">
 </canvas>
