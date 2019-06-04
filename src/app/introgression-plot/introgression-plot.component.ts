@@ -238,7 +238,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                                                            .offsetHeight;
         this.plotCanvas.nativeElement.width = canvas_width;
         this.plotCanvas.nativeElement.height = canvas_height;
-        this.guiCanvas.nativeElement.width = canvas_width;
         this.guiCanvas.nativeElement.height = canvas_height;
     }
 
@@ -249,22 +248,24 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
                       this.guiCanvas.nativeElement.height);
         this.drawAccessionLabels(this.guiCanvas);
-        // this.drawScale();
         this.scaleBar.drawScale();
     }
 
     private drawAccessionLabels(canvas: ElementRef) {
         const ctx: CanvasRenderingContext2D = canvas.nativeElement
                                                     .getContext('2d');
+        this.plotService.gui_margins.left = this.calcLabelsWidth(ctx,
+                                                                 this._drawTree);
+        this.guiCanvas.nativeElement.width = this.plotService.labels_width;
+
+        // Need to set font again despite doing it in calcLabelsWidth since
+        // changing width resets the context to its default state
         const text_height = this.getRowHeight();
         ctx.font = `${text_height}px ${this.GUI_LABEL_FONT}`;
 
         // Offset due to plot scroll
         const yoffset = ceilTo(this.plotService.plot_position.y * text_height,
                                text_height);
-
-        this.plotService.gui_margins.left = this.calcLabelsWidth(ctx,
-                                                                 this._drawTree);
 
         // Draw background
         ctx.fillStyle = this.GUI_BG_COLOR;
@@ -349,6 +350,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private calcLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
+        ctx.font = `${this.getRowHeight()}px ${this.GUI_LABEL_FONT}`;
         const max_label_width = Math.max(
             ...this.sortedAccessions.map(label => ctx.measureText(label).width)
         );
