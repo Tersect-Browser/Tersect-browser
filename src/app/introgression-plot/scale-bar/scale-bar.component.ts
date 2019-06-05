@@ -70,7 +70,7 @@ export class ScaleBarComponent {
         }
     }
 
-    public drawScale() {
+    draw() {
         const canvas_width = this.topGuiCanvas.nativeElement.offsetWidth;
         const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
         this.topGuiCanvas.nativeElement.width = canvas_width;

@@ -1,11 +1,10 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterViewInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, Input, AfterViewInit } from '@angular/core';
 import { GreyscalePalette, RedPalette } from './DistancePalette';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { Chromosome } from '../models/chromosome';
-import { PlotPosition, PlotBin, PlotAccession, PlotArea, PlotClickEvent, PlotHoverEvent } from '../models/PlotPosition';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DistanceMatrix } from '../models/DistanceMatrix';
-import { buildNJTree, treeToSortedList, getTreeDepth, TreeNode } from '../clustering/clustering';
+import { buildNJTree, treeToSortedList } from '../clustering/clustering';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { debounceTime, filter, tap } from 'rxjs/operators';
@@ -14,6 +13,7 @@ import { sameElements, ceilTo, floorTo } from '../utils/utils';
 import { SequenceGap } from '../models/GapIndex';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
+import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -24,41 +24,15 @@ import { IntrogressionPlotService } from '../services/introgression-plot.service
 
 export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     @ViewChild('plotCanvas') plotCanvas: ElementRef;
-    @ViewChild('guiCanvas') guiCanvas: ElementRef;
 
     @ViewChild(ScaleBarComponent) scaleBar: ScaleBarComponent;
+    @ViewChild(AccessionBarComponent) accessionBar: AccessionBarComponent;
 
     // R, G, B, A color
     readonly GAP_COLOR = [240, 180, 180, 255];
 
-    readonly GUI_BG_COLOR = '#FFFFFF';
-    readonly GUI_LABEL_FONT = 'Courier New';
-    readonly GUI_TEXT_COLOR = '#000000';
-    readonly GUI_TREE_STEP_WIDTH = 2;
-    readonly GUI_TREE_LINE_WIDTH = 0.2;
-    readonly GUI_TREE_LINE_DASH = [0.2, 0.2];
-    readonly GUI_TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
-    readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
-
     readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
-
-    /**
-     * Delay (ms) before a tooltip appears.
-     */
-    readonly HOVER_DELAY: 200;
-
-    /**
-     * Timer used to delay emitting a hover event (used to display a tooltip).
-     */
-    private hover_timer: NodeJS.Timer;
-
-    /**
-     * Bin aspect ratio (width / height). By default bins are twice as high as
-     * they are wide. This is to more easily fit accession labels without making
-     * the plot too wide.
-     */
-    private aspect_ratio = 1 / 2;
 
     /**
      * Plot load status (when true, spinner overlay is displayed, unless an
@@ -71,23 +45,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
      * displayed.
      */
     error_message = '';
-
-    /**
-     * True if plot is currently being dragged.
-     */
-    private dragging_plot = false;
-
-    /**
-     *  Used to keep track of the start position during dragging.
-     */
-    private drag_start_position = { x: 0, y: 0 };
-
-    /**
-     * Used to keep remember the position of a mouse press.
-     * This is necessary to distinguish clicks (where the position doesn't
-     * change between the press and release) from drags (where it does).
-     */
-    private mouse_down_position: PlotPosition = { x: 0, y: 0 };
 
     /**
      * Clamped array used to represent the distance plot.
@@ -134,7 +91,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     @Input()
     set accessions(accessions: string[]) {
-        if (!sameElements(accessions, this.sortedAccessions)) {
+        if (!sameElements(accessions, this.plotService.sortedAccessions)) {
             this.accessions_source.next(accessions);
         }
     }
@@ -142,22 +99,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     @Input()
     set drawTree(draw_tree: boolean) {
-        if (draw_tree !== this._drawTree) {
-            this._drawTree = draw_tree;
+        if (draw_tree !== this.plotService.draw_tree) {
+            this.plotService.draw_tree = draw_tree;
             this.drawPlot();
         }
     }
-    private _drawTree = false;
-
-    /**
-     * Emitted when plot elements (bins, accessions) are clicked.
-     */
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
-
-    /**
-     * Emitted when mouse hovers over a plot element.
-     */
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     /**
      * Zoom level in percentages.
@@ -172,27 +118,9 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     /**
-     * Genetic distance bins between reference and other accessions for
-     * currently viewed interval, fetched from tersect.
-     */
-    private distanceBins = {};
-
-    /**
-     * Accession names (as used by tersect) sorted in the order to
-     * be displayed on the drawn plot. Generally this is the order based on
-     * the neighbor joining tree clustering.
-     */
-    private sortedAccessions: string[] = [];
-
-    /**
      * List of sequence gaps in the current chromosome.
      */
     private sequenceGaps: SequenceGap[];
-
-    /**
-     * Neighbor joining tree built for the selected accessions.
-     */
-    private njTree: TreeNode;
 
     /**
      * Pairwise distance matrix between all the accessions.
@@ -215,10 +143,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private updatePlotZoom() {
-        // this.hideTooltip();
-        this.plotCanvas.nativeElement.style.width = `${this.plotService.zoom_level}%`;
-        this.plotCanvas.nativeElement.style.height = `${this.plotService.zoom_level
-                                                        / this.aspect_ratio}%`;
+        this.plotCanvas.nativeElement
+                       .style.width = `${this.plotService.zoom_level}%`;
+        this.plotCanvas.nativeElement
+                       .style.height = `${this.plotService.zoom_level
+                                          / this.plotService.aspect_ratio}%`;
     }
 
     private updateCanvasSize() {
@@ -230,128 +159,12 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                                                            .offsetHeight;
         this.plotCanvas.nativeElement.width = canvas_width;
         this.plotCanvas.nativeElement.height = canvas_height;
-        this.guiCanvas.nativeElement.height = canvas_height;
+        this.accessionBar.height = canvas_height;
     }
 
     private drawGUI() {
-        const ctx: CanvasRenderingContext2D = this.guiCanvas
-                                                  .nativeElement
-                                                  .getContext('2d');
-        ctx.clearRect(0, 0, this.guiCanvas.nativeElement.width,
-                      this.guiCanvas.nativeElement.height);
-        this.drawAccessionLabels(this.guiCanvas);
-        this.scaleBar.drawScale();
-    }
-
-    private drawAccessionLabels(canvas: ElementRef) {
-        const ctx: CanvasRenderingContext2D = canvas.nativeElement
-                                                    .getContext('2d');
-        this.plotService.gui_margins.left = this.calcLabelsWidth(ctx,
-                                                                 this._drawTree);
-        this.guiCanvas.nativeElement.width = this.plotService.labels_width;
-
-        // Need to set font again despite doing it in calcLabelsWidth since
-        // changing width resets the context to its default state
-        const text_height = this.getRowHeight();
-        ctx.font = `${text_height}px ${this.GUI_LABEL_FONT}`;
-
-        // Offset due to plot scroll
-        const yoffset = ceilTo(this.plotService.plot_position.y * text_height,
-                               text_height);
-
-        // Draw background
-        ctx.fillStyle = this.GUI_BG_COLOR;
-        ctx.fillRect(0, 0, this.plotService.labels_width,
-                     canvas.nativeElement.height);
-
-        // Draw labels
-        if (this._drawTree) {
-            this.drawLabelTree(ctx, text_height, yoffset);
-        } else {
-            this.drawSimpleLabels(ctx, text_height, yoffset);
-        }
-    }
-
-    private _drawLabelTree(subtree: TreeNode, depth: number,
-                           ctx: CanvasRenderingContext2D,
-                           background_width: number, text_height: number,
-                           yoffset: number,
-                           draw_state: { current_row: number }) {
-        const xpos = depth * this.GUI_TREE_STEP_WIDTH
-                     * this.plotService.zoom_factor;
-        const ypos = [ yoffset + draw_state.current_row * text_height ];
-
-        if (subtree.children.length) {
-            this._drawLabelTree(subtree.children[0], depth + 1, ctx,
-                                background_width, text_height, yoffset,
-                                draw_state);
-            ypos.push(yoffset + draw_state.current_row * text_height);
-
-            this._drawLabelTree(subtree.children[1], depth + 1, ctx,
-                                background_width, text_height, yoffset,
-                                draw_state);
-            ypos.push(yoffset + draw_state.current_row * text_height);
-
-            ctx.beginPath();
-            ctx.lineWidth = this.GUI_TREE_LINE_WIDTH
-                            * this.plotService.zoom_factor;
-            ctx.strokeStyle = '#000000';
-            ctx.setLineDash([]);
-            ctx.moveTo(xpos + this.GUI_TREE_STEP_WIDTH
-                              * this.plotService.zoom_factor,
-                       (ypos[0] + ypos[1]) / 2);
-            ctx.lineTo(xpos, (ypos[0] + ypos[1]) / 2);
-            ctx.lineTo(xpos, (ypos[1] + ypos[2]) / 2);
-            ctx.lineTo(xpos + this.GUI_TREE_STEP_WIDTH
-                              * this.plotService.zoom_factor,
-                       (ypos[1] + ypos[2]) / 2);
-            ctx.stroke();
-        } else {
-            ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
-            ctx.beginPath();
-            ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
-                            * this.plotService.zoom_factor;
-            ctx.strokeStyle = this.GUI_TREE_LINE_DASH_STYLE;
-            ctx.setLineDash(this.GUI_TREE_LINE_DASH.map(
-                x => x * this.plotService.zoom_factor
-            ));
-            ctx.moveTo(xpos + ctx.measureText(subtree.taxon.name).width + 5,
-                       ypos[0] + text_height / 2 - 0.5);
-            ctx.lineTo(background_width, ypos[0] + text_height / 2 - 0.5);
-            ctx.stroke();
-            draw_state.current_row++;
-        }
-    }
-
-    private drawLabelTree(ctx: CanvasRenderingContext2D,
-                          text_height: number, yoffset: number) {
-        ctx.fillStyle = this.GUI_TEXT_COLOR;
-        ctx.textBaseline = 'top';
-        const draw_state = { current_row: 0 };
-        this._drawLabelTree(this.njTree, 1, ctx, this.plotService.labels_width,
-                            text_height, yoffset, draw_state);
-    }
-
-    private drawSimpleLabels(ctx: CanvasRenderingContext2D,
-                             text_height: number, yoffset: number) {
-        ctx.fillStyle = this.GUI_TEXT_COLOR;
-        ctx.textBaseline = 'top';
-        this.sortedAccessions.forEach((label, index) => {
-            ctx.fillText(label, 0, yoffset + index * text_height);
-        });
-    }
-
-    private calcLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
-        ctx.font = `${this.getRowHeight()}px ${this.GUI_LABEL_FONT}`;
-        const max_label_width = Math.max(
-            ...this.sortedAccessions.map(label => ctx.measureText(label).width)
-        );
-        let gui_left_width = max_label_width / this.plotService.zoom_factor;
-        if (tree) {
-            gui_left_width += (getTreeDepth(this.njTree) + 1)
-                              * this.GUI_TREE_STEP_WIDTH;
-        }
-        return Math.ceil(gui_left_width);
+        this.accessionBar.draw();
+        this.scaleBar.draw();
     }
 
     private generatePlotArray() {
@@ -359,13 +172,14 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                                                   .nativeElement
                                                   .getContext('2d');
         const palette = new GreyscalePalette(ctx);
-        const accessionBins = this.sortedAccessions
-                                  .map(accession => this.distanceBins[accession]);
+        const accessionBins = this.plotService.sortedAccessions.map(
+            accession => this.plotService.distanceBins[accession]
+        );
 
         const bin_max_distances = this.getMaxDistances(accessionBins);
 
-        const row_num = this.getRowNum();
-        const col_num = this.getColNum();
+        const row_num = this.plotService.row_num;
+        const col_num = this.plotService.col_num;
         this.plot_array = new Uint8ClampedArray(4 * row_num * col_num);
 
         accessionBins.forEach((accession_bin, accession_index) => {
@@ -393,8 +207,8 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private drawGap(gap: SequenceGap) {
-        const row_num = this.getRowNum();
-        const col_num = this.getColNum();
+        const row_num = this.plotService.row_num;
+        const col_num = this.plotService.col_num;
         const start_pos = gap.start > this.interval[0] ? gap.start
                                                        : this.interval[0];
         const end_pos = gap.end < this.interval[1] ? gap.end
@@ -417,30 +231,15 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
         }
     }
 
-    private getColWidth() {
-        return this.plotService.zoom_factor;
-    }
-
-    private getRowHeight() {
-        return this.plotService.zoom_factor / this.aspect_ratio;
-    }
-
-    private getRowNum() {
-        return this.sortedAccessions.length;
-    }
-
-    private getColNum() {
-        return this.distanceBins[this.sortedAccessions[0]].length;
-    }
-
     private drawBins() {
         const ctx: CanvasRenderingContext2D = this.plotCanvas
                                                   .nativeElement
                                                   .getContext('2d');
         ctx.clearRect(0, 0, this.plotCanvas.nativeElement.width,
                       this.plotCanvas.nativeElement.height);
-        ctx.putImageData(new ImageData(this.plot_array, this.getColNum(),
-                                       this.getRowNum()),
+        ctx.putImageData(new ImageData(this.plot_array,
+                                       this.plotService.col_num,
+                                       this.plotService.row_num),
                          this.plotService.plot_position.x + this.plotService
                                                                 .gui_margins
                                                                 .left,
@@ -472,86 +271,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     private startLoading = () => this.plot_loading = true;
     private stopLoading = () => this.plot_loading = false;
-
-    private getPositionTarget(mouse_position: PlotPosition): PlotArea {
-        const inner_position = {
-            x: Math.floor(mouse_position.x / this.getColWidth())
-               - this.plotService.gui_margins.left
-               - this.plotService.plot_position.x,
-            y: Math.floor(mouse_position.y / this.getRowHeight())
-               - this.plotService.plot_position.y
-        };
-
-        if (inner_position.x >= this.getColNum()
-            || inner_position.y >= this.getRowNum()) {
-            const res_bg = { type: 'background' };
-            return res_bg;
-        }
-
-        if (inner_position.x + this.plotService.plot_position.x < 0) {
-            const res_acc: PlotAccession = {
-                type: 'accession',
-                accession: this.sortedAccessions[inner_position.y]
-            };
-            return res_acc;
-        }
-
-        const interval = this.interval_source.getValue();
-        const binsize = this.binsize_source.getValue();
-
-        const res_bin: PlotBin = {
-            type: 'bin',
-            accession: this.sortedAccessions[inner_position.y],
-            start_position: interval[0] + inner_position.x * binsize,
-            end_position: interval[0] + (inner_position.x + 1) * binsize - 1
-        };
-        return res_bin;
-    }
-
-    private dragPlot(event) {
-        if (event.buttons !== 1) {
-            this.stopDrag(event);
-            return;
-        }
-        if (this.guiCanvas.nativeElement.style.cursor !== 'move') {
-            this.guiCanvas.nativeElement.style.cursor = 'move';
-        }
-        this.plotService.plot_position.x = (event.layerX - this.drag_start_position.x)
-                               / this.plotService.zoom_factor;
-        this.plotService.plot_position.y = (event.layerY - this.drag_start_position.y)
-                               * this.aspect_ratio
-                               / this.plotService.zoom_factor;
-        this.plotService.plot_position.x = Math.round(this.plotService
-                                                          .plot_position.x);
-        this.plotService.plot_position.y = Math.round(this.plotService
-                                                          .plot_position.y);
-        if (this.plotService.plot_position.x > 0) {
-            this.plotService.plot_position.x = 0;
-        }
-        if (this.plotService.plot_position.y > 0) {
-            this.plotService.plot_position.y = 0;
-        }
-        this.drawPlot();
-    }
-
-    private startDrag(event) {
-        // drag on left mouse button
-        if (event.buttons === 1) {
-            this.dragging_plot = true;
-            this.drag_start_position = {
-                x: event.layerX - this.plotService.plot_position.x
-                                  * this.plotService.zoom_factor,
-                y: event.layerY - this.plotService.plot_position.y
-                                  / this.aspect_ratio
-                                  * this.plotService.zoom_factor
-            };
-        }
-    }
-
-    private stopDrag(event) {
-        this.guiCanvas.nativeElement.style.cursor = 'auto';
-        this.dragging_plot = false;
-    }
 
     constructor(private tersectBackendService: TersectBackendService,
                 private plotService: IntrogressionPlotService) { }
@@ -621,12 +340,15 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                    && ref_dist['reference'] === this.reference_source.getValue()
             )
         ).subscribe(([ref_dist, dist_mat, accessions, gaps]) => {
-            this.distanceBins = ref_dist['bins'];
-            if (!sameElements(accessions, this.sortedAccessions)
+            this.plotService.distanceBins = ref_dist['bins'];
+            if (!sameElements(accessions, this.plotService.sortedAccessions)
                 || this.distanceMatrix !== dist_mat) {
                 this.distanceMatrix = dist_mat;
-                this.njTree = buildNJTree(this.distanceMatrix, accessions);
-                this.sortedAccessions = treeToSortedList(this.njTree);
+                this.plotService.njTree = buildNJTree(this.distanceMatrix,
+                                                      accessions);
+                this.plotService
+                    .sortedAccessions = treeToSortedList(this.plotService
+                                                             .njTree);
                 this.sequenceGaps = gaps;
             }
             this.generatePlotArray();
@@ -645,52 +367,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     onResize(event) {
         this.updateCanvasSize();
         this.drawPlot();
-    }
-
-    private prepareTooltip(event) {
-        clearTimeout(this.hover_timer);
-        const target = this.getPositionTarget({
-            x: event.layerX, y: event.layerY
-        });
-        if (target.type !== 'background') {
-            this.hover_timer = setTimeout(
-                () => this.plotHover.emit({
-                    x: event.clientX,
-                    y: event.clientY,
-                    target: target
-                }),
-                this.HOVER_DELAY
-            );
-        }
-    }
-
-    guiMouseMove(event) {
-        this.prepareTooltip(event);
-        if (this.dragging_plot) {
-            this.dragPlot(event);
-        }
-    }
-
-    guiMouseDown(event) {
-        this.mouse_down_position = { x: event.layerX, y: event.layerY };
-        const target = this.getPositionTarget(this.mouse_down_position);
-        if (target.type === 'bin' || target.type === 'background'
-            || (target.type === 'accession' && this._drawTree)) {
-            this.startDrag(event);
-        }
-    }
-
-    guiMouseUp(event) {
-        if (this.mouse_down_position.x === event.layerX
-            && this.mouse_down_position.y === event.layerY) {
-            const target = this.getPositionTarget(this.mouse_down_position);
-            this.plotClick.emit({
-                x: event.clientX,
-                y: event.clientY,
-                target: target,
-            });
-        }
-        this.stopDrag(event);
     }
 
 }

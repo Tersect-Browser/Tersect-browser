@@ -12,10 +12,4 @@
 <canvas #plotCanvas class="sharp-canvas"
     [style.top.px]="plotService.gui_margins.top">
 </canvas>
-<canvas #guiCanvas class="gui-canvas"
-    [style.top.px]="plotService.gui_margins.top"
-    (mousedown)="guiMouseDown($event)"
-    (mouseup)="guiMouseUp($event)"
-    (mousemove)="guiMouseMove($event)">
-</canvas>
-
+<app-accession-bar></app-accession-bar>

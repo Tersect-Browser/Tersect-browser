@@ -8,12 +8,6 @@
     -ms-interpolation-mode: nearest-neighbor; /* IE */
 }
 
-.gui-canvas {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-}
-
 .update-spinner {
     position: absolute;
     margin-left: 45%;
