@@ -304,10 +304,9 @@ export class AccessionBarComponent implements OnInit {
             this.dragging_plot = true;
             this.drag_start_position = {
                 x: event.layerX - this.plotService.plot_position.x
-                                  * this.plotService.zoom_factor,
+                                  / this.plotService.bin_width,
                 y: event.layerY - this.plotService.plot_position.y
-                                  / this.plotService.aspect_ratio
-                                  * this.plotService.zoom_factor
+                                  / this.plotService.bin_height
             };
         }
     }
