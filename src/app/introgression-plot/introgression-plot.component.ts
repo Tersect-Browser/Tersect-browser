@@ -14,6 +14,7 @@ import { SequenceGap } from '../models/GapIndex';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
+import { PlotPosition } from '../models/PlotPosition';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -276,6 +277,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 private plotService: IntrogressionPlotService) { }
 
     ngOnInit() {
+        this.plotService.plot_position_source.subscribe((pos: PlotPosition) => {
+            // console.log(pos);
+            // this.drawPlot();
+        });
+
         const ref_distance_bins$ = combineLatest(this.reference_source,
                                                  this.chromosome_source,
                                                  this.interval_source,
@@ -352,7 +358,6 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
                 this.sequenceGaps = gaps;
             }
             this.generatePlotArray();
-            this.plotService.plot_position = { x: 0, y: 0 };
             this.drawPlot();
         });
     }

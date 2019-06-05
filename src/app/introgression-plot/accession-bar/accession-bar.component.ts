@@ -1,8 +1,9 @@
-import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef, Output, EventEmitter, OnInit } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotBin, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
+import { deflateRaw } from 'zlib';
 
 @Component({
     selector: 'app-accession-bar',
@@ -10,7 +11,7 @@ import { ceilTo } from '../../utils/utils';
     styleUrls: ['./accession-bar.component.css']
 })
 
-export class AccessionBarComponent {
+export class AccessionBarComponent implements OnInit {
     @ViewChild('canvas') canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
@@ -80,6 +81,12 @@ export class AccessionBarComponent {
                 this.HOVER_DELAY
             );
         }
+    }
+
+    ngOnInit() {
+        this.plotService.plot_position_source.subscribe((pos: PlotPosition) => {
+            this.draw();
+        });
     }
 
     guiMouseMove(event) {
@@ -274,22 +281,21 @@ export class AccessionBarComponent {
             this.canvas.nativeElement.style.cursor = 'move';
         }
 
-        this.plotService.plot_position.x = (event.layerX - this.drag_start_position.x)
-                               / this.plotService.zoom_factor;
-        this.plotService.plot_position.y = (event.layerY - this.drag_start_position.y)
-                               * this.plotService.aspect_ratio
-                               / this.plotService.zoom_factor;
-        this.plotService.plot_position.x = Math.round(this.plotService
-                                                          .plot_position.x);
-        this.plotService.plot_position.y = Math.round(this.plotService
-                                                          .plot_position.y);
-        if (this.plotService.plot_position.x > 0) {
-            this.plotService.plot_position.x = 0;
+        const new_pos: PlotPosition = {
+            x: Math.round((event.layerX - this.drag_start_position.x)
+                          / this.plotService.bin_width),
+            y: Math.round((event.layerY - this.drag_start_position.y)
+                          / this.plotService.bin_height)
+        };
+
+        if (new_pos.x > 0) {
+            new_pos.x = 0;
         }
-        if (this.plotService.plot_position.y > 0) {
-            this.plotService.plot_position.y = 0;
+        if (new_pos.y > 0) {
+            new_pos.y = 0;
         }
-        // this.drawPlot();
+
+        this.plotService.updatePosition(new_pos);
     }
 
     private startDrag(event) {

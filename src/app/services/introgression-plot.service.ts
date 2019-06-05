@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { PlotPosition } from '../models/PlotPosition';
 import { TreeNode } from '../clustering/clustering';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 interface GUIMargins {
     top: number;
@@ -42,7 +43,13 @@ export class IntrogressionPlotService {
     /**
      * Horizontal / vertical scroll position of the plot.
      */
-    plot_position: PlotPosition = { x: 0, y: 0 };
+    plot_position_source = new BehaviorSubject<PlotPosition>(
+        { x: 0, y: 0 }
+    );
+
+    get plot_position() {
+        return this.plot_position_source.getValue();
+    }
 
     /**
      * Chromosomal interval displayed by the plot.
@@ -92,6 +99,10 @@ export class IntrogressionPlotService {
 
     get bin_height() {
         return this.zoom_factor / this.aspect_ratio;
+    }
+
+    updatePosition(pos: PlotPosition) {
+        this.plot_position_source.next(pos);
     }
 
 }
