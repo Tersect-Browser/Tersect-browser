@@ -25,14 +25,14 @@ export abstract class DistancePalette {
 
 export class GreyscalePalette extends DistancePalette {
     static palette_pixels: ImageData[];
-    constructor(ctx: CanvasRenderingContext2D) {
+    constructor() {
         super();
         if (!GreyscalePalette.palette_pixels) {
             GreyscalePalette.palette_pixels = [];
             for (let i = 0; i <= DistancePalette.MAX_DISTANCE; i++) {
                 /* ImageData constructor is experimental; with it we won't need
                 the context. */
-                GreyscalePalette.palette_pixels[i] = ctx.createImageData(1, 1);
+                // GreyscalePalette.palette_pixels[i] = ctx.createImageData(1, 1);
                 GreyscalePalette.palette_pixels[i] = new ImageData(1, 1);
                 GreyscalePalette.palette_pixels[i].data[0] = 255 - i; // R
                 GreyscalePalette.palette_pixels[i].data[1] = 255 - i; // G

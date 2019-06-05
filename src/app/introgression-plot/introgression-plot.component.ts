@@ -169,10 +169,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private generatePlotArray() {
-        const ctx: CanvasRenderingContext2D = this.plotCanvas
-                                                  .nativeElement
-                                                  .getContext('2d');
-        const palette = new GreyscalePalette(ctx);
+        const palette = new GreyscalePalette();
         const accessionBins = this.plotService.sortedAccessions.map(
             accession => this.plotService.distanceBins[accession]
         );
