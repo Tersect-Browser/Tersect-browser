@@ -245,9 +245,11 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
     }
 
     private drawPlot() {
-        this.drawGUI();
-        this.drawBins();
-        this.stopLoading();
+        if (!isNullOrUndefined(this.plot_array)) {
+            this.drawGUI();
+            this.drawBins();
+            this.stopLoading();
+        }
     }
 
     private validateInputs = () => {
@@ -275,8 +277,7 @@ export class IntrogressionPlotComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
         this.plotService.plot_position_source.subscribe((pos: PlotPosition) => {
-            // console.log(pos);
-            // this.drawPlot();
+            this.drawPlot();
         });
 
         const ref_distance_bins$ = combineLatest(this.reference_source,
