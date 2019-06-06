@@ -85,8 +85,8 @@ export class IntrogressionPlotComponent implements OnInit {
 
     private redrawPlot() {
         this.accessionBar.draw();
-        this.binPlot.draw();
         this.scaleBar.draw();
+        this.binPlot.draw();
     }
 
     onClick($event: PlotClickEvent) {

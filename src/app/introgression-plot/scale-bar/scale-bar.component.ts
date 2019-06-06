@@ -86,7 +86,11 @@ export class ScaleBarComponent {
     }
 
     draw() {
-        const canvas_width = this.canvas.nativeElement.offsetWidth;
+        const canvas_width = this.canvas.nativeElement
+                                        .parentElement
+                                        .parentElement
+                                        .parentElement
+                                        .offsetWidth;
         const canvas_height = this.canvas.nativeElement.offsetHeight;
         this.canvas.nativeElement.width = canvas_width;
         this.canvas.nativeElement.height = canvas_height;
