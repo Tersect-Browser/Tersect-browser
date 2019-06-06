@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef, Output, EventEmitter, HostListener } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotBin, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
@@ -46,7 +46,7 @@ export class AccessionBarComponent {
     private drag_start_position = { x: 0, y: 0 };
 
     /**
-     * True if plot is currently being dragged.
+     * True if element is currently being dragged.
      */
     private dragging_plot = false;
 
@@ -106,14 +106,18 @@ export class AccessionBarComponent {
     mouseUp(event) {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
-            const target = this.getPositionTarget(this.mouse_down_position);
-            this.accessionClick.emit({
-                x: event.clientX,
-                y: event.clientY,
-                target: target,
-            });
+            this.mouseClick(event);
         }
         this.stopDrag(event);
+    }
+
+    mouseClick(event) {
+        const target = this.getPositionTarget(this.mouse_down_position);
+        this.accessionClick.emit({
+            x: event.clientX,
+            y: event.clientY,
+            target: target,
+        });
     }
 
     private getPositionTarget(mouse_position: PlotPosition): PlotArea {
@@ -275,13 +279,13 @@ export class AccessionBarComponent {
         return Math.ceil(gui_left_width);
     }
 
-    private dragPlot(event) {
+    private dragPlot(event: MouseEvent) {
         if (event.buttons !== 1) {
             this.stopDrag(event);
             return;
         }
-        if (this.canvas.nativeElement.style.cursor !== 'move') {
-            this.canvas.nativeElement.style.cursor = 'move';
+        if ((event.target as HTMLCanvasElement).style.cursor !== 'move') {
+            (event.target as HTMLCanvasElement).style.cursor = 'move';
         }
 
         const new_pos: PlotPosition = {
@@ -314,8 +318,8 @@ export class AccessionBarComponent {
         }
     }
 
-    private stopDrag(event) {
-        this.canvas.nativeElement.style.cursor = 'auto';
+    private stopDrag(event: MouseEvent) {
+        (event.target as HTMLCanvasElement).style.cursor = 'auto';
         this.dragging_plot = false;
     }
 
