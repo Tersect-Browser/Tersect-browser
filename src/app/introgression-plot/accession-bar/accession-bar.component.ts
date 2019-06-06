@@ -3,7 +3,7 @@ import { IntrogressionPlotService } from '../../services/introgression-plot.serv
 import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotBin, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
-import { deflateRaw } from 'zlib';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-accession-bar',
@@ -11,7 +11,7 @@ import { deflateRaw } from 'zlib';
     styleUrls: ['./accession-bar.component.css']
 })
 
-export class AccessionBarComponent implements OnInit {
+export class AccessionBarComponent {
     @ViewChild('canvas') canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
@@ -83,12 +83,6 @@ export class AccessionBarComponent implements OnInit {
         }
     }
 
-    ngOnInit() {
-        this.plotService.plot_position_source.subscribe((pos: PlotPosition) => {
-            this.draw();
-        });
-    }
-
     guiMouseMove(event) {
         this.prepareTooltip(event);
         if (this.dragging_plot) {
@@ -136,19 +130,17 @@ export class AccessionBarComponent implements OnInit {
         if (inner_position.x + this.plotService.plot_position.x < 0) {
             const res_acc: PlotAccession = {
                 type: 'accession',
-                accession: this.plotService.sortedAccessions[inner_position.y]
+                accession: this.plotService.sorted_accessions[inner_position.y]
             };
             return res_acc;
         }
 
-        /*const interval = this.interval_source.getValue();
-        const binsize = this.binsize_source.getValue();*/
         const interval = this.plotService.interval;
         const binsize = this.plotService.binsize;
 
         const res_bin: PlotBin = {
             type: 'bin',
-            accession: this.plotService.sortedAccessions[inner_position.y],
+            accession: this.plotService.sorted_accessions[inner_position.y],
             start_position: interval[0] + inner_position.x * binsize,
             end_position: interval[0] + (inner_position.x + 1) * binsize - 1
         };
@@ -156,6 +148,13 @@ export class AccessionBarComponent implements OnInit {
     }
 
     draw() {
+        if (isNullOrUndefined(this.plotService.sorted_accessions)) { return; }
+
+        this.canvas.nativeElement.height = this.canvas.nativeElement
+                                                      .parentElement
+                                                      .parentElement
+                                                      .parentElement
+                                                      .offsetHeight;
         const ctx: CanvasRenderingContext2D = this.canvas.nativeElement
                                                          .getContext('2d');
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
@@ -252,7 +251,7 @@ export class AccessionBarComponent implements OnInit {
                              text_height: number, yoffset: number) {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
-        this.plotService.sortedAccessions.forEach((label, index) => {
+        this.plotService.sorted_accessions.forEach((label, index) => {
             ctx.fillText(label, 0, yoffset + index * text_height);
         });
     }
@@ -260,7 +259,7 @@ export class AccessionBarComponent implements OnInit {
     private calcLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
         ctx.font = `${this.plotService.bin_height}px ${this.GUI_TREE_FONT}`;
         const max_label_width = Math.max(
-            ...this.plotService.sortedAccessions.map(label =>
+            ...this.plotService.sorted_accessions.map(label =>
                 ctx.measureText(label).width
             )
         );

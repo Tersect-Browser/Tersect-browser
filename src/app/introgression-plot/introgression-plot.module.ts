@@ -8,12 +8,14 @@ import { TersectBackendService } from '../services/tersect-backend.service';
 import { IntrogressionPlotComponent } from './introgression-plot.component';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
+import { BinPlotComponent } from './bin-plot/bin-plot.component';
 
 @NgModule({
     declarations: [
         IntrogressionPlotComponent,
         ScaleBarComponent,
-        AccessionBarComponent
+        AccessionBarComponent,
+        BinPlotComponent
     ],
     exports: [
         IntrogressionPlotComponent

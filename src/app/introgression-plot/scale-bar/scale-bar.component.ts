@@ -16,7 +16,7 @@ interface ScaleTick {
 })
 
 export class ScaleBarComponent {
-    @ViewChild('topGuiCanvas') topGuiCanvas: ElementRef;
+    @ViewChild('canvas') canvas: ElementRef;
 
     readonly GUI_SCALE_COLOR = '#327e04';
     readonly GUI_SCALE_FONT_SIZE = 13;
@@ -39,7 +39,7 @@ export class ScaleBarComponent {
 
     private _drawScaleTick(ctx: CanvasRenderingContext2D,
                            tick: ScaleTick) {
-        const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
+        const canvas_height = this.canvas.nativeElement.offsetHeight;
         const bp_per_pixel = this.plotService.binsize
                              / this.plotService.zoom_factor;
         const tick_x = (this.plotService.plot_position.x
@@ -71,11 +71,11 @@ export class ScaleBarComponent {
     }
 
     draw() {
-        const canvas_width = this.topGuiCanvas.nativeElement.offsetWidth;
-        const canvas_height = this.topGuiCanvas.nativeElement.offsetHeight;
-        this.topGuiCanvas.nativeElement.width = canvas_width;
-        this.topGuiCanvas.nativeElement.height = canvas_height;
-        const ctx: CanvasRenderingContext2D = this.topGuiCanvas
+        const canvas_width = this.canvas.nativeElement.offsetWidth;
+        const canvas_height = this.canvas.nativeElement.offsetHeight;
+        this.canvas.nativeElement.width = canvas_width;
+        this.canvas.nativeElement.height = canvas_height;
+        const ctx: CanvasRenderingContext2D = this.canvas
                                                   .nativeElement
                                                   .getContext('2d');
         ctx.clearRect(0, 0, canvas_width, canvas_height);
