@@ -273,8 +273,7 @@ export class IntrogressionPlotService {
             if (!sameElements(accessions, this.sorted_accessions)
                 || this.distanceMatrix !== dist_mat) {
                 this.distanceMatrix = dist_mat;
-                this.njTree = buildNJTree(this.distanceMatrix,
-                                                      accessions);
+                this.njTree = buildNJTree(this.distanceMatrix, accessions);
                 this.sorted_accessions = treeToSortedList(this.njTree);
                 this.sequenceGaps = gaps;
             }
