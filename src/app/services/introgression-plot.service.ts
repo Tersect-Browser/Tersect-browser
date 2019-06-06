@@ -214,12 +214,10 @@ export class IntrogressionPlotService {
                                                  this.interval_source,
                                                  this.binsize_source).pipe(
             filter(([ref, chrom, interval, binsize]) =>
-                !isNullOrUndefined(ref)
-                && !isNullOrUndefined(chrom)
-                && !isNullOrUndefined(interval)
-                && !isNullOrUndefined(binsize)),
-                filter(this.validateInputs),
-                tap(this.startLoading),
+                ![ref, chrom, interval, binsize].some(isNullOrUndefined)
+            ),
+            filter(this.validateInputs),
+            tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([ref, chrom, interval, binsize]) =>
                 this.tersectBackendService
@@ -231,10 +229,10 @@ export class IntrogressionPlotService {
         const distance_matrix$ = combineLatest(this.chromosome_source,
                                                this.interval_source).pipe(
             filter(([chrom, interval]) =>
-                !isNullOrUndefined(chrom)
-                && !isNullOrUndefined(interval)),
-                filter(this.validateInputs),
-                tap(this.startLoading),
+                ![chrom, interval].some(isNullOrUndefined)
+            ),
+            filter(this.validateInputs),
+            tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([chrom, interval]) =>
                 this.tersectBackendService
@@ -262,11 +260,9 @@ export class IntrogressionPlotService {
                       accessions$,
                       gaps$).pipe(
             filter(([ref_dist, dist_mat, accessions, gaps]) =>
-                !isNullOrUndefined(ref_dist)
-                && !isNullOrUndefined(dist_mat)
-                && !isNullOrUndefined(accessions)
-                && !isNullOrUndefined(gaps)),
-                tap(this.startLoading),
+                ![ref_dist, dist_mat, accessions, gaps].some(isNullOrUndefined)
+            ),
+            tap(this.startLoading),
             filter(([ref_dist, dist_mat, , ]) =>
                    ref_dist['region'] === dist_mat['region']
                    && ref_dist['region'].split(':')[0] === this.chromosome.name
