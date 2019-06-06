@@ -72,7 +72,6 @@ export class IntrogressionPlotService {
      * Horizontal / vertical scroll position of the plot.
      */
     plot_position_source = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
-
     get plot_position() {
         return this.plot_position_source.getValue();
     }
