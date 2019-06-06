@@ -93,18 +93,17 @@
             (mousemove)="tooltip.hide()"
             (mouseleave)="tooltip.hide()">
         </app-introgression-plot>
-
-        <app-plot-click-menu
-            (setReference)="setReference($event)"
-            (removeAccession)="removeAccession($event)"
-            (setIntervalStart)="setIntervalStart($event)"
-            (setIntervalEnd)="setIntervalEnd($event)">
-        </app-plot-click-menu>
-
-        <app-tooltip></app-tooltip>
-
     </div>
 </div>
+
+<app-plot-click-menu
+    (setReference)="setReference($event)"
+    (removeAccession)="removeAccession($event)"
+    (setIntervalStart)="setIntervalStart($event)"
+    (setIntervalEnd)="setIntervalEnd($event)">
+</app-plot-click-menu>
+
+<app-tooltip></app-tooltip>
 
 <p-sidebar [(visible)]="display_sidebar" position="left"
            (onHide)="updateAccessions()">
