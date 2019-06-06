@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, HostListener, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, HostListener, Input } from '@angular/core';
 import { Chromosome } from '../models/chromosome';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';

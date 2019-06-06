@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotBin, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
