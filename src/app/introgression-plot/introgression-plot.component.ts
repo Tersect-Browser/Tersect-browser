@@ -44,7 +44,10 @@ export class IntrogressionPlotComponent implements OnInit {
 
     @Input()
     set drawTree(draw_tree: boolean) {
-        this.plotService.draw_tree = draw_tree;
+        if (draw_tree !== this.plotService.draw_tree) {
+            this.plotService.draw_tree = draw_tree;
+            this.redrawPlot();
+        }
     }
 
     /**
@@ -52,7 +55,10 @@ export class IntrogressionPlotComponent implements OnInit {
      */
     @Input()
     set zoom_level(zoom_level: number) {
-        this.plotService.zoom_level = zoom_level;
+        if (zoom_level !== this.plotService.zoom_level) {
+            this.plotService.zoom_level = zoom_level;
+            this.redrawPlot();
+        }
     }
 
     ngOnInit() {
@@ -61,14 +67,6 @@ export class IntrogressionPlotComponent implements OnInit {
         });
 
         this.plotService.plot_array_source.subscribe(() => {
-            this.redrawPlot();
-        });
-
-        this.plotService.zoom_level_source.subscribe(() => {
-            this.redrawPlot();
-        });
-
-        this.plotService.draw_tree_source.subscribe(() => {
             this.redrawPlot();
         });
     }

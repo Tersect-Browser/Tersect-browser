@@ -39,14 +39,6 @@ export class IntrogressionPlotService {
      */
     aspect_ratio = 1 / 2;
 
-    draw_tree_source = new BehaviorSubject<boolean>(false);
-    set draw_tree(draw: boolean) {
-        this.draw_tree_source.next(draw);
-    }
-    get draw_tree(): boolean {
-        return this.draw_tree_source.getValue();
-    }
-
     gui_margins: GUIMargins = {
         top: this.GUI_SCALE_BAR_SIZE,
         right: 0,
@@ -65,6 +57,16 @@ export class IntrogressionPlotService {
      * displayed.
      */
     error_message = '';
+
+    /**
+     * Zoom level in percentages.
+     */
+    zoom_level = 100;
+
+    /**
+     * Draw phylogenetic tree (if true) or simple list of accessions (if false).
+     */
+    draw_tree = false;
 
     /**
      * Horizontal / vertical scroll position of the plot.
@@ -132,19 +134,6 @@ export class IntrogressionPlotService {
         if (!sameElements(accessions, this.sorted_accessions)) {
             this.accessions_source.next(accessions);
         }
-    }
-
-    /**
-     * Zoom level in percentages.
-     */
-    zoom_level_source = new BehaviorSubject<number>(100);
-    set zoom_level(zoom_level: number) {
-        if (zoom_level !== this.zoom_level) {
-            this.zoom_level_source.next(zoom_level);
-        }
-    }
-    get zoom_level(): number {
-        return this.zoom_level_source.getValue();
     }
 
     /**
