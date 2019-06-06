@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild, HostListener, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, HostListener, Input, Output, EventEmitter } from '@angular/core';
 import { Chromosome } from '../models/chromosome';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
+import { PlotClickEvent, PlotHoverEvent } from '../models/PlotPosition';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -16,6 +17,9 @@ export class IntrogressionPlotComponent implements OnInit {
     @ViewChild(BinPlotComponent) binPlot: BinPlotComponent;
     @ViewChild(ScaleBarComponent) scaleBar: ScaleBarComponent;
     @ViewChild(AccessionBarComponent) accessionBar: AccessionBarComponent;
+
+    @Output() plotClick = new EventEmitter<PlotClickEvent>();
+    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     @Input()
     set chromosome(chromosome: Chromosome) {
@@ -61,6 +65,14 @@ export class IntrogressionPlotComponent implements OnInit {
         }
     }
 
+    get error_message() {
+        return this.plotService.error_message;
+    }
+
+    get plot_loading() {
+        return this.plotService.plot_loading;
+    }
+
     ngOnInit() {
         this.plotService.plot_position_source.subscribe(() => {
             this.redrawPlot();
@@ -71,10 +83,18 @@ export class IntrogressionPlotComponent implements OnInit {
         });
     }
 
-    redrawPlot() {
+    private redrawPlot() {
         this.accessionBar.draw();
         this.binPlot.draw();
         this.scaleBar.draw();
+    }
+
+    onClick($event: PlotClickEvent) {
+        this.plotClick.emit($event);
+    }
+
+    onHover($event: PlotHoverEvent) {
+        this.plotHover.emit($event);
     }
 
     constructor(private plotService: IntrogressionPlotService) { }

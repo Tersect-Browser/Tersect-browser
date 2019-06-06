@@ -1,6 +1,7 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { isNullOrUndefined } from 'util';
+import { PlotClickEvent, PlotHoverEvent } from '../../models/PlotPosition';
 
 @Component({
     selector: 'app-bin-plot',
@@ -10,6 +11,20 @@ import { isNullOrUndefined } from 'util';
 
 export class BinPlotComponent {
     @ViewChild('canvas') canvas: ElementRef;
+
+    /**
+     * Emitted when bins are clicked.
+     */
+    @Output() binClick = new EventEmitter<PlotClickEvent>();
+
+    /**
+     * Emitted when mouse hovers over a bin.
+     */
+    @Output() binHover = new EventEmitter<PlotHoverEvent>();
+
+    get gui_margins() {
+        return this.plotService.gui_margins;
+    }
 
     constructor(private plotService: IntrogressionPlotService) {}
 

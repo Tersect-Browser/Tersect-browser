@@ -1,6 +1,7 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, Output, EventEmitter } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
+import { PlotHoverEvent, PlotClickEvent } from '../../models/PlotPosition';
 
 interface ScaleTick {
     position: number;
@@ -17,6 +18,20 @@ interface ScaleTick {
 
 export class ScaleBarComponent {
     @ViewChild('canvas') canvas: ElementRef;
+
+    /**
+     * Emitted when a point on the scale is clicked.
+     */
+    @Output() scaleClick = new EventEmitter<PlotClickEvent>();
+
+    /**
+     * Emitted when mouse hovers over the scale.
+     */
+    @Output() scaleHover = new EventEmitter<PlotHoverEvent>();
+
+    get gui_margins() {
+        return this.plotService.gui_margins;
+    }
 
     readonly GUI_SCALE_COLOR = '#327e04';
     readonly GUI_SCALE_FONT_SIZE = 13;

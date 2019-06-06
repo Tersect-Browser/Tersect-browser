@@ -1,16 +1,24 @@
-<div [ngStyle]="{'visibility': plotService.plot_loading
-                               && plotService.error_message == '' ? 'visible'
-                                                                  : 'hidden'}">
+<div [ngStyle]="{'visibility': plot_loading && error_message == '' ? 'visible'
+                                                                   : 'hidden'}">
     <div class="update-spinner">
         <p-progressSpinner></p-progressSpinner>
     </div>
     <div class="update-shadow"></div>
 </div>
-<div [ngStyle]="{'visibility': plotService.error_message != '' ? 'visible'
-                                                               : 'hidden'}">
-    <div class="error-message">{{ plotService.error_message }}</div>
+
+<div [ngStyle]="{'visibility': error_message != '' ? 'visible' : 'hidden'}">
+    <div class="error-message">{{ error_message }}</div>
     <div class="update-shadow"></div>
 </div>
-<app-scale-bar></app-scale-bar>
-<app-bin-plot></app-bin-plot>
-<app-accession-bar></app-accession-bar>
+
+<app-scale-bar
+    (scaleClick)="onClick($event)" (scaleHover)="onHover($event)">
+</app-scale-bar>
+
+<app-bin-plot
+    (binClick)="onClick($event)" (binHover)="onHover($event)">
+</app-bin-plot>
+
+<app-accession-bar
+    (accessionClick)="onClick($event)" (accessionHover)="onHover($event)">
+</app-accession-bar>

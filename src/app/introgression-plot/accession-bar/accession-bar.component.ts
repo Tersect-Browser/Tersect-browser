@@ -51,14 +51,18 @@ export class AccessionBarComponent {
     private dragging_plot = false;
 
     /**
-     * Emitted when plot elements (accessions) are clicked.
+     * Emitted when accessions are clicked.
      */
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
+    @Output() accessionClick = new EventEmitter<PlotClickEvent>();
 
     /**
-     * Emitted when mouse hovers over a plot element.
+     * Emitted when mouse hovers over an accession.
      */
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
+    @Output() accessionHover = new EventEmitter<PlotHoverEvent>();
+
+    get gui_margins() {
+        return this.plotService.gui_margins;
+    }
 
     constructor(private plotService: IntrogressionPlotService) {}
 
@@ -73,7 +77,7 @@ export class AccessionBarComponent {
         });
         if (target.type !== 'background') {
             this.hover_timer = setTimeout(
-                () => this.plotHover.emit({
+                () => this.accessionHover.emit({
                     x: event.clientX,
                     y: event.clientY,
                     target: target
@@ -103,7 +107,7 @@ export class AccessionBarComponent {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
             const target = this.getPositionTarget(this.mouse_down_position);
-            this.plotClick.emit({
+            this.accessionClick.emit({
                 x: event.clientX,
                 y: event.clientY,
                 target: target,
