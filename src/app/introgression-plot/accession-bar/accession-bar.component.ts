@@ -281,10 +281,10 @@ export class AccessionBarComponent {
         }
 
         const new_pos: PlotPosition = {
-            x: Math.round((event.layerX - this.drag_start_position.x)
-                          / this.plotService.bin_width),
-            y: Math.round((event.layerY - this.drag_start_position.y)
-                          / this.plotService.bin_height)
+            x: Math.round(event.layerX / this.plotService.bin_width
+                          - this.drag_start_position.x),
+            y: Math.round(event.layerY / this.plotService.bin_height
+                          - this.drag_start_position.y)
         };
 
         if (new_pos.x > 0) {
@@ -302,10 +302,10 @@ export class AccessionBarComponent {
         if (event.buttons === 1) {
             this.dragging_plot = true;
             this.drag_start_position = {
-                x: event.layerX - this.plotService.plot_position.x
-                                  / this.plotService.bin_width,
-                y: event.layerY - this.plotService.plot_position.y
-                                  / this.plotService.bin_height
+                x: event.layerX / this.plotService.bin_width
+                   - this.plotService.plot_position.x,
+                y: event.layerY / this.plotService.bin_height
+                   - this.plotService.plot_position.y
             };
         }
     }
