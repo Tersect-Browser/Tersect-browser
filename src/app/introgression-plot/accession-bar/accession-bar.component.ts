@@ -83,14 +83,14 @@ export class AccessionBarComponent {
         }
     }
 
-    guiMouseMove(event) {
+    mouseMove(event) {
         this.prepareTooltip(event);
         if (this.dragging_plot) {
             this.dragPlot(event);
         }
     }
 
-    guiMouseDown(event) {
+    mouseDown(event) {
         this.mouse_down_position = { x: event.layerX, y: event.layerY };
         const target = this.getPositionTarget(this.mouse_down_position);
         if (target.type === 'bin' || target.type === 'background'
@@ -99,7 +99,7 @@ export class AccessionBarComponent {
         }
     }
 
-    guiMouseUp(event) {
+    mouseUp(event) {
         if (this.mouse_down_position.x === event.layerX
             && this.mouse_down_position.y === event.layerY) {
             const target = this.getPositionTarget(this.mouse_down_position);
