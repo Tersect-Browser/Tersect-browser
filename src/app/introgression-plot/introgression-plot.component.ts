@@ -4,7 +4,7 @@ import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
-import { PlotClickEvent, PlotHoverEvent } from '../models/PlotPosition';
+import { PlotClickEvent, PlotHoverEvent, PlotLeaveEvent } from '../models/PlotPosition';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -20,6 +20,7 @@ export class IntrogressionPlotComponent implements OnInit {
 
     @Output() plotClick = new EventEmitter<PlotClickEvent>();
     @Output() plotHover = new EventEmitter<PlotHoverEvent>();
+    @Output() plotLeave = new EventEmitter<PlotLeaveEvent>();
 
     @Input()
     set chromosome(chromosome: Chromosome) {
@@ -95,6 +96,10 @@ export class IntrogressionPlotComponent implements OnInit {
 
     onHover($event: PlotHoverEvent) {
         this.plotHover.emit($event);
+    }
+
+    onLeave($event: PlotLeaveEvent) {
+        this.plotLeave.emit($event);
     }
 
     constructor(private plotService: IntrogressionPlotService) { }

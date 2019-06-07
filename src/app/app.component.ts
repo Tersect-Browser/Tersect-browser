@@ -3,7 +3,7 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
 import { TersectBackendService } from './services/tersect-backend.service';
 import { ceilTo, floorTo } from './utils/utils';
-import { PlotClickEvent } from './models/PlotPosition';
+import { PlotClickEvent, PlotLeaveEvent } from './models/PlotPosition';
 import { PlotClickMenuComponent } from './plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from './tooltip/tooltip.component';
 

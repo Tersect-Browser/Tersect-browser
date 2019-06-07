@@ -41,7 +41,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
      */
     readonly GUI_TICK_DISTANCE = 120;
 
-    constructor(private plotService: IntrogressionPlotService) { super(); }
+    constructor(private plotService: IntrogressionPlotService) {
+        super();
+        this.hover_state.hover_delay = 0;
+    }
 
     private drawScaleTick(ctx: CanvasRenderingContext2D,
                            tick: ScaleTick) {
@@ -188,7 +191,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
                               * this.plotService.binsize;
         const result: PlotChromosomePosition = {
             type: 'position',
-            position: bp_position
+            position: Math.round(bp_position)
         };
         return result;
     }

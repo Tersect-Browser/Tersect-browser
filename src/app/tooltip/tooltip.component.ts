@@ -16,6 +16,8 @@ export class TooltipComponent {
      */
     readonly tooltip_offset: PlotPosition = { x: 0, y: 20 };
 
+    auto_hide = true;
+
     private formatBinTooltip(target: PlotBin): string {
         return `${target.accession}<br>${formatPosition(target.start_position)}
 - ${formatPosition(target.end_position)}`;
@@ -38,12 +40,23 @@ export class TooltipComponent {
     }
 
     show($event: PlotHoverEvent) {
+        if ($event.target.type === 'position') {
+            this.auto_hide = false;
+        } else {
+            this.auto_hide = true;
+        }
         this.tooltip.nativeElement.style.left = `${$event.x
                                                    + this.tooltip_offset.x}px`;
         this.tooltip.nativeElement.style.top = `${$event.y
                                                   + this.tooltip_offset.y}px`;
         this.tooltip.nativeElement.style.visibility = 'visible';
         this.tooltip.nativeElement.innerHTML = this.formatContent($event);
+    }
+
+    autoHide() {
+        if (this.auto_hide) {
+            this.hide();
+        }
     }
 
     hide() {

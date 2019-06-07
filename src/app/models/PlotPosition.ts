@@ -32,3 +32,7 @@ export interface PlotHoverEvent {
     y: number;
     target: PlotArea;
 }
+
+export interface PlotLeaveEvent {
+    element: string;
+}

@@ -89,8 +89,9 @@
             [zoom_level]="zoom_level"
             (plotClick)="plotClick($event)"
             (plotHover)="tooltip.show($event)"
+            (plotLeave)="tooltip.hide()"
             (wheel)="scrollWheel($event)"
-            (mousemove)="tooltip.hide()"
+            (mousemove)="tooltip.autoHide()"
             (mouseleave)="tooltip.hide()">
         </app-introgression-plot>
     </div>

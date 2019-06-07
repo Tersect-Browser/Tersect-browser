@@ -1,5 +1,5 @@
 import { HostListener, Output, EventEmitter } from '@angular/core';
-import { PlotClickEvent, PlotHoverEvent, PlotArea, PlotPosition } from '../models/PlotPosition';
+import { PlotClickEvent, PlotHoverEvent, PlotArea, PlotPosition, PlotLeaveEvent } from '../models/PlotPosition';
 
 export interface DragState {
     enable_dragging: boolean;
@@ -56,6 +56,11 @@ export abstract class CanvasPlotElement {
      */
     @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
+    /**
+     * Emitted when mouse leaves a canvas plot element.
+     */
+    @Output() plotLeave = new EventEmitter<PlotLeaveEvent>();
+
     protected abstract dragStartAction(drag_state: DragState): void;
     protected abstract dragStopAction(drag_state: DragState): void;
     protected abstract dragAction(drag_state: DragState): void;
@@ -90,15 +95,20 @@ export abstract class CanvasPlotElement {
     @HostListener('mousemove', ['$event'])
     mouseMove($event: MouseEvent) {
         if (this.hover_state.enable_hovering) {
-            clearTimeout(this.hover_state.hover_timer);
             this.hover_state.hover_position = {
                 x: $event.offsetX,
                 y: $event.offsetY
             };
             this.hover_state.event = $event;
-            this.hover_state.hover_timer = setTimeout(() => {
+            if (this.hover_state.hover_delay > 0) {
+                clearTimeout(this.hover_state.hover_timer);
+                this.hover_state.hover_timer = setTimeout(() => {
+                    this.hoverAction(this.hover_state);
+                }, this.hover_state.hover_delay);
+            } else {
+                // No delay
                 this.hoverAction(this.hover_state);
-            }, this.hover_state.hover_delay);
+            }
         }
         if (this.drag_state.dragged) {
             this.drag($event);
@@ -110,6 +120,7 @@ export abstract class CanvasPlotElement {
     mouseLeave($event: MouseEvent) {
         if (this.hover_state.enable_hovering) {
             clearTimeout(this.hover_state.hover_timer);
+            this.plotLeave.emit({ element: this.constructor.name });
         }
     }
 
