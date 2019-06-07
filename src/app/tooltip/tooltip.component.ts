@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { PlotPosition, PlotHoverEvent, PlotBin, PlotAccession } from '../models/PlotPosition';
+import { PlotPosition, PlotHoverEvent, PlotBin, PlotAccession, PlotChromosomePosition } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -21,20 +21,29 @@ export class TooltipComponent {
 - ${formatPosition(target.end_position)}`;
     }
 
-    show($event: PlotHoverEvent) {
-        let content = '';
-        if ($event.target.type === 'bin') {
-            content = this.formatBinTooltip($event.target as PlotBin);
-        } else if ($event.target.type === 'accession') {
-            content = `${($event.target as PlotAccession).accession}`;
-        }
+    private formatPositionTooltip(target: PlotChromosomePosition): string {
+        return `${formatPosition(target.position)}`;
+    }
 
+    private formatContent($event: PlotHoverEvent): string {
+        if ($event.target.type === 'bin') {
+            return this.formatBinTooltip($event.target as PlotBin);
+        } else if ($event.target.type === 'accession') {
+            return `${($event.target as PlotAccession).accession}`;
+        } else if ($event.target.type === 'position') {
+            return this.formatPositionTooltip($event.target as
+                                              PlotChromosomePosition);
+        }
+        return '';
+    }
+
+    show($event: PlotHoverEvent) {
         this.tooltip.nativeElement.style.left = `${$event.x
                                                    + this.tooltip_offset.x}px`;
         this.tooltip.nativeElement.style.top = `${$event.y
                                                   + this.tooltip_offset.y}px`;
         this.tooltip.nativeElement.style.visibility = 'visible';
-        this.tooltip.nativeElement.innerHTML = content;
+        this.tooltip.nativeElement.innerHTML = this.formatContent($event);
     }
 
     hide() {

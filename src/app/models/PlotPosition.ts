@@ -17,6 +17,10 @@ export interface PlotAccession extends PlotArea {
     accession: string;
 }
 
+export interface PlotChromosomePosition extends PlotArea {
+    position: number;
+}
+
 export interface PlotClickEvent {
     x: number;
     y: number;

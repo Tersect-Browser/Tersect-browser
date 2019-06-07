@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
-import { PlotPosition, PlotArea } from '../../models/PlotPosition';
+import { PlotPosition, PlotArea, PlotChromosomePosition } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 
 interface ScaleTick {
@@ -180,7 +180,17 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected getPositionTarget(position: PlotPosition): PlotArea {
-        return { type: 'background' };
+        const bp_per_pixel = this.plotService.binsize
+                             / this.plotService.zoom_factor;
+        const bp_position = position.x * bp_per_pixel
+                            - (this.plotService.plot_position.x
+                               + this.plotService.gui_margins.left)
+                              * this.plotService.binsize;
+        const result: PlotChromosomePosition = {
+            type: 'position',
+            position: bp_position
+        };
+        return result;
     }
 
     protected dragStartAction(drag_state: DragState): void {
