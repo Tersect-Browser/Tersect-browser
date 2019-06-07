@@ -87,11 +87,10 @@
             [reference]="selected_reference"
             [binsize]="selected_binsize"
             [zoom_level]="zoom_level"
-            (plotClick)="plotClick($event)"
-            (plotHover)="tooltip.show($event)"
-            (plotLeave)="tooltip.hide()"
+            (plotMouseClick)="plotClick($event)"
+            (plotMouseHover)="tooltip.show($event)"
+            (plotMouseLeave)="tooltip.hide()"
             (wheel)="scrollWheel($event)"
-            (mousemove)="tooltip.autoHide()"
             (mouseleave)="tooltip.hide()">
         </app-introgression-plot>
     </div>

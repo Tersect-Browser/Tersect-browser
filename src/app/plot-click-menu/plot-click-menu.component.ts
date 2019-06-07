@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
-import { PlotClickEvent, PlotAccession, PlotBin } from '../models/PlotPosition';
+import { PlotAccession, PlotBin, PlotMouseClickEvent } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -108,7 +108,7 @@ export class PlotClickMenuComponent implements OnInit {
         };
     }
 
-    show($event: PlotClickEvent) {
+    show($event: PlotMouseClickEvent) {
         if ($event.target.type === 'accession') {
             this.menuItems = [
                 this.getAccessionItem($event.target as PlotAccession)

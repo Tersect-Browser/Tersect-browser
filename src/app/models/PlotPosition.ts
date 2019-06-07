@@ -21,18 +21,18 @@ export interface PlotChromosomePosition extends PlotArea {
     position: number;
 }
 
-export interface PlotClickEvent {
+export interface PlotMouseClickEvent {
     x: number;
     y: number;
     target: PlotArea;
 }
 
-export interface PlotHoverEvent {
+export interface PlotMouseHoverEvent {
     x: number;
     y: number;
     target: PlotArea;
 }
 
-export interface PlotLeaveEvent {
+export interface PlotMouseMoveEvent {
     element: string;
 }

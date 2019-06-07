@@ -12,17 +12,19 @@
 </div>
 
 <app-scale-bar
-    (plotClick)="onClick($event)"
-    (plotHover)="onHover($event)"
-    (plotLeave)="onLeave($event)">
+    (plotMouseClick)="onClick($event)"
+    (plotMouseHover)="onHover($event)"
+    (plotMouseMove)="onMove($event)">
 </app-scale-bar>
 
 <app-bin-plot
-    (plotClick)="onClick($event)"
-    (plotHover)="onHover($event)">
+    (plotMouseClick)="onClick($event)"
+    (plotMouseHover)="onHover($event)"
+    (plotMouseMove)="onMove($event)">
 </app-bin-plot>
 
 <app-accession-bar
-    (plotClick)="onClick($event)"
-    (plotHover)="onHover($event)">
+    (plotMouseClick)="onClick($event)"
+    (plotMouseHover)="onHover($event)"
+    (plotMouseMove)="onMove($event)">
 </app-accession-bar>

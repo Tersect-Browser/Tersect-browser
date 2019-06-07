@@ -3,9 +3,9 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from './models/chromosome';
 import { TersectBackendService } from './services/tersect-backend.service';
 import { ceilTo, floorTo } from './utils/utils';
-import { PlotClickEvent, PlotLeaveEvent } from './models/PlotPosition';
 import { PlotClickMenuComponent } from './plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from './tooltip/tooltip.component';
+import { PlotMouseClickEvent } from './models/PlotPosition';
 
 @Component({
     selector: 'app-root',
@@ -148,7 +148,7 @@ export class AppComponent implements OnInit {
                                                  this.BINSIZE_SLIDER_DELAY);
     }
 
-    plotClick($event: PlotClickEvent) {
+    plotClick($event: PlotMouseClickEvent) {
         if ($event.target.type !== 'background') {
             this.plotClickMenu.show($event);
         }

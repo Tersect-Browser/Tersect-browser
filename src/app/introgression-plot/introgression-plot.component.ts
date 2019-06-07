@@ -4,7 +4,7 @@ import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
-import { PlotClickEvent, PlotHoverEvent, PlotLeaveEvent } from '../models/PlotPosition';
+import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -18,9 +18,9 @@ export class IntrogressionPlotComponent implements OnInit {
     @ViewChild(ScaleBarComponent) scaleBar: ScaleBarComponent;
     @ViewChild(AccessionBarComponent) accessionBar: AccessionBarComponent;
 
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
-    @Output() plotLeave = new EventEmitter<PlotLeaveEvent>();
+    @Output() plotMouseClick = new EventEmitter<PlotMouseClickEvent>();
+    @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
+    @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
     @Input()
     set chromosome(chromosome: Chromosome) {
@@ -90,16 +90,16 @@ export class IntrogressionPlotComponent implements OnInit {
         this.binPlot.draw();
     }
 
-    onClick($event: PlotClickEvent) {
-        this.plotClick.emit($event);
+    onClick($event: PlotMouseClickEvent) {
+        this.plotMouseClick.emit($event);
     }
 
-    onHover($event: PlotHoverEvent) {
-        this.plotHover.emit($event);
+    onHover($event: PlotMouseHoverEvent) {
+        this.plotMouseHover.emit($event);
     }
 
-    onLeave($event: PlotLeaveEvent) {
-        this.plotLeave.emit($event);
+    onMove($event: PlotMouseMoveEvent) {
+        this.plotMouseMove.emit($event);
     }
 
     constructor(private plotService: IntrogressionPlotService) { }

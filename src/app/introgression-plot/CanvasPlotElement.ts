@@ -1,5 +1,5 @@
 import { HostListener, Output, EventEmitter } from '@angular/core';
-import { PlotClickEvent, PlotHoverEvent, PlotArea, PlotPosition, PlotLeaveEvent } from '../models/PlotPosition';
+import { PlotArea, PlotPosition, PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
 
 export interface DragState {
     enable_dragging: boolean;
@@ -49,17 +49,17 @@ export abstract class CanvasPlotElement {
     /**
      * Emitted when a plot element is clicked.
      */
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
+    @Output() plotMouseClick = new EventEmitter<PlotMouseClickEvent>();
 
     /**
      * Emitted when mouse hovers over a plot element.
      */
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
+    @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
 
     /**
-     * Emitted when mouse leaves a canvas plot element.
+     * Emitted when mouse moves or leaves a canvas plot element.
      */
-    @Output() plotLeave = new EventEmitter<PlotLeaveEvent>();
+    @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
     protected abstract dragStartAction(drag_state: DragState): void;
     protected abstract dragStopAction(drag_state: DragState): void;
@@ -71,7 +71,7 @@ export abstract class CanvasPlotElement {
      */
     protected clickAction(click_state: ClickState): void {
         const target = this.getPositionTarget(click_state.click_position);
-        this.plotClick.emit({
+        this.plotMouseClick.emit({
             x: click_state.event.clientX,
             y: click_state.event.clientY,
             target: target,
@@ -84,7 +84,7 @@ export abstract class CanvasPlotElement {
     protected hoverAction(hover_state: HoverState): void {
         const target = this.getPositionTarget(hover_state.hover_position);
         if (target.type !== 'background') {
-            this.plotHover.emit({
+            this.plotMouseHover.emit({
                 x: hover_state.event.clientX,
                 y: hover_state.event.clientY,
                 target: target
@@ -94,6 +94,7 @@ export abstract class CanvasPlotElement {
 
     @HostListener('mousemove', ['$event'])
     mouseMove($event: MouseEvent) {
+        this.plotMouseMove.emit({ element: this.constructor.name });
         if (this.hover_state.enable_hovering) {
             this.hover_state.hover_position = {
                 x: $event.offsetX,
@@ -120,7 +121,7 @@ export abstract class CanvasPlotElement {
     mouseLeave($event: MouseEvent) {
         if (this.hover_state.enable_hovering) {
             clearTimeout(this.hover_state.hover_timer);
-            this.plotLeave.emit({ element: this.constructor.name });
+            this.plotMouseMove.emit({ element: this.constructor.name });
         }
     }
 
