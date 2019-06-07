@@ -88,7 +88,7 @@ export class BinPlotComponent extends CanvasPlotElement {
             type: 'bin',
             accession: this.plotService.sorted_accessions[accession_index],
             start_position: interval[0] + bin_index * binsize,
-            end_position: interval[0] + (accession_index + 1) * binsize - 1
+            end_position: interval[0] + (bin_index + 1) * binsize - 1
         };
         return result;
     }
