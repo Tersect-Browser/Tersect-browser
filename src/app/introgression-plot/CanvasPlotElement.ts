@@ -1,4 +1,5 @@
-import { HostListener } from '@angular/core';
+import { HostListener, Output, EventEmitter } from '@angular/core';
+import { PlotClickEvent, PlotHoverEvent, PlotArea, PlotPosition } from '../models/PlotPosition';
 
 export interface DragState {
     enable_dragging: boolean;
@@ -45,11 +46,46 @@ export abstract class CanvasPlotElement {
         event: null
     };
 
-    abstract dragStartAction(drag_state: DragState): void;
-    abstract dragStopAction(drag_state: DragState): void;
-    abstract dragAction(drag_state: DragState): void;
-    abstract clickAction(click_state: ClickState): void;
-    abstract hoverAction(hover_state: HoverState): void;
+    /**
+     * Emitted when a plot element is clicked.
+     */
+    @Output() plotClick = new EventEmitter<PlotClickEvent>();
+
+    /**
+     * Emitted when mouse hovers over a plot element.
+     */
+    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
+
+    protected abstract dragStartAction(drag_state: DragState): void;
+    protected abstract dragStopAction(drag_state: DragState): void;
+    protected abstract dragAction(drag_state: DragState): void;
+    protected abstract getPositionTarget(position: PlotPosition): PlotArea;
+
+    /**
+     * Default - feel free to override.
+     */
+    protected clickAction(click_state: ClickState): void {
+        const target = this.getPositionTarget(click_state.click_position);
+        this.plotClick.emit({
+            x: click_state.event.clientX,
+            y: click_state.event.clientY,
+            target: target,
+        });
+    }
+
+    /**
+     * Default - feel free to override.
+     */
+    protected hoverAction(hover_state: HoverState): void {
+        const target = this.getPositionTarget(hover_state.hover_position);
+        if (target.type !== 'background') {
+            this.plotHover.emit({
+                x: hover_state.event.clientX,
+                y: hover_state.event.clientY,
+                target: target
+            });
+        }
+    }
 
     @HostListener('mousemove', ['$event'])
     mouseMove($event: MouseEvent) {

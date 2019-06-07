@@ -1,10 +1,10 @@
-import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
-import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotAccession, PlotArea } from '../../models/PlotPosition';
+import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
 import { isNullOrUndefined } from 'util';
-import { CanvasPlotElement, DragState, ClickState, HoverState } from '../CanvasPlotElement';
+import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 
 @Component({
     selector: 'app-accession-bar',
@@ -28,16 +28,6 @@ export class AccessionBarComponent extends CanvasPlotElement {
      * Drag start position in terms of accession index.
      */
     private drag_start_index = 0;
-
-    /**
-     * Emitted when accessions are clicked.
-     */
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
-
-    /**
-     * Emitted when mouse hovers over an accession.
-     */
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     get gui_margins() {
         return this.plotService.gui_margins;
@@ -169,7 +159,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
         return Math.ceil(gui_left_width);
     }
 
-    private getPositionTarget(mouse_position: PlotPosition): PlotArea {
+    protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
         const accession_index = Math.floor(mouse_position.y
                                            / this.plotService.bin_height)
                                 - this.plotService.plot_position.y;
@@ -183,18 +173,18 @@ export class AccessionBarComponent extends CanvasPlotElement {
         return result;
     }
 
-    dragStartAction(drag_state: DragState): void {
+    protected dragStartAction(drag_state: DragState): void {
         // Dragging 'rounded' to accession index.
         this.drag_start_index = drag_state.start_position.y
                                 / this.plotService.bin_height
                                 - this.plotService.plot_position.y;
     }
 
-    dragStopAction(drag_state: DragState): void {
+    protected dragStopAction(drag_state: DragState): void {
         // No action
     }
 
-    dragAction(drag_state: DragState): void {
+    protected dragAction(drag_state: DragState): void {
         // Only vertical dragging, rounded to accession indices.
         const new_pos: PlotPosition = {
             x: this.plotService.plot_position.x,
@@ -208,26 +198,6 @@ export class AccessionBarComponent extends CanvasPlotElement {
         }
 
         this.plotService.updatePosition(new_pos);
-    }
-
-    clickAction(click_state: ClickState): void {
-        const target = this.getPositionTarget(click_state.click_position);
-        this.plotClick.emit({
-            x: click_state.event.clientX,
-            y: click_state.event.clientY,
-            target: target,
-        });
-    }
-
-    hoverAction(hover_state: HoverState): void {
-        const target = this.getPositionTarget(hover_state.hover_position);
-        if (target.type !== 'background') {
-            this.plotHover.emit({
-                x: hover_state.event.clientX,
-                y: hover_state.event.clientY,
-                target: target
-            });
-        }
     }
 
 }

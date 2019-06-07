@@ -1,7 +1,7 @@
-import { Component, ElementRef, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
-import { PlotHoverEvent, PlotClickEvent } from '../../models/PlotPosition';
+import { PlotPosition, PlotArea } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState, ClickState, HoverState } from '../CanvasPlotElement';
 
 interface ScaleTick {
@@ -19,16 +19,6 @@ interface ScaleTick {
 
 export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas') canvas: ElementRef;
-
-    /**
-     * Emitted when a point on the scale is clicked.
-     */
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
-
-    /**
-     * Emitted when mouse hovers over the scale.
-     */
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     get gui_margins() {
         return this.plotService.gui_margins;
@@ -172,19 +162,17 @@ export class ScaleBarComponent extends CanvasPlotElement {
                       canvas_height);
     }
 
-    dragStartAction(drag_state: DragState): void {
+    protected getPositionTarget(position: PlotPosition): PlotArea {
+        return { type: 'background' };
     }
 
-    dragStopAction(drag_state: DragState): void {
+    protected dragStartAction(drag_state: DragState): void {
     }
 
-    dragAction(drag_state: DragState): void {
+    protected dragStopAction(drag_state: DragState): void {
     }
 
-    clickAction(click_state: ClickState): void {
-    }
-
-    hoverAction(hover_state: HoverState): void {
+    protected dragAction(drag_state: DragState): void {
     }
 
 }

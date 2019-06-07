@@ -1,8 +1,8 @@
-import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { isNullOrUndefined } from 'util';
-import { PlotClickEvent, PlotHoverEvent, PlotPosition, PlotArea, PlotBin } from '../../models/PlotPosition';
-import { CanvasPlotElement, ClickState, HoverState, DragState } from '../CanvasPlotElement';
+import { PlotPosition, PlotArea, PlotBin } from '../../models/PlotPosition';
+import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 
 @Component({
     selector: 'app-bin-plot',
@@ -17,16 +17,6 @@ export class BinPlotComponent extends CanvasPlotElement {
      * Drag start position in terms of the accession / bin index.
      */
     private drag_start_indices = { x: 0, y: 0 };
-
-    /**
-     * Emitted when bins are clicked.
-     */
-    @Output() plotClick = new EventEmitter<PlotClickEvent>();
-
-    /**
-     * Emitted when mouse hovers over a bin.
-     */
-    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     get gui_margins() {
         return this.plotService.gui_margins;
@@ -67,7 +57,7 @@ export class BinPlotComponent extends CanvasPlotElement {
                          this.plotService.plot_position.y);
     }
 
-    private getPositionTarget(mouse_position: PlotPosition): PlotArea {
+    protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
         const bin_index = Math.floor(mouse_position.x
                                      / this.plotService.bin_width)
                           - this.plotService.gui_margins.left
@@ -93,7 +83,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         return result;
     }
 
-    dragStartAction(drag_state: DragState): void {
+    protected dragStartAction(drag_state: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.drag_start_indices = {
             x: drag_state.start_position.x / this.plotService.bin_width
@@ -103,11 +93,11 @@ export class BinPlotComponent extends CanvasPlotElement {
         };
     }
 
-    dragStopAction(drag_state: DragState): void {
+    protected dragStopAction(drag_state: DragState): void {
         // No action
     }
 
-    dragAction(drag_state: DragState): void {
+    protected dragAction(drag_state: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         const new_pos: PlotPosition = {
             x: Math.round(drag_state.current_position.x
@@ -128,23 +118,4 @@ export class BinPlotComponent extends CanvasPlotElement {
         this.plotService.updatePosition(new_pos);
     }
 
-    clickAction(click_state: ClickState): void {
-        const target = this.getPositionTarget(click_state.click_position);
-        this.plotClick.emit({
-            x: click_state.event.clientX,
-            y: click_state.event.clientY,
-            target: target,
-        });
-    }
-
-    hoverAction(hover_state: HoverState): void {
-        const target = this.getPositionTarget(hover_state.hover_position);
-        if (target.type !== 'background') {
-            this.plotHover.emit({
-                x: hover_state.event.clientX,
-                y: hover_state.event.clientY,
-                target: target
-            });
-        }
-    }
 }
