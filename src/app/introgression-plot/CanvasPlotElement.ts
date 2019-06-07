@@ -56,8 +56,8 @@ export abstract class CanvasPlotElement {
         if (this.hover_state.enable_hovering) {
             clearTimeout(this.hover_state.hover_timer);
             this.hover_state.hover_position = {
-                x: $event.layerX,
-                y: $event.layerY
+                x: $event.offsetX,
+                y: $event.offsetY
             };
             this.hover_state.event = $event;
             this.hover_state.hover_timer = setTimeout(() => {
@@ -80,7 +80,7 @@ export abstract class CanvasPlotElement {
     @HostListener('mousedown', ['$event'])
     mouseDown($event: MouseEvent) {
         this.click_state.click_position = {
-            x: $event.layerX, y: $event.layerY
+            x: $event.offsetX, y: $event.offsetY
         };
         if (this.drag_state.enable_dragging) {
             this.startDrag($event);
@@ -90,8 +90,8 @@ export abstract class CanvasPlotElement {
     @HostListener('mouseup', ['$event'])
     mouseUp($event: MouseEvent) {
         if (this.click_state.enable_clicking
-            && this.click_state.click_position.x === $event.layerX
-            && this.click_state.click_position.y === $event.layerY) {
+            && this.click_state.click_position.x === $event.offsetX
+            && this.click_state.click_position.y === $event.offsetY) {
             this.mouseClick($event);
         }
         this.stopDrag($event);
@@ -112,8 +112,8 @@ export abstract class CanvasPlotElement {
             canvas.style.cursor = this.drag_state.drag_cursor;
         }
         this.drag_state.current_position = {
-            x: $event.layerX,
-            y: $event.layerY
+            x: $event.offsetX,
+            y: $event.offsetY
         };
         this.dragAction(this.drag_state);
     }
@@ -123,8 +123,8 @@ export abstract class CanvasPlotElement {
         if ($event.buttons === 1) {
             this.drag_state.dragged = true;
             this.drag_state.start_position = {
-                x: $event.layerX,
-                y: $event.layerY
+                x: $event.offsetX,
+                y: $event.offsetY
             };
             this.dragStartAction(this.drag_state);
         }
