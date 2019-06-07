@@ -266,6 +266,7 @@ export class IntrogressionPlotService {
                 this.sequenceGaps = gaps;
             }
             this.generatePlotArray();
+            this.resetPosition();
             this.stopLoading();
         });
     }
@@ -370,6 +371,10 @@ export class IntrogressionPlotService {
 
     updatePosition(pos: PlotPosition) {
         this.plot_position_source.next(pos);
+    }
+
+    resetPosition() {
+        this.plot_position_source.next({ x: 0, y: 0 });
     }
 
 }
