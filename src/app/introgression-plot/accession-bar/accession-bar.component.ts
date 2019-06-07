@@ -45,20 +45,6 @@ export class AccessionBarComponent extends CanvasPlotElement {
 
     constructor(private plotService: IntrogressionPlotService) { super(); }
 
-    private getPositionTarget(mouse_position: PlotPosition): PlotArea {
-        const accession_index = Math.floor(mouse_position.y
-                                           / this.plotService.bin_height)
-                                - this.plotService.plot_position.y;
-        if (accession_index >= this.plotService.row_num) {
-            return { type: 'background' };
-        }
-        const result: PlotAccession = {
-            type: 'accession',
-            accession: this.plotService.sorted_accessions[accession_index]
-        };
-        return result;
-    }
-
     draw() {
         if (isNullOrUndefined(this.plotService.sorted_accessions)) { return; }
 
@@ -181,6 +167,20 @@ export class AccessionBarComponent extends CanvasPlotElement {
                               * this.GUI_TREE_STEP_WIDTH;
         }
         return Math.ceil(gui_left_width);
+    }
+
+    private getPositionTarget(mouse_position: PlotPosition): PlotArea {
+        const accession_index = Math.floor(mouse_position.y
+                                           / this.plotService.bin_height)
+                                - this.plotService.plot_position.y;
+        if (accession_index >= this.plotService.row_num) {
+            return { type: 'background' };
+        }
+        const result: PlotAccession = {
+            type: 'accession',
+            accession: this.plotService.sorted_accessions[accession_index]
+        };
+        return result;
     }
 
     dragStartAction(drag_state: DragState): void {
