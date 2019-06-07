@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
-import { PlotAccession, PlotBin, PlotMouseClickEvent } from '../models/PlotPosition';
+import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotChromosomePosition } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -108,6 +108,30 @@ export class PlotClickMenuComponent implements OnInit {
         };
     }
 
+    private getPositionItem(pos: PlotChromosomePosition): MenuItem {
+        return {
+            label: `${formatPosition(pos.position)}`,
+            items: [
+                {
+                    label: 'Set as interval start',
+                    icon: 'fa fa-chevron-left',
+                    command: () => {
+                        this.setIntervalStart.emit(pos.position);
+                        this.hide();
+                    }
+                },
+                {
+                    label: 'Set as interval end',
+                    icon: 'fa fa-chevron-right',
+                    command: () => {
+                        this.setIntervalEnd.emit(pos.position);
+                        this.hide();
+                    }
+                }
+            ]
+        };
+    }
+
     show($event: PlotMouseClickEvent) {
         if ($event.target.type === 'accession') {
             this.menuItems = [
@@ -118,8 +142,12 @@ export class PlotClickMenuComponent implements OnInit {
                 this.getAccessionItem($event.target as PlotAccession),
                 this.getBinItem($event.target as PlotBin)
             ];
+        } else if ($event.target.type === 'position') {
+            this.menuItems = [
+                this.getPositionItem($event.target as PlotChromosomePosition)
+            ];
         } else {
-            // Menu not visible for types other than 'bin' or 'accession'
+            // Menu not visible for other types
             return;
         }
 
