@@ -1,7 +1,8 @@
 import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { isNullOrUndefined } from 'util';
-import { PlotClickEvent, PlotHoverEvent } from '../../models/PlotPosition';
+import { PlotClickEvent, PlotHoverEvent, PlotPosition, PlotArea, PlotBin } from '../../models/PlotPosition';
+import { CanvasPlotElement, ClickState, HoverState, DragState } from '../CanvasPlotElement';
 
 @Component({
     selector: 'app-bin-plot',
@@ -9,8 +10,13 @@ import { PlotClickEvent, PlotHoverEvent } from '../../models/PlotPosition';
     styleUrls: ['./bin-plot.component.css']
 })
 
-export class BinPlotComponent {
+export class BinPlotComponent extends CanvasPlotElement {
     @ViewChild('canvas') canvas: ElementRef;
+
+    /**
+     * Drag start position in terms of the accession / bin index.
+     */
+    private drag_start_indices = { x: 0, y: 0 };
 
     /**
      * Emitted when bins are clicked.
@@ -26,7 +32,7 @@ export class BinPlotComponent {
         return this.plotService.gui_margins;
     }
 
-    constructor(private plotService: IntrogressionPlotService) {}
+    constructor(private plotService: IntrogressionPlotService) { super(); }
 
     draw() {
         if (isNullOrUndefined(this.plotService.plot_array)) { return; }
@@ -59,5 +65,86 @@ export class BinPlotComponent {
                                                                 .gui_margins
                                                                 .left,
                          this.plotService.plot_position.y);
+    }
+
+    private getPositionTarget(mouse_position: PlotPosition): PlotArea {
+        const bin_index = Math.floor(mouse_position.x
+                                     / this.plotService.bin_width)
+                          - this.plotService.gui_margins.left
+                          - this.plotService.plot_position.x;
+        const accession_index = Math.floor(mouse_position.y
+                                           / this.plotService.bin_height)
+                                - this.plotService.plot_position.y;
+
+        if (bin_index >= this.plotService.col_num
+            || accession_index >= this.plotService.row_num) {
+            return { type: 'background' };
+        }
+
+        const interval = this.plotService.interval;
+        const binsize = this.plotService.binsize;
+
+        const result: PlotBin = {
+            type: 'bin',
+            accession: this.plotService.sorted_accessions[accession_index],
+            start_position: interval[0] + bin_index * binsize,
+            end_position: interval[0] + (accession_index + 1) * binsize - 1
+        };
+        return result;
+    }
+
+    dragStartAction(drag_state: DragState): void {
+        // Dragging 'rounded' to accession / bin indices.
+        this.drag_start_indices = {
+            x: drag_state.start_position.x / this.plotService.bin_width
+                - this.plotService.plot_position.x,
+            y: drag_state.start_position.y / this.plotService.bin_height
+                - this.plotService.plot_position.y
+        };
+    }
+
+    dragStopAction(drag_state: DragState): void {
+        // No action
+    }
+
+    dragAction(drag_state: DragState): void {
+        // Dragging 'rounded' to accession / bin indices.
+        const new_pos: PlotPosition = {
+            x: Math.round(drag_state.current_position.x
+                            / this.plotService.bin_width
+                            - this.drag_start_indices.x),
+            y: Math.round(drag_state.current_position.y
+                            / this.plotService.bin_height
+                            - this.drag_start_indices.y)
+        };
+
+        if (new_pos.x > 0) {
+            new_pos.x = 0;
+        }
+        if (new_pos.y > 0) {
+            new_pos.y = 0;
+        }
+
+        this.plotService.updatePosition(new_pos);
+    }
+
+    clickAction(click_state: ClickState): void {
+        const target = this.getPositionTarget(click_state.click_position);
+        this.binClick.emit({
+            x: click_state.event.clientX,
+            y: click_state.event.clientY,
+            target: target,
+        });
+    }
+
+    hoverAction(hover_state: HoverState): void {
+        const target = this.getPositionTarget(hover_state.hover_position);
+        if (target.type !== 'background') {
+            this.binHover.emit({
+                x: hover_state.event.clientX,
+                y: hover_state.event.clientY,
+                target: target
+            });
+        }
     }
 }
