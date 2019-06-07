@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
-import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotBin, PlotAccession, PlotArea } from '../../models/PlotPosition';
+import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
 import { isNullOrUndefined } from 'util';
@@ -46,38 +46,17 @@ export class AccessionBarComponent extends CanvasPlotElement {
     constructor(private plotService: IntrogressionPlotService) { super(); }
 
     private getPositionTarget(mouse_position: PlotPosition): PlotArea {
-        const inner_position = {
-            x: Math.floor(mouse_position.x / this.plotService.bin_width)
-               - this.plotService.gui_margins.left
-               - this.plotService.plot_position.x,
-            y: Math.floor(mouse_position.y / this.plotService.bin_height)
-               - this.plotService.plot_position.y
-        };
-
-        if (inner_position.x >= this.plotService.col_num
-            || inner_position.y >= this.plotService.row_num) {
-            const res_bg = { type: 'background' };
-            return res_bg;
+        const accession_index = Math.floor(mouse_position.y
+                                           / this.plotService.bin_height)
+                                - this.plotService.plot_position.y;
+        if (accession_index >= this.plotService.row_num) {
+            return { type: 'background' };
         }
-
-        if (inner_position.x + this.plotService.plot_position.x < 0) {
-            const res_acc: PlotAccession = {
-                type: 'accession',
-                accession: this.plotService.sorted_accessions[inner_position.y]
-            };
-            return res_acc;
-        }
-
-        const interval = this.plotService.interval;
-        const binsize = this.plotService.binsize;
-
-        const res_bin: PlotBin = {
-            type: 'bin',
-            accession: this.plotService.sorted_accessions[inner_position.y],
-            start_position: interval[0] + inner_position.x * binsize,
-            end_position: interval[0] + (inner_position.x + 1) * binsize - 1
+        const result: PlotAccession = {
+            type: 'accession',
+            accession: this.plotService.sorted_accessions[accession_index]
         };
-        return res_bin;
+        return result;
     }
 
     draw() {
