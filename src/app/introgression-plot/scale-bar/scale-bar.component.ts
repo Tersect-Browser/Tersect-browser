@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotArea } from '../../models/PlotPosition';
-import { CanvasPlotElement, DragState, ClickState, HoverState } from '../CanvasPlotElement';
+import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 
 interface ScaleTick {
     position: number;
