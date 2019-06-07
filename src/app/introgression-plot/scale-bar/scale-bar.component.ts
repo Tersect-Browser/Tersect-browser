@@ -186,10 +186,12 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const bp_per_pixel = this.plotService.binsize
                              / this.plotService.zoom_factor;
         const bp_position = position.x * bp_per_pixel
+                            + this.plotService.interval[0]
                             - (this.plotService.plot_position.x
                                + this.plotService.gui_margins.left)
                               * this.plotService.binsize;
-        if (bp_position > this.plotService.interval[1]) {
+        if (bp_position < this.plotService.interval[0]
+            || bp_position > this.plotService.interval[1]) {
             return { type: 'background' };
         }
         const result: PlotChromosomePosition = {
