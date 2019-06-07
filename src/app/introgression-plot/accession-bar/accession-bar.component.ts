@@ -1,9 +1,10 @@
-import { Component, ViewChild, ElementRef, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotClickEvent, PlotHoverEvent, PlotBin, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
 import { isNullOrUndefined } from 'util';
+import { CanvasPlotElement, DragState, ClickState, HoverState } from '../CanvasPlotElement';
 
 @Component({
     selector: 'app-accession-bar',
@@ -11,7 +12,7 @@ import { isNullOrUndefined } from 'util';
     styleUrls: ['./accession-bar.component.css']
 })
 
-export class AccessionBarComponent {
+export class AccessionBarComponent extends CanvasPlotElement {
     @ViewChild('canvas') canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
@@ -24,31 +25,9 @@ export class AccessionBarComponent {
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
 
     /**
-     * Delay (ms) before a tooltip appears.
+     * Drag start position in terms of the accession / bin index.
      */
-    readonly HOVER_DELAY: 200;
-
-    /**
-     * Timer used to delay emitting a hover event (used to display a tooltip).
-     */
-    private hover_timer: NodeJS.Timer;
-
-    /**
-     * Used to keep remember the position of a mouse press.
-     * This is necessary to distinguish clicks (where the position doesn't
-     * change between the press and release) from drags (where it does).
-     */
-    private mouse_down_position: PlotPosition = { x: 0, y: 0 };
-
-    /**
-     *  Used to keep track of the start position during dragging.
-     */
-    private drag_start_position = { x: 0, y: 0 };
-
-    /**
-     * True if element is currently being dragged.
-     */
-    private dragging_plot = false;
+    private drag_start_indices = { x: 0, y: 0 };
 
     /**
      * Emitted when accessions are clicked.
@@ -64,61 +43,7 @@ export class AccessionBarComponent {
         return this.plotService.gui_margins;
     }
 
-    constructor(private plotService: IntrogressionPlotService) {}
-
-    set height(height: number) {
-        this.canvas.nativeElement.height = height;
-    }
-
-    private prepareTooltip(event) {
-        clearTimeout(this.hover_timer);
-        const target = this.getPositionTarget({
-            x: event.layerX, y: event.layerY
-        });
-        if (target.type !== 'background') {
-            this.hover_timer = setTimeout(
-                () => this.accessionHover.emit({
-                    x: event.clientX,
-                    y: event.clientY,
-                    target: target
-                }),
-                this.HOVER_DELAY
-            );
-        }
-    }
-
-    mouseMove(event) {
-        this.prepareTooltip(event);
-        if (this.dragging_plot) {
-            this.dragPlot(event);
-        }
-    }
-
-    mouseDown(event) {
-        this.mouse_down_position = { x: event.layerX, y: event.layerY };
-        const target = this.getPositionTarget(this.mouse_down_position);
-        if (target.type === 'bin' || target.type === 'background'
-            || (target.type === 'accession' && this.plotService.draw_tree)) {
-            this.startDrag(event);
-        }
-    }
-
-    mouseUp(event) {
-        if (this.mouse_down_position.x === event.layerX
-            && this.mouse_down_position.y === event.layerY) {
-            this.mouseClick(event);
-        }
-        this.stopDrag(event);
-    }
-
-    mouseClick(event) {
-        const target = this.getPositionTarget(this.mouse_down_position);
-        this.accessionClick.emit({
-            x: event.clientX,
-            y: event.clientY,
-            target: target,
-        });
-    }
+    constructor(private plotService: IntrogressionPlotService) { super(); }
 
     private getPositionTarget(mouse_position: PlotPosition): PlotArea {
         const inner_position = {
@@ -279,20 +204,29 @@ export class AccessionBarComponent {
         return Math.ceil(gui_left_width);
     }
 
-    private dragPlot(event: MouseEvent) {
-        if (event.buttons !== 1) {
-            this.stopDrag(event);
-            return;
-        }
-        if ((event.target as HTMLCanvasElement).style.cursor !== 'move') {
-            (event.target as HTMLCanvasElement).style.cursor = 'move';
-        }
+    dragStartAction(drag_state: DragState): void {
+        // Dragging 'rounded' to accession / bin indices.
+        this.drag_start_indices = {
+            x: drag_state.start_position.x / this.plotService.bin_width
+               - this.plotService.plot_position.x,
+            y: drag_state.start_position.y / this.plotService.bin_height
+               - this.plotService.plot_position.y
+        };
+    }
 
+    dragStopAction(drag_state: DragState): void {
+        // No action
+    }
+
+    dragAction(drag_state: DragState): void {
+        // Dragging 'rounded' to accession / bin indices.
         const new_pos: PlotPosition = {
-            x: Math.round(event.layerX / this.plotService.bin_width
-                          - this.drag_start_position.x),
-            y: Math.round(event.layerY / this.plotService.bin_height
-                          - this.drag_start_position.y)
+            x: Math.round(drag_state.current_position.x
+                          / this.plotService.bin_width
+                          - this.drag_start_indices.x),
+            y: Math.round(drag_state.current_position.y
+                          / this.plotService.bin_height
+                          - this.drag_start_indices.y)
         };
 
         if (new_pos.x > 0) {
@@ -305,22 +239,24 @@ export class AccessionBarComponent {
         this.plotService.updatePosition(new_pos);
     }
 
-    private startDrag(event) {
-        // drag on left mouse button
-        if (event.buttons === 1) {
-            this.dragging_plot = true;
-            this.drag_start_position = {
-                x: event.layerX / this.plotService.bin_width
-                   - this.plotService.plot_position.x,
-                y: event.layerY / this.plotService.bin_height
-                   - this.plotService.plot_position.y
-            };
-        }
+    clickAction(click_state: ClickState): void {
+        const target = this.getPositionTarget(click_state.click_position);
+        this.accessionClick.emit({
+            x: click_state.event.clientX,
+            y: click_state.event.clientY,
+            target: target,
+        });
     }
 
-    private stopDrag(event: MouseEvent) {
-        (event.target as HTMLCanvasElement).style.cursor = 'auto';
-        this.dragging_plot = false;
+    hoverAction(hover_state: HoverState): void {
+        const target = this.getPositionTarget(hover_state.hover_position);
+        if (target.type !== 'background') {
+            this.accessionHover.emit({
+                x: hover_state.event.clientX,
+                y: hover_state.event.clientY,
+                target: target
+            });
+        }
     }
 
 }

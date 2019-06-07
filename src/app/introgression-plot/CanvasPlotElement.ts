@@ -4,13 +4,22 @@ export interface DragState {
     enable_dragging: boolean;
     dragged: boolean;
     drag_cursor: string;
-    drag_start_position: { x: number, y: number };
+    start_position: { x: number, y: number };
     current_position: { x: number, y: number };
 }
 
 export interface ClickState {
     enable_clicking: boolean;
     click_position: { x: number, y: number };
+    event: MouseEvent;
+}
+
+export interface HoverState {
+    enable_hovering: boolean;
+    hover_delay: number;
+    hover_timer: NodeJS.Timer;
+    hover_position: { x: number, y: number };
+    event: MouseEvent;
 }
 
 export abstract class CanvasPlotElement {
@@ -18,55 +27,84 @@ export abstract class CanvasPlotElement {
         enable_dragging: true,
         dragged: false,
         drag_cursor: 'move',
-        drag_start_position: { x: 0, y: 0 },
+        start_position: { x: 0, y: 0 },
         current_position: { x: 0, y: 0 }
     };
 
     click_state: ClickState = {
         enable_clicking: true,
-        click_position: { x: 0, y: 0 }
+        click_position: { x: 0, y: 0 },
+        event: null
+    };
+
+    hover_state: HoverState = {
+        enable_hovering: true,
+        hover_delay: 200,
+        hover_timer: null,
+        hover_position: { x: 0, y: 0},
+        event: null
     };
 
     abstract dragStartAction(drag_state: DragState): void;
     abstract dragStopAction(drag_state: DragState): void;
     abstract dragAction(drag_state: DragState): void;
     abstract clickAction(click_state: ClickState): void;
+    abstract hoverAction(hover_state: HoverState): void;
 
-    @HostListener('mousemove')
-    mouseMove(event: MouseEvent) {
+    @HostListener('mousemove', ['$event'])
+    mouseMove($event: MouseEvent) {
+        if (this.hover_state.enable_hovering) {
+            clearTimeout(this.hover_state.hover_timer);
+            this.hover_state.hover_position = {
+                x: $event.layerX,
+                y: $event.layerY
+            };
+            this.hover_state.event = $event;
+            this.hover_state.hover_timer = setTimeout(() => {
+                this.hoverAction(this.hover_state);
+            }, this.hover_state.hover_delay);
+        }
         if (this.drag_state.dragged) {
-            this.drag(event);
+            this.drag($event);
             this.dragAction(this.drag_state);
         }
     }
 
-    @HostListener('mousedown')
-    mouseDown(event: MouseEvent) {
+    @HostListener('mouseleave', ['$event'])
+    mouseLeave($event: MouseEvent) {
+        if (this.hover_state.enable_hovering) {
+            clearTimeout(this.hover_state.hover_timer);
+        }
+    }
+
+    @HostListener('mousedown', ['$event'])
+    mouseDown($event: MouseEvent) {
         this.click_state.click_position = {
-            x: event.layerX, y: event.layerY
+            x: $event.layerX, y: $event.layerY
         };
         if (this.drag_state.enable_dragging) {
-            this.startDrag(event);
+            this.startDrag($event);
         }
     }
 
-    @HostListener('mouseup')
-    mouseUp(event: MouseEvent) {
+    @HostListener('mouseup', ['$event'])
+    mouseUp($event: MouseEvent) {
         if (this.click_state.enable_clicking
-            && this.click_state.click_position.x === event.layerX
-            && this.click_state.click_position.y === event.layerY) {
-            this.mouseClick(event);
+            && this.click_state.click_position.x === $event.layerX
+            && this.click_state.click_position.y === $event.layerY) {
+            this.mouseClick($event);
         }
-        this.stopDrag(event);
+        this.stopDrag($event);
     }
 
-    mouseClick(event: MouseEvent) {
+    mouseClick($event: MouseEvent) {
+        this.click_state.event = $event;
         this.clickAction(this.click_state);
     }
 
-    drag(event: MouseEvent) {
-        if (event.buttons !== 1) {
-            this.stopDrag(event);
+    drag($event: MouseEvent) {
+        if ($event.buttons !== 1) {
+            this.stopDrag($event);
             return;
         }
         const canvas = (event.target as HTMLCanvasElement);
@@ -74,26 +112,26 @@ export abstract class CanvasPlotElement {
             canvas.style.cursor = this.drag_state.drag_cursor;
         }
         this.drag_state.current_position = {
-            x: event.layerX,
-            y: event.layerY
+            x: $event.layerX,
+            y: $event.layerY
         };
         this.dragAction(this.drag_state);
     }
 
-    private startDrag(event: MouseEvent) {
+    private startDrag($event: MouseEvent) {
         // drag on left mouse button
-        if (event.buttons === 1) {
+        if ($event.buttons === 1) {
             this.drag_state.dragged = true;
-            this.drag_state.drag_start_position = {
-                x: event.layerX,
-                y: event.layerY
+            this.drag_state.start_position = {
+                x: $event.layerX,
+                y: $event.layerY
             };
             this.dragStartAction(this.drag_state);
         }
     }
 
-    private stopDrag(event: MouseEvent) {
-        (event.target as HTMLCanvasElement).style.cursor = 'auto';
+    private stopDrag($event: MouseEvent) {
+        ($event.target as HTMLCanvasElement).style.cursor = 'auto';
         this.drag_state.dragged = false;
         this.dragStopAction(this.drag_state);
     }
