@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, Output, EventEmitter } from '@angular
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotHoverEvent, PlotClickEvent } from '../../models/PlotPosition';
+import { CanvasPlotElement, DragState, ClickState, HoverState } from '../CanvasPlotElement';
 
 interface ScaleTick {
     position: number;
@@ -16,18 +17,18 @@ interface ScaleTick {
     styleUrls: ['./scale-bar.component.css']
 })
 
-export class ScaleBarComponent {
+export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas') canvas: ElementRef;
 
     /**
      * Emitted when a point on the scale is clicked.
      */
-    @Output() scaleClick = new EventEmitter<PlotClickEvent>();
+    @Output() plotClick = new EventEmitter<PlotClickEvent>();
 
     /**
      * Emitted when mouse hovers over the scale.
      */
-    @Output() scaleHover = new EventEmitter<PlotHoverEvent>();
+    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     get gui_margins() {
         return this.plotService.gui_margins;
@@ -50,7 +51,7 @@ export class ScaleBarComponent {
      */
     readonly GUI_TICK_DISTANCE = 120;
 
-    constructor(private plotService: IntrogressionPlotService) {}
+    constructor(private plotService: IntrogressionPlotService) { super(); }
 
     private _drawScaleTick(ctx: CanvasRenderingContext2D,
                            tick: ScaleTick) {
@@ -169,6 +170,21 @@ export class ScaleBarComponent {
         ctx.clearRect(-(canvas_width - effective_width) - 0.5, 0,
                       this.plotService.labels_width,
                       canvas_height);
+    }
+
+    dragStartAction(drag_state: DragState): void {
+    }
+
+    dragStopAction(drag_state: DragState): void {
+    }
+
+    dragAction(drag_state: DragState): void {
+    }
+
+    clickAction(click_state: ClickState): void {
+    }
+
+    hoverAction(hover_state: HoverState): void {
     }
 
 }

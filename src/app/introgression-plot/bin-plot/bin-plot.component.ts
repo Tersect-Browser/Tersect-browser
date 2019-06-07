@@ -21,12 +21,12 @@ export class BinPlotComponent extends CanvasPlotElement {
     /**
      * Emitted when bins are clicked.
      */
-    @Output() binClick = new EventEmitter<PlotClickEvent>();
+    @Output() plotClick = new EventEmitter<PlotClickEvent>();
 
     /**
      * Emitted when mouse hovers over a bin.
      */
-    @Output() binHover = new EventEmitter<PlotHoverEvent>();
+    @Output() plotHover = new EventEmitter<PlotHoverEvent>();
 
     get gui_margins() {
         return this.plotService.gui_margins;
@@ -130,7 +130,7 @@ export class BinPlotComponent extends CanvasPlotElement {
 
     clickAction(click_state: ClickState): void {
         const target = this.getPositionTarget(click_state.click_position);
-        this.binClick.emit({
+        this.plotClick.emit({
             x: click_state.event.clientX,
             y: click_state.event.clientY,
             target: target,
@@ -140,7 +140,7 @@ export class BinPlotComponent extends CanvasPlotElement {
     hoverAction(hover_state: HoverState): void {
         const target = this.getPositionTarget(hover_state.hover_position);
         if (target.type !== 'background') {
-            this.binHover.emit({
+            this.plotHover.emit({
                 x: hover_state.event.clientX,
                 y: hover_state.event.clientY,
                 target: target
