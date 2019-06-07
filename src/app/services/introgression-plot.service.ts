@@ -264,9 +264,12 @@ export class IntrogressionPlotService {
                 this.njTree = buildNJTree(this.distanceMatrix, accessions);
                 this.sorted_accessions = treeToSortedList(this.njTree);
                 this.sequenceGaps = gaps;
+                this.generatePlotArray();
+                this.resetPosition();
+            } else {
+                // Don't reset position if distance matrix did not change
+                this.generatePlotArray();
             }
-            this.generatePlotArray();
-            this.resetPosition();
             this.stopLoading();
         });
     }
