@@ -189,6 +189,9 @@ export class ScaleBarComponent extends CanvasPlotElement {
                             - (this.plotService.plot_position.x
                                + this.plotService.gui_margins.left)
                               * this.plotService.binsize;
+        if (bp_position > this.plotService.interval[1]) {
+            return { type: 'background' };
+        }
         const result: PlotChromosomePosition = {
             type: 'position',
             position: Math.round(bp_position)
