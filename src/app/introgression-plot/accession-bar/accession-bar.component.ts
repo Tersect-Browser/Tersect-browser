@@ -25,9 +25,9 @@ export class AccessionBarComponent extends CanvasPlotElement {
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
 
     /**
-     * Drag start position in terms of the accession / bin index.
+     * Drag start position in terms of accession index.
      */
-    private drag_start_indices = { x: 0, y: 0 };
+    private drag_start_index = 0;
 
     /**
      * Emitted when accessions are clicked.
@@ -184,13 +184,10 @@ export class AccessionBarComponent extends CanvasPlotElement {
     }
 
     dragStartAction(drag_state: DragState): void {
-        // Dragging 'rounded' to accession / bin indices.
-        this.drag_start_indices = {
-            x: drag_state.start_position.x / this.plotService.bin_width
-               - this.plotService.plot_position.x,
-            y: drag_state.start_position.y / this.plotService.bin_height
-               - this.plotService.plot_position.y
-        };
+        // Dragging 'rounded' to accession index.
+        this.drag_start_index = drag_state.start_position.y
+                                / this.plotService.bin_height
+                                - this.plotService.plot_position.y;
     }
 
     dragStopAction(drag_state: DragState): void {
@@ -198,19 +195,14 @@ export class AccessionBarComponent extends CanvasPlotElement {
     }
 
     dragAction(drag_state: DragState): void {
-        // Dragging 'rounded' to accession / bin indices.
+        // Only vertical dragging, rounded to accession indices.
         const new_pos: PlotPosition = {
-            x: Math.round(drag_state.current_position.x
-                          / this.plotService.bin_width
-                          - this.drag_start_indices.x),
+            x: this.plotService.plot_position.x,
             y: Math.round(drag_state.current_position.y
                           / this.plotService.bin_height
-                          - this.drag_start_indices.y)
+                          - this.drag_start_index)
         };
 
-        if (new_pos.x > 0) {
-            new_pos.x = 0;
-        }
         if (new_pos.y > 0) {
             new_pos.y = 0;
         }
