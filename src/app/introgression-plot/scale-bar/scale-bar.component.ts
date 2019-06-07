@@ -27,7 +27,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     readonly GUI_SCALE_COLOR = '#327e04';
     readonly GUI_SCALE_FONT_SIZE = 13;
     readonly GUI_SCALE_FONT = 'Arial';
-    readonly GUI_SCALE_TICK_SIZES = [
+    readonly GUI_SCALE_TICK_BP_DISTANCES = [
         2500, 5000, 10000,
         25000, 50000, 100000,
         250000, 500000, 1000000,
@@ -37,13 +37,13 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
     /**
      * Optimal large tick distance in pixels. Ticks will be drawn as close to
-     * this distance as possible using one of the GUI_SCALE_TICK_SIZES.
+     * this distance as possible using one of the GUI_SCALE_TICK_BP_DISTANCES.
      */
     readonly GUI_TICK_DISTANCE = 120;
 
     constructor(private plotService: IntrogressionPlotService) { super(); }
 
-    private _drawScaleTick(ctx: CanvasRenderingContext2D,
+    private drawScaleTick(ctx: CanvasRenderingContext2D,
                            tick: ScaleTick) {
         const canvas_height = this.canvas.nativeElement.offsetHeight;
         const bp_per_pixel = this.plotService.binsize
@@ -76,6 +76,40 @@ export class ScaleBarComponent extends CanvasPlotElement {
         }
     }
 
+    private drawTicks(ctx: CanvasRenderingContext2D,
+                       tick_bp_distance: number,
+                       generic_tick: ScaleTick) {
+        for (let pos = ceilTo(this.plotService.interval[0] - 1,
+                              tick_bp_distance);
+                 pos < this.plotService.interval[1];
+                 pos += tick_bp_distance) {
+            generic_tick.position = pos;
+            this.drawScaleTick(ctx, generic_tick);
+        }
+    }
+
+    private drawMajorTicks(ctx: CanvasRenderingContext2D,
+                           tick_bp_distance: number,
+                           unit: 'Mbp' | 'kbp') {
+        const tick: ScaleTick = {
+            position: undefined,
+            type: 'major',
+            useLabel: true,
+            unit: unit
+        };
+        this.drawTicks(ctx, tick_bp_distance, tick);
+    }
+
+    private drawMinorTicks(ctx: CanvasRenderingContext2D,
+                           tick_bp_distance: number) {
+        const tick: ScaleTick = {
+            position: undefined,
+            type: 'minor',
+            useLabel: false,
+        };
+        this.drawTicks(ctx, tick_bp_distance, tick);
+    }
+
     draw() {
         const canvas_width = this.canvas.nativeElement
                                         .parentElement
@@ -104,9 +138,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         const bp_per_pixel = this.plotService.binsize
                              / this.plotService.zoom_factor;
-        const tick_size = findClosest(this.GUI_TICK_DISTANCE * bp_per_pixel,
-                                      this.GUI_SCALE_TICK_SIZES);
-        const unit = tick_size < 100000 ? 'kbp' : 'Mbp';
+        const tick_bp_distance = findClosest(this.GUI_TICK_DISTANCE
+                                             * bp_per_pixel,
+                                             this.GUI_SCALE_TICK_BP_DISTANCES);
+        const unit = tick_bp_distance < 100000 ? 'kbp' : 'Mbp';
 
         const x_start = (this.plotService.plot_position.x
                          * this.plotService.binsize)
@@ -124,37 +159,19 @@ export class ScaleBarComponent extends CanvasPlotElement {
         ctx.stroke();
 
         // Start / end ticks
-        this._drawScaleTick(ctx, {
+        this.drawScaleTick(ctx, {
             position: this.plotService.interval[0],
             type: 'major',
             useLabel: false
         });
-        this._drawScaleTick(ctx, {
+        this.drawScaleTick(ctx, {
             position: this.plotService.interval[1],
             type: 'major',
             useLabel: false
         });
 
-        // Major ticks
-        for (let pos = ceilTo(this.plotService.interval[0] - 1, tick_size);
-                 pos < this.plotService.interval[1]; pos += tick_size) {
-            this._drawScaleTick(ctx, {
-                position: pos,
-                type: 'major',
-                useLabel: true,
-                unit: unit
-            });
-        }
-
-        // Minor ticks
-        for (let pos = ceilTo(this.plotService.interval[0] - 1, tick_size / 5);
-                 pos < this.plotService.interval[1]; pos += tick_size / 5) {
-            this._drawScaleTick(ctx, {
-                position: pos,
-                type: 'minor',
-                useLabel: false
-            });
-        }
+        this.drawMajorTicks(ctx, tick_bp_distance, unit);
+        this.drawMinorTicks(ctx, tick_bp_distance / 5);
 
         // Hide scale over labels
         ctx.clearRect(-(canvas_width - effective_width) - 0.5, 0,
