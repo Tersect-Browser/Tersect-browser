@@ -115,7 +115,6 @@ export abstract class CanvasPlotElement {
         }
         if (this.drag_state.dragged) {
             this.drag($event);
-            this.dragAction(this.drag_state);
         }
     }
 
