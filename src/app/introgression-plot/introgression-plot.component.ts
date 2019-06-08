@@ -5,6 +5,7 @@ import { IntrogressionPlotService } from '../services/introgression-plot.service
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
 import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -82,6 +83,10 @@ export class IntrogressionPlotComponent implements OnInit {
         this.plotService.plot_array_source.subscribe(() => {
             this.redrawPlot();
         });
+
+        this.plotService.highlight_source.subscribe(() => {
+            this.redrawPlot();
+        });
     }
 
     private redrawPlot() {
@@ -99,6 +104,11 @@ export class IntrogressionPlotComponent implements OnInit {
     }
 
     onMove($event: PlotMouseMoveEvent) {
+        if ((!isNullOrUndefined($event)
+             && $event.buttons !== 1) || isNullOrUndefined($event)) {
+            // Clear highlight if mouse button is not held down.
+            this.plotService.highlight = undefined;
+        }
         this.plotMouseMove.emit($event);
     }
 

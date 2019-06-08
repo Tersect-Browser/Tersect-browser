@@ -21,6 +21,11 @@ export interface PlotSequencePosition extends PlotArea {
     position: number;
 }
 
+export interface PlotSequenceInterval extends PlotArea {
+    start_position: number;
+    end_position: number;
+}
+
 export interface PlotMouseClickEvent {
     x: number;
     y: number;
@@ -35,4 +40,5 @@ export interface PlotMouseHoverEvent {
 
 export interface PlotMouseMoveEvent {
     element: string;
+    buttons?: number;
 }

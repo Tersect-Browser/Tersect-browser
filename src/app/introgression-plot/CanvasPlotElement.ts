@@ -96,7 +96,10 @@ export abstract class CanvasPlotElement {
 
     @HostListener('mousemove', ['$event'])
     mouseMove($event: MouseEvent) {
-        this.plotMouseMove.emit({ element: this.constructor.name });
+        this.plotMouseMove.emit({
+            element: this.constructor.name,
+            buttons: $event.buttons
+        });
         if (this.hover_state.enable_hovering && !this.drag_state.dragged) {
             this.hover_state.hover_position = {
                 x: $event.offsetX,
@@ -122,7 +125,10 @@ export abstract class CanvasPlotElement {
     mouseLeave($event: MouseEvent) {
         if (this.hover_state.enable_hovering) {
             clearTimeout(this.hover_state.hover_timer);
-            this.plotMouseMove.emit({ element: this.constructor.name });
+            this.plotMouseMove.emit({
+                element: this.constructor.name,
+                buttons: $event.buttons
+            });
         }
     }
 
@@ -186,5 +192,6 @@ export abstract class CanvasPlotElement {
         this.drag_state.event = $event;
         this.drag_state.dragged = false;
         this.dragStopAction(this.drag_state);
+        this.plotMouseMove.emit();
     }
 }

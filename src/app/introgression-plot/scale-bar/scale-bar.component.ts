@@ -1,8 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
-import { PlotPosition, PlotArea, PlotSequencePosition } from '../../models/PlotPosition';
+import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
+import { start } from 'repl';
 
 interface ScaleTick {
     position: number;
@@ -44,6 +45,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     constructor(private plotService: IntrogressionPlotService) {
         super();
         this.hover_state.hover_delay = 0;
+        this.drag_state.drag_cursor = 'col-resize';
     }
 
     private drawScaleTick(ctx: CanvasRenderingContext2D,
@@ -205,9 +207,37 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected dragStopAction(drag_state: DragState): void {
+        this.plotService.highlight = undefined;
+        this.plotMouseMove.emit();
     }
 
     protected dragAction(drag_state: DragState): void {
+        const start_target = this.getPositionTarget(drag_state.start_position);
+        const end_target = this.getPositionTarget(drag_state.current_position);
+        if (start_target.type !== 'position'
+            || end_target.type !== 'position') {
+            return;
+        }
+
+        const start_pos = (start_target as PlotSequencePosition).position;
+        const end_pos = (end_target as PlotSequencePosition).position;
+
+        this.plotService.highlight = {
+            start: end_pos > start_pos ? start_pos : end_pos,
+            end: end_pos > start_pos ? end_pos : start_pos
+        };
+
+        const target: PlotSequenceInterval = {
+            type: 'interval',
+            start_position: this.plotService.highlight.start,
+            end_position: this.plotService.highlight.end
+        }
+
+        this.plotMouseHover.emit({
+            x: drag_state.event.clientX,
+            y: drag_state.event.clientY,
+            target: target
+        });
     }
 
 }

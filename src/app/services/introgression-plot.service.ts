@@ -138,7 +138,7 @@ export class IntrogressionPlotService {
     /**
      * Highlighted area of the plot.
      */
-    private highlight_source = new BehaviorSubject<SequenceInterval>(undefined);
+    highlight_source = new BehaviorSubject<SequenceInterval>(undefined);
     set highlight(highlight_interval: SequenceInterval) {
         this.highlight_source.next(highlight_interval);
     }

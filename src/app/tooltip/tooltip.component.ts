@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { PlotPosition, PlotBin, PlotAccession, PlotSequencePosition, PlotMouseHoverEvent } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession, PlotSequencePosition, PlotMouseHoverEvent, PlotSequenceInterval } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -25,16 +25,26 @@ export class TooltipComponent {
         return `${formatPosition(target.position)}`;
     }
 
+    private formatIntervalTooltip(target: PlotSequenceInterval): string {
+        return `${formatPosition(target.start_position)}
+- ${formatPosition(target.end_position)}`;
+    }
+
     private formatContent($event: PlotMouseHoverEvent): string {
-        if ($event.target.type === 'bin') {
-            return this.formatBinTooltip($event.target as PlotBin);
-        } else if ($event.target.type === 'accession') {
-            return `${($event.target as PlotAccession).accession}`;
-        } else if ($event.target.type === 'position') {
-            return this.formatPositionTooltip($event.target as
-                                              PlotSequencePosition);
+        switch ($event.target.type) {
+            case 'bin':
+                return this.formatBinTooltip($event.target as PlotBin);
+            case 'accession':
+                return `${($event.target as PlotAccession).accession}`;
+            case 'position':
+                return this.formatPositionTooltip($event.target as
+                                                  PlotSequencePosition);
+            case 'interval':
+                return this.formatIntervalTooltip($event.target as
+                                                  PlotSequenceInterval);
+            default:
+                return '';
         }
-        return '';
     }
 
     show($event: PlotMouseHoverEvent) {
