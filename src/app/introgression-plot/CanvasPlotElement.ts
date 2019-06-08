@@ -7,6 +7,7 @@ export interface DragState {
     drag_cursor: string;
     start_position: { x: number, y: number };
     current_position: { x: number, y: number };
+    event: MouseEvent;
 }
 
 export interface ClickState {
@@ -29,7 +30,8 @@ export abstract class CanvasPlotElement {
         dragged: false,
         drag_cursor: 'move',
         start_position: { x: 0, y: 0 },
-        current_position: { x: 0, y: 0 }
+        current_position: { x: 0, y: 0 },
+        event: null
     };
 
     click_state: ClickState = {
@@ -155,6 +157,7 @@ export abstract class CanvasPlotElement {
             this.stopDrag($event);
             return;
         }
+        this.drag_state.event = $event;
         const canvas = (event.target as HTMLCanvasElement);
         if (canvas.style.cursor !== this.drag_state.drag_cursor) {
             canvas.style.cursor = this.drag_state.drag_cursor;
@@ -169,6 +172,7 @@ export abstract class CanvasPlotElement {
     private startDrag($event: MouseEvent) {
         // drag on left mouse button
         if ($event.buttons === 1) {
+            this.drag_state.event = $event;
             this.drag_state.dragged = true;
             this.drag_state.start_position = {
                 x: $event.offsetX,
@@ -180,6 +184,7 @@ export abstract class CanvasPlotElement {
 
     private stopDrag($event: MouseEvent) {
         ($event.target as HTMLCanvasElement).style.cursor = 'auto';
+        this.drag_state.event = $event;
         this.drag_state.dragged = false;
         this.dragStopAction(this.drag_state);
     }
