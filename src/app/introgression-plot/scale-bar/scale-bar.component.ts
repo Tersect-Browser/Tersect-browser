@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
-import { PlotPosition, PlotArea, PlotChromosomePosition } from '../../models/PlotPosition';
+import { PlotPosition, PlotArea, PlotSequencePosition } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 
 interface ScaleTick {
@@ -194,7 +194,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
             || bp_position > this.plotService.interval[1]) {
             return { type: 'background' };
         }
-        const result: PlotChromosomePosition = {
+        const result: PlotSequencePosition = {
             type: 'position',
             position: Math.round(bp_position)
         };

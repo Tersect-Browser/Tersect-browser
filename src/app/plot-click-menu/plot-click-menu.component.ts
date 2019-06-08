@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
-import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotChromosomePosition } from '../models/PlotPosition';
+import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -108,7 +108,7 @@ export class PlotClickMenuComponent implements OnInit {
         };
     }
 
-    private getPositionItem(pos: PlotChromosomePosition): MenuItem {
+    private getPositionItem(pos: PlotSequencePosition): MenuItem {
         return {
             label: `${formatPosition(pos.position)}`,
             items: [
@@ -144,7 +144,7 @@ export class PlotClickMenuComponent implements OnInit {
             ];
         } else if ($event.target.type === 'position') {
             this.menuItems = [
-                this.getPositionItem($event.target as PlotChromosomePosition)
+                this.getPositionItem($event.target as PlotSequencePosition)
             ];
         } else {
             // Menu not visible for other types

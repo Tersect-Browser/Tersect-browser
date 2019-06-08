@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { PlotPosition, PlotBin, PlotAccession, PlotChromosomePosition, PlotMouseHoverEvent } from '../models/PlotPosition';
+import { PlotPosition, PlotBin, PlotAccession, PlotSequencePosition, PlotMouseHoverEvent } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -21,7 +21,7 @@ export class TooltipComponent {
 - ${formatPosition(target.end_position)}`;
     }
 
-    private formatPositionTooltip(target: PlotChromosomePosition): string {
+    private formatPositionTooltip(target: PlotSequencePosition): string {
         return `${formatPosition(target.position)}`;
     }
 
@@ -32,7 +32,7 @@ export class TooltipComponent {
             return `${($event.target as PlotAccession).accession}`;
         } else if ($event.target.type === 'position') {
             return this.formatPositionTooltip($event.target as
-                                              PlotChromosomePosition);
+                                              PlotSequencePosition);
         }
         return '';
     }
