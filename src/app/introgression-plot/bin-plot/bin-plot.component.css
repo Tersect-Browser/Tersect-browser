@@ -1,9 +1,23 @@
 /* Disable antialiasing so that zoom doesn't blur the image. */
 .sharp-canvas {
+    position: absolute;
     image-rendering: optimizeSpeed; /* Older versions of FF */
     image-rendering: -moz-crisp-edges; /* FF 6.0+ */
     image-rendering: -webkit-optimize-contrast; /* Safari */
     image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
     image-rendering: pixelated; /* Awesome future-browsers */
     -ms-interpolation-mode: nearest-neighbor; /* IE */
+}
+
+.highlight {
+    position: absolute;
+    border-left-style: solid;
+    border-right-style: solid;
+    border-width: 1px;
+    border-color: rgb(70, 160, 0);
+    background-color: rgba(70, 160, 0, 0.2);
+    visibility: hidden;
+    left: 0px;
+    width: 0px;
+    height: 100%;
 }

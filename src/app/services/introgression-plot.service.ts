@@ -136,6 +136,17 @@ export class IntrogressionPlotService {
     }
 
     /**
+     * Highlighted area of the plot.
+     */
+    private highlight_source = new BehaviorSubject<SequenceInterval>(undefined);
+    set highlight(highlight_interval: SequenceInterval) {
+        this.highlight_source.next(highlight_interval);
+    }
+    get highlight(): SequenceInterval {
+        return this.highlight_source.getValue();
+    }
+
+    /**
      * List of sequence gaps in the current chromosome.
      */
     private sequenceGaps: SequenceInterval[];

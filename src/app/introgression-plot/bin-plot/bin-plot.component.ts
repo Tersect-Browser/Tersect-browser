@@ -12,6 +12,7 @@ import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 
 export class BinPlotComponent extends CanvasPlotElement {
     @ViewChild('canvas') canvas: ElementRef;
+    @ViewChild('highlight') highlight: ElementRef;
 
     /**
      * Drag start position in terms of the accession / bin index.
@@ -55,6 +56,29 @@ export class BinPlotComponent extends CanvasPlotElement {
                                                                 .gui_margins
                                                                 .left,
                          this.plotService.plot_position.y);
+        this.updateHighlight();
+    }
+
+    updateHighlight() {
+        if (isNullOrUndefined(this.plotService.highlight)) {
+            this.highlight.nativeElement.style.visibility = 'hidden';
+        } else {
+            const bp_per_pixel = this.plotService.binsize
+                                 / this.plotService.zoom_factor;
+            const bin_offset = (this.plotService.gui_margins.left
+                                + this.plotService.plot_position.x);
+
+            const left_pos = this.plotService.highlight.start / bp_per_pixel
+                             + bin_offset * this.plotService.bin_width;
+
+            const width = (this.plotService.highlight.end
+                           - this.plotService.highlight.start + 1)
+                          / bp_per_pixel + 1;
+
+            this.highlight.nativeElement.style.left = `${left_pos}px`;
+            this.highlight.nativeElement.style.width = `${width}px`;
+            this.highlight.nativeElement.style.visibility = 'visible';
+        }
     }
 
     protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
