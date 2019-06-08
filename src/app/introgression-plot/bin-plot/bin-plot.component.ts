@@ -73,7 +73,7 @@ export class BinPlotComponent extends CanvasPlotElement {
 
             const width = (this.plotService.highlight.end
                            - this.plotService.highlight.start + 1)
-                          / bp_per_pixel + 1;
+                          / bp_per_pixel;
 
             this.highlight.nativeElement.style.left = `${left_pos}px`;
             this.highlight.nativeElement.style.width = `${width}px`;
