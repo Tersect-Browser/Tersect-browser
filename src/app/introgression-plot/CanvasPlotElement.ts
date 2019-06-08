@@ -95,7 +95,7 @@ export abstract class CanvasPlotElement {
     @HostListener('mousemove', ['$event'])
     mouseMove($event: MouseEvent) {
         this.plotMouseMove.emit({ element: this.constructor.name });
-        if (this.hover_state.enable_hovering) {
+        if (this.hover_state.enable_hovering && !this.drag_state.dragged) {
             this.hover_state.hover_position = {
                 x: $event.offsetX,
                 y: $event.offsetY
