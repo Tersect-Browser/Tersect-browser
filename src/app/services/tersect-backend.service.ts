@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { DistanceMatrix } from '../models/DistanceMatrix';
-import { SequenceGap } from '../models/GapIndex';
+import { SequenceInterval } from '../models/SequenceInterval';
 
 @Injectable()
 export class TersectBackendService {
@@ -55,9 +55,9 @@ ${chromosome}/${start}/${stop}`;
      * Retrieve list of gaps for a given chromosome.
      * @param chromosome chromosome of interest
      */
-    getGapIndex(chromosome: string): Observable<SequenceGap[]> {
+    getGapIndex(chromosome: string): Observable<SequenceInterval[]> {
         const query = `http://localhost:8060/tbapi/gaps/${chromosome}`;
-        return this.http.get<SequenceGap[]>(query);
+        return this.http.get<SequenceInterval[]>(query);
     }
 
 }

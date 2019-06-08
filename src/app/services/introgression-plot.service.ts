@@ -10,7 +10,7 @@ import { sameElements, ceilTo, floorTo } from '../utils/utils';
 import { GreyscalePalette } from '../introgression-plot/DistancePalette';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { Chromosome } from '../models/chromosome';
-import { SequenceGap } from '../models/GapIndex';
+import { SequenceInterval } from '../models/SequenceInterval';
 
 interface GUIMargins {
     top: number;
@@ -138,7 +138,7 @@ export class IntrogressionPlotService {
     /**
      * List of sequence gaps in the current chromosome.
      */
-    private sequenceGaps: SequenceGap[];
+    private sequenceGaps: SequenceInterval[];
 
     /**
      * Accession names (as used by tersect) sorted in the order to
@@ -347,7 +347,7 @@ export class IntrogressionPlotService {
         });
     }
 
-    private addPlotGap(plot_array: Uint8ClampedArray, gap: SequenceGap) {
+    private addPlotGap(plot_array: Uint8ClampedArray, gap: SequenceInterval) {
         const row_num = this.row_num;
         const col_num = this.col_num;
         const start_pos = gap.start > this.interval[0] ? gap.start
