@@ -65,11 +65,12 @@ export class BinPlotComponent extends CanvasPlotElement {
         } else {
             const bp_per_pixel = this.plotService.binsize
                                  / this.plotService.zoom_factor;
-            const bin_offset = (this.plotService.gui_margins.left
-                                + this.plotService.plot_position.x);
+            const plot_offset = (this.plotService.gui_margins.left
+                                 + this.plotService.plot_position.x);
 
-            const left_pos = this.plotService.highlight.start / bp_per_pixel
-                             + bin_offset * this.plotService.bin_width;
+            const left_pos = (this.plotService.highlight.start
+                              - this.plotService.interval[0]) / bp_per_pixel
+                             + plot_offset * this.plotService.bin_width;
 
             const width = (this.plotService.highlight.end
                            - this.plotService.highlight.start + 1)
