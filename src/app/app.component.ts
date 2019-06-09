@@ -166,6 +166,10 @@ export class AppComponent implements OnInit {
         this.updateAccessions();
     }
 
+    setInterval($event: number[]) {
+        this.selected_interval = $event;
+    }
+
     setIntervalStart($event) {
         this.selected_interval[0] = $event;
         this.updateInterval();

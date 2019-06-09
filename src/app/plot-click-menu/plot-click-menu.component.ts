@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
-import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition } from '../models/PlotPosition';
+import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition, PlotSequenceInterval } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
 @Component({
@@ -14,6 +14,7 @@ export class PlotClickMenuComponent implements OnInit {
 
     @Output() setReference = new EventEmitter<string>();
     @Output() removeAccession = new EventEmitter<string>();
+    @Output() setInterval = new EventEmitter<number[]>();
     @Output() setIntervalStart = new EventEmitter<number>();
     @Output() setIntervalEnd = new EventEmitter<number>();
 
@@ -132,6 +133,24 @@ export class PlotClickMenuComponent implements OnInit {
         };
     }
 
+    private getIntervalItem(int: PlotSequenceInterval): MenuItem {
+        return {
+            label: `${formatPosition(int.start_position)}
+- ${formatPosition(int.end_position)}`,
+            items: [
+                {
+                    label: 'Set as interval',
+                    icon: 'fa fa-arrows-h',
+                    command: () => {
+                        this.setInterval.emit([int.start_position,
+                                               int.end_position]);
+                        this.hide();
+                    }
+                }
+            ]
+        };
+    }
+
     show($event: PlotMouseClickEvent) {
         if ($event.target.type === 'accession') {
             this.menuItems = [
@@ -145,6 +164,10 @@ export class PlotClickMenuComponent implements OnInit {
         } else if ($event.target.type === 'position') {
             this.menuItems = [
                 this.getPositionItem($event.target as PlotSequencePosition)
+            ];
+        } else if ($event.target.type === 'interval') {
+            this.menuItems = [
+                this.getIntervalItem($event.target as PlotSequenceInterval)
             ];
         } else {
             // Menu not visible for other types

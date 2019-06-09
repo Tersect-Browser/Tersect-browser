@@ -4,6 +4,7 @@ import { IntrogressionPlotService } from '../../services/introgression-plot.serv
 import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { start } from 'repl';
+import { isNullOrUndefined } from 'util';
 
 interface ScaleTick {
     position: number;
@@ -207,6 +208,20 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected dragStopAction(drag_state: DragState): void {
+        if (!isNullOrUndefined(this.plotService.highlight)) {
+            const target: PlotSequenceInterval = {
+                type: 'interval',
+                start_position: this.plotService.highlight.start,
+                end_position: this.plotService.highlight.end
+            }
+
+            this.plotMouseClick.emit({
+                x: drag_state.event.clientX,
+                y: drag_state.event.clientY,
+                target: target
+            });
+        }
+
         this.plotService.highlight = undefined;
         this.plotMouseMove.emit();
     }
