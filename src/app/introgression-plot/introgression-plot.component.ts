@@ -85,7 +85,7 @@ export class IntrogressionPlotComponent implements OnInit {
         });
 
         this.plotService.highlight_source.subscribe(() => {
-            this.redrawPlot();
+            this.binPlot.draw();
         });
     }
 
@@ -104,11 +104,6 @@ export class IntrogressionPlotComponent implements OnInit {
     }
 
     onMove($event: PlotMouseMoveEvent) {
-        if ((!isNullOrUndefined($event)
-             && $event.buttons !== 1) || isNullOrUndefined($event)) {
-            // Clear highlight if mouse button is not held down.
-            this.plotService.highlight = undefined;
-        }
         this.plotMouseMove.emit($event);
     }
 

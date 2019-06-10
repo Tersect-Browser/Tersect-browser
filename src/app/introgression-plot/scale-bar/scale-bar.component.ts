@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
@@ -43,7 +43,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
      */
     readonly GUI_TICK_DISTANCE = 120;
 
-    constructor(private plotService: IntrogressionPlotService) {
+    constructor(private plotService: IntrogressionPlotService,
+                private renderer: Renderer2) {
         super();
         this.hover_state.hover_delay = 0;
         this.drag_state.drag_cursor = 'col-resize';
@@ -205,9 +206,15 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected dragStartAction(drag_state: DragState): void {
+        const unlisten_drag_stop = this.renderer.listen('window',
+                                                        'mouseup', (event) => {
+            this.drag_state.event = event;
+            this.dragStopActionGlobal(this.drag_state);
+            unlisten_drag_stop();
+        });
     }
 
-    protected dragStopAction(drag_state: DragState): void {
+    private dragStopActionGlobal(drag_state: DragState): void {
         if (!isNullOrUndefined(this.plotService.highlight)) {
             const target: PlotSequenceInterval = {
                 type: 'interval',
@@ -220,10 +227,29 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 y: drag_state.event.clientY,
                 target: target
             });
-        }
 
-        this.plotService.highlight = undefined;
-        this.plotMouseMove.emit();
+            // A bit of a hack, clearing the highlight only after plot click
+            // menu is gone
+            const unlisten_post_plot_click = this.renderer.listen('window',
+                                                                  'mouseover',
+                                                                  (event) => {
+                let target = event.target;
+                while (target = target.parentNode) {
+                    if (isNullOrUndefined(target)) {
+                        break;
+                    }
+                    if (target.tagName === 'APP-PLOT-CLICK-MENU') {
+                        return;
+                    }
+                }
+                this.plotService.highlight = undefined;
+                unlisten_post_plot_click();
+            });
+        }
+    }
+
+    protected dragStopAction(drag_state: DragState): void {
+        // Using dragStopGlobal instead
     }
 
     protected dragAction(drag_state: DragState): void {
