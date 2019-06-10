@@ -135,7 +135,8 @@ export abstract class CanvasPlotElement {
     @HostListener('mousedown', ['$event'])
     mouseDown($event: MouseEvent) {
         this.click_state.click_position = {
-            x: $event.offsetX, y: $event.offsetY
+            x: $event.offsetX,
+            y: $event.offsetY
         };
         if (this.drag_state.enable_dragging) {
             this.startDrag($event);
@@ -168,8 +169,8 @@ export abstract class CanvasPlotElement {
             canvas.style.cursor = this.drag_state.drag_cursor;
         }
         this.drag_state.current_position = {
-            x: $event.offsetX,
-            y: $event.offsetY
+            x: $event.clientX,
+            y: $event.clientY
         };
         this.dragAction(this.drag_state);
     }
@@ -180,8 +181,8 @@ export abstract class CanvasPlotElement {
             this.drag_state.event = $event;
             this.drag_state.dragged = true;
             this.drag_state.start_position = {
-                x: $event.offsetX,
-                y: $event.offsetY
+                x: $event.clientX,
+                y: $event.clientY
             };
             this.dragStartAction(this.drag_state);
         }
