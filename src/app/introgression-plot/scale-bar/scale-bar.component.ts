@@ -225,7 +225,6 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     private dragActionGlobal(drag_state: DragState): void {
-        // console.log('ACTION');
         const start_target = this.getPositionTarget(drag_state.start_position);
         const end_target = this.getPositionTarget(drag_state.current_position);
         if (start_target.type !== 'position'
