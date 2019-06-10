@@ -5,7 +5,6 @@ import { IntrogressionPlotService } from '../services/introgression-plot.service
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
 import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
-import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-introgression-plot',
