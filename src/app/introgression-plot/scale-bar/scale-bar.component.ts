@@ -228,22 +228,27 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 target: target
             });
 
-            // A bit of a hack, clearing the highlight after a mouseup anywhere
-            // except the non-link (A) parts of the plot click menu
             const unlisten_highlight_clear = this.renderer.listen('window',
-                                                                  'mouseup',
+                                                                  'click',
                                                                   (event) => {
                 let node = event.target;
+                const tags = [node.tagName];
                 while (node = node.parentNode) {
-                    if (node.tagName === 'A') {
+                    if (!isNullOrUndefined(node.tagName)) {
+                        tags.push(node.tagName);
+                    } else {
                         break;
                     }
-                    if (node.tagName === 'P-MENU') {
-                        return;
+                }
+
+                // Clear highlight and listener if the user clicked a menu link
+                // or outside the menu (modal overlay mask); bit of a hack
+                if (tags.includes('APP-PLOT-CLICK-MENU')) {
+                    if (tags.includes('A') || !tags.includes('P-MENU')) {
+                        this.plotService.highlight = undefined;
+                        unlisten_highlight_clear();
                     }
                 }
-                this.plotService.highlight = undefined;
-                unlisten_highlight_clear();
             });
         }
     }
