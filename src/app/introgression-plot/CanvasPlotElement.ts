@@ -175,7 +175,7 @@ export abstract class CanvasPlotElement {
         this.dragAction(this.drag_state);
     }
 
-    private startDrag($event: MouseEvent) {
+    protected startDrag($event: MouseEvent) {
         // drag on left mouse button
         if ($event.buttons === 1) {
             this.drag_state.event = $event;
@@ -188,7 +188,7 @@ export abstract class CanvasPlotElement {
         }
     }
 
-    private stopDrag($event: MouseEvent) {
+    protected stopDrag($event: MouseEvent) {
         ($event.target as HTMLCanvasElement).style.cursor = 'auto';
         this.drag_state.event = $event;
         this.drag_state.dragged = false;
