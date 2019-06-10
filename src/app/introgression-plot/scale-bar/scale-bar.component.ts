@@ -220,7 +220,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 type: 'interval',
                 start_position: this.plotService.highlight.start,
                 end_position: this.plotService.highlight.end
-            }
+            };
 
             this.plotMouseClick.emit({
                 x: drag_state.event.clientX,
@@ -233,10 +233,14 @@ export class ScaleBarComponent extends CanvasPlotElement {
             const unlisten_highlight_clear = this.renderer.listen('window',
                                                                   'mouseup',
                                                                   (event) => {
-                let target = event.target;
-                while (target = target.parentNode) {
-                    if (target.tagName === 'A') break;
-                    if (target.tagName === 'P-MENU') return;
+                let node = event.target;
+                while (node = node.parentNode) {
+                    if (node.tagName === 'A') {
+                        break;
+                    }
+                    if (node.tagName === 'P-MENU') {
+                        return;
+                    }
                 }
                 this.plotService.highlight = undefined;
                 unlisten_highlight_clear();
@@ -268,7 +272,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
             type: 'interval',
             start_position: this.plotService.highlight.start,
             end_position: this.plotService.highlight.end
-        }
+        };
 
         this.plotMouseHover.emit({
             x: drag_state.event.clientX,
