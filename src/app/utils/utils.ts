@@ -60,3 +60,19 @@ export function findClosest(x: number, choices: number[]): number {
     });
     return result;
 }
+
+/**
+ * Return a list of HTML tags for an HTML element and all its ancestors.
+ */
+export function extractTags(element: HTMLElement): string[] {
+    let node = element;
+    const tags = [node.tagName];
+    while (node = node.parentNode as HTMLElement) {
+        if (!isNullOrUndefined(node.tagName)) {
+            tags.push(node.tagName);
+        } else {
+            break;
+        }
+    }
+    return tags;
+}

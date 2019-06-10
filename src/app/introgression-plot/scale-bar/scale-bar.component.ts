@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
-import { formatPosition, findClosest, ceilTo } from '../../utils/utils';
+import { formatPosition, findClosest, ceilTo, extractTags } from '../../utils/utils';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
@@ -231,15 +231,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
             const unlisten_highlight_clear = this.renderer.listen('window',
                                                                   'click',
                                                                   (event) => {
-                let node = event.target;
-                const tags = [node.tagName];
-                while (node = node.parentNode) {
-                    if (!isNullOrUndefined(node.tagName)) {
-                        tags.push(node.tagName);
-                    } else {
-                        break;
-                    }
-                }
+                const tags = extractTags(event.target);
 
                 // Clear highlight and listener if the user clicked a menu link
                 // or outside the menu (modal overlay mask); bit of a hack
