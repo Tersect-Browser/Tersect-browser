@@ -228,22 +228,18 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 target: target
             });
 
-            // A bit of a hack, clearing the highlight only after plot click
-            // menu is gone
-            const unlisten_post_plot_click = this.renderer.listen('window',
-                                                                  'mouseover',
+            // A bit of a hack, clearing the highlight after a mouseup anywhere
+            // except the non-link (A) parts of the plot click menu
+            const unlisten_highlight_clear = this.renderer.listen('window',
+                                                                  'mouseup',
                                                                   (event) => {
                 let target = event.target;
                 while (target = target.parentNode) {
-                    if (isNullOrUndefined(target)) {
-                        break;
-                    }
-                    if (target.tagName === 'APP-PLOT-CLICK-MENU') {
-                        return;
-                    }
+                    if (target.tagName === 'A') break;
+                    if (target.tagName === 'P-MENU') return;
                 }
                 this.plotService.highlight = undefined;
-                unlisten_post_plot_click();
+                unlisten_highlight_clear();
             });
         }
     }
