@@ -9,11 +9,26 @@
     </div>
 
     <div class="p-grid p-justify-between tb-toolbar p-nogutter">
-        <p-toggleButton [(ngModel)]="display_tree"
-                        [style]="{'width': '2em', 'margin-top': '1em'}"
-                        onLabel="" offLabel=""
-                        offIcon="fa fa-tree"
-                        onIcon="fa fa-tree"></p-toggleButton>
+        <button pButton class="tree-settings-button"
+            icon="fa fa-tree"
+            (click)="tree_overlay.toggle($event)">
+        </button>
+        <p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
+            <div class="accession-display-overlay">
+                <p-radioButton name="display_types"
+                    label="Accession labels" value="labels"
+                    [(ngModel)]="selectedAccessionDisplayStyle">
+                </p-radioButton>
+                <p-radioButton name="display_types"
+                    label="Phylogenetic tree (simplified)" value="tree_simple"
+                    [(ngModel)]="selectedAccessionDisplayStyle">
+                    </p-radioButton>
+                <p-radioButton name="display_types"
+                    label="Phylogenetic tree" value="tree_linear"
+                    [(ngModel)]="selectedAccessionDisplayStyle">
+                </p-radioButton>
+            </div>
+        </p-overlayPanel>
         <div class="p-col accession-selector tb-toolbar-control">
             <div class="dropdown-label">Reference</div>
             <p-dropdown [options]="accessions"
@@ -80,7 +95,7 @@
 
     <div #plotContainer class="v-stretch plot-container hbox">
         <app-introgression-plot
-            [drawTree]="display_tree"
+            [accessionDisplayStyle]="selectedAccessionDisplayStyle"
             [chromosome]="selected_chromosome"
             [accessions]="selected_accessions"
             [interval]="selected_interval"

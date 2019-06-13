@@ -6,6 +6,7 @@ import { ceilTo, floorTo } from './utils/utils';
 import { PlotClickMenuComponent } from './plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from './tooltip/tooltip.component';
 import { PlotMouseClickEvent } from './models/PlotPosition';
+import { AccessionDisplayStyle } from './services/introgression-plot.service';
 
 @Component({
     selector: 'app-root',
@@ -33,6 +34,8 @@ export class AppComponent implements OnInit {
     get selected_chromosome(): Chromosome {
         return this._selected_chromosome;
     }
+
+    selectedAccessionDisplayStyle: AccessionDisplayStyle = 'labels';
 
     display_tree = false;
 

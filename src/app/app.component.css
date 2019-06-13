@@ -147,3 +147,13 @@
     -ms-flex-direction: row;
     flex-direction: row;
 }
+
+.tree-settings-button {
+    width: 2em;
+    height: 2em;
+    margin-top: 1em;
+}
+
+.accession-display-overlay > p-radiobutton {
+    display: block;
+}

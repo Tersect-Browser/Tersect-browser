@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { IntrogressionPlotService } from '../../services/introgression-plot.service';
 import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition';
-import { TreeNode, getTreeDepth } from '../../clustering/clustering';
+import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
 import { isNullOrUndefined } from 'util';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
@@ -24,6 +24,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
     readonly GUI_TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
     readonly GUI_TREE_LEFT_MARGIN = 2;
+    readonly GUI_TREE_XSCALING = 0.001;
 
     /**
      * Drag start position in terms of accession index.
@@ -48,9 +49,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
                                                          .getContext('2d');
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
-        this.plotService.gui_margins
-                        .left = this.calcLabelsWidth(ctx, this.plotService
-                                                              .draw_tree);
+        this.plotService.gui_margins.left = this.calcLabelsWidth(ctx);
         this.canvas.nativeElement.width = this.plotService.labels_width;
 
         // Need to set font again despite doing it in calcLabelsWidth since
@@ -68,10 +67,21 @@ export class AccessionBarComponent extends CanvasPlotElement {
                      this.canvas.nativeElement.height);
 
         // Draw labels
-        if (this.plotService.draw_tree) {
-            this.drawLabelTree(ctx, text_height, yoffset);
-        } else {
+        if (this.plotService.accession_display === 'labels') {
             this.drawSimpleLabels(ctx, text_height, yoffset);
+        } else {
+            this.drawLabelTree(ctx, text_height, yoffset);
+        }
+    }
+
+    private getEdgeLength(node: TreeNode) {
+        if (this.plotService.accession_display === 'tree_simple') {
+            return this.GUI_TREE_STEP_WIDTH;
+        } else if (this.plotService.accession_display === 'tree_linear') {
+            return node.length * this.GUI_TREE_XSCALING;
+        } else {
+            // Should not happen
+            return 0;
         }
     }
 
@@ -79,31 +89,22 @@ export class AccessionBarComponent extends CanvasPlotElement {
                            ctx: CanvasRenderingContext2D,
                            background_width: number, text_height: number,
                            yoffset: number,
-                           draw_state: { current_row: number,
-                                         xscale: number }) {
+                           draw_state: { current_row: number }) {
         const ypos = [ yoffset + draw_state.current_row * text_height ];
 
         if (subtree.children.length) {
-            const top_child_xpos = isNullOrUndefined(draw_state.xscale)
-                                        ? xpos + this.GUI_TREE_STEP_WIDTH
-                                                 * this.plotService.zoom_factor
-                                        : xpos + subtree.children[0].length
-                                                 * draw_state.xscale
-                                                 * this.plotService.zoom_factor;
+            const top_xpos = xpos + this.getEdgeLength(subtree.children[0])
+                                    * this.plotService.zoom_factor;
 
-            this._drawLabelTree(subtree.children[0], top_child_xpos, ctx,
+            this._drawLabelTree(subtree.children[0], top_xpos, ctx,
                                 background_width, text_height, yoffset,
                                 draw_state);
             ypos.push(yoffset + draw_state.current_row * text_height);
 
-            const bottom_child_xpos = isNullOrUndefined(draw_state.xscale)
-                                        ? xpos + this.GUI_TREE_STEP_WIDTH
-                                                 * this.plotService.zoom_factor
-                                        : xpos + subtree.children[1].length
-                                                 * draw_state.xscale
-                                                 * this.plotService.zoom_factor;
+            const bottom_xpos = xpos + this.getEdgeLength(subtree.children[1])
+                                       * this.plotService.zoom_factor;
 
-            this._drawLabelTree(subtree.children[1], bottom_child_xpos, ctx,
+            this._drawLabelTree(subtree.children[1], bottom_xpos, ctx,
                                 background_width, text_height, yoffset,
                                 draw_state);
             ypos.push(yoffset + draw_state.current_row * text_height);
@@ -113,10 +114,10 @@ export class AccessionBarComponent extends CanvasPlotElement {
                             * this.plotService.zoom_factor;
             ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
-            ctx.moveTo(top_child_xpos, (ypos[0] + ypos[1]) / 2);
+            ctx.moveTo(top_xpos, (ypos[0] + ypos[1]) / 2);
             ctx.lineTo(xpos, (ypos[0] + ypos[1]) / 2);
             ctx.lineTo(xpos, (ypos[1] + ypos[2]) / 2);
-            ctx.lineTo(bottom_child_xpos, (ypos[1] + ypos[2]) / 2);
+            ctx.lineTo(bottom_xpos, (ypos[1] + ypos[2]) / 2);
             ctx.stroke();
         } else {
             ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
@@ -139,10 +140,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
                           text_height: number, yoffset: number) {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
-        const draw_state = {
-            current_row: 0,
-            xscale: undefined,
-        };
+        const draw_state = { current_row: 0 };
         const initial_xpos = this.GUI_TREE_LEFT_MARGIN
                              * this.plotService.zoom_factor;
         this._drawLabelTree(this.plotService.njTree, initial_xpos, ctx,
@@ -159,7 +157,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
         });
     }
 
-    private calcLabelsWidth(ctx: CanvasRenderingContext2D, tree: boolean) {
+    private calcLabelsWidth(ctx: CanvasRenderingContext2D) {
         ctx.font = `${this.plotService.bin_height}px ${this.GUI_TREE_FONT}`;
         const max_label_width = Math.max(
             ...this.plotService.sorted_accessions.map(label =>
@@ -167,10 +165,15 @@ export class AccessionBarComponent extends CanvasPlotElement {
             )
         );
         let gui_left_width = max_label_width / this.plotService.zoom_factor;
-        if (tree) {
+
+        if (this.plotService.accession_display === 'tree_simple') {
             gui_left_width += (getTreeDepth(this.plotService.njTree) + 1)
                               * this.GUI_TREE_STEP_WIDTH;
+        } else if (this.plotService.accession_display === 'tree_linear') {
+            gui_left_width += getTreeDepthLinear(this.plotService.njTree)
+                              * this.GUI_TREE_XSCALING;
         }
+
         return Math.ceil(gui_left_width);
     }
 

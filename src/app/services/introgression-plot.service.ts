@@ -12,12 +12,15 @@ import { DistanceMatrix } from '../models/DistanceMatrix';
 import { Chromosome } from '../models/chromosome';
 import { SequenceInterval } from '../models/SequenceInterval';
 
-interface GUIMargins {
+export interface GUIMargins {
     top: number;
     right: number;
     bottom: number;
     left: number;
 }
+
+export type AccessionDisplayStyle = 'labels' | 'tree_simple'
+                                    | 'tree_linear';
 
 @Injectable()
 export class IntrogressionPlotService {
@@ -66,7 +69,7 @@ export class IntrogressionPlotService {
     /**
      * Draw phylogenetic tree (if true) or simple list of accessions (if false).
      */
-    draw_tree = false;
+    accession_display: AccessionDisplayStyle = 'labels';
 
     /**
      * Horizontal / vertical scroll position of the plot.

@@ -12,6 +12,8 @@ import { SliderModule } from 'primeng/slider';
 import { ListboxModule } from 'primeng/listbox';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { ToggleButtonModule } from 'primeng/togglebutton';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TersectBackendService } from './services/tersect-backend.service';
@@ -38,6 +40,8 @@ import { TooltipModule } from './tooltip/tooltip.module';
         ListboxModule,
         KeyFilterModule,
         ToggleButtonModule,
+        OverlayPanelModule,
+        RadioButtonModule,
         IntrogressionPlotModule,
         PlotClickMenuModule,
         TooltipModule

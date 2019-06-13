@@ -28,6 +28,25 @@ function _treeToSortedList(subtree: TreeNode, output: string[]) {
     }
 }
 
+export function getTreeDepthLinear(tree: TreeNode): number {
+    const output = { max_depth: 0 };
+    _getTreeDepthLinear(tree, 0, output);
+    return output.max_depth;
+}
+
+function _getTreeDepthLinear(subtree: TreeNode, depth: number,
+                             output: { max_depth: number }) {
+    if (subtree.children.length) {
+        for (const child of subtree.children) {
+            _getTreeDepthLinear(child, depth + child.length, output);
+        }
+    } else {
+        if (depth > output.max_depth) {
+            output.max_depth = depth;
+        }
+    }
+}
+
 export function getTreeDepth(tree: TreeNode): number {
     const output = { max_depth: 0 };
     _getTreeDepth(tree, 0, output);
