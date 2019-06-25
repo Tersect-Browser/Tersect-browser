@@ -17,15 +17,15 @@
             <div class="accession-display-overlay">
                 <p-radioButton name="display_types"
                     label="Accession labels" value="labels"
-                    [(ngModel)]="selectedAccessionDisplayStyle">
+                    [(ngModel)]="settings.selectedAccessionDisplayStyle">
                 </p-radioButton>
                 <p-radioButton name="display_types"
                     label="Phylogenetic tree (simplified)" value="tree_simple"
-                    [(ngModel)]="selectedAccessionDisplayStyle">
+                    [(ngModel)]="settings.selectedAccessionDisplayStyle">
                     </p-radioButton>
                 <p-radioButton name="display_types"
                     label="Phylogenetic tree" value="tree_linear"
-                    [(ngModel)]="selectedAccessionDisplayStyle">
+                    [(ngModel)]="settings.selectedAccessionDisplayStyle">
                 </p-radioButton>
             </div>
         </p-overlayPanel>
@@ -35,32 +35,34 @@
                         [filter]="true"
                         [autoWidth]="false"
                         [style]="{'width':'100%'}"
-                        [(ngModel)]="selected_reference"></p-dropdown>
+                        [(ngModel)]="settings.selected_reference"></p-dropdown>
         </div>
         <div class="p-col tb-toolbar-control">
             <div class="dropdown-label">Chromosome</div>
             <p-dropdown [options]="chromosomes"
                         [style]="{'width':'100%'}"
-                        [(ngModel)]="selected_chromosome"></p-dropdown>
+                        [(ngModel)]="widget_chromosome"></p-dropdown>
         </div>
         <div class="p-col interval-selector tb-toolbar-control">
             <div class="interval-label">
                 Interval:
                 <input class="interval-input" type="text" pKeyFilter="pint"
-                    [(ngModel)]="selected_interval[0]"
+                    [(ngModel)]="settings.selected_interval[0]"
                     (input)="typeInterval($event)" pInputText>
                 -
                 <input class="interval-input" type="text" pKeyFilter="pint"
-                    [(ngModel)]="selected_interval[1]"
+                    [(ngModel)]="settings.selected_interval[1]"
                     (input)="typeInterval($event)" pInputText>
             </div>
             <div class="interval-slider">
-                <p-slider [(ngModel)]="selected_interval" [range]="true"
+                <p-slider [(ngModel)]="settings.selected_interval"
+                          [range]="true"
                           [animate]="true"
                           [style]="{'width':'100%'}"
                           (onChange)="intervalSliderChange($event)"
                           (onSlideEnd)="updateInterval()"
-                          [min]="interval_min" [max]="interval_max"></p-slider>
+                          [min]="1" [max]="settings.selected_chromosome.size">
+                </p-slider>
             </div>
         </div>
         <div class="p-col binsize-selector tb-toolbar-control">
@@ -77,10 +79,10 @@
         </div>
         <div class="p-col zoom-selector tb-toolbar-control">
             <button pButton icon="fa fa-search-minus"
-                    [disabled]="zoom_level <= MIN_ZOOM_LEVEL"
+                    [disabled]="settings.zoom_level <= MIN_ZOOM_LEVEL"
                     (click)="zoomOut()"></button>
             <button pButton icon="fa fa-search-plus"
-                    [disabled]="zoom_level >= MAX_ZOOM_LEVEL"
+                    [disabled]="settings.zoom_level >= MAX_ZOOM_LEVEL"
                     (click)="zoomIn()"></button>
         </div>
         <div class="p-col toolbar-buttons tb-toolbar-control">
@@ -95,13 +97,13 @@
 
     <div #plotContainer class="v-stretch plot-container hbox">
         <app-introgression-plot
-            [accessionDisplayStyle]="selectedAccessionDisplayStyle"
-            [chromosome]="selected_chromosome"
-            [accessions]="selected_accessions"
-            [interval]="selected_interval"
-            [reference]="selected_reference"
-            [binsize]="selected_binsize"
-            [zoom_level]="zoom_level"
+            [accessionDisplayStyle]="settings.selectedAccessionDisplayStyle"
+            [chromosome]="settings.selected_chromosome"
+            [accessions]="settings.selected_accessions"
+            [interval]="settings.selected_interval"
+            [reference]="settings.selected_reference"
+            [binsize]="settings.selected_binsize"
+            [zoom_level]="settings.zoom_level"
             (plotMouseClick)="plotClick($event)"
             (plotMouseHover)="tooltip.show($event)"
             (plotMouseMove)="tooltip.hide()"

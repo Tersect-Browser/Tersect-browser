@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { SequenceInterval } from '../models/SequenceInterval';
+import { BrowserSettings } from '../introgression-browser/browser-settings';
+
+import { of } from 'rxjs/observable/of';
 
 @Injectable()
 export class TersectBackendService {
@@ -58,6 +61,10 @@ ${chromosome}/${start}/${stop}`;
     getGapIndex(chromosome: string): Observable<SequenceInterval[]> {
         const query = `http://localhost:8060/tbapi/gaps/${chromosome}`;
         return this.http.get<SequenceInterval[]>(query);
+    }
+
+    getExportedSettings(export_id: string): Observable<BrowserSettings> {
+        return of(undefined);
     }
 
 }
