@@ -6,6 +6,7 @@ import { exec, execSync } from 'child_process';
 
 import { DBMatrix } from './db/dbmatrix';
 import { GapIndex } from './db/gapindex';
+import { ViewSettings } from './db/viewsettings';
 
 export const router = Router();
 
@@ -287,5 +288,16 @@ router.route('/distall/:chromosome/:start/:stop')
             });
         }
         res.json(output);
+    });
+});
+
+router.route('/viewsettings/:id')
+      .get((req, res) => {
+    ViewSettings.findById(req.params.id).exec((err, r) => {
+        if (err) {
+            res.json(undefined);
+        } else {
+            res.json(r['settings']);
+        }
     });
 });

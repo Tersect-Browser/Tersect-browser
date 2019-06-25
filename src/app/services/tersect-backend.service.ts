@@ -6,6 +6,8 @@ import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 
 import { of } from 'rxjs/observable/of';
+import { isNullOrUndefined } from 'util';
+import { AccessionDisplayStyle } from './introgression-plot.service';
 
 @Injectable()
 export class TersectBackendService {
@@ -64,7 +66,12 @@ ${chromosome}/${start}/${stop}`;
     }
 
     getExportedSettings(export_id: string): Observable<BrowserSettings> {
-        return of(undefined);
+        if (isNullOrUndefined(export_id)) {
+            return of(undefined);
+        } else {
+            const query = `http://localhost:8060/tbapi/viewsettings/${export_id}`;
+            return this.http.get<BrowserSettings>(query);
+        }
     }
 
 }

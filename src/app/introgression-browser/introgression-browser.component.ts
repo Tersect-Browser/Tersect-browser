@@ -122,6 +122,8 @@ export class IntrogressionBrowserComponent implements OnInit {
             }));
             if (isNullOrUndefined(settings)) {
                 this.loadDefaultSettings();
+            } else {
+                this.settings = settings;
             }
             this.widget_accessions = this.settings.selected_accessions;
             this.widget_binsize = this.settings.selected_binsize;
