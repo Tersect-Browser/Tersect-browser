@@ -10,6 +10,7 @@ import { IntrogressionBrowserComponent } from './introgression-browser/introgres
 import { AppComponent } from './app.component';
 
 const appRoutes: Routes = [
+    { path: ':exportid', component: IntrogressionBrowserComponent },
     { path: '', component: IntrogressionBrowserComponent, pathMatch: 'full' },
     { path: '**', redirectTo: '' }
 ];

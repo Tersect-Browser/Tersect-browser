@@ -1,4 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, ParamMap } from '@angular/router';
+
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from '../models/chromosome';
 import { TersectBackendService } from '../services/tersect-backend.service';
@@ -20,7 +22,8 @@ export class IntrogressionBrowserComponent implements OnInit {
     chromosomes: SelectItem[] = SL2_50_chromosomes;
     accessions: SelectItem[];
 
-    constructor(private tersectBackendService: TersectBackendService) { }
+    constructor(private tersectBackendService: TersectBackendService,
+                private route: ActivatedRoute) {}
 
     _selected_chromosome: Chromosome = this.chromosomes[0].value;
     @Input()
@@ -94,6 +97,11 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.route.paramMap.subscribe((p: ParamMap) => {
+            if (p.has('exportid')) {
+                console.log(p.get('exportid'));
+            }
+        });
         this.loadAccessions();
     }
 
