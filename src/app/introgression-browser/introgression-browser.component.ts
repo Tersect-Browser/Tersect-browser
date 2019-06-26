@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+import { PlatformLocation } from '@angular/common';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome, SL2_50_chromosomes } from '../models/chromosome';
@@ -13,6 +14,8 @@ import { switchMap } from 'rxjs/operators';
 import { AccessionDisplayStyle } from '../services/introgression-plot.service';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { isNullOrUndefined } from 'util';
+
+import * as path from 'path';
 
 @Component({
     selector: 'app-introgression-browser',
@@ -41,7 +44,8 @@ export class IntrogressionBrowserComponent implements OnInit {
     };
 
     constructor(private tersectBackendService: TersectBackendService,
-                private route: ActivatedRoute) {}
+                private route: ActivatedRoute,
+                private platformLocation: PlatformLocation) { }
 
     @Input()
     set widget_chromosome(chrom: Chromosome) {
@@ -56,6 +60,8 @@ export class IntrogressionBrowserComponent implements OnInit {
     get widget_chromosome(): Chromosome {
         return this.settings.selected_chromosome;
     }
+
+    share_link = '';
 
     display_tree = false;
 
@@ -128,6 +134,15 @@ export class IntrogressionBrowserComponent implements OnInit {
             this.widget_accessions = this.settings.selected_accessions;
             this.widget_binsize = this.settings.selected_binsize;
             this.widget_chromosome = this.settings.selected_chromosome;
+        });
+    }
+
+    exportView($event) {
+        this.tersectBackendService.exportSettings(this.settings)
+                                  .subscribe((id) => {
+            const host = this.platformLocation['location'].origin;
+            this.share_link = path.join(host, 'TersectBrowser', 'share',
+                                        id.toString());
         });
     }
 

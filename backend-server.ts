@@ -9,6 +9,7 @@ const port = process.env.PORT || 8060;
 mongoose.connect('mongodb://localhost:27017/tersect', { useNewUrlParser: true });
 mongoose.set('useCreateIndex', true);
 
+app.use(express.json());
 app.use('/tbapi', router);
 
 app.listen(port, () => {

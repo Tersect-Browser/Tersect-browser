@@ -3,10 +3,9 @@
  */
 
 import { Schema, model } from 'mongoose';
-import { ObjectId } from 'mongodb';
 
 const ViewSettingsSchema = new Schema({
-    _id: ObjectId,
+    _id: Number,
     settings: {
         selectedAccessionDisplayStyle: String,
         selected_accessions: [String],

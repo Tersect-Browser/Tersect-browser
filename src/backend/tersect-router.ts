@@ -8,6 +8,9 @@ import { DBMatrix } from './db/dbmatrix';
 import { GapIndex } from './db/gapindex';
 import { ViewSettings } from './db/viewsettings';
 
+import { default as Hashids } from 'hashids';
+import { isNullOrUndefined } from 'util';
+
 export const router = Router();
 
 function loadConfig() {
@@ -291,13 +294,43 @@ router.route('/distall/:chromosome/:start/:stop')
     });
 });
 
-router.route('/viewsettings/:id')
+router.route('/viewsettings/share/:id')
       .get((req, res) => {
-    ViewSettings.findById(req.params.id).exec((err, r) => {
-        if (err) {
+    const hash = new Hashids(config['salt']);
+    ViewSettings.findOne({ '_id': hash.decode(req.params.id) })
+                .exec((err, r) => {
+        if (err || isNullOrUndefined(r)) {
             res.json(undefined);
         } else {
             res.json(r['settings']);
         }
+    });
+});
+
+router.route('/viewsettings/export')
+      .post((req, res) => {
+    const hash = new Hashids(config['salt']);
+    console.log(req.body);
+    ViewSettings.findOne({}, { _id: 1 }, { sort: { _id: -1} })
+                .exec((id_err, r) => {
+        let next_id = 0;
+        if (id_err) {
+            res.json(id_err);
+            return;
+        } else {
+            if (!isNullOrUndefined(r)) {
+                next_id = r._id + 1;
+            }
+        }
+        const exported_view = new ViewSettings({
+            _id: next_id,
+            settings: req.body
+        });
+        exported_view.save((err) => {
+            if (err) {
+                res.json(err);
+            }
+            res.json(hash.encode(next_id));
+        });
     });
 });

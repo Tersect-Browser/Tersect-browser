@@ -90,10 +90,20 @@
                 disabled="true">
             </button>
             <button pButton label="Share" icon="fa fa-external-link"
-                disabled="true">
+                (click)="sharepanel.toggle($event)">
             </button>
         </div>
     </div>
+
+    <p-overlayPanel #sharepanel (onShow)="exportView($event)"
+                                (onHide)="share_link = ''">
+        <b>Link to current view:</b>
+        <div class="ui-inputgroup share-button">
+            <input pInputText [value]="share_link"
+                size="35" readonly="readonly">
+            <!-- <button pButton label="Copy"></button> -->
+        </div>
+    </p-overlayPanel>
 
     <div #plotContainer class="v-stretch plot-container hbox">
         <app-introgression-plot

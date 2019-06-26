@@ -157,3 +157,8 @@
 .accession-display-overlay > p-radiobutton {
     display: block;
 }
+
+.share-button {
+    margin-top: 10px;
+    font-size: 80%;
+}

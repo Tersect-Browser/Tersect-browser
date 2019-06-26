@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { DistanceMatrix } from '../models/DistanceMatrix';
 import { SequenceInterval } from '../models/SequenceInterval';
@@ -7,7 +7,6 @@ import { BrowserSettings } from '../introgression-browser/browser-settings';
 
 import { of } from 'rxjs/observable/of';
 import { isNullOrUndefined } from 'util';
-import { AccessionDisplayStyle } from './introgression-plot.service';
 
 @Injectable()
 export class TersectBackendService {
@@ -69,9 +68,18 @@ ${chromosome}/${start}/${stop}`;
         if (isNullOrUndefined(export_id)) {
             return of(undefined);
         } else {
-            const query = `http://localhost:8060/tbapi/viewsettings/${export_id}`;
+            const query = `http://localhost:8060/tbapi/viewsettings/share/\
+${export_id}`;
             return this.http.get<BrowserSettings>(query);
         }
+    }
+
+    exportSettings(settings: BrowserSettings): Observable<number> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        const query = `http://localhost:8060/tbapi/viewsettings/export`;
+        return this.http.post<number>(query, settings, httpOptions);
     }
 
 }
