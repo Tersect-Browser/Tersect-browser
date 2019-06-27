@@ -310,7 +310,6 @@ router.route('/viewsettings/share/:id')
 router.route('/viewsettings/export')
       .post((req, res) => {
     const hash = new Hashids(config['salt']);
-    console.log(req.body);
     ViewSettings.findOne({}, { _id: 1 }, { sort: { _id: -1} })
                 .exec((id_err, r) => {
         let next_id = 0;
