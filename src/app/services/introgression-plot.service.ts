@@ -229,11 +229,13 @@ export class IntrogressionPlotService {
         );
 
         const distance_matrix$ = combineLatest(this.chromosome_source,
-                                               this.interval_source).pipe(
+                                               this.interval_source,
+                                               this.binsize_source).pipe(
             filter(([chrom, interval]) =>
                 ![chrom, interval].some(isNullOrUndefined)
             ),
             filter(this.validateInputs),
+            filter(this.matrixUpdateRequired),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([chrom, interval]) =>
@@ -306,6 +308,20 @@ export class IntrogressionPlotService {
         }
         this.error_message = '';
         return true;
+    }
+
+    /**
+     * Check if a new distance matrix needs to be retrieved due to either no
+     * distance matrix being stored or the region changing.
+     */
+    private matrixUpdateRequired = () => {
+        if (isNullOrUndefined(this.distanceMatrix) ||
+            isNullOrUndefined(this.distanceMatrix.region)) {
+            return true;
+        }
+        const region = `${this.chromosome
+                              .name}:${this.interval[0]}-${this.interval[1]}`;
+        return this.distanceMatrix.region !== region;
     }
 
     /**
