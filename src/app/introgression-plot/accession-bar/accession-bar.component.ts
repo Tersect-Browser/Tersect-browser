@@ -26,6 +26,11 @@ export class AccessionBarComponent extends CanvasPlotElement {
     readonly GUI_TREE_LEFT_MARGIN = 2;
     readonly GUI_TREE_XSCALING = 0.001;
 
+    /* Proportion of the width of the plot taken up by accession trees. This
+     * should be half of the screen by default.
+     */
+    readonly GUI_TREE_PLOT_PROPORTION = 0.5;
+
     /**
      * Drag start position in terms of accession index.
      */
@@ -49,11 +54,9 @@ export class AccessionBarComponent extends CanvasPlotElement {
                                                          .getContext('2d');
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
-        this.plotService.gui_margins.left = this.calcLabelsWidth(ctx);
-        this.canvas.nativeElement.width = this.plotService.labels_width;
 
-        // Need to set font again despite doing it in calcLabelsWidth since
-        // changing width resets the context to its default state
+        this.updateComponentWidth();
+
         const text_height = this.plotService.bin_height;
         ctx.font = `${text_height}px ${this.GUI_TREE_FONT}`;
 
@@ -157,24 +160,38 @@ export class AccessionBarComponent extends CanvasPlotElement {
         });
     }
 
-    private calcLabelsWidth(ctx: CanvasRenderingContext2D) {
+    private updateComponentWidth() {
+        const ctx: CanvasRenderingContext2D = this.canvas.nativeElement
+                                                         .getContext('2d');
+        if (this.plotService.accession_display === 'labels') {
+            // Rounding up to the bin width
+            const bar_width = ceilTo(this.getMaxLabelWidth(ctx),
+                                     this.plotService.bin_width);
+            this.plotService.gui_margins.left = bar_width / this.plotService
+                                                                .zoom_factor;
+            this.canvas.nativeElement.width = bar_width;
+        } else {
+            // Rounding up to the bin width
+            const bar_width = ceilTo(this.canvas.nativeElement
+                                                .parentElement
+                                                .parentElement
+                                                .parentElement
+                                                .offsetWidth
+                                     * this.GUI_TREE_PLOT_PROPORTION,
+                                     this.plotService.bin_width);
+            this.canvas.nativeElement.width = bar_width;
+            this.plotService.gui_margins.left = bar_width / this.plotService
+                                                                .zoom_factor;
+        }
+    }
+
+    private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
         ctx.font = `${this.plotService.bin_height}px ${this.GUI_TREE_FONT}`;
-        const max_label_width = Math.max(
+        return Math.max(
             ...this.plotService.sorted_accessions.map(label =>
                 ctx.measureText(label).width
             )
         );
-        let gui_left_width = max_label_width / this.plotService.zoom_factor;
-
-        if (this.plotService.accession_display === 'tree_simple') {
-            gui_left_width += (getTreeDepth(this.plotService.njTree) + 1)
-                              * this.GUI_TREE_STEP_WIDTH;
-        } else if (this.plotService.accession_display === 'tree_linear') {
-            gui_left_width += getTreeDepthLinear(this.plotService.njTree)
-                              * this.GUI_TREE_XSCALING;
-        }
-
-        return Math.ceil(gui_left_width);
     }
 
     protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
