@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
 import { sameElements, ceilTo, floorTo } from '../utils/utils';
 import { GreyscalePalette } from '../introgression-plot/DistancePalette';
 import { DistanceMatrix } from '../models/DistanceMatrix';
-import { Chromosome } from '../models/chromosome';
+import { Chromosome } from '../models/Chromosome';
 import { SequenceInterval } from '../models/SequenceInterval';
 
 export interface GUIMargins {

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, HostListener, Input, Output, EventEmitter } from '@angular/core';
-import { Chromosome } from '../models/chromosome';
+import { Chromosome } from '../models/Chromosome';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { IntrogressionPlotService, AccessionDisplayStyle } from '../services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';

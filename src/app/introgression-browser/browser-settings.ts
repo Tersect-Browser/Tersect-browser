@@ -1,4 +1,4 @@
-import { Chromosome } from '../models/chromosome';
+import { Chromosome } from '../models/Chromosome';
 import { AccessionDisplayStyle } from '../services/introgression-plot.service';
 
 /**

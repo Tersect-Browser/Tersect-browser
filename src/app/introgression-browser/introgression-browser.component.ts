@@ -3,7 +3,7 @@ import { ActivatedRoute, ParamMap } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
-import { Chromosome, SL2_50_chromosomes } from '../models/chromosome';
+import { Chromosome, SL2_50_chromosomes } from '../models/Chromosome';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { ceilTo, floorTo } from '../utils/utils';
 import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.component';
