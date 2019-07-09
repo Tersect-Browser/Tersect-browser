@@ -321,10 +321,13 @@ router.route('/viewsettings/export')
                 next_id = r._id + 1;
             }
         }
+        // Casting to any to fix compilation bug where the settings are not
+        // recognized as a known property
+        // TODO: match interface to mongoose schema
         const exported_view = new ViewSettings({
             _id: next_id,
             settings: req.body
-        });
+        } as any);
         exported_view.save((err) => {
             if (err) {
                 res.json(err);
