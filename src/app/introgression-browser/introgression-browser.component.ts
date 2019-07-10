@@ -220,6 +220,18 @@ export class IntrogressionBrowserComponent implements OnInit {
         }
     }
 
+    /**
+     * Copy view share link to clipboard.
+     */
+    copyLink($event) {
+        document.addEventListener('copy', ($e: ClipboardEvent) => {
+            $e.clipboardData.setData('text/plain', this.share_link);
+            $e.preventDefault();
+            document.removeEventListener('copy', null);
+        });
+        document.execCommand('copy');
+    }
+
     setReference($event) {
         this.settings.selected_reference = $event;
     }

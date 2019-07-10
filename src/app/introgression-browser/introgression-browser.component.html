@@ -101,7 +101,9 @@
         <div class="ui-inputgroup share-button">
             <input pInputText [value]="share_link"
                 [size]="45" readonly="readonly">
-            <!-- <button pButton label="Copy"></button> -->
+            <button pButton label="Copy" icon="fa fa-clipboard"
+                (click)="copyLink($event)">
+            </button>
         </div>
     </p-overlayPanel>
 
