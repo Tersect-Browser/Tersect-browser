@@ -201,6 +201,9 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     intervalSliderChange($event) {
         if ($event.event.type === 'click') {
+            this.settings.selected_interval[0] = 1;
+            this.settings.selected_interval[1] = this.settings
+                                                     .selected_chromosome.size;
             this.updateInterval();
         }
     }
