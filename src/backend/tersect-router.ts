@@ -10,6 +10,7 @@ import { ViewSettings } from './db/viewsettings';
 
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
+import { Dataset, IDataset } from './db/dataset';
 
 export const router = Router();
 
@@ -24,9 +25,9 @@ interface ChromosomePartitions {
     [chromosome_names: string]: number[];
 }
 
-function loadChromosomePartitions(): ChromosomePartitions {
+function loadChromosomePartitions(tsi_location: string): ChromosomePartitions {
     const output = {};
-    const command = `tersect chroms -n ${config.tsi_location}`;
+    const command = `tersect chroms -n ${tsi_location}`;
 
     execSync(command).toString().trim().split('\n').forEach(line => {
         const cols = line.split('\t');
@@ -40,7 +41,6 @@ function loadChromosomePartitions(): ChromosomePartitions {
 
     return output;
 }
-const chromosome_partitions = loadChromosomePartitions();
 
 function execPromise(command: string, options = {}) {
     return new Promise((resolve, reject) => {
@@ -63,80 +63,6 @@ router.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     next();
-});
-
-router.route('/samples')
-      .get((req, res) => {
-    const tersect_command = `tersect samples -n ${config.tsi_location}`;
-    exec(tersect_command, (err, stdout, stderr) => {
-        if (err) {
-            res.json(err);
-        } else if (stderr) {
-            res.json(stderr);
-        } else {
-            // Strip the last, empty element
-            const samples = stdout.split('\n').slice(0, -1);
-            res.json(samples);
-        }
-    });
-});
-
-router.route('/gaps/:reference/:chromosome')
-      .get((req, res) => {
-        ChromosomeIndex.findOne({
-                            reference: req.params.reference,
-                            chromosome: req.params.chromosome
-                        }, 'gaps')
-                       .exec((err, gaps) => {
-        if (err) {
-            res.send(err);
-        } else if (isNullOrUndefined(gaps)) {
-            res.status(404).send('Chromosome not found');
-        } else {
-            res.json(gaps['gaps']);
-        }
-    });
-});
-
-router.route('/dist/:accession/:chromosome/:start/:stop/:binsize')
-      .get((req, res) => {
-    const accession = req.params.accession;
-    const chromosome = req.params.chromosome;
-    const start_pos = parseInt(req.params.start, 10);
-    const stop_pos = parseInt(req.params.stop, 10);
-    const binsize = parseInt(req.params.binsize, 10);
-    const options = {
-        maxBuffer: 200 * 1024 * 1024 // 200 megabytes
-    };
-
-    const tersect_command = `tersect dist -j ${config.tsi_location} \
--a "${accession}" ${chromosome}:${start_pos}-${stop_pos} -B ${binsize}`;
-
-    const output = {
-        reference: accession,
-        region: `${chromosome}:${start_pos}-${stop_pos}`,
-        bins: {}
-    };
-
-    exec(tersect_command, options, (err, stdout, stderr) => {
-        if (err) {
-            res.json(err);
-        } else if (stderr) {
-            res.json(stderr);
-        } else {
-            const tersect_output = JSON.parse(stdout);
-            const accessions = tersect_output['columns'];
-            accessions.forEach(accession_name => {
-                output.bins[accession_name] = [];
-            });
-            tersect_output['matrix'].forEach(bin_matrix => {
-                bin_matrix[0].forEach((dist: number, i: number) => {
-                    output.bins[accessions[i]].push(dist);
-                });
-            });
-            res.json(output);
-        }
-    });
 });
 
 interface Interval {
@@ -234,7 +160,56 @@ function init_distance_matrix(sample_num: number) {
     return output;
 }
 
-router.route('/distall/:chromosome/:start/:stop')
+router.use('/query/:dataset_id', (req, res, next) => {
+    Dataset.findOne({ dataset: req.params.dataset_id })
+           .exec((err, dataset: IDataset) => {
+        if (err) {
+            res.send(err);
+            return;
+        } else if (isNullOrUndefined(dataset)) {
+            res.status(404).send('Dataset not found');
+            return;
+        } else {
+            res.locals.dataset = dataset;
+            return next();
+        }
+    });
+});
+
+router.route('/query/:dataset_id/samples')
+      .get((req, res) => {
+    const tsi_location = res.locals.dataset.tsi_location;
+    const tersect_command = `tersect samples -n ${tsi_location}`;
+    exec(tersect_command, (err, stdout, stderr) => {
+        if (err) {
+            res.json(err);
+        } else if (stderr) {
+            res.json(stderr);
+        } else {
+            // Strip the last, empty element
+            const samples = stdout.split('\n').slice(0, -1);
+            res.json(samples);
+        }
+    });
+});
+
+router.route('/query/:dataset_id/gaps/:chromosome')
+      .get((req, res) => {
+    ChromosomeIndex.findOne({
+        reference: res.locals.dataset.reference,
+        chromosome: req.params.chromosome
+    }, 'gaps').exec((err, gaps) => {
+        if (err) {
+            res.send(err);
+        } else if (isNullOrUndefined(gaps)) {
+            res.status(404).send('Chromosome not found');
+        } else {
+            res.json(gaps['gaps']);
+        }
+    });
+});
+
+router.route('/query/:dataset_id/distall/:chromosome/:start/:stop')
       .get((req, res) => {
     const chromosome = req.params.chromosome;
     const start_pos = parseInt(req.params.start, 10);
@@ -242,6 +217,11 @@ router.route('/distall/:chromosome/:start/:stop')
     const options = {
         maxBuffer: 100 * 1024 * 1024 // 100 megabytes
     };
+
+    const tsi_location = res.locals.dataset.tsi_location;
+
+    // TODO: check if calling this each time affects performance
+    const chromosome_partitions = loadChromosomePartitions(tsi_location);
 
     const partitions = partitionInterval({
         start: start_pos, end: stop_pos
@@ -256,8 +236,8 @@ router.route('/distall/:chromosome/:start/:stop')
     );
 
     const tersect_calls = partitions.nonindexed.map(interval => {
-        const command = `tersect dist -j ${config.tsi_location} \
-"${chromosome}:${interval.start}-${interval.end}"`;
+        const region = `${chromosome}:${interval.start}-${interval.end}`;
+        const command = `tersect dist -j ${tsi_location} ${region}`;
         return execPromise(command, options);
     });
 
@@ -296,6 +276,50 @@ router.route('/distall/:chromosome/:start/:stop')
             });
         }
         res.json(output);
+    });
+});
+
+router.route('/query/:dataset_id/dist/:accession/:chromosome/:start/:stop/:binsize')
+      .get((req, res) => {
+    const accession = req.params.accession;
+    const chromosome = req.params.chromosome;
+    const start_pos = parseInt(req.params.start, 10);
+    const stop_pos = parseInt(req.params.stop, 10);
+    const binsize = parseInt(req.params.binsize, 10);
+    const options = {
+        maxBuffer: 200 * 1024 * 1024 // 200 megabytes
+    };
+
+    const tsi_location = res.locals.dataset.tsi_location;
+
+    const region = `${chromosome}:${start_pos}-${stop_pos}`;
+    const tersect_command = `tersect dist -j ${tsi_location} -a "${accession}" \
+${region} -B ${binsize}`;
+
+    const output = {
+        reference: accession,
+        region: region,
+        bins: {}
+    };
+
+    exec(tersect_command, options, (err, stdout, stderr) => {
+        if (err) {
+            res.json(err);
+        } else if (stderr) {
+            res.json(stderr);
+        } else {
+            const tersect_output = JSON.parse(stdout);
+            const accessions = tersect_output['columns'];
+            accessions.forEach(accession_name => {
+                output.bins[accession_name] = [];
+            });
+            tersect_output['matrix'].forEach(bin_matrix => {
+                bin_matrix[0].forEach((dist: number, i: number) => {
+                    output.bins[accessions[i]].push(dist);
+                });
+            });
+            res.json(output);
+        }
     });
 });
 
