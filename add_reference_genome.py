@@ -27,13 +27,13 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
         print("Loading %s as %s" % (reference_file, reference_id))
 
     client = MongoClient(cfg['hostname'], cfg['port'])
-    tindex = client[cfg['db_name']][cfg['gap_collection']]
+    chrom_index = client[cfg['db_name']][cfg['chromosome_collection']]
 
-    if (tindex.find_one({'reference': reference_id}) is not None):
+    if (chrom_index.find_one({'reference': reference_id}) is not None):
         if force:
             if verbose:
                 print("Overwriting genome '%s'..." % reference_id)
-            tindex.delete_many({'reference': reference_id})
+            chrom_index.delete_many({'reference': reference_id})
         else:
             if verbose:
                 print("Reference genome '%s' already exists.\n"
@@ -42,14 +42,15 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
             client.close()
             return
 
-    tindex.create_index([('reference', ASCENDING), ('chromosome', ASCENDING)],
-                        unique=True)
+    chrom_index.create_index([('reference', ASCENDING),
+                              ('chromosome', ASCENDING)],
+                             unique=True)
 
     chromosomes = SeqIO.index(reference_file, 'fasta').values()
     for chromosome in chromosomes:
         if verbose:
             print("Processing %s" % chromosome.name)
-        tindex.insert({
+        chrom_index.insert({
             'reference': reference_id,
             'chromosome': chromosome.name,
             'length': len(chromosome),
@@ -66,7 +67,6 @@ parser.add_argument('reference_file', type=str, help='reference genome FASTA fil
 parser.add_argument('reference_id', type=str, nargs='?',
                     help='reference genome identifier which will be used internally by Tersect Browser')
 parser.add_argument('-f', required=False, action='store_true', help='force reference genome overwrite')
-
 
 args = parser.parse_args()
 

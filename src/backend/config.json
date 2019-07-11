@@ -6,7 +6,7 @@
     "db_name": "tersect",
     "collection": "matrices",
     "salt": "tersectsalt",
-    "gap_collection": "gaps",
+    "chromosome_collection": "chromosomes",
     "index_partitions": [
         50000000,
         25000000,
