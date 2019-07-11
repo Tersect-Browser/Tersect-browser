@@ -43,7 +43,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
             return
 
     chrom_index.create_index([('reference', ASCENDING),
-                              ('chromosome', ASCENDING)],
+                              ('name', ASCENDING)],
                              unique=True)
 
     chromosomes = SeqIO.index(reference_file, 'fasta').values()
@@ -52,7 +52,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
             print("Processing %s" % chromosome.name)
         chrom_index.insert({
             'reference': reference_id,
-            'chromosome': chromosome.name,
+            'name': chromosome.name,
             'size': len(chromosome),
             'gaps': extract_gaps(chromosome, min_gap_size, verbose)
         })
