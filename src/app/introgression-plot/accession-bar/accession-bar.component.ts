@@ -23,7 +23,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
     readonly GUI_TREE_LINE_DASH = [0.2, 0.2];
     readonly GUI_TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
-    readonly GUI_TREE_LEFT_MARGIN = 2;
+    readonly GUI_TREE_LEFT_MARGIN = 5;
 
     /* Proportion of the width of the plot taken up by accession trees. This
      * should be half of the screen by default.
@@ -146,8 +146,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
 
         const scale = this.getTreeScale(ctx);
 
-        const initial_xpos = this.GUI_TREE_LEFT_MARGIN
-                             * this.plotService.zoom_factor;
+        const initial_xpos = this.GUI_TREE_LEFT_MARGIN;
         this._drawLabelTree(this.plotService.njTree, initial_xpos, ctx,
                             this.plotService.labels_width,
                             text_height, yoffset, scale, draw_state);
@@ -156,7 +155,8 @@ export class AccessionBarComponent extends CanvasPlotElement {
     private getTreeScale(ctx: CanvasRenderingContext2D): number {
         const available_width = this.canvas.nativeElement.width
                                 - this.getMaxLabelWidth(ctx)
-                                - this.plotService.bin_width;
+                                - this.plotService.bin_width
+                                - this.GUI_TREE_LEFT_MARGIN;
         if (this.plotService.accession_display === 'tree_simple') {
             return available_width / getTreeDepth(this.plotService.njTree);
         } else if (this.plotService.accession_display === 'tree_linear') {
