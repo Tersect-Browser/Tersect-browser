@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+import argparse
 import json
 import os
 import subprocess
-from pymongo import MongoClient
+from pymongo import ASCENDING, MongoClient
 from math import ceil
 from timeit import default_timer as timer
 
@@ -16,7 +17,7 @@ def matrix_sum(m1, m2):
             m1[i][j] += m2[i][j]
     return m1
 
-def add_region_index_db(collection, chromosome_name, start_pos, end_pos,
+def add_region_index_db(matrices, dataset, chromosome_name, start_pos, end_pos,
                         subpart_size, verbose=False):
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
     if (verbose):
@@ -27,7 +28,7 @@ def add_region_index_db(collection, chromosome_name, start_pos, end_pos,
     for substart_pos in range(start_pos, end_pos + 1, subpart_size):
         subend_pos = substart_pos + subpart_size - 1
         subregion = '%s:%d-%d' % (chromosome_name, substart_pos, subend_pos)
-        res = collection.find_one({'region': subregion})
+        res = matrices.find_one({'region': subregion})
         if res is not None:
             region_matrix = matrix_sum(region_matrix, res['matrix'])
             if samples is None:
@@ -35,14 +36,16 @@ def add_region_index_db(collection, chromosome_name, start_pos, end_pos,
         else:
             # Reached the end of region covered by subpartitions
             break
-    collection.insert({
+    matrices.insert({
+        'dataset': dataset,
         'region': region,
         'samples': samples,
         'matrix': region_matrix
     })
     return True
 
-def add_region_index_tersect(collection, chromosome_name, start_pos, end_pos,
+def add_region_index_tersect(matrices, dataset,
+                             chromosome_name, start_pos, end_pos,
                              tersect_db_location, verbose=False):
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
     if (verbose):
@@ -55,7 +58,8 @@ def add_region_index_tersect(collection, chromosome_name, start_pos, end_pos,
         print(error)
         return False
     output = json.loads(output)
-    collection.insert({
+    matrices.insert({
+        'dataset': dataset,
         'region': region,
         'samples': output['rows'],
         'matrix': output['matrix']
@@ -73,7 +77,7 @@ def get_chromosome_sizes(tersect_db_location):
     chroms = [ { 'name': line[0], 'size': int(line[1]) } for line in lines]
     return chroms
 
-def generate_partition_indices(cfg, tindex, chrom, part_size,
+def generate_partition_indices(cfg, dataset, matrices, chrom, part_size,
                                existing_partitions=[], verbose=False):
     if verbose:
         print('  Generating %d-sized partition indices' % part_size)
@@ -85,51 +89,73 @@ def generate_partition_indices(cfg, tindex, chrom, part_size,
         start_pos = pos - part_size + 1
         if len(partition_divisors):
             # Build index based on smaller partitions already in the database
-            add_region_index_db(tindex, chrom['name'], start_pos, pos,
+            add_region_index_db(matrices, dataset,
+                                chrom['name'], start_pos, pos,
                                 max(partition_divisors), verbose)
         else:
             # Create index from scratch by calling tersect
-            add_region_index_tersect(tindex, chrom['name'], start_pos, pos,
+            add_region_index_tersect(matrices, dataset,
+                                     chrom['name'], start_pos, pos,
                                      cfg['tsi_location'], verbose)
 
-def generate_indices(cfg, temporary_collection_name='tmp', verbose=False):
+def generate_indices(cfg, dataset, tsi_file, force=False, verbose=False):
     start = timer()
-    chromosomes = get_chromosome_sizes(cfg['tsi_location'])
+    chromosomes = get_chromosome_sizes(tsi_file)
     if (chromosomes == None):
         return None
     client = MongoClient(cfg['hostname'], cfg['port'])
-    tindex = client[cfg['db_name']][temporary_collection_name]
-    tindex.drop()
-    tindex.create_index('region')
+    matrices = client[cfg['db_name']][cfg['matrix_collection']]
+    matrices.create_index([('dataset', ASCENDING), ('region', ASCENDING)],
+                          unique=True)
+
+    if (matrices.find_one({'dataset': dataset}) is not None):
+        if force:
+            if verbose:
+                print("Overwriting distance matrices for '%s'..." % dataset)
+            matrices.delete_many({'dataset': dataset})
+        else:
+            if verbose:
+                print("Distance matrices for dataset '%s' already exist.\n"
+                    "Re-run with the -f option if you wish to overwrite them.\n"
+                    "Aborting..." % dataset)
+            client.close()
+            return
 
     cfg['index_partitions'].sort()
     for chrom in chromosomes:
         if verbose:
             print('Generating indices for %s' % chrom['name'])
-        #
         existing_partitions = []
         for part_size in cfg['index_partitions']:
             if part_size < chrom['size']:
-                generate_partition_indices(cfg, tindex, chrom, part_size,
+                generate_partition_indices(cfg, dataset,
+                                           matrices, chrom, part_size,
                                            existing_partitions, verbose)
                 existing_partitions.append(part_size)
 
         if verbose:
-            print('Generating whole genome index for %s' % chrom['name'])
+            print('Generating whole chromosome index for %s' % chrom['name'])
         # Add index for whole chromosome based on largest existing partition
         if len(existing_partitions):
-            add_region_index_db(tindex, chrom['name'], 1, chrom['size'],
+            add_region_index_db(matrices, dataset,
+                                chrom['name'], 1, chrom['size'],
                                 max(existing_partitions), verbose)
         else:
-            add_region_index_tersect(tindex, chrom['name'], 1, chrom['size'],
-                                     cfg['tsi_location'], verbose)
-    # Overwriting old collection if it exists
-    client[cfg['db_name']][temporary_collection_name].rename(cfg['collection'],
-                                                             dropTarget=True)
+            add_region_index_tersect(matrices, dataset,
+                                     chrom['name'], 1, chrom['size'],
+                                     tsi_file, verbose)
     client.close()
 
     if verbose:
         print("Index generation completed in: " + str(timer() - start))
+
+parser = argparse.ArgumentParser(description='Build tersect distance matrix index for dataset.')
+parser.add_argument('dataset', type=str, help='name of the dataset')
+parser.add_argument('tsi_file', type=str,
+                    help='path to tsi file to build index from')
+parser.add_argument('-f', required=False, action='store_true', help='force distance matrix overwrite')
+
+args = parser.parse_args()
 
 tb_path = os.path.dirname(os.path.realpath(__file__))
 cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
@@ -137,4 +163,4 @@ cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
 with open(cfg_path, 'r') as cfg_file:
     cfg = json.load(cfg_file)
 
-generate_indices(cfg, verbose=True)
+generate_indices(cfg, args.dataset, args.tsi_file, args.f, verbose=True)
