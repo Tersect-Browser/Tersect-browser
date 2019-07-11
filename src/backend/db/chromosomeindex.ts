@@ -6,7 +6,7 @@ import { Schema, model } from 'mongoose';
 
 const ChromosomeSchema = new Schema({
     reference: String,
-    chromosome: String,
+    name: String,
     length: Number,
     gaps: [ { start: Number, end: Number, size: Number } ]
 });

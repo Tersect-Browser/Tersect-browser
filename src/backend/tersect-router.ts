@@ -193,11 +193,26 @@ router.route('/query/:dataset_id/samples')
     });
 });
 
+router.route('/query/:dataset_id/chromosomes')
+      .get((req, res) => {
+    ChromosomeIndex.find({
+        reference: res.locals.dataset.reference
+    }, {'name': 1, 'size': 1, '_id': 0}).exec((err, chroms) => {
+        if (err) {
+            res.send(err);
+        } else if (isNullOrUndefined(chroms)) {
+            res.status(404).send('Chromosomes not found');
+        } else {
+            res.json(chroms);
+        }
+    });
+});
+
 router.route('/query/:dataset_id/gaps/:chromosome')
       .get((req, res) => {
     ChromosomeIndex.findOne({
         reference: res.locals.dataset.reference,
-        chromosome: req.params.chromosome
+        name: req.params.chromosome
     }, 'gaps').exec((err, gaps) => {
         if (err) {
             res.send(err);
