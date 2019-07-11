@@ -53,7 +53,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
         chrom_index.insert({
             'reference': reference_id,
             'chromosome': chromosome.name,
-            'length': len(chromosome),
+            'size': len(chromosome),
             'gaps': extract_gaps(chromosome, min_gap_size, verbose)
         })
 
