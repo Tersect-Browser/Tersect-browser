@@ -29,7 +29,6 @@ export class IntrogressionPlotService {
      */
     readonly GUI_SCALE_BAR_SIZE = 24;
 
-    readonly DEFAULT_BIN_SIZE = 50000;
     readonly DEBOUNCE_TIME = 700;
 
     // R, G, B, A color
@@ -70,6 +69,17 @@ export class IntrogressionPlotService {
      * Draw phylogenetic tree (if true) or simple list of accessions (if false).
      */
     accession_display: AccessionDisplayStyle = 'labels';
+
+    /**
+     * Identifier of the dataset open in the introgression plot.
+     */
+    private dataset_id_source = new BehaviorSubject<string>(undefined);
+    set dataset_id(dataset_id) {
+        this.dataset_id_source.next(dataset_id);
+    }
+    get dataset_id(): string {
+        return this.dataset_id_source.getValue();
+    }
 
     /**
      * Horizontal / vertical scroll position of the plot.
@@ -120,7 +130,7 @@ export class IntrogressionPlotService {
     /**
      * Bin size used by the plot.
      */
-    private binsize_source = new BehaviorSubject<number>(this.DEFAULT_BIN_SIZE);
+    private binsize_source = new BehaviorSubject<number>(undefined);
     set binsize(binsize: number) {
         this.binsize_source.next(binsize);
     }
@@ -211,36 +221,38 @@ export class IntrogressionPlotService {
     private distanceMatrix: DistanceMatrix;
 
     constructor(private tersectBackendService: TersectBackendService) {
-        const ref_distance_bins$ = combineLatest(this.reference_source,
+        const ref_distance_bins$ = combineLatest(this.dataset_id_source,
+                                                 this.reference_source,
                                                  this.chromosome_source,
                                                  this.interval_source,
                                                  this.binsize_source).pipe(
-            filter(([ref, chrom, interval, binsize]) =>
-                ![ref, chrom, interval, binsize].some(isNullOrUndefined)
+            filter(([ds, ref, chrom, interval, binsize]) =>
+                ![ds, ref, chrom, interval, binsize].some(isNullOrUndefined)
             ),
             filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
-            switchMap(([ref, chrom, interval, binsize]) =>
+            switchMap(([ds, ref, chrom, interval, binsize]) =>
                 this.tersectBackendService
-                    .getRefDistanceBins(ref, chrom.name,
+                    .getRefDistanceBins(ds, ref, chrom.name,
                                         interval[0], interval[1], binsize)
             )
         );
 
-        const distance_matrix$ = combineLatest(this.chromosome_source,
+        const distance_matrix$ = combineLatest(this.dataset_id_source,
+                                               this.chromosome_source,
                                                this.interval_source,
                                                this.binsize_source).pipe(
-            filter(([chrom, interval]) =>
-                ![chrom, interval].some(isNullOrUndefined)
+            filter(([ds, chrom, interval, binsize]) =>
+                ![ds, chrom, interval, binsize].some(isNullOrUndefined)
             ),
             filter(this.validateInputs),
             filter(this.matrixUpdateRequired),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
-            switchMap(([chrom, interval]) =>
+            switchMap(([ds, chrom, interval]) =>
                 this.tersectBackendService
-                    .getDistanceMatrix(chrom.name, interval[0], interval[1])
+                    .getDistanceMatrix(ds, chrom.name, interval[0], interval[1])
             )
         );
 
@@ -251,12 +263,13 @@ export class IntrogressionPlotService {
             debounceTime(this.DEBOUNCE_TIME)
         );
 
-        const gaps$ = this.chromosome_source.pipe(
-            filter((chrom) => !isNullOrUndefined(chrom)),
+        const gaps$ = combineLatest(this.dataset_id_source,
+                                    this.chromosome_source).pipe(
+            filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
-            switchMap((chrom) => this.tersectBackendService
-                                     .getGapIndex(chrom.name))
+            switchMap(([ds, chrom]) => this.tersectBackendService
+                                           .getGapIndex(ds, chrom.name))
         );
 
         combineLatest(ref_distance_bins$,

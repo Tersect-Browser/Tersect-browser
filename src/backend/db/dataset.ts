@@ -5,13 +5,13 @@
 import { Schema, model } from 'mongoose';
 
 const DatasetSchema = new Schema({
-    dataset: String,
+    dataset_id: String,
     tsi_location: String,
     reference: String
 });
 
 export interface IDataset {
-    dataset: string;
+    dataset_id: string;
     tsi_location: string;
     reference: string;
 }

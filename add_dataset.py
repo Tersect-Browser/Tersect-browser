@@ -9,31 +9,31 @@ from pymongo import ASCENDING, MongoClient
 def abspath(path):
     return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
 
-def add_dataset(cfg, dataset, tersect_db_file, reference_id, force=False,
+def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
                 verbose=False):
     if verbose:
-        print("Adding dataset '%s'..." % dataset)
+        print("Adding dataset '%s'..." % dataset_id)
 
     client = MongoClient(cfg['hostname'], cfg['port'])
     datasets = client[cfg['db_name']][cfg['dataset_collection']]
 
-    if (datasets.find_one({'dataset': dataset}) is not None):
+    if (datasets.find_one({'dataset_id': dataset_id}) is not None):
         if force:
             if verbose:
-                print("Overwriting dataset '%s'..." % dataset)
-            datasets.delete_many({'dataset': dataset})
+                print("Overwriting dataset '%s'..." % dataset_id)
+            datasets.delete_many({'dataset_id': dataset_id})
         else:
             if verbose:
                 print("Dataset '%s' already exists.\n"
                       "Re-run with the -f option if you wish to overwrite it.\n"
-                      "Aborting..." % dataset)
+                      "Aborting..." % dataset_id)
             client.close()
             return
 
-    datasets.create_index('dataset', unique=True)
+    datasets.create_index('dataset_id', unique=True)
 
     datasets.insert({
-        'dataset': dataset,
+        'dataset_id': dataset_id,
         'tsi_location': tersect_db_file,
         'reference': reference_id
     })
@@ -41,7 +41,7 @@ def add_dataset(cfg, dataset, tersect_db_file, reference_id, force=False,
     client.close()
 
 parser = argparse.ArgumentParser(description='Add dataset to Tersect Browser database.')
-parser.add_argument('dataset', type=str, help='dataset name')
+parser.add_argument('dataset_id', type=str, help='dataset id')
 parser.add_argument('tersect_db_file', type=str,
                     help='tersect database (tdi) file')
 parser.add_argument('reference_id', type=str,
@@ -76,10 +76,10 @@ if args.reference_file is not None:
         command.append('-f')
     subprocess.call(command, cwd=cwd)
 
-add_dataset(cfg, args.dataset, tdi_file, args.reference_id,
+add_dataset(cfg, args.dataset_id, tdi_file, args.reference_id,
             force=args.f, verbose=True)
 
-command = ['./build_tersect_index.py', args.dataset, tdi_file]
+command = ['./build_tersect_index.py', args.dataset_id, tdi_file]
 if (args.f):
     command.append('-f')
 subprocess.call(command, cwd=cwd)

@@ -29,11 +29,13 @@ export class IntrogressionBrowserComponent implements OnInit {
     readonly DEFAULT_BINSIZE = 50000;
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     readonly DEFAULT_ZOOM_LEVEL = 100;
+    readonly DEFAULT_DATASET = 'Tomato';
 
     chromosomes: SelectItem[] = SL2_50_chromosomes;
     accessions: SelectItem[];
 
     settings: BrowserSettings = {
+        dataset_id: this.DEFAULT_DATASET,
         selectedAccessionDisplayStyle: this.DEFAULT_DISPLAY_STYLE,
         selected_accessions: undefined,
         selected_reference: undefined,
@@ -113,7 +115,8 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     ngOnInit() {
-        const accessions$ = this.tersectBackendService.getAccessionNames();
+        const accessions$ = this.tersectBackendService
+                                .getAccessionNames(this.settings.dataset_id);
         const settings$ = this.route.paramMap.pipe(
             switchMap((params: ParamMap) => {
                 return this.tersectBackendService

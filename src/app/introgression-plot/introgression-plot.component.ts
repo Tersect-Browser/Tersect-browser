@@ -23,6 +23,11 @@ export class IntrogressionPlotComponent implements OnInit {
     @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
     @Input()
+    set dataset_id(dataset_id: string) {
+        this.plotService.dataset_id = dataset_id;
+    }
+
+    @Input()
     set chromosome(chromosome: Chromosome) {
         this.plotService.chromosome = chromosome;
     }
