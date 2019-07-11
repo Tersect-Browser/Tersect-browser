@@ -5,7 +5,7 @@ import { Router } from 'express';
 import { exec, execSync } from 'child_process';
 
 import { DBMatrix } from './db/dbmatrix';
-import { GapIndex } from './db/gapindex';
+import { ChromosomeIndex } from './db/chromosomeindex';
 import { ViewSettings } from './db/viewsettings';
 
 import { default as Hashids } from 'hashids';
@@ -81,12 +81,17 @@ router.route('/samples')
     });
 });
 
-router.route('/gaps/:chromosome')
+router.route('/gaps/:reference/:chromosome')
       .get((req, res) => {
-    GapIndex.findOne({ chromosome: req.params.chromosome })
-            .exec((err, gaps) => {
+        ChromosomeIndex.findOne({
+                            reference: req.params.reference,
+                            chromosome: req.params.chromosome
+                        }, 'gaps')
+                       .exec((err, gaps) => {
         if (err) {
             res.send(err);
+        } else if (isNullOrUndefined(gaps)) {
+            res.status(404).send('Chromosome not found');
         } else {
             res.json(gaps['gaps']);
         }
