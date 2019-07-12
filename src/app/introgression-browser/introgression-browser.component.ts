@@ -191,7 +191,11 @@ export class IntrogressionBrowserComponent implements OnInit {
             this.settings.selected_binsize = this.DEFAULT_BINSIZE;
         }
         if (isNullOrUndefined(this.settings.selected_chromosome)) {
-            this.settings.selected_chromosome = this.chromosomes[0].value;
+            // Selecting the largest chromosome
+            const largest_chrom = this.chromosomes.reduce((prev, current) => {
+                return (current.value.size > prev.value.size) ? current : prev;
+            }).value;
+            this.settings.selected_chromosome = largest_chrom;
         }
         if (isNullOrUndefined(this.settings.zoom_level)) {
             this.settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
