@@ -23,7 +23,9 @@ def add_default_view(cfg, client, dataset_id):
     try:
         views.insert({
             '_id': view_id,
-            'dataset_id': dataset_id,
+            'settings': {
+                'dataset_id': dataset_id
+            }
         })
         return view_id
     except errors.DuplicateKeyError:
