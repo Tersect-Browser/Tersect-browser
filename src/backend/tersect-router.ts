@@ -345,7 +345,6 @@ router.route('/views/share/:id')
         if (err || isNullOrUndefined(r)) {
             res.json(undefined);
         } else {
-            console.log(r);
             res.json(r['settings']);
         }
     });
