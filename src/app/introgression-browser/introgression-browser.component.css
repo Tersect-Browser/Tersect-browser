@@ -1,5 +1,6 @@
 .tb-top-bar {
     background-image: linear-gradient(#1b4d32, #0d2417 60%, #0d2417);
+    height: 4em;
     box-shadow: 0px 3px 3px grey;
     position: relative;
 }
@@ -70,10 +71,10 @@
 .tb-setting-button {
     width: 2em;
     height: 2em;
-    margin: 0.2em;
 }
 
 .tb-logo {
+    margin-left: 0.5em;
     height: 60%;
     top: 50%;
     transform: translateY(-50%);
@@ -151,7 +152,6 @@
 .tree-settings-button {
     width: 2em;
     height: 2em;
-    margin-top: 1em;
 }
 
 .accession-display-overlay > p-radiobutton {

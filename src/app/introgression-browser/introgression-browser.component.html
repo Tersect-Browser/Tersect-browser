@@ -1,7 +1,5 @@
 <div class="v-stretch-box">
     <div class="tb-top-bar">
-        <button pButton class="tb-setting-button" icon="fa fa-database"
-        (click)="display_sidebar = true" ></button>
         <img class="tb-logo" src="assets/logo.png" />
         <a href="https://www.cranfield.ac.uk/" target="_blank">
             <img class="cranfield-logo" src="assets/cranfield_logo.png" />
@@ -9,10 +7,17 @@
     </div>
 
     <div class="p-grid p-justify-between tb-toolbar p-nogutter">
-        <button pButton class="tree-settings-button"
-            icon="fa fa-tree"
-            (click)="tree_overlay.toggle($event)">
-        </button>
+        <div>
+            <div class="dropdown-label">Genomes</div>
+            <button pButton class="tree-settings-button"
+                icon="fa fa-tree"
+                (click)="tree_overlay.toggle($event)">
+            </button>
+            <button pButton class="tb-setting-button"
+                icon="fa fa-database"
+                (click)="display_sidebar = true" >
+            </button>
+        </div>
         <p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
             <div class="accession-display-overlay">
                 <p-radioButton name="display_types"
