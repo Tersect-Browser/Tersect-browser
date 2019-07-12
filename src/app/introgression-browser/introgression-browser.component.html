@@ -1,134 +1,130 @@
-<div class="v-stretch-box">
-    <div class="tb-top-bar">
-        <img class="tb-logo" src="assets/logo.png" />
-        <a href="https://www.cranfield.ac.uk/centres/soil-and-agrifood-institute/research-groups/bioinformatics-group" target="_blank">
-            <img class="cranfield-logo" src="assets/cranfield_logo.png" />
-        </a>
+<div class="p-grid p-justify-between tb-toolbar p-nogutter">
+    <div>
+        <div class="dropdown-label">Genomes</div>
+        <button pButton class="tree-settings-button"
+            icon="fa fa-tree"
+            (click)="tree_overlay.toggle($event)">
+        </button>
+        <button pButton class="tb-setting-button"
+            icon="fa fa-database"
+            (click)="display_sidebar = true" >
+        </button>
     </div>
-
-    <div class="p-grid p-justify-between tb-toolbar p-nogutter">
-        <div>
-            <div class="dropdown-label">Genomes</div>
-            <button pButton class="tree-settings-button"
-                icon="fa fa-tree"
-                (click)="tree_overlay.toggle($event)">
-            </button>
-            <button pButton class="tb-setting-button"
-                icon="fa fa-database"
-                (click)="display_sidebar = true" >
-            </button>
-        </div>
-        <p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
-            <div class="accession-display-overlay">
-                <p-radioButton name="display_types"
-                    label="Accession labels" value="labels"
-                    [(ngModel)]="settings.selectedAccessionDisplayStyle">
+    <p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
+        <div class="accession-display-overlay">
+            <p-radioButton name="display_types"
+                label="Accession labels" value="labels"
+                [(ngModel)]="settings.selectedAccessionDisplayStyle">
+            </p-radioButton>
+            <p-radioButton name="display_types"
+                label="Phylogenetic tree (simplified)" value="tree_simple"
+                [(ngModel)]="settings.selectedAccessionDisplayStyle">
                 </p-radioButton>
-                <p-radioButton name="display_types"
-                    label="Phylogenetic tree (simplified)" value="tree_simple"
-                    [(ngModel)]="settings.selectedAccessionDisplayStyle">
-                    </p-radioButton>
-                <p-radioButton name="display_types"
-                    label="Phylogenetic tree" value="tree_linear"
-                    [(ngModel)]="settings.selectedAccessionDisplayStyle">
-                </p-radioButton>
-            </div>
-        </p-overlayPanel>
-        <div class="p-col accession-selector tb-toolbar-control">
-            <div class="dropdown-label">Reference</div>
-            <p-dropdown [options]="accessions"
-                        [filter]="true"
-                        [autoWidth]="false"
-                        [style]="{'width':'100%'}"
-                        [(ngModel)]="settings.selected_reference"></p-dropdown>
-        </div>
-        <div class="p-col tb-toolbar-control">
-            <div class="dropdown-label">Chromosome</div>
-            <p-dropdown [options]="chromosomes"
-                        [style]="{'width':'100%'}"
-                        [(ngModel)]="widget_chromosome"></p-dropdown>
-        </div>
-        <div class="p-col interval-selector tb-toolbar-control">
-            <div class="interval-label">
-                Interval:
-                <input class="interval-input" type="text" pKeyFilter="pint"
-                    [(ngModel)]="settings.selected_interval[0]"
-                    (input)="typeInterval($event)" pInputText>
-                -
-                <input class="interval-input" type="text" pKeyFilter="pint"
-                    [(ngModel)]="settings.selected_interval[1]"
-                    (input)="typeInterval($event)" pInputText>
-            </div>
-            <div class="interval-slider">
-                <p-slider [(ngModel)]="settings.selected_interval"
-                          [range]="true"
-                          [animate]="true"
-                          [style]="{'width':'100%'}"
-                          (onChange)="intervalSliderChange($event)"
-                          (onSlideEnd)="updateInterval()"
-                          [min]="1" [max]="settings.selected_chromosome.size">
-                </p-slider>
-            </div>
-        </div>
-        <div class="p-col binsize-selector tb-toolbar-control">
-            <div class="slider-label">Bin size: {{ widget_binsize }}</div>
-            <div class="binsize-slider">
-                <p-slider [(ngModel)]="widget_binsize"
-                          [animate]="true"
-                          [style]="{'width':'100%'}"
-                          [min]="binsize_min" [max]="binsize_max"
-                          [step]="binsize_step"
-                          (onChange)="binsizeSliderChange($event)"
-                          (onSlideEnd)="updateBinsize()"></p-slider>
-            </div>
-        </div>
-        <div class="p-col zoom-selector tb-toolbar-control">
-            <button pButton icon="fa fa-search-minus"
-                    [disabled]="settings.zoom_level <= MIN_ZOOM_LEVEL"
-                    (click)="zoomOut()"></button>
-            <button pButton icon="fa fa-search-plus"
-                    [disabled]="settings.zoom_level >= MAX_ZOOM_LEVEL"
-                    (click)="zoomIn()"></button>
-        </div>
-        <div class="p-col toolbar-buttons tb-toolbar-control">
-            <button pButton label="Download" icon="fa fa-download"
-                disabled="true">
-            </button>
-            <button pButton label="Share" icon="fa fa-external-link"
-                (click)="sharepanel.toggle($event)">
-            </button>
-        </div>
-    </div>
-
-    <p-overlayPanel #sharepanel (onShow)="exportView($event)"
-                                (onHide)="share_link = ''">
-        <b>Link to current view:</b>
-        <div class="ui-inputgroup share-button">
-            <input pInputText [value]="share_link"
-                [size]="45" readonly="readonly">
-            <button pButton label="Copy" icon="fa fa-clipboard"
-                (click)="copyLink($event)">
-            </button>
+            <p-radioButton name="display_types"
+                label="Phylogenetic tree" value="tree_linear"
+                [(ngModel)]="settings.selectedAccessionDisplayStyle">
+            </p-radioButton>
         </div>
     </p-overlayPanel>
-
-    <div #plotContainer class="v-stretch plot-container hbox">
-        <app-introgression-plot
-            [accessionDisplayStyle]="settings.selectedAccessionDisplayStyle"
-            [dataset_id]="settings.dataset_id"
-            [chromosome]="settings.selected_chromosome"
-            [accessions]="settings.selected_accessions"
-            [interval]="settings.selected_interval"
-            [reference]="settings.selected_reference"
-            [binsize]="settings.selected_binsize"
-            [zoom_level]="settings.zoom_level"
-            (plotMouseClick)="plotClick($event)"
-            (plotMouseHover)="tooltip.show($event)"
-            (plotMouseMove)="tooltip.hide()"
-            (wheel)="scrollWheel($event)"
-            (mouseleave)="tooltip.hide()">
-        </app-introgression-plot>
+    <div class="p-col accession-selector tb-toolbar-control">
+        <div class="dropdown-label">Reference</div>
+        <p-dropdown [options]="accessions"
+            [filter]="true"
+            [autoWidth]="false"
+            [style]="{'width':'100%'}"
+            [(ngModel)]="settings.selected_reference">
+        </p-dropdown>
     </div>
+    <div class="p-col tb-toolbar-control">
+        <div class="dropdown-label">Chromosome</div>
+        <p-dropdown [options]="chromosomes"
+            [style]="{'width':'100%'}"
+            [(ngModel)]="widget_chromosome">
+        </p-dropdown>
+    </div>
+    <div class="p-col interval-selector tb-toolbar-control">
+        <div class="interval-label">
+            Interval:
+            <input class="interval-input" type="text" pKeyFilter="pint"
+                [(ngModel)]="settings.selected_interval[0]"
+                (input)="typeInterval($event)" pInputText>
+            -
+            <input class="interval-input" type="text" pKeyFilter="pint"
+                [(ngModel)]="settings.selected_interval[1]"
+                (input)="typeInterval($event)" pInputText>
+        </div>
+        <div class="interval-slider">
+            <p-slider [(ngModel)]="settings.selected_interval"
+                [range]="true"
+                [animate]="true"
+                [style]="{'width':'100%'}"
+                (onChange)="intervalSliderChange($event)"
+                (onSlideEnd)="updateInterval()"
+                [min]="1" [max]="settings.selected_chromosome.size">
+            </p-slider>
+        </div>
+    </div>
+    <div class="p-col binsize-selector tb-toolbar-control">
+        <div class="slider-label">Bin size: {{ widget_binsize }}</div>
+        <div class="binsize-slider">
+            <p-slider [(ngModel)]="widget_binsize"
+                [animate]="true"
+                [style]="{'width':'100%'}"
+                [min]="binsize_min" [max]="binsize_max"
+                [step]="binsize_step"
+                (onChange)="binsizeSliderChange($event)"
+                (onSlideEnd)="updateBinsize()">
+            </p-slider>
+        </div>
+    </div>
+    <div class="p-col zoom-selector tb-toolbar-control">
+        <button pButton icon="fa fa-search-minus"
+            [disabled]="settings.zoom_level <= MIN_ZOOM_LEVEL"
+            (click)="zoomOut()">
+        </button>
+        <button pButton icon="fa fa-search-plus"
+            [disabled]="settings.zoom_level >= MAX_ZOOM_LEVEL"
+            (click)="zoomIn()">
+        </button>
+    </div>
+    <div class="p-col toolbar-buttons tb-toolbar-control">
+        <button pButton label="Download" icon="fa fa-download"
+            disabled="true">
+        </button>
+        <button pButton label="Share" icon="fa fa-external-link"
+            (click)="sharepanel.toggle($event)">
+        </button>
+    </div>
+</div>
+
+<p-overlayPanel #sharepanel (onShow)="exportView($event)"
+                            (onHide)="share_link = ''">
+    <b>Link to current view:</b>
+    <div class="ui-inputgroup share-button">
+        <input pInputText [value]="share_link"
+            [size]="45" readonly="readonly">
+        <button pButton label="Copy" icon="fa fa-clipboard"
+            (click)="copyLink($event)">
+        </button>
+    </div>
+</p-overlayPanel>
+
+<div #plotContainer class="plot-container">
+    <app-introgression-plot
+        [accessionDisplayStyle]="settings.selectedAccessionDisplayStyle"
+        [dataset_id]="settings.dataset_id"
+        [chromosome]="settings.selected_chromosome"
+        [accessions]="settings.selected_accessions"
+        [interval]="settings.selected_interval"
+        [reference]="settings.selected_reference"
+        [binsize]="settings.selected_binsize"
+        [zoom_level]="settings.zoom_level"
+        (plotMouseClick)="plotClick($event)"
+        (plotMouseHover)="tooltip.show($event)"
+        (plotMouseMove)="tooltip.hide()"
+        (wheel)="scrollWheel($event)"
+        (mouseleave)="tooltip.hide()">
+    </app-introgression-plot>
 </div>
 
 <app-plot-click-menu
@@ -145,8 +141,8 @@
            (onHide)="updateAccessions()">
     <b>Displayed accessions</b>
     <p-listbox [options]="accessions" [(ngModel)]="widget_accessions"
-               filter="true" multiple="true" checkbox="true"
-               [style]="{'width': '100%', 'height': '95%'}"
-               [listStyle]="{'max-height':'100%'}">
+        filter="true" multiple="true" checkbox="true"
+        [style]="{'width': '100%', 'height': '95%'}"
+        [listStyle]="{'max-height':'100%'}">
     </p-listbox>
 </p-sidebar>
