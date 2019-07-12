@@ -79,7 +79,7 @@ ${chromosome}`;
         if (isNullOrUndefined(export_id)) {
             return of(undefined);
         } else {
-            const query = `http://localhost:8060/tbapi/viewsettings/share/\
+            const query = `http://localhost:8060/tbapi/views/share/\
 ${export_id}`;
             return this.http.get<BrowserSettings>(query);
         }
@@ -89,7 +89,7 @@ ${export_id}`;
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        const query = `http://localhost:8060/tbapi/viewsettings/export`;
+        const query = `http://localhost:8060/tbapi/views/export`;
         return this.http.post<number>(query, settings, httpOptions);
     }
 

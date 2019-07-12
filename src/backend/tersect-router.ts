@@ -338,13 +338,14 @@ ${region} -B ${binsize}`;
     });
 });
 
-router.route('/viewsettings/share/:id')
+router.route('/views/share/:id')
       .get((req, res) => {
     ViewSettings.findOne({ '_id': req.params.id })
                 .exec((err, r) => {
         if (err || isNullOrUndefined(r)) {
             res.json(undefined);
         } else {
+            console.log(r);
             res.json(r['settings']);
         }
     });
@@ -380,7 +381,7 @@ function exportView(req, res) {
     });
 }
 
-router.route('/viewsettings/export')
+router.route('/views/export')
       .post((req, res) => {
     exportView(req, res);
 });

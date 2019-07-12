@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
@@ -12,7 +12,7 @@ import { PlotMouseClickEvent } from '../models/PlotPosition';
 import { BrowserSettings } from './browser-settings';
 import { switchMap } from 'rxjs/operators';
 import { AccessionDisplayStyle } from '../services/introgression-plot.service';
-import { combineLatest } from 'rxjs/observable/combineLatest';
+import { forkJoin } from 'rxjs/observable/forkJoin';
 import { isNullOrUndefined } from 'util';
 
 import * as path from 'path';
@@ -46,6 +46,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     };
 
     constructor(private tersectBackendService: TersectBackendService,
+                private router: Router,
                 private route: ActivatedRoute,
                 private platformLocation: PlatformLocation) { }
 
@@ -124,35 +125,39 @@ export class IntrogressionBrowserComponent implements OnInit {
         }));
     }
 
+    formatAccessionSelection(accession_names: string[]): SelectItem[] {
+        return accession_names.map((n: string) => ({
+            label: n,
+            value: n
+        }));
+    }
+
     ngOnInit() {
-        const accessions$ = this.tersectBackendService
-                                .getAccessionNames(this.settings.dataset_id);
-        const chromosomes$ = this.tersectBackendService
-                                 .getChromosomes(this.settings.dataset_id);
         const settings$ = this.route.paramMap.pipe(
             switchMap((params: ParamMap) => {
                 return this.tersectBackendService
                            .getExportedSettings(params.get('exportid'));
             })
         );
-        combineLatest(accessions$,
-                      chromosomes$,
-                      settings$).subscribe(([accessions,
-                                             chromosomes,
-                                             settings]) => {
-            this.accessions = accessions.map((n: string) => ({
-                label: n,
-                value: n
-            }));
-            this.chromosomes = this.formatChromosomeSelection(chromosomes);
+        settings$.subscribe(settings => {
             if (isNullOrUndefined(settings)) {
-                this.loadDefaultSettings();
-            } else {
-                this.settings = settings;
+                this.router.navigate(['']);
+                return;
             }
-            this.widget_accessions = this.settings.selected_accessions;
-            this.widget_binsize = this.settings.selected_binsize;
-            this.widget_chromosome = this.settings.selected_chromosome;
+            const accessions$ = this.tersectBackendService
+                                    .getAccessionNames(settings.dataset_id);
+            const chromosomes$ = this.tersectBackendService
+                                     .getChromosomes(settings.dataset_id);
+            forkJoin([accessions$, chromosomes$]).subscribe(([accessions,
+                                                              chromosomes]) => {
+                this.accessions = this.formatAccessionSelection(accessions);
+                this.chromosomes = this.formatChromosomeSelection(chromosomes);
+                this.settings = settings;
+                this.loadMissingSettings();
+                this.widget_accessions = this.settings.selected_accessions;
+                this.widget_binsize = this.settings.selected_binsize;
+                this.widget_chromosome = this.settings.selected_chromosome;
+            });
         });
     }
 
@@ -165,20 +170,37 @@ export class IntrogressionBrowserComponent implements OnInit {
         });
     }
 
-    loadDefaultSettings() {
-        this.settings
-            .selectedAccessionDisplayStyle = this.DEFAULT_DISPLAY_STYLE;
-        this.settings
-            .selected_accessions = this.accessions.map(acc => acc.label);
-        this.settings
-            .selected_reference = this.settings.selected_accessions[0];
-        this.settings
-            .selected_binsize = this.DEFAULT_BINSIZE;
-        this.settings.selected_chromosome = this.chromosomes[0].value;
-        this.settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
-        this.settings.selected_interval = [
-            1, this.settings.selected_chromosome.size
-        ];
+    /**
+     * Load default values for missing settings.
+     */
+    loadMissingSettings() {
+        if (isNullOrUndefined(this.settings.selectedAccessionDisplayStyle)) {
+            this.settings
+                .selectedAccessionDisplayStyle = this.DEFAULT_DISPLAY_STYLE;
+        }
+        if (isNullOrUndefined(this.settings.selected_accessions)) {
+            this.settings.selected_accessions = this.accessions.map(
+                acc => acc.label
+            );
+        }
+        if (isNullOrUndefined(this.settings.selected_reference)) {
+            this.settings
+                .selected_reference = this.settings.selected_accessions[0];
+        }
+        if (isNullOrUndefined(this.settings.selected_binsize)) {
+            this.settings.selected_binsize = this.DEFAULT_BINSIZE;
+        }
+        if (isNullOrUndefined(this.settings.selected_chromosome)) {
+            this.settings.selected_chromosome = this.chromosomes[0].value;
+        }
+        if (isNullOrUndefined(this.settings.zoom_level)) {
+            this.settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
+        }
+        if (isNullOrUndefined(this.settings.selected_interval)) {
+            this.settings.selected_interval = [
+                1, this.settings.selected_chromosome.size
+            ];
+        }
     }
 
     typeInterval(event) {

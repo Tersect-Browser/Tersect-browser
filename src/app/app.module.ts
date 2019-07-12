@@ -4,14 +4,16 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 
 import { IntrogressionBrowserModule } from './introgression-browser/introgression-browser.module';
+import { IntroPageModule } from './intro-page/intro-page.module';
 
 import { IntrogressionBrowserComponent } from './introgression-browser/introgression-browser.component';
+import { IntroPageComponent } from './intro-page/intro-page.component';
 
 import { AppComponent } from './app.component';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: IntrogressionBrowserComponent },
-    { path: '', component: IntrogressionBrowserComponent, pathMatch: 'full' },
+    { path: '', component: IntroPageComponent, pathMatch: 'full' },
     { path: '**', redirectTo: '' }
 ];
 
@@ -22,6 +24,7 @@ const appRoutes: Routes = [
     imports: [
         HttpClientModule,
         BrowserModule,
+        IntroPageModule,
         IntrogressionBrowserModule,
         RouterModule.forRoot(appRoutes)
     ],
