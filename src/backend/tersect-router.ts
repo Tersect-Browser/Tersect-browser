@@ -340,8 +340,7 @@ ${region} -B ${binsize}`;
 
 router.route('/viewsettings/share/:id')
       .get((req, res) => {
-    const hash = new Hashids(config['salt']);
-    ViewSettings.findOne({ '_id': hash.decode(req.params.id) })
+    ViewSettings.findOne({ '_id': req.params.id })
                 .exec((err, r) => {
         if (err || isNullOrUndefined(r)) {
             res.json(undefined);
@@ -351,32 +350,37 @@ router.route('/viewsettings/share/:id')
     });
 });
 
-router.route('/viewsettings/export')
-      .post((req, res) => {
+const MAX_VIEW_ID = 2000000000;
+
+function randomHash(): string {
     const hash = new Hashids(config['salt']);
-    ViewSettings.findOne({}, { _id: 1 }, { sort: { _id: -1} })
-                .exec((id_err, r) => {
-        let next_id = 0;
-        if (id_err) {
-            res.json(id_err);
-            return;
-        } else {
-            if (!isNullOrUndefined(r)) {
-                next_id = r._id + 1;
-            }
-        }
-        // Casting to any to fix compilation bug where the settings are not
-        // recognized as a known property
-        // TODO: match interface to mongoose schema
-        const exported_view = new ViewSettings({
-            _id: next_id,
-            settings: req.body
-        } as any);
-        exported_view.save((err) => {
-            if (err) {
+    return hash.encode(Math.floor(Math.random() * MAX_VIEW_ID));
+}
+
+function exportView(req, res) {
+    const next_id = randomHash();
+    // Casting to any to fix compilation bug where the settings are not
+    // recognized as a known property
+    // TODO: match interface to mongoose schema
+    const exported_view = new ViewSettings({
+        _id: next_id,
+        settings: req.body
+    } as any);
+    exported_view.save((err) => {
+        if (err) {
+            if (err.code === 11000) {
+                // Duplicate key error, retry
+                exportView(req, res);
+            } else {
                 res.json(err);
             }
-            res.json(hash.encode(next_id));
-        });
+            return;
+        }
+        res.json(next_id);
     });
+}
+
+router.route('/viewsettings/export')
+      .post((req, res) => {
+    exportView(req, res);
 });

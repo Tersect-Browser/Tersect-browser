@@ -5,7 +5,7 @@
 import { Schema, model } from 'mongoose';
 
 const ViewSettingsSchema = new Schema({
-    _id: Number,
+    _id: String,
     settings: {
         dataset_id: String,
         selectedAccessionDisplayStyle: String,

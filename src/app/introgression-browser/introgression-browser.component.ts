@@ -39,8 +39,8 @@ export class IntrogressionBrowserComponent implements OnInit {
         selectedAccessionDisplayStyle: this.DEFAULT_DISPLAY_STYLE,
         selected_accessions: undefined,
         selected_reference: undefined,
-        selected_chromosome: this.chromosomes[0].value,
-        selected_interval: [1, this.chromosomes[0].value.size],
+        selected_chromosome: { name: '', size: 0 },
+        selected_interval: [1, 2 * this.DEFAULT_BINSIZE],
         selected_binsize: this.DEFAULT_BINSIZE,
         zoom_level: this.DEFAULT_ZOOM_LEVEL
     };
