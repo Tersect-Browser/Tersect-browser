@@ -8,6 +8,7 @@ import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { of } from 'rxjs/observable/of';
 import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
+import { IDatasetPublic } from '../../backend/db/dataset';
 
 @Injectable()
 export class TersectBackendService {
@@ -83,6 +84,11 @@ ${chromosome}`;
 ${export_id}`;
             return this.http.get<BrowserSettings>(query);
         }
+    }
+
+    getDatasets(): Observable<IDatasetPublic[]> {
+        const query = 'http://localhost:8060/tbapi/datasets';
+        return this.http.get<IDatasetPublic[]>(query);
     }
 
     exportSettings(settings: BrowserSettings): Observable<number> {

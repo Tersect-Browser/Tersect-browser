@@ -10,7 +10,7 @@ import { ViewSettings } from './db/viewsettings';
 
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
-import { Dataset, IDataset } from './db/dataset';
+import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
 
 export const router = Router();
 
@@ -332,6 +332,24 @@ ${region} -B ${binsize}`;
                 bin_matrix[0].forEach((dist: number, i: number) => {
                     output.bins[accessions[i]].push(dist);
                 });
+            });
+            res.json(output);
+        }
+    });
+});
+
+router.route('/datasets')
+      .get((req, res) => {
+    Dataset.find().exec((err, r: IDataset[]) => {
+        if (err || isNullOrUndefined(r)) {
+            res.json(undefined);
+        } else {
+            const output: IDatasetPublic[] = r.map((dataset) => {
+                return {
+                    dataset_id: dataset._id,
+                    view_id: dataset.view_id,
+                    reference: dataset.reference
+                };
             });
             res.json(output);
         }

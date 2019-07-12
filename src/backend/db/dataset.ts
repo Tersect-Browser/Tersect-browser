@@ -18,4 +18,13 @@ export interface IDataset {
     reference: string;
 }
 
+/**
+ * Publicly visible information on a dataset.
+ */
+export interface IDatasetPublic {
+    dataset_id: string;
+    view_id: string;
+    reference: string;
+}
+
 export const Dataset = model('datasets', DatasetSchema, 'datasets');
