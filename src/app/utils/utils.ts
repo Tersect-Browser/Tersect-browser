@@ -37,10 +37,11 @@ export function formatPosition(genome_position: number,
     if (isNullOrUndefined(unit)) {
         return pos.toLocaleString('en');
     } else {
+        const options = {'maximumFractionDigits': 2};
         if (unit === 'Mbp') {
-            return `${(pos / 1e6).toLocaleString('en')} Mbp`;
+            return `${(pos / 1e6).toLocaleString('en', options)} Mbp`;
         } else {
-            return `${(pos / 1e3).toLocaleString('en')} kbp`;
+            return `${(pos / 1e3).toLocaleString('en', options)} kbp`;
         }
     }
 }

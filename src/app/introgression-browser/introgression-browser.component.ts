@@ -3,9 +3,9 @@ import { ActivatedRoute, ParamMap } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
-import { Chromosome, SL2_50_chromosomes } from '../models/Chromosome';
+import { Chromosome } from '../models/Chromosome';
 import { TersectBackendService } from '../services/tersect-backend.service';
-import { ceilTo, floorTo } from '../utils/utils';
+import { ceilTo, floorTo, formatPosition } from '../utils/utils';
 import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
@@ -31,7 +31,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     readonly DEFAULT_ZOOM_LEVEL = 100;
     readonly DEFAULT_DATASET = 'Tomato';
 
-    chromosomes: SelectItem[] = SL2_50_chromosomes;
+    chromosomes: SelectItem[];
     accessions: SelectItem[];
 
     settings: BrowserSettings = {
@@ -114,21 +114,37 @@ export class IntrogressionBrowserComponent implements OnInit {
         }
     }
 
+    /**
+     * Create array of chromosome SelectItems based on array of chromosomes.
+     */
+    formatChromosomeSelection(chromosomes: Chromosome[]): SelectItem[] {
+        return chromosomes.map((chrom: Chromosome) => ({
+            label: `${chrom.name} (${formatPosition(chrom.size, 'Mbp')})`,
+            value: chrom
+        }));
+    }
+
     ngOnInit() {
         const accessions$ = this.tersectBackendService
                                 .getAccessionNames(this.settings.dataset_id);
+        const chromosomes$ = this.tersectBackendService
+                                 .getChromosomes(this.settings.dataset_id);
         const settings$ = this.route.paramMap.pipe(
             switchMap((params: ParamMap) => {
                 return this.tersectBackendService
                            .getExportedSettings(params.get('exportid'));
             })
         );
-        combineLatest(accessions$, settings$).subscribe(([accessions,
-                                                          settings]) => {
+        combineLatest(accessions$,
+                      chromosomes$,
+                      settings$).subscribe(([accessions,
+                                             chromosomes,
+                                             settings]) => {
             this.accessions = accessions.map((n: string) => ({
                 label: n,
                 value: n
             }));
+            this.chromosomes = this.formatChromosomeSelection(chromosomes);
             if (isNullOrUndefined(settings)) {
                 this.loadDefaultSettings();
             } else {
