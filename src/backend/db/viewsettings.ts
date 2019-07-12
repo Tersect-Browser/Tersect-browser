@@ -9,10 +9,19 @@ const ViewSettingsSchema = new Schema({
     settings: {
         dataset_id: String,
         selectedAccessionDisplayStyle: String,
-        selected_accessions: [String],
+        selected_accessions: {
+            type: [String],
+            default: undefined
+        },
         selected_reference: String,
-        selected_chromosome: { name: String, size: Number },
-        selected_interval: [Number],
+        selected_chromosome: {
+            type: { name: String, size: Number },
+            default: undefined
+        },
+        selected_interval: {
+            type: [Number],
+            default: undefined
+        },
         selected_binsize: Number,
         zoom_level: Number
     }
