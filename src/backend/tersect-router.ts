@@ -161,7 +161,7 @@ function init_distance_matrix(sample_num: number) {
 }
 
 router.use('/query/:dataset_id', (req, res, next) => {
-    Dataset.findOne({ dataset: req.params.dataset_id })
+    Dataset.findOne({ _id: req.params.dataset_id })
            .exec((err, dataset: IDataset) => {
         if (err) {
             res.send(err);

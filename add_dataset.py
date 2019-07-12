@@ -1,13 +1,33 @@
 #!/usr/bin/env python
 import argparse
+import hashids
 import os
+import random
 import json
 import subprocess
 
-from pymongo import ASCENDING, MongoClient
+from hashids import Hashids
+from pymongo import errors, ASCENDING, MongoClient
 
 def abspath(path):
     return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
+
+def randomHash(cfg):
+    hashids = Hashids(salt=cfg['salt'])
+    MAX_VIEW_ID = 2000000000
+    return hashids.encode(random.randint(0, MAX_VIEW_ID))
+
+def add_default_view(cfg, client, dataset_id):
+    view_id = randomHash(cfg)
+    views = client[cfg['db_name']][cfg['view_collection']]
+    try:
+        views.insert({
+            '_id': view_id,
+            'dataset_id': dataset_id,
+        })
+        return view_id
+    except errors.DuplicateKeyError:
+        return add_default_view(cfg, client, dataset_id)
 
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
                 verbose=False):
@@ -17,11 +37,11 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
     client = MongoClient(cfg['hostname'], cfg['port'])
     datasets = client[cfg['db_name']][cfg['dataset_collection']]
 
-    if (datasets.find_one({'dataset_id': dataset_id}) is not None):
+    if (datasets.find_one({'_id': dataset_id}) is not None):
         if force:
             if verbose:
                 print("Overwriting dataset '%s'..." % dataset_id)
-            datasets.delete_many({'dataset_id': dataset_id})
+            datasets.delete_many({'_id': dataset_id})
         else:
             if verbose:
                 print("Dataset '%s' already exists.\n"
@@ -30,10 +50,11 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
             client.close()
             return
 
-    datasets.create_index('dataset_id', unique=True)
+    view_id = add_default_view(cfg, client, dataset_id)
 
     datasets.insert({
-        'dataset_id': dataset_id,
+        '_id': dataset_id,
+        'view_id': view_id,
         'tsi_location': tersect_db_file,
         'reference': reference_id
     })
