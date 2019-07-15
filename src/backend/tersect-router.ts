@@ -399,6 +399,4 @@ function exportView(req, res) {
 }
 
 router.route('/views/export')
-      .post((req, res) => {
-    exportView(req, res);
-});
+      .post(exportView);
