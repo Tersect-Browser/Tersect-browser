@@ -11,6 +11,10 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
+import { TreeNode, buildNJTree } from '../app/clustering/clustering';
+import { PhyloTree } from './db/phylotree';
+import { TreeQuery } from '../app/models/TreeQuery';
+import { DistanceMatrix } from '../app/models/DistanceMatrix';
 
 export const router = Router();
 
@@ -224,6 +228,76 @@ router.route('/query/:dataset_id/gaps/:chromosome')
     });
 });
 
+async function prepare_distance_matrix(tsi_location: string,
+                                 chromosome: string,
+                                 start_pos: number,
+                                 end_pos: number): Promise<any> {
+    const options = {
+        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
+    };
+
+    // TODO: check if calling this each time affects performance
+    const chromosome_partitions = loadChromosomePartitions(tsi_location);
+
+    const partitions = partitionInterval({
+        start: start_pos, end: end_pos
+    }, chromosome_partitions[chromosome]);
+
+    // Skip partitions which lie entirely outiside the chromosome
+    partitions.indexed = partitions.indexed.filter(
+        p => p.start <= chromosome_partitions[chromosome][0]
+    );
+    partitions.nonindexed = partitions.nonindexed.filter(
+        p => p.start <= chromosome_partitions[chromosome][0]
+    );
+
+    const tersect_calls = partitions.nonindexed.map(interval => {
+        const region = `${chromosome}:${interval.start}-${interval.end}`;
+        const command = `tersect dist -j ${tsi_location} ${region}`;
+        return execPromise(command, options);
+    });
+
+    const index_calls = partitions.indexed.map(interval => {
+        const region = `${chromosome}:${interval.start}-${interval.end}`;
+        return DBMatrix.findOne({ region: region }).exec();
+    });
+
+    const all_promises = tersect_calls.concat(index_calls);
+
+    const all_types = partitions.nonindexed.map(x => x.type).concat(
+                      partitions.indexed.map(x => x.type));
+
+    const results = await Promise.all(all_promises);
+    return new Promise((resolve, reject) => {
+        // The field containing sample names is called 'rows' in tersect
+        // results but 'samples' in the MongoDB collection.
+        // Using whichever is in the first result.
+        const sample_field_name = tersect_calls.length ? 'rows' : 'samples';
+        let output: {
+            matrix: number[][];
+            samples: string[];
+            region?: string;
+        };
+        const sample_num = results[0][sample_field_name].length;
+        output = init_distance_matrix(sample_num);
+        output.samples = results[0][sample_field_name];
+        output.region = `${chromosome}:${start_pos}-${end_pos}`;
+        // Adding up results
+        for (let i = 0; i < all_promises.length; i++) {
+            results[i]['matrix'].forEach((row, row_idx) => {
+                row.forEach((col, col_idx) => {
+                    if (all_types[i] === 'subtract') {
+                        output.matrix[row_idx][col_idx] -= col;
+                    } else {
+                        output.matrix[row_idx][col_idx] += col;
+                    }
+                });
+            });
+        }
+        resolve(output);
+    });
+}
+
 router.route('/query/:dataset_id/distall/:chromosome/:start/:stop')
       .get((req, res) => {
     const chromosome = req.params.chromosome;
@@ -400,3 +474,32 @@ function exportView(req, res) {
 
 router.route('/views/export')
       .post(exportView);
+
+function generate_tree(req, res) {
+    const tsi_location = res.locals.dataset.tsi_location;
+    const tree_query: TreeQuery = req.body;
+    prepare_distance_matrix(tsi_location,
+                            tree_query.chromosome_name,
+                            tree_query.interval[0],
+                            tree_query.interval[1])
+                            .then((matrix: DistanceMatrix) => {
+        res.json(buildNJTree(matrix, tree_query.accessions));
+    });
+}
+
+router.route('/query/:dataset_id/tree')
+      .post((req, res) => {
+    const tree_query: TreeQuery = req.body;
+    PhyloTree.findOne({ dataset_id: req.params.dataset_id, query: tree_query })
+             .exec((err, root: TreeNode) => {
+        if (err) {
+            res.json(err);
+        } else if (isNullOrUndefined(root)) {
+            // Generating new tree
+            generate_tree(req, res);
+        } else {
+            // Retrieved previously generated tree
+            res.json(root);
+        }
+    });
+});

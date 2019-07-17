@@ -9,6 +9,8 @@ import { of } from 'rxjs/observable/of';
 import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';
+import { TreeQuery } from '../models/TreeQuery';
+import { TreeNode } from '../clustering/clustering';
 
 @Injectable()
 export class TersectBackendService {
@@ -49,6 +51,30 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
         const query = `http://localhost:8060/tbapi/query/${dataset_id}/distall/\
 ${chromosome}/${start}/${stop}`;
         return this.http.get<DistanceMatrix>(query);
+    }
+
+    /**
+     * Retrieve a phylogenetic tree for a given list of accessions in a specific
+     * dataset and chromosomal interval.
+     *
+     * @param dataset_id dataset being used
+     * @param chromosome chromosome of interest
+     * @param start start position of the interval of interest
+     * @param end end position of the interval of interest
+     * @param accessions array of accessions to use
+     */
+    getPhylogeneticTree(dataset_id: string, chromosome: string,
+                        start: number, end: number, accessions: string[]) {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        const query = `http://localhost:8060/tbapi/query/${dataset_id}/tree`;
+        const tree_query: TreeQuery = {
+            chromosome_name: chromosome,
+            interval: [start, end],
+            accessions: accessions,
+        };
+        return this.http.post<TreeNode>(query, tree_query, httpOptions);
     }
 
     /**
