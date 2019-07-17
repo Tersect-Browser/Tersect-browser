@@ -77,3 +77,12 @@ export function extractTags(element: HTMLElement): string[] {
     }
     return tags;
 }
+
+/**
+ * Formats a region string as used by Tersect and tabix.
+ */
+export function formatRegion(chromosome_name: string,
+                             start_pos: number, end_pos: number): string {
+
+    return `${chromosome_name}:${start_pos}-${end_pos}`;
+}

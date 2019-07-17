@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
 import { PlotPosition } from '../models/PlotPosition';
-import { TreeNode, buildNJTree, treeToSortedList } from '../clustering/clustering';
+import { TreeNode, treeToSortedList } from '../clustering/clustering';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { TersectBackendService } from './tersect-backend.service';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { filter, tap, debounceTime, switchMap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
-import { sameElements, ceilTo, floorTo } from '../utils/utils';
+import { sameElements, ceilTo, floorTo, formatRegion } from '../utils/utils';
 import { GreyscalePalette } from '../introgression-plot/DistancePalette';
-import { DistanceMatrix } from '../models/DistanceMatrix';
 import { Chromosome } from '../models/Chromosome';
 import { SequenceInterval } from '../models/SequenceInterval';
+import { TreeQuery } from '../models/TreeQuery';
+
+import * as deepEqual from 'fast-deep-equal';
 
 export interface GUIMargins {
     top: number;
@@ -178,9 +180,12 @@ export class IntrogressionPlotService {
     }
 
     /**
-     * Neighbor joining tree built for the selected accessions.
+     * Phylogenetic tree built for the selected accessions (specified in query).
      */
-    njTree: TreeNode;
+    phyloTree: {
+        query: TreeQuery
+        tree: TreeNode
+    } = { query: null, tree: null };
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -215,11 +220,6 @@ export class IntrogressionPlotService {
         return this.zoom_factor / this.aspect_ratio;
     }
 
-    /**
-     * Pairwise distance matrix between all the accessions.
-     */
-    private distanceMatrix: DistanceMatrix;
-
     constructor(private tersectBackendService: TersectBackendService) {
         const ref_distance_bins$ = combineLatest(this.dataset_id_source,
                                                  this.reference_source,
@@ -239,28 +239,33 @@ export class IntrogressionPlotService {
             )
         );
 
-        const distance_matrix$ = combineLatest(this.dataset_id_source,
-                                               this.chromosome_source,
-                                               this.interval_source,
-                                               this.binsize_source).pipe(
-            filter(([ds, chrom, interval, binsize]) =>
-                ![ds, chrom, interval, binsize].some(isNullOrUndefined)
-            ),
-            filter(this.validateInputs),
-            filter(this.matrixUpdateRequired),
-            tap(this.startLoading),
-            debounceTime(this.DEBOUNCE_TIME),
-            switchMap(([ds, chrom, interval]) =>
-                this.tersectBackendService
-                    .getDistanceMatrix(ds, chrom.name, interval[0], interval[1])
-            )
-        );
-
         const accessions$ = this.accessions_source.pipe(
             filter((accessions) => !isNullOrUndefined(accessions)),
             filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME)
+        );
+
+        const phylo_tree$ = combineLatest(this.dataset_id_source,
+                                          this.chromosome_source,
+                                          this.interval_source,
+                                          accessions$,
+                                          this.binsize_source).pipe(
+            filter(([ds, chrom, interval, accessions, binsize]) => {
+                    return ![ds, chrom, interval,
+                             accessions, binsize].some(isNullOrUndefined);
+                }
+            ),
+            filter(this.validateInputs),
+            filter(this.treeUpdateRequired),
+            tap(this.startLoading),
+            debounceTime(this.DEBOUNCE_TIME),
+            switchMap(([ds, chrom, interval, accessions]) =>
+                this.tersectBackendService
+                    .getPhylogeneticTree(ds, chrom.name,
+                                         interval[0], interval[1],
+                                         accessions)
+            )
         );
 
         const gaps$ = combineLatest(this.dataset_id_source,
@@ -273,25 +278,26 @@ export class IntrogressionPlotService {
         );
 
         combineLatest(ref_distance_bins$,
-                      distance_matrix$,
+                      phylo_tree$,
                       accessions$,
                       gaps$).pipe(
-            filter(([ref_dist, dist_mat, accessions, gaps]) =>
-                ![ref_dist, dist_mat, accessions, gaps].some(isNullOrUndefined)
+            filter((inputs) =>
+                !inputs.some(isNullOrUndefined)
             ),
             tap(this.startLoading),
-            filter(([ref_dist, dist_mat, , ]) =>
-                   ref_dist['region'] === dist_mat['region']
-                   && ref_dist['region'].split(':')[0] === this.chromosome.name
-                   && ref_dist['reference'] === this.reference_source.getValue()
+            filter(([ref_dist, [tree_query, tree], , ]) =>
+                ref_dist['region'] === formatRegion(tree_query.chromosome_name,
+                                                    tree_query.interval[0],
+                                                    tree_query.interval[1])
+                && ref_dist['region'].split(':')[0] === this.chromosome.name
+                && ref_dist['reference'] === this.reference_source.getValue()
             )
-        ).subscribe(([ref_dist, dist_mat, accessions, gaps]) => {
+        ).subscribe(([ref_dist, [tree_query, tree], accessions, gaps]) => {
             this.distanceBins = ref_dist['bins'];
             if (!sameElements(accessions, this.sorted_accessions)
-                || this.distanceMatrix !== dist_mat) {
-                this.distanceMatrix = dist_mat;
-                this.njTree = buildNJTree(this.distanceMatrix, accessions);
-                this.sorted_accessions = treeToSortedList(this.njTree);
+                 || !deepEqual(this.phyloTree.query, tree_query)) {
+                this.phyloTree = { query: tree_query, tree: tree };
+                this.sorted_accessions = treeToSortedList(this.phyloTree.tree);
                 this.sequenceGaps = gaps;
                 this.generatePlotArray();
                 this.resetPosition();
@@ -324,17 +330,19 @@ export class IntrogressionPlotService {
     }
 
     /**
-     * Check if a new distance matrix needs to be retrieved due to either no
-     * distance matrix being stored or the region changing.
+     * Check if a new phylogenetic tree needs to be retrieved due to either no
+     * tree being stored or the query changing.
      */
-    private matrixUpdateRequired = () => {
-        if (isNullOrUndefined(this.distanceMatrix) ||
-            isNullOrUndefined(this.distanceMatrix.region)) {
+    private treeUpdateRequired = () => {
+        if (isNullOrUndefined(this.phyloTree.tree) || this.phyloTree.query) {
             return true;
         }
-        const region = `${this.chromosome
-                              .name}:${this.interval[0]}-${this.interval[1]}`;
-        return this.distanceMatrix.region !== region;
+        const current_query: TreeQuery = {
+            chromosome_name: this.chromosome.name,
+            interval: this.interval,
+            accessions: this.accessions
+        };
+        return !deepEqual(this.phyloTree.query, current_query);
     }
 
     /**

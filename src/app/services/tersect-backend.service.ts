@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
-import { DistanceMatrix } from '../models/DistanceMatrix';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 
@@ -11,6 +10,7 @@ import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
 import { TreeNode } from '../clustering/clustering';
+import { combineLatest } from 'rxjs/observable/combineLatest';
 
 @Injectable()
 export class TersectBackendService {
@@ -38,22 +38,6 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
     }
 
     /**
-     * Retrieve a pairwise genetic distance matrix between each of the
-     * accessions in the tersect database in a specified chromosomal region.
-     *
-     * @param dataset_id dataset being used
-     * @param chromosome chromosome of interest
-     * @param start start position of the interval of interest
-     * @param stop stop position of the interval of interest
-     */
-    getDistanceMatrix(dataset_id: string, chromosome: string,
-                      start: number, stop: number): Observable<DistanceMatrix> {
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/distall/\
-${chromosome}/${start}/${stop}`;
-        return this.http.get<DistanceMatrix>(query);
-    }
-
-    /**
      * Retrieve a phylogenetic tree for a given list of accessions in a specific
      * dataset and chromosomal interval.
      *
@@ -64,7 +48,9 @@ ${chromosome}/${start}/${stop}`;
      * @param accessions array of accessions to use
      */
     getPhylogeneticTree(dataset_id: string, chromosome: string,
-                        start: number, end: number, accessions: string[]) {
+                        start: number, end: number,
+                        accessions: string[]): Observable<[TreeQuery,
+                                                           TreeNode]> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -74,7 +60,9 @@ ${chromosome}/${start}/${stop}`;
             interval: [start, end],
             accessions: accessions,
         };
-        return this.http.post<TreeNode>(query, tree_query, httpOptions);
+        return combineLatest(of(tree_query),
+                             this.http.post<TreeNode>(query, tree_query,
+                                                      httpOptions));
     }
 
     /**
