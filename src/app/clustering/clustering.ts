@@ -70,7 +70,7 @@ function _getTreeDepth(subtree: TreeNode, depth: number,
  * Build a neighbor-joining tree.
  */
 export function buildNJTree(distance_matrix: DistanceMatrix,
-                            accessions_to_plot: string[]) {
+                            accessions_to_plot: string[]): TreeNode {
     // Find indices of accessions to plot
     const plotted_indices = accessions_to_plot.map(acc => {
         return distance_matrix.samples.indexOf(acc);
