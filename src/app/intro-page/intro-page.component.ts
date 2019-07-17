@@ -15,7 +15,6 @@ export class IntroPageComponent implements OnInit {
     ngOnInit() {
         this.tersectBackendService.getDatasets().subscribe(ds => {
             this.datasets = ds;
-            console.log(this.datasets);
         });
     }
 }
