@@ -66,7 +66,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
 parser = argparse.ArgumentParser(description='Add dataset to Tersect Browser database.')
 parser.add_argument('dataset_id', type=str, help='dataset id')
 parser.add_argument('tersect_db_file', type=str,
-                    help='tersect database (tdi) file')
+                    help='tersect index (tsi) file')
 parser.add_argument('reference_id', type=str,
                     help='reference genome identifier')
 parser.add_argument('-r', dest='reference_file', default=None, type=str,
