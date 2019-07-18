@@ -11,8 +11,8 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
-import { TreeNode, buildNJTree } from '../app/clustering/clustering';
-import { PhyloTree } from './db/phylotree';
+import { buildNJTree } from '../app/clustering/clustering';
+import { PhyloTree, IPhyloTree } from './db/phylotree';
 import { TreeQuery } from '../app/models/TreeQuery';
 import { DistanceMatrix } from '../app/models/DistanceMatrix';
 
@@ -483,23 +483,40 @@ function generate_tree(req, res) {
                             tree_query.interval[0],
                             tree_query.interval[1])
                             .then((matrix: DistanceMatrix) => {
-        res.json(buildNJTree(matrix, tree_query.accessions));
+        const tree = buildNJTree(matrix, tree_query.accessions);
+        new PhyloTree({
+            dataset_id: req.params.dataset_id,
+            query: tree_query,
+            tree: tree
+        }).save((err) => {
+            if (err) {
+                res.json(err);
+            } else {
+                res.json(tree);
+            }
+        });
     });
 }
 
 router.route('/query/:dataset_id/tree')
       .post((req, res) => {
     const tree_query: TreeQuery = req.body;
-    PhyloTree.findOne({ dataset_id: req.params.dataset_id, query: tree_query })
-             .exec((err, root: TreeNode) => {
+    const db_query = {
+        dataset_id: req.params.dataset_id,
+        'query.chromosome_name': tree_query.chromosome_name,
+        'query.interval': tree_query.interval,
+        'query.accessions': tree_query.accessions
+    };
+    PhyloTree.findOne(db_query)
+             .exec((err, result: IPhyloTree) => {
         if (err) {
             res.json(err);
-        } else if (isNullOrUndefined(root)) {
+        } else if (isNullOrUndefined(result)) {
             // Generating new tree
             generate_tree(req, res);
         } else {
             // Retrieved previously generated tree
-            res.json(root);
+            res.json(result.tree);
         }
     });
 });

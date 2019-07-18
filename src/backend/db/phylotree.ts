@@ -3,27 +3,25 @@
  */
 
 import { Schema, model } from 'mongoose';
+import { TreeQuery } from '../../app/models/TreeQuery';
+import { TreeNode } from '../../app/clustering/clustering';
+
+export interface IPhyloTree {
+    dataset_id: string;
+    query: TreeQuery;
+    tree: TreeNode;
+}
 
 const PhyloTreeSchema = new Schema({
+    dataset_id: String,
     // Matches the TreeQuery interface
     query: {
-        dataset_id: String,
         chromosome_name: String,
         interval: [Number],
         accessions: [String]
     },
-    // Matches the TreeNode interface
-    tree: {
-        taxon: {
-            name: String,
-            genotype: String
-        },
-        length: Number,
-        children: [{
-            type: Schema.Types.ObjectId,
-            ref: 'PhyloTree'
-        }]
-    }
+    // TODO: match with TreeNode interface
+    tree: Schema.Types.Mixed
 });
 
 export const PhyloTree = model('PhyloTree', PhyloTreeSchema, 'trees');
