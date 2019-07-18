@@ -1,9 +1,11 @@
 import { DistanceMatrix } from '../models/DistanceMatrix';
+import { isNullOrUndefined } from 'util';
 import * as nj from 'neighbor-joining';
+import * as newick_parser from 'biojs-io-newick';
 
 export type TreeNode = {
-    taxon: { name: string, genotype?: string },
-    length: number,
+    taxon?: { name: string, genotype?: string },
+    length?: number,
     children: TreeNode[]
 };
 
@@ -91,4 +93,35 @@ export function buildNJTree(distance_matrix: DistanceMatrix,
     const RNJ = new nj.RapidNeighborJoining(filtered_matrices, accessions);
     RNJ.run();
     return RNJ.getAsObject();
+}
+
+/**
+ * Nodes as output by the biojs-io-newick parser.
+ */
+interface RapidNJNode {
+    name: string;
+    children?: RapidNJNode[];
+    branch_length?: number;
+}
+
+function _convertNode(rnjNode: RapidNJNode): TreeNode {
+    const output: TreeNode = {
+        children: isNullOrUndefined(rnjNode.children)
+                    ? [] : rnjNode.children.map(child => _convertNode(child))
+    };
+    if (!isNullOrUndefined(rnjNode.branch_length)) {
+        output.length = rnjNode.branch_length;
+    }
+    if (!isNullOrUndefined(rnjNode.name) && rnjNode.name !== '') {
+        output.taxon = { name: rnjNode.name };
+    }
+    return output;
+}
+
+/**
+ * Converts a Newick-format output of RapidNJ to a TreeNode tree.
+ */
+export function newickToTree(newick: string): TreeNode {
+    const parsed = newick_parser.parse_newick(newick.replace(/'/g, ''));
+    return _convertNode(parsed);
 }
