@@ -488,7 +488,7 @@ function generate_tree(req, res) {
             dataset_id: req.params.dataset_id,
             query: tree_query,
             tree: tree
-        } as IPhyloTree).save((err) => {
+        }).save((err) => {
             if (err) {
                 res.json(err);
             } else {

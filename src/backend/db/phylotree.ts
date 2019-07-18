@@ -2,11 +2,11 @@
  * Used for accessing phylogenetic trees
  */
 
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import { TreeQuery } from '../../app/models/TreeQuery';
 import { TreeNode } from '../../app/clustering/clustering';
 
-export interface IPhyloTree {
+export interface IPhyloTree extends Document {
     dataset_id: string;
     query: TreeQuery;
     tree: TreeNode;
@@ -24,4 +24,6 @@ const PhyloTreeSchema = new Schema({
     tree: Schema.Types.Mixed
 });
 
-export const PhyloTree = model('PhyloTree', PhyloTreeSchema, 'trees');
+export const PhyloTree = model<IPhyloTree>('PhyloTree',
+                                           PhyloTreeSchema,
+                                           'trees');
