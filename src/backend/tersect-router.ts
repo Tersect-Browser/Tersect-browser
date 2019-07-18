@@ -182,9 +182,12 @@ router.use('/query/:dataset_id', (req, res, next) => {
 
 router.route('/query/:dataset_id/samples')
       .get((req, res) => {
+    const options = {
+        maxBuffer: 5 * 1024 * 1024 // 5 megabytes
+    };
     const tsi_location = res.locals.dataset.tsi_location;
     const tersect_command = `tersect samples -n ${tsi_location}`;
-    exec(tersect_command, (err, stdout, stderr) => {
+    exec(tersect_command, options, (err, stdout, stderr) => {
         if (err) {
             res.json(err);
         } else if (stderr) {
