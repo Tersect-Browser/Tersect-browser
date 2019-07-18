@@ -232,9 +232,9 @@ router.route('/query/:dataset_id/gaps/:chromosome')
 });
 
 async function prepare_distance_matrix(tsi_location: string,
-                                 chromosome: string,
-                                 start_pos: number,
-                                 end_pos: number): Promise<any> {
+                                       chromosome: string,
+                                       start_pos: number,
+                                       end_pos: number): Promise<any> {
     const options = {
         maxBuffer: 100 * 1024 * 1024 // 100 megabytes
     };
