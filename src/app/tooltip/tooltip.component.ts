@@ -20,8 +20,9 @@ export class TooltipComponent {
     readonly tooltip_offset: PlotPosition = { x: 0, y: 20 };
 
     private formatBinTooltip(target: PlotBin): string {
-        return `${target.accession}<br>${formatPosition(target.start_position)}
-- ${formatPosition(target.end_position)}`;
+        return `${target.accession_label}<br>
+${formatPosition(target.start_position)}
+ - ${formatPosition(target.end_position)}`;
     }
 
     private formatPositionTooltip(target: PlotSequencePosition): string {
@@ -38,7 +39,7 @@ export class TooltipComponent {
             case 'bin':
                 return this.formatBinTooltip($event.target as PlotBin);
             case 'accession':
-                return `${($event.target as PlotAccession).accession}`;
+                return `${($event.target as PlotAccession).accession_label}`;
             case 'position':
                 return this.formatPositionTooltip($event.target as
                                                   PlotSequencePosition);

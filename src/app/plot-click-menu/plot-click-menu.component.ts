@@ -60,15 +60,15 @@ export class PlotClickMenuComponent implements OnInit {
         }
     }
 
-    private getAccessionItem(accession: PlotAccession): MenuItem {
+    private getAccessionItem(target_accession: PlotAccession): MenuItem {
         return {
-            label: accession.accession,
+            label: target_accession.accession_label,
             items: [
                 {
                     label: 'Set as reference',
                     icon: 'fa fa-star-o',
                     command: () => {
-                        this.setReference.emit(accession.accession);
+                        this.setReference.emit(target_accession.accession);
                         this.hide();
                     }
                 },
@@ -76,7 +76,7 @@ export class PlotClickMenuComponent implements OnInit {
                     label: 'Remove from plot',
                     icon: 'fa fa-remove',
                     command: () => {
-                        this.removeAccession.emit(accession.accession);
+                        this.removeAccession.emit(target_accession.accession);
                         this.hide();
                     }
                 }

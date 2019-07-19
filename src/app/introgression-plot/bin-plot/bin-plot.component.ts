@@ -99,9 +99,12 @@ export class BinPlotComponent extends CanvasPlotElement {
         const interval = this.plotService.interval;
         const binsize = this.plotService.binsize;
 
+        const accession = this.plotService.sorted_accessions[accession_index];
+
         const result: PlotBin = {
             type: 'bin',
-            accession: this.plotService.sorted_accessions[accession_index],
+            accession_label: this.plotService.getAccesionLabel(accession),
+            accession: accession,
             start_position: interval[0] + bin_index * binsize,
             end_position: interval[0] + (bin_index + 1) * binsize - 1
         };

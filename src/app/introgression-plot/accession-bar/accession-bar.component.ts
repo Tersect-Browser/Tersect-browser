@@ -219,9 +219,11 @@ export class AccessionBarComponent extends CanvasPlotElement {
         if (accession_index >= this.plotService.row_num) {
             return { type: 'background' };
         }
+        const accession = this.plotService.sorted_accessions[accession_index];
         const result: PlotAccession = {
             type: 'accession',
-            accession: this.plotService.sorted_accessions[accession_index]
+            accession_label: this.plotService.getAccesionLabel(accession),
+            accession: accession
         };
         return result;
     }

@@ -5,6 +5,8 @@ import { IntrogressionPlotService, AccessionDisplayStyle } from '../services/int
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
 import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
+import { AccessionDictionary } from '../introgression-browser/browser-settings';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -56,6 +58,17 @@ export class IntrogressionPlotComponent implements OnInit {
     set accessionDisplayStyle(accessionDisplayStyle: AccessionDisplayStyle) {
         if (accessionDisplayStyle !== this.plotService.accession_display) {
             this.plotService.accession_display = accessionDisplayStyle;
+            this.redrawPlot();
+        }
+    }
+
+    @Input()
+    set accession_dictionary(accession_dictionary: AccessionDictionary) {
+        if (isNullOrUndefined(this.plotService.accession_dictionary)) {
+            // No need to redraw anything for the initial dictionary
+            this.plotService.accession_dictionary = accession_dictionary;
+        } else {
+            this.plotService.accession_dictionary = accession_dictionary;
             this.redrawPlot();
         }
     }

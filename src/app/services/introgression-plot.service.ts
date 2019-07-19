@@ -13,6 +13,7 @@ import { SequenceInterval } from '../models/SequenceInterval';
 import { TreeQuery } from '../models/TreeQuery';
 
 import * as deepEqual from 'fast-deep-equal';
+import { AccessionDictionary } from '../introgression-browser/browser-settings';
 
 export interface GUIMargins {
     top: number;
@@ -151,6 +152,17 @@ export class IntrogressionPlotService {
     }
 
     /**
+     * Dictionary of names to be used for accessions.
+     */
+    private accession_dictionary_source = new BehaviorSubject<AccessionDictionary>(undefined);
+    set accession_dictionary(accession_dictionary: AccessionDictionary) {
+        this.accession_dictionary_source.next(accession_dictionary);
+    }
+    get accession_dictionary(): AccessionDictionary {
+        return this.accession_dictionary_source.getValue();
+    }
+
+    /**
      * Highlighted area of the plot.
      */
     highlight_source = new BehaviorSubject<SequenceInterval>(undefined);
@@ -218,6 +230,20 @@ export class IntrogressionPlotService {
 
     get bin_height() {
         return this.zoom_factor / this.aspect_ratio;
+    }
+
+    /**
+     * Get accession label from dictionary if available. Otherwise the input
+     * identifier is used.
+     */
+    getAccesionLabel(accession: string) {
+        if (isNullOrUndefined(this.accession_dictionary)) {
+            return accession;
+        } else if (accession in this.accession_dictionary) {
+            return this.accession_dictionary[accession];
+        } else {
+            return accession;
+        }
     }
 
     constructor(private tersectBackendService: TersectBackendService) {

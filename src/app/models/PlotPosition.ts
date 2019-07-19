@@ -8,12 +8,14 @@ export interface PlotArea {
 }
 
 export interface PlotBin extends PlotArea {
+    accession_label: string;
     accession: string;
     start_position: number;
     end_position: number;
 }
 
 export interface PlotAccession extends PlotArea {
+    accession_label: string;
     accession: string;
 }
 
