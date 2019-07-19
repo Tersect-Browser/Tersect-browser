@@ -128,7 +128,7 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     formatAccessionSelection(accession_names: string[]): SelectItem[] {
         return accession_names.map((n: string) => ({
-            label: n,
+            label: this.settings.accession_dictionary[n],
             value: n
         }));
     }
@@ -151,10 +151,10 @@ export class IntrogressionBrowserComponent implements OnInit {
                                      .getChromosomes(settings.dataset_id);
             forkJoin([accessions$, chromosomes$]).subscribe(([accessions,
                                                               chromosomes]) => {
+                this.settings = settings;
+                this.generateMissingSettings(accessions, chromosomes);
                 this.accessions = this.formatAccessionSelection(accessions);
                 this.chromosomes = this.formatChromosomeSelection(chromosomes);
-                this.settings = settings;
-                this.loadMissingSettings();
                 this.widget_accessions = this.settings.selected_accessions;
                 this.widget_binsize = this.settings.selected_binsize;
                 this.widget_chromosome = this.settings.selected_chromosome;
@@ -174,15 +174,13 @@ export class IntrogressionBrowserComponent implements OnInit {
     /**
      * Load default values for missing settings.
      */
-    loadMissingSettings() {
+    generateMissingSettings(accessions: string[], chromosomes: Chromosome[]) {
         if (isNullOrUndefined(this.settings.selectedAccessionDisplayStyle)) {
             this.settings
                 .selectedAccessionDisplayStyle = this.DEFAULT_DISPLAY_STYLE;
         }
         if (isNullOrUndefined(this.settings.selected_accessions)) {
-            this.settings.selected_accessions = this.accessions.map(
-                acc => acc.label
-            );
+            this.settings.selected_accessions = accessions;
         }
         if (isNullOrUndefined(this.settings.selected_reference)) {
             this.settings
@@ -193,9 +191,9 @@ export class IntrogressionBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(this.settings.selected_chromosome)) {
             // Selecting the largest chromosome
-            const largest_chrom = this.chromosomes.reduce((prev, current) => {
-                return (current.value.size > prev.value.size) ? current : prev;
-            }).value;
+            const largest_chrom = chromosomes.reduce((prev, current) => {
+                return (current.size > prev.size) ? current : prev;
+            });
             this.settings.selected_chromosome = largest_chrom;
         }
         if (isNullOrUndefined(this.settings.zoom_level)) {
