@@ -29,13 +29,12 @@ export class IntrogressionBrowserComponent implements OnInit {
     readonly DEFAULT_BINSIZE = 50000;
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     readonly DEFAULT_ZOOM_LEVEL = 100;
-    readonly DEFAULT_DATASET = 'Tomato';
 
     chromosomes: SelectItem[];
     accessions: SelectItem[];
 
     settings: BrowserSettings = {
-        dataset_id: this.DEFAULT_DATASET,
+        dataset_id: '',
         selectedAccessionDisplayStyle: this.DEFAULT_DISPLAY_STYLE,
         accession_dictionary: undefined,
         selected_accessions: undefined,
