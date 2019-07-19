@@ -3,6 +3,7 @@ import argparse
 import hashids
 import os
 import random
+import shutil
 import json
 import subprocess
 
@@ -36,6 +37,13 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
     if verbose:
         print("Adding dataset '%s'..." % dataset_id)
 
+    tb_path = os.path.dirname(os.path.realpath(__file__))
+    tsi_path = os.path.join(tb_path, 'db')
+    if not os.path.exists(tsi_path):
+        os.mkdir(tsi_path)
+    local_tsi_path = os.path.join(tsi_path, os.path.basename(tersect_db_file))
+    shutil.copyfile(tersect_db_file, local_tsi_path)
+
     client = MongoClient(cfg['hostname'], cfg['port'])
     datasets = client[cfg['db_name']][cfg['dataset_collection']]
 
@@ -54,14 +62,16 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
 
     view_id = add_default_view(cfg, client, dataset_id)
 
-    datasets.insert({
+    ds = {
         '_id': dataset_id,
         'view_id': view_id,
-        'tsi_location': tersect_db_file,
+        'tsi_location': local_tsi_path,
         'reference': reference_id
-    })
+    }
 
+    datasets.insert(ds)
     client.close()
+    return ds
 
 parser = argparse.ArgumentParser(description='Add dataset to Tersect Browser database.')
 parser.add_argument('dataset_id', type=str, help='dataset id')
@@ -83,26 +93,25 @@ cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
 with open(cfg_path, 'r') as cfg_file:
     cfg = json.load(cfg_file)
 
-tdi_file = abspath(args.tersect_db_file)
+tsi_file = abspath(args.tersect_db_file)
 
-if not os.path.isfile(tdi_file):
-    print('ERROR: Not a valid Tersect file: %s' % tdi_file)
+if not os.path.isfile(tsi_file):
+    print('ERROR: Not a valid Tersect file: %s' % tsi_file)
     exit()
 
 if args.reference_file is not None:
     ref_file = abspath(args.reference_file)
     if not os.path.isfile(ref_file):
-        print('ERROR: Not a valid reference file: %s' % tdi_file)
+        print('ERROR: Not a valid reference file: %s' % ref_file)
         exit()
     command = ['./add_reference_genome.py', ref_file, args.reference_id]
     if (args.f):
         command.append('-f')
     subprocess.call(command, cwd=cwd)
 
-add_dataset(cfg, args.dataset_id, tdi_file, args.reference_id,
-            force=args.f, verbose=True)
-
-command = ['./build_tersect_index.py', args.dataset_id, tdi_file]
+dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
+                      force=args.f, verbose=True)
+command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
 if (args.f):
     command.append('-f')
 subprocess.call(command, cwd=cwd)
