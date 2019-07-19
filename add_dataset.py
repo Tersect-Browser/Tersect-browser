@@ -32,6 +32,38 @@ def add_default_view(cfg, client, dataset_id):
     except errors.DuplicateKeyError:
         return add_default_view(cfg, client, dataset_id)
 
+def get_accession_names(tsi_file):
+    proc = subprocess.Popen(['tersect', 'samples', '-n', tsi_file],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = proc.communicate()
+    if (error):
+        print(error)
+        return None
+    accessions = [accession for accession in output.strip().split('\n')]
+    return accessions
+
+def rename_accession(tsi_file, old_name, new_name):
+    command = ['tersect', 'rename', tsi_file, old_name, new_name]
+    subprocess.call(command)
+
+# Fixes accession names by removing forbidden characters (spaces) and returns
+# a dictionary which maps the new names (as keys) to the old names (as values)
+def process_accession_names(tsi_file):
+    accessions = get_accession_names(tsi_file)
+    accession_dictionary = dict()
+    for acc in accessions:
+        fixed = acc.replace(' ', '_')
+        if fixed != acc:
+            # Appending a number in case fixed version of name already exists
+            base_fixed = fixed
+            count_fixed = 0
+            while fixed in accessions or fixed in accession_dictionary.keys():
+                fixed = base_fixed + '_' + str(count_fixed)
+                count_fixed += 1
+            rename_accession(tsi_file, acc, fixed)
+        accession_dictionary[fixed] = acc
+    return accession_dictionary
+
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
                 verbose=False):
     if verbose:
@@ -43,6 +75,8 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
         os.mkdir(tsi_path)
     local_tsi_path = os.path.join(tsi_path, os.path.basename(tersect_db_file))
     shutil.copyfile(tersect_db_file, local_tsi_path)
+
+    process_accession_names(local_tsi_path)
 
     client = MongoClient(cfg['hostname'], cfg['port'])
     datasets = client[cfg['db_name']][cfg['dataset_collection']]
@@ -111,7 +145,8 @@ if args.reference_file is not None:
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       force=args.f, verbose=True)
-command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
-if (args.f):
-    command.append('-f')
-subprocess.call(command, cwd=cwd)
+
+#command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
+#if (args.f):
+#    command.append('-f')
+#subprocess.call(command, cwd=cwd)
