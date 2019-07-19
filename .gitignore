@@ -6,6 +6,9 @@
 /tmp
 /out-tsc
 
+# local data storage
+/local_db
+
 # dependencies
 /node_modules
 

@@ -70,7 +70,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
         print("Adding dataset '%s'..." % dataset_id)
 
     tb_path = os.path.dirname(os.path.realpath(__file__))
-    tsi_path = os.path.join(tb_path, 'db')
+    tsi_path = os.path.join(tb_path, 'local_db')
     if not os.path.exists(tsi_path):
         os.mkdir(tsi_path)
     local_tsi_path = os.path.join(tsi_path, os.path.basename(tersect_db_file))
