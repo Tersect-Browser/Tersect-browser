@@ -34,7 +34,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     accessions: SelectItem[];
 
     settings: BrowserSettings = {
-        dataset_id: '',
+        dataset_id: undefined,
         selectedAccessionDisplayStyle: this.DEFAULT_DISPLAY_STYLE,
         accession_dictionary: undefined,
         selected_accessions: undefined,
