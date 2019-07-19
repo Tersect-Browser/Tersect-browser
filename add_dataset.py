@@ -146,7 +146,7 @@ if args.reference_file is not None:
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       force=args.f, verbose=True)
 
-#command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
-#if (args.f):
-#    command.append('-f')
-#subprocess.call(command, cwd=cwd)
+command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
+if (args.f):
+    command.append('-f')
+subprocess.call(command, cwd=cwd)
