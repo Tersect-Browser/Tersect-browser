@@ -122,7 +122,8 @@ export class AccessionBarComponent extends CanvasPlotElement {
             ctx.lineTo(bottom_xpos, (ypos[1] + ypos[2]) / 2);
             ctx.stroke();
         } else {
-            ctx.fillText(subtree.taxon.name, xpos, ypos[0]);
+            const label = this.plotService.getAccesionLabel(subtree.taxon.name);
+            ctx.fillText(label, xpos, ypos[0]);
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
                             * this.plotService.zoom_factor;
@@ -130,7 +131,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
             ctx.setLineDash(this.GUI_TREE_LINE_DASH.map(
                 x => x * this.plotService.zoom_factor
             ));
-            ctx.moveTo(xpos + ctx.measureText(subtree.taxon.name).width + 5,
+            ctx.moveTo(xpos + ctx.measureText(label).width + 5,
                        ypos[0] + text_height / 2 - 0.5);
             ctx.lineTo(background_width, ypos[0] + text_height / 2 - 0.5);
             ctx.stroke();
@@ -173,8 +174,9 @@ export class AccessionBarComponent extends CanvasPlotElement {
                              text_height: number, yoffset: number) {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
-        this.plotService.sorted_accessions.forEach((label, index) => {
-            ctx.fillText(label, 0, yoffset + index * text_height);
+        this.plotService.sorted_accessions.forEach((acc, index) => {
+            ctx.fillText(this.plotService.getAccesionLabel(acc),
+                         0, yoffset + index * text_height);
         });
     }
 
@@ -206,8 +208,8 @@ export class AccessionBarComponent extends CanvasPlotElement {
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
         ctx.font = `${this.plotService.bin_height}px ${this.GUI_TREE_FONT}`;
         return Math.max(
-            ...this.plotService.sorted_accessions.map(label =>
-                ctx.measureText(label).width
+            ...this.plotService.sorted_accessions.map(acc =>
+                ctx.measureText(this.plotService.getAccesionLabel(acc)).width
             )
         );
     }
