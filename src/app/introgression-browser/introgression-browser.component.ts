@@ -37,6 +37,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     settings: BrowserSettings = {
         dataset_id: this.DEFAULT_DATASET,
         selectedAccessionDisplayStyle: this.DEFAULT_DISPLAY_STYLE,
+        accession_dictionary: undefined,
         selected_accessions: undefined,
         selected_reference: undefined,
         selected_chromosome: { name: '', size: 0 },
@@ -204,6 +205,12 @@ export class IntrogressionBrowserComponent implements OnInit {
             this.settings.selected_interval = [
                 1, this.settings.selected_chromosome.size
             ];
+        }
+        if (isNullOrUndefined(this.settings.accession_dictionary)) {
+            this.settings.accession_dictionary = {};
+            this.settings.selected_accessions.forEach((acc_name) => {
+                this.settings.accession_dictionary[acc_name] = acc_name;
+            });
         }
     }
 

@@ -7,6 +7,7 @@ import { AccessionDisplayStyle } from '../services/introgression-plot.service';
 export interface BrowserSettings {
     dataset_id: string;
     selectedAccessionDisplayStyle?: AccessionDisplayStyle;
+    accession_dictionary?: { [internal_name: string]: string };
     selected_accessions?: string[];
     selected_reference?: string;
     selected_chromosome?: Chromosome;
