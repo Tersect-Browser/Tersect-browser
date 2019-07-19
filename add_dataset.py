@@ -18,19 +18,20 @@ def randomHash(cfg):
     MAX_VIEW_ID = 2000000000
     return hashids.encode(random.randint(0, MAX_VIEW_ID))
 
-def add_default_view(cfg, client, dataset_id):
+def add_default_view(cfg, client, dataset_id, accession_dictionary):
     view_id = randomHash(cfg)
     views = client[cfg['db_name']][cfg['view_collection']]
     try:
         views.insert({
             '_id': view_id,
             'settings': {
-                'dataset_id': dataset_id
+                'dataset_id': dataset_id,
+                'accession_dictionary': accession_dictionary
             }
         })
         return view_id
     except errors.DuplicateKeyError:
-        return add_default_view(cfg, client, dataset_id)
+        return add_default_view(cfg, client, dataset_id, accession_dictionary)
 
 def get_accession_names(tsi_file):
     proc = subprocess.Popen(['tersect', 'samples', '-n', tsi_file],
@@ -46,13 +47,14 @@ def rename_accession(tsi_file, old_name, new_name):
     command = ['tersect', 'rename', tsi_file, old_name, new_name]
     subprocess.call(command)
 
-# Fixes accession names by removing forbidden characters (spaces) and returns
-# a dictionary which maps the new names (as keys) to the old names (as values)
+# Fixes accession names by removing forbidden characters (spaces, periods, and
+# dollar signs) and returns  a dictionary which maps the new names (as keys)
+# to the old names (as values).
 def process_accession_names(tsi_file):
     accessions = get_accession_names(tsi_file)
     accession_dictionary = dict()
     for acc in accessions:
-        fixed = acc.replace(' ', '_')
+        fixed = acc.replace(' ', '_').replace('.', '_').replace('$', '_')
         if fixed != acc:
             # Appending a number in case fixed version of name already exists
             base_fixed = fixed
@@ -76,7 +78,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
     local_tsi_path = os.path.join(tsi_path, os.path.basename(tersect_db_file))
     shutil.copyfile(tersect_db_file, local_tsi_path)
 
-    process_accession_names(local_tsi_path)
+    accession_dictionary = process_accession_names(local_tsi_path)
 
     client = MongoClient(cfg['hostname'], cfg['port'])
     datasets = client[cfg['db_name']][cfg['dataset_collection']]
@@ -94,7 +96,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
             client.close()
             return
 
-    view_id = add_default_view(cfg, client, dataset_id)
+    view_id = add_default_view(cfg, client, dataset_id, accession_dictionary)
 
     ds = {
         '_id': dataset_id,
