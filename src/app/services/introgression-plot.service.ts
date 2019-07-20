@@ -150,6 +150,9 @@ export class IntrogressionPlotService {
             this.accessions_source.next(accessions);
         }
     }
+    get accessions(): string[] {
+        return this.accessions_source.getValue();
+    }
 
     /**
      * Dictionary of names to be used for accessions.
@@ -339,8 +342,7 @@ export class IntrogressionPlotService {
     private stopLoading = () => this.plot_loading = false;
 
     private validateInputs = () => {
-        const accessions = this.accessions_source.getValue();
-        if (!isNullOrUndefined(accessions) && accessions.length < 2) {
+        if (!isNullOrUndefined(this.accessions) && this.accessions.length < 2) {
             this.error_message = 'At least two accessions must be selected';
             return false;
         }
@@ -360,7 +362,8 @@ export class IntrogressionPlotService {
      * tree being stored or the query changing.
      */
     private treeUpdateRequired = () => {
-        if (isNullOrUndefined(this.phyloTree.tree) || this.phyloTree.query) {
+        if (isNullOrUndefined(this.phyloTree.tree)
+            || isNullOrUndefined(this.phyloTree.query)) {
             return true;
         }
         const current_query: TreeQuery = {
