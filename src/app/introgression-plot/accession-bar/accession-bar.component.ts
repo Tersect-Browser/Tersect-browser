@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { IntrogressionPlotService } from '../../services/introgression-plot.service';
+import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';

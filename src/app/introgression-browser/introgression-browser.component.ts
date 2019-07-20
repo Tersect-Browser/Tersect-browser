@@ -11,7 +11,7 @@ import { TooltipComponent } from '../tooltip/tooltip.component';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
 import { BrowserSettings } from './browser-settings';
 import { switchMap } from 'rxjs/operators';
-import { AccessionDisplayStyle } from '../services/introgression-plot.service';
+import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { isNullOrUndefined } from 'util';
 

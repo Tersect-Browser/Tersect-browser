@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import { formatPosition, findClosest, ceilTo, extractTags } from '../../utils/utils';
-import { IntrogressionPlotService } from '../../services/introgression-plot.service';
+import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { start } from 'repl';

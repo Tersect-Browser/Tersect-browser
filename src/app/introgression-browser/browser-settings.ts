@@ -1,5 +1,5 @@
 import { Chromosome } from '../models/Chromosome';
-import { AccessionDisplayStyle } from '../services/introgression-plot.service';
+import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
 
 export interface AccessionDictionary {
     [internal_name: string]: string;

@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { IntrogressionPlotService } from '../../services/introgression-plot.service';
+import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { isNullOrUndefined } from 'util';
 import { PlotPosition, PlotArea, PlotBin } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
