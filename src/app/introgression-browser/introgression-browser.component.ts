@@ -150,7 +150,8 @@ export class IntrogressionBrowserComponent implements OnInit {
                 this.widget_binsize = settings.selected_binsize;
                 this.widget_chromosome = settings.selected_chromosome;
                 this.plotState.interval$.subscribe((interval) => {
-                    this.widget_interval = interval;
+                    // Creating new interval array to ensure widget update
+                    this.widget_interval = [...interval];
                 });
             });
         });
