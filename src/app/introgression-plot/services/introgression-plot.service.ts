@@ -8,12 +8,12 @@ import { filter, tap, debounceTime, switchMap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
 import { sameElements, ceilTo, floorTo, formatRegion } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
-import { Chromosome } from '../../models/Chromosome';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { TreeQuery } from '../../models/TreeQuery';
 
 import * as deepEqual from 'fast-deep-equal';
-import { AccessionDictionary } from '../../introgression-browser/browser-settings';
+import { PlotStateService } from './plot-state.service';
+import { Observable } from 'rxjs/Observable';
 
 export interface GUIMargins {
     top: number;
@@ -64,27 +64,6 @@ export class IntrogressionPlotService {
     error_message = '';
 
     /**
-     * Zoom level in percentages.
-     */
-    zoom_level = 100;
-
-    /**
-     * Draw phylogenetic tree (if true) or simple list of accessions (if false).
-     */
-    accession_display: AccessionDisplayStyle = 'labels';
-
-    /**
-     * Identifier of the dataset open in the introgression plot.
-     */
-    private dataset_id_source = new BehaviorSubject<string>(undefined);
-    set dataset_id(dataset_id) {
-        this.dataset_id_source.next(dataset_id);
-    }
-    get dataset_id(): string {
-        return this.dataset_id_source.getValue();
-    }
-
-    /**
      * Horizontal / vertical scroll position of the plot.
      */
     plot_position_source = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
@@ -95,74 +74,6 @@ export class IntrogressionPlotService {
     plot_array_source = new BehaviorSubject<Uint8ClampedArray>(null);
     get plot_array() {
         return this.plot_array_source.getValue();
-    }
-
-    /**
-     * Chromosome displayed by the plot.
-     */
-    private chromosome_source = new BehaviorSubject<Chromosome>(undefined);
-    set chromosome(chromosome: Chromosome) {
-        this.chromosome_source.next(chromosome);
-    }
-    get chromosome(): Chromosome {
-        return this.chromosome_source.getValue();
-    }
-
-    /**
-     * Chromosomal interval displayed by the plot.
-     */
-    private interval_source = new BehaviorSubject<number[]>(undefined);
-    set interval(interval: number[]) {
-        this.interval_source.next(interval);
-    }
-    get interval(): number[] {
-        return this.interval_source.getValue();
-    }
-
-    /**
-     * Reference accession used by the plot.
-     */
-    private reference_source = new BehaviorSubject<string>(undefined);
-    set reference(reference: string) {
-        this.reference_source.next(reference);
-    }
-    get reference(): string {
-        return this.reference_source.getValue();
-    }
-
-    /**
-     * Bin size used by the plot.
-     */
-    private binsize_source = new BehaviorSubject<number>(undefined);
-    set binsize(binsize: number) {
-        this.binsize_source.next(binsize);
-    }
-    get binsize(): number {
-        return this.binsize_source.getValue();
-    }
-
-    /**
-     * Accessions displayed in the plot.
-     */
-    private accessions_source = new BehaviorSubject<string[]>(undefined);
-    set accessions(accessions: string[]) {
-        if (!sameElements(accessions, this.sorted_accessions)) {
-            this.accessions_source.next(accessions);
-        }
-    }
-    get accessions(): string[] {
-        return this.accessions_source.getValue();
-    }
-
-    /**
-     * Dictionary of names to be used for accessions.
-     */
-    private accession_dictionary_source = new BehaviorSubject<AccessionDictionary>(undefined);
-    set accession_dictionary(accession_dictionary: AccessionDictionary) {
-        this.accession_dictionary_source.next(accession_dictionary);
-    }
-    get accession_dictionary(): AccessionDictionary {
-        return this.accession_dictionary_source.getValue();
     }
 
     /**
@@ -182,25 +93,14 @@ export class IntrogressionPlotService {
     private sequenceGaps: SequenceInterval[];
 
     /**
-     * Accession names (as used by tersect) sorted in the order to
-     * be displayed on the drawn plot. Generally this is the order based on
-     * the neighbor joining tree clustering.
-     */
-    sorted_accessions_source = new BehaviorSubject<string[]>(null);
-    set sorted_accessions(accessions: string[]) {
-        this.sorted_accessions_source.next(accessions);
-    }
-    get sorted_accessions(): string[] {
-        return this.sorted_accessions_source.getValue();
-    }
-
-    /**
      * Phylogenetic tree built for the selected accessions (specified in query).
      */
     phyloTree: {
         query: TreeQuery
         tree: TreeNode
     } = { query: null, tree: null };
+
+    private plot_data$: Observable<any[]>;
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -209,15 +109,15 @@ export class IntrogressionPlotService {
     private distanceBins = {};
 
     get row_num(): number {
-        return this.sorted_accessions.length;
+        return this.plotState.sorted_accessions.length;
     }
 
     get col_num(): number {
-        return this.distanceBins[this.sorted_accessions[0]].length;
+        return this.distanceBins[this.plotState.sorted_accessions[0]].length;
     }
 
     get zoom_factor(): number {
-        return this.zoom_level / 100;
+        return this.plotState.zoom_level / 100;
     }
 
     /**
@@ -240,21 +140,22 @@ export class IntrogressionPlotService {
      * identifier is used.
      */
     getAccesionLabel(accession: string) {
-        if (isNullOrUndefined(this.accession_dictionary)) {
+        if (isNullOrUndefined(this.plotState.accession_dictionary)) {
             return accession;
-        } else if (accession in this.accession_dictionary) {
-            return this.accession_dictionary[accession];
+        } else if (accession in this.plotState.accession_dictionary) {
+            return this.plotState.accession_dictionary[accession];
         } else {
             return accession;
         }
     }
 
-    constructor(private tersectBackendService: TersectBackendService) {
-        const ref_distance_bins$ = combineLatest(this.dataset_id_source,
-                                                 this.reference_source,
-                                                 this.chromosome_source,
-                                                 this.interval_source,
-                                                 this.binsize_source).pipe(
+    constructor(private plotState: PlotStateService,
+                private tersectBackendService: TersectBackendService) {
+        const ref_distance_bins$ = combineLatest(this.plotState.dataset_id$,
+                                                 this.plotState.reference$,
+                                                 this.plotState.chromosome$,
+                                                 this.plotState.interval$,
+                                                 this.plotState.binsize$).pipe(
             filter(([ds, ref, chrom, interval, binsize]) =>
                 ![ds, ref, chrom, interval, binsize].some(isNullOrUndefined)
             ),
@@ -265,21 +166,21 @@ export class IntrogressionPlotService {
                 this.tersectBackendService
                     .getRefDistanceBins(ds, ref, chrom.name,
                                         interval[0], interval[1], binsize)
-            )
+            ),
         );
 
-        const accessions$ = this.accessions_source.pipe(
+        const updated_accessions$ = this.plotState.accessions$.pipe(
             filter((accessions) => !isNullOrUndefined(accessions)),
             filter(this.validateInputs),
             tap(this.startLoading),
-            debounceTime(this.DEBOUNCE_TIME)
+            debounceTime(this.DEBOUNCE_TIME),
         );
 
-        const phylo_tree$ = combineLatest(this.dataset_id_source,
-                                          this.chromosome_source,
-                                          this.interval_source,
-                                          accessions$,
-                                          this.binsize_source).pipe(
+        const phylo_tree$ = combineLatest(this.plotState.dataset_id$,
+                                          this.plotState.chromosome$,
+                                          this.plotState.interval$,
+                                          updated_accessions$,
+                                          this.plotState.binsize$).pipe(
             filter(([ds, chrom, interval, accessions, binsize]) => {
                     return ![ds, chrom, interval,
                              accessions, binsize].some(isNullOrUndefined);
@@ -297,19 +198,19 @@ export class IntrogressionPlotService {
             )
         );
 
-        const gaps$ = combineLatest(this.dataset_id_source,
-                                    this.chromosome_source).pipe(
+        const gaps$ = combineLatest(this.plotState.dataset_id$,
+                                    this.plotState.chromosome$).pipe(
             filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([ds, chrom]) => this.tersectBackendService
-                                           .getGapIndex(ds, chrom.name))
+                                           .getGapIndex(ds, chrom.name)),
         );
 
-        combineLatest(ref_distance_bins$,
-                      phylo_tree$,
-                      accessions$,
-                      gaps$).pipe(
+        this.plot_data$ = combineLatest(ref_distance_bins$,
+                                        phylo_tree$,
+                                        updated_accessions$,
+                                        gaps$).pipe(
             filter((inputs) =>
                 !inputs.some(isNullOrUndefined)
             ),
@@ -318,38 +219,50 @@ export class IntrogressionPlotService {
                 ref_dist['region'] === formatRegion(tree_query.chromosome_name,
                                                     tree_query.interval[0],
                                                     tree_query.interval[1])
-                && ref_dist['region'].split(':')[0] === this.chromosome.name
-                && ref_dist['reference'] === this.reference_source.getValue()
+                && ref_dist['region'].split(':')[0] === this.plotState
+                                                            .chromosome.name
+                && ref_dist['reference'] === this.plotState.reference
             )
-        ).subscribe(([ref_dist, [tree_query, tree], accessions, gaps]) => {
-            this.distanceBins = ref_dist['bins'];
-            if (!sameElements(accessions, this.sorted_accessions)
-                 || !deepEqual(this.phyloTree.query, tree_query)) {
-                this.phyloTree = { query: tree_query, tree: tree };
-                this.sorted_accessions = treeToSortedList(this.phyloTree.tree);
-                this.sequenceGaps = gaps;
-                this.generatePlotArray();
-                this.resetPosition();
-            } else {
-                // Don't reset position if distance matrix did not change
-                this.generatePlotArray();
-            }
-            this.stopLoading();
-        });
+        );
+
+        this.plotState.settings$.subscribe(() => {
+            // Subscribe to plot data updates once settings are loaded
+            this.plot_data$.subscribe(this.generate_plot);
+        })
+    }
+
+    private generate_plot = ([ref_dist, [tree_query, tree],
+                              accessions, gaps]) => {
+        this.distanceBins = ref_dist['bins'];
+        if (!sameElements(accessions, this.plotState.sorted_accessions)
+             || !deepEqual(this.phyloTree.query, tree_query)) {
+            this.phyloTree = { query: tree_query, tree: tree };
+            this.plotState
+                .sorted_accessions = treeToSortedList(this.phyloTree.tree);
+            this.sequenceGaps = gaps;
+            this.generatePlotArray();
+            this.resetPosition();
+        } else {
+            // Don't reset position if distance matrix did not change
+            this.generatePlotArray();
+        }
+        this.stopLoading();
     }
 
     private startLoading = () => this.plot_loading = true;
     private stopLoading = () => this.plot_loading = false;
 
     private validateInputs = () => {
-        if (!isNullOrUndefined(this.accessions) && this.accessions.length < 2) {
+        if (!isNullOrUndefined(this.plotState.accessions)
+            && this.plotState.accessions.length < 2) {
             this.error_message = 'At least two accessions must be selected';
             return false;
         }
-        const interval = this.interval_source.getValue();
-        if (isNaN(parseInt(interval[0].toString(), 10))
+        const interval = this.plotState.interval;
+        if (isNullOrUndefined(interval)
+            || isNaN(parseInt(interval[0].toString(), 10))
             || isNaN(parseInt(interval[1].toString(), 10))
-            || interval[1] - interval[0] < this.binsize) {
+            || interval[1] - interval[0] < this.plotState.binsize) {
             this.error_message = 'Invalid interval';
             return false;
         }
@@ -367,9 +280,9 @@ export class IntrogressionPlotService {
             return true;
         }
         const current_query: TreeQuery = {
-            chromosome_name: this.chromosome.name,
-            interval: this.interval,
-            accessions: this.accessions
+            chromosome_name: this.plotState.chromosome.name,
+            interval: this.plotState.interval,
+            accessions: this.plotState.accessions
         };
         return !deepEqual(this.phyloTree.query, current_query);
     }
@@ -391,7 +304,7 @@ export class IntrogressionPlotService {
 
     private generatePlotArray() {
         const palette = new GreyscalePalette();
-        const accessionBins = this.sorted_accessions.map(
+        const accessionBins = this.plotState.sorted_accessions.map(
             accession => this.distanceBins[accession]
         );
 
@@ -421,7 +334,7 @@ export class IntrogressionPlotService {
      */
     private addPlotGaps(plot_array: Uint8ClampedArray) {
         this.sequenceGaps.forEach(gap => {
-            if (gap.size >= this.binsize) {
+            if (gap.size >= this.plotState.binsize) {
                 this.addPlotGap(plot_array, gap);
             }
         });
@@ -430,15 +343,16 @@ export class IntrogressionPlotService {
     private addPlotGap(plot_array: Uint8ClampedArray, gap: SequenceInterval) {
         const row_num = this.row_num;
         const col_num = this.col_num;
-        const start_pos = gap.start > this.interval[0] ? gap.start
-                                                       : this.interval[0];
-        const end_pos = gap.end < this.interval[1] ? gap.end
-                                                   : this.interval[1];
-        const bin_start = ceilTo(start_pos - this.interval[0], this.binsize)
-                          / this.binsize;
+        const interval = this.plotState.interval;
+        const start_pos = gap.start > interval[0] ? gap.start : interval[0];
+        const end_pos = gap.end < interval[1] ? gap.end : interval[1];
+        const bin_start = ceilTo(start_pos - interval[0],
+                                 this.plotState.binsize)
+                          / this.plotState.binsize;
         // NOTE: bin_end index is exclusive while gap.end position is inclusive
-        const bin_end = floorTo(end_pos - this.interval[0] + 1, this.binsize)
-                        / this.binsize;
+        const bin_end = floorTo(end_pos - interval[0] + 1,
+                                this.plotState.binsize)
+                        / this.plotState.binsize;
         for (let accession_index = 0;
                  accession_index < row_num;
                  accession_index++) {

@@ -14,15 +14,15 @@
         <div class="accession-display-overlay">
             <p-radioButton name="display_types"
                 label="Accession labels" value="labels"
-                [(ngModel)]="settings.selectedAccessionDisplayStyle">
+                [(ngModel)]="widget_accession_style">
             </p-radioButton>
             <p-radioButton name="display_types"
                 label="Phylogenetic tree (simplified)" value="tree_simple"
-                [(ngModel)]="settings.selectedAccessionDisplayStyle">
+                [(ngModel)]="widget_accession_style">
                 </p-radioButton>
             <p-radioButton name="display_types"
                 label="Phylogenetic tree" value="tree_linear"
-                [(ngModel)]="settings.selectedAccessionDisplayStyle">
+                [(ngModel)]="widget_accession_style">
             </p-radioButton>
         </div>
     </p-overlayPanel>
@@ -32,7 +32,7 @@
             [filter]="true"
             [autoWidth]="false"
             [style]="{'width':'100%'}"
-            [(ngModel)]="settings.selected_reference">
+            [(ngModel)]="widget_reference">
         </p-dropdown>
     </div>
     <div class="p-col tb-toolbar-control">
@@ -46,21 +46,21 @@
         <div class="interval-label">
             Interval:
             <input class="interval-input" type="text" pKeyFilter="pint"
-                [(ngModel)]="settings.selected_interval[0]"
+                [(ngModel)]="widget_interval[0]"
                 (input)="typeInterval($event)" pInputText>
             -
             <input class="interval-input" type="text" pKeyFilter="pint"
-                [(ngModel)]="settings.selected_interval[1]"
+                [(ngModel)]="widget_interval[1]"
                 (input)="typeInterval($event)" pInputText>
         </div>
         <div class="interval-slider">
-            <p-slider [(ngModel)]="settings.selected_interval"
+            <p-slider [(ngModel)]="widget_interval"
                 [range]="true"
                 [animate]="true"
                 [style]="{'width':'100%'}"
                 (onChange)="intervalSliderChange($event)"
                 (onSlideEnd)="updateInterval()"
-                [min]="1" [max]="settings.selected_chromosome.size">
+                [min]="1" [max]="widget_chromosome?.size">
             </p-slider>
         </div>
     </div>
@@ -79,11 +79,11 @@
     </div>
     <div class="p-col zoom-selector tb-toolbar-control">
         <button pButton icon="fa fa-search-minus"
-            [disabled]="settings.zoom_level <= MIN_ZOOM_LEVEL"
+            [disabled]="isZoomMin()"
             (click)="zoomOut()">
         </button>
         <button pButton icon="fa fa-search-plus"
-            [disabled]="settings.zoom_level >= MAX_ZOOM_LEVEL"
+            [disabled]="isZoomMax()"
             (click)="zoomIn()">
         </button>
     </div>
@@ -111,15 +111,6 @@
 
 <div #plotContainer class="plot-container">
     <app-introgression-plot
-        [accessionDisplayStyle]="settings.selectedAccessionDisplayStyle"
-        [dataset_id]="settings.dataset_id"
-        [chromosome]="settings.selected_chromosome"
-        [accessions]="settings.selected_accessions"
-        [accession_dictionary]="settings.accession_dictionary"
-        [interval]="settings.selected_interval"
-        [reference]="settings.selected_reference"
-        [binsize]="settings.selected_binsize"
-        [zoom_level]="settings.zoom_level"
         (plotMouseClick)="plotClick($event)"
         (plotMouseHover)="tooltip.show($event)"
         (plotMouseMove)="tooltip.hide()"

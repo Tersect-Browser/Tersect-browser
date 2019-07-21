@@ -1,21 +1,22 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome } from '../models/Chromosome';
 import { TersectBackendService } from '../services/tersect-backend.service';
-import { ceilTo, floorTo, formatPosition } from '../utils/utils';
+import { formatPosition } from '../utils/utils';
 import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { BrowserSettings } from './browser-settings';
 import { switchMap } from 'rxjs/operators';
 import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { isNullOrUndefined } from 'util';
 
 import * as path from 'path';
+import { PlotStateService } from '../introgression-plot/services/plot-state.service';
+import { BrowserSettings } from './browser-settings';
 
 @Component({
     selector: 'app-introgression-browser',
@@ -33,78 +34,69 @@ export class IntrogressionBrowserComponent implements OnInit {
     chromosomes: SelectItem[];
     accessions: SelectItem[];
 
-    settings: BrowserSettings = {
-        dataset_id: undefined,
-        selectedAccessionDisplayStyle: this.DEFAULT_DISPLAY_STYLE,
-        accession_dictionary: undefined,
-        selected_accessions: undefined,
-        selected_reference: undefined,
-        selected_chromosome: { name: '', size: 0 },
-        selected_interval: [1, 2 * this.DEFAULT_BINSIZE],
-        selected_binsize: this.DEFAULT_BINSIZE,
-        zoom_level: this.DEFAULT_ZOOM_LEVEL
-    };
-
-    constructor(private tersectBackendService: TersectBackendService,
+    constructor(private plotState: PlotStateService,
+                private tersectBackendService: TersectBackendService,
                 private router: Router,
                 private route: ActivatedRoute,
                 private platformLocation: PlatformLocation) { }
 
-    @Input()
     set widget_chromosome(chrom: Chromosome) {
-        if (this.settings.selected_chromosome.name !== chrom.name
-            && this.settings.selected_chromosome.size !== chrom.size) {
-            this.settings.selected_interval[0] = 1;
-            this.settings.selected_interval[1] = chrom.size;
-            this.updateInterval();
-            this.settings.selected_chromosome = chrom;
+        if (this.plotState.chromosome.name !== chrom.name
+            || this.plotState.chromosome.size !== chrom.size) {
+            this.plotState.interval = [1, chrom.size];
+            this.plotState.chromosome = chrom;
         }
     }
     get widget_chromosome(): Chromosome {
-        return this.settings.selected_chromosome;
+        return this.plotState.chromosome;
     }
+
+    set widget_accession_style(style: AccessionDisplayStyle) {
+        this.plotState.accession_style = style;
+    }
+    get widget_accession_style(): AccessionDisplayStyle {
+        return this.plotState.accession_style;
+    }
+
+    set widget_reference(reference: string) {
+        this.plotState.reference = reference;
+    }
+    get widget_reference(): string {
+        return this.plotState.reference;
+    }
+
+    readonly TYPING_DELAY = 750;
+    private interval_input_timeout: NodeJS.Timer;
+    widget_interval: number[] = [0, 0];
+
+    readonly BINSIZE_SLIDER_DELAY = 750;
+    private binsize_slider_timeout: NodeJS.Timer;
+    binsize_min = 1000;
+    binsize_step = 1000;
+    binsize_max = 100000;
+    widget_binsize: number;
+
+    widget_accessions: string[];
 
     share_link = '';
 
     display_tree = false;
-
-    widget_accessions: string[];
-
     display_sidebar = false;
 
-    binsize_min = 1000;
-    binsize_step = 1000;
-    binsize_max = 100000;
-
-    widget_binsize: number;
-
-    readonly TYPING_DELAY = 750;
-    private interval_input_timeout: NodeJS.Timer;
-
-    readonly BINSIZE_SLIDER_DELAY = 750;
-    private binsize_slider_timeout: NodeJS.Timer;
-
-    readonly MAX_ZOOM_LEVEL = 1000;
-    readonly MIN_ZOOM_LEVEL = 100;
-    readonly ZOOM_FACTOR = 1.3;
-    readonly ZOOM_ROUND_TO = 50;
-
     zoomIn() {
-        this.settings.zoom_level *= this.ZOOM_FACTOR;
-        this.settings.zoom_level = ceilTo(this.settings.zoom_level,
-                                          this.ZOOM_ROUND_TO);
-        if (this.settings.zoom_level > this.MAX_ZOOM_LEVEL) {
-            this.settings.zoom_level = this.MAX_ZOOM_LEVEL;
-        }
+        this.plotState.zoomIn();
     }
 
     zoomOut() {
-        this.settings.zoom_level /= this.ZOOM_FACTOR;
-        this.settings.zoom_level = floorTo(this.settings.zoom_level,
-                                           this.ZOOM_ROUND_TO);
-        if (this.settings.zoom_level < this.MIN_ZOOM_LEVEL) {
-            this.settings.zoom_level = this.MIN_ZOOM_LEVEL;
-        }
+        this.plotState.zoomOut();
+    }
+
+    isZoomMax(): boolean {
+        return this.plotState.isZoomMax();
+    }
+
+    isZoomMin(): boolean {
+        return this.plotState.isZoomMin();
     }
 
     scrollWheel(event: WheelEvent) {
@@ -127,7 +119,7 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     formatAccessionSelection(accession_names: string[]): SelectItem[] {
         return accession_names.map((n: string) => ({
-            label: this.settings.accession_dictionary[n],
+            label: this.plotState.accession_dictionary[n],
             value: n
         }));
     }
@@ -150,19 +142,22 @@ export class IntrogressionBrowserComponent implements OnInit {
                                      .getChromosomes(settings.dataset_id);
             forkJoin([accessions$, chromosomes$]).subscribe(([accessions,
                                                               chromosomes]) => {
-                this.settings = settings;
-                this.generateMissingSettings(accessions, chromosomes);
+                this.generateMissingSettings(settings, accessions, chromosomes);
+                this.plotState.settings = settings;
                 this.accessions = this.formatAccessionSelection(accessions);
                 this.chromosomes = this.formatChromosomeSelection(chromosomes);
-                this.widget_accessions = this.settings.selected_accessions;
-                this.widget_binsize = this.settings.selected_binsize;
-                this.widget_chromosome = this.settings.selected_chromosome;
+                this.widget_accessions = settings.selected_accessions;
+                this.widget_binsize = settings.selected_binsize;
+                this.widget_chromosome = settings.selected_chromosome;
+                this.plotState.interval$.subscribe((interval) => {
+                    this.widget_interval = interval;
+                });
             });
         });
     }
 
     exportView($event) {
-        this.tersectBackendService.exportSettings(this.settings)
+        this.tersectBackendService.exportSettings(this.plotState.settings)
                                   .subscribe((id) => {
             const host = this.platformLocation['location'].origin;
             this.share_link = path.join(host, 'TersectBrowser', 'share',
@@ -173,56 +168,54 @@ export class IntrogressionBrowserComponent implements OnInit {
     /**
      * Load default values for missing settings.
      */
-    generateMissingSettings(accessions: string[], chromosomes: Chromosome[]) {
-        if (isNullOrUndefined(this.settings.selectedAccessionDisplayStyle)) {
-            this.settings
-                .selectedAccessionDisplayStyle = this.DEFAULT_DISPLAY_STYLE;
+    generateMissingSettings(settings: BrowserSettings,
+                            accessions: string[],
+                            chromosomes: Chromosome[]) {
+        if (isNullOrUndefined(settings.selectedAccessionDisplayStyle)) {
+            settings.selectedAccessionDisplayStyle = this.DEFAULT_DISPLAY_STYLE;
         }
-        if (isNullOrUndefined(this.settings.selected_accessions)) {
-            this.settings.selected_accessions = accessions;
+        if (isNullOrUndefined(settings.selected_accessions)) {
+            settings.selected_accessions = accessions;
         }
-        if (isNullOrUndefined(this.settings.selected_reference)) {
-            this.settings
-                .selected_reference = this.settings.selected_accessions[0];
+        if (isNullOrUndefined(settings.selected_reference)) {
+            settings.selected_reference = settings.selected_accessions[0];
         }
-        if (isNullOrUndefined(this.settings.selected_binsize)) {
-            this.settings.selected_binsize = this.DEFAULT_BINSIZE;
+        if (isNullOrUndefined(settings.selected_binsize)) {
+            settings.selected_binsize = this.DEFAULT_BINSIZE;
         }
-        if (isNullOrUndefined(this.settings.selected_chromosome)) {
+        if (isNullOrUndefined(settings.selected_chromosome)) {
             // Selecting the largest chromosome
             const largest_chrom = chromosomes.reduce((prev, current) => {
                 return (current.size > prev.size) ? current : prev;
             });
-            this.settings.selected_chromosome = largest_chrom;
+            settings.selected_chromosome = largest_chrom;
         }
-        if (isNullOrUndefined(this.settings.zoom_level)) {
-            this.settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
+        if (isNullOrUndefined(settings.zoom_level)) {
+            settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
         }
-        if (isNullOrUndefined(this.settings.selected_interval)) {
-            this.settings.selected_interval = [
-                1, this.settings.selected_chromosome.size
+        if (isNullOrUndefined(settings.selected_interval)) {
+            settings.selected_interval = [
+                1, settings.selected_chromosome.size
             ];
         }
-        if (isNullOrUndefined(this.settings.accession_dictionary)) {
-            this.settings.accession_dictionary = {};
-            this.settings.selected_accessions.forEach((acc_name) => {
-                this.settings.accession_dictionary[acc_name] = acc_name;
+        if (isNullOrUndefined(settings.accession_dictionary)) {
+            settings.accession_dictionary = {};
+            settings.selected_accessions.forEach((acc_name) => {
+                settings.accession_dictionary[acc_name] = acc_name;
             });
         }
     }
 
     typeInterval(event) {
-        // fix to possible PrimeNG bug
+        // workaround due to possible PrimeNG bug
         // numbers typed into text box are sometimes interpreted as strings
-        const interval_start = parseInt(this.settings.selected_interval[0]
-                                                     .toString(), 10);
-        const interval_end = parseInt(this.settings.selected_interval[1]
-                                                   .toString(), 10);
+        const interval_start = parseInt(this.widget_interval[0].toString(), 10);
+        const interval_end = parseInt(this.widget_interval[1].toString(), 10);
         if (!isNaN(interval_start)) {
-            this.settings.selected_interval[0] = interval_start;
+            this.widget_interval[0] = interval_start;
         }
         if (!isNaN(interval_end)) {
-            this.settings.selected_interval[1] = interval_end;
+            this.widget_interval[1] = interval_end;
         }
         // fix end
         clearTimeout(this.interval_input_timeout);
@@ -231,29 +224,24 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     updateInterval() {
-        this.settings.selected_interval = [
-            this.settings.selected_interval[0],
-            this.settings.selected_interval[1]
-        ];
+        this.plotState.interval = this.widget_interval;
     }
 
     updateAccessions() {
-        if (!this.widget_accessions.includes(this.settings.selected_reference)) {
-            this.settings.selected_reference = this.widget_accessions[0];
+        if (!this.widget_accessions.includes(this.plotState.reference)) {
+            this.plotState.reference = this.widget_accessions[0];
         }
-        this.settings.selected_accessions = this.widget_accessions.slice(0);
+        this.plotState.accessions = this.widget_accessions.slice(0);
     }
 
     updateBinsize() {
-        this.settings.selected_binsize = this.widget_binsize;
+        this.plotState.binsize = this.widget_binsize;
     }
 
     intervalSliderChange($event) {
+        // Selecting full chromosome on click
         if ($event.event.type === 'click') {
-            this.settings.selected_interval[0] = 1;
-            this.settings.selected_interval[1] = this.settings
-                                                     .selected_chromosome.size;
-            this.updateInterval();
+            this.plotState.interval = [1, this.plotState.chromosome.size];
         }
     }
 
@@ -282,7 +270,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     setReference($event) {
-        this.settings.selected_reference = $event;
+        this.plotState.reference = $event;
     }
 
     removeAccession($event) {
@@ -294,17 +282,15 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     setInterval($event: number[]) {
-        this.settings.selected_interval = $event;
+        this.plotState.interval = $event;
     }
 
     setIntervalStart($event) {
-        this.settings.selected_interval[0] = $event;
-        this.updateInterval();
+        this.plotState.interval = [$event, this.plotState.interval[1]];
     }
 
     setIntervalEnd($event) {
-        this.settings.selected_interval[1] = $event;
-        this.updateInterval();
+        this.plotState.interval = [this.plotState.interval[0], $event];
     }
 
 }

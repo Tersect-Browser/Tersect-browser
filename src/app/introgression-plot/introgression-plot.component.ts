@@ -1,12 +1,10 @@
-import { Component, OnInit, ViewChild, HostListener, Input, Output, EventEmitter } from '@angular/core';
-import { Chromosome } from '../models/Chromosome';
+import { Component, OnInit, ViewChild, HostListener, Output, EventEmitter } from '@angular/core';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
-import { IntrogressionPlotService, AccessionDisplayStyle } from './services/introgression-plot.service';
+import { IntrogressionPlotService } from './services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
 import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
-import { AccessionDictionary } from '../introgression-browser/browser-settings';
-import { isNullOrUndefined } from 'util';
+import { PlotStateService } from './services/plot-state.service';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -24,66 +22,6 @@ export class IntrogressionPlotComponent implements OnInit {
     @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
     @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
-    @Input()
-    set dataset_id(dataset_id: string) {
-        this.plotService.dataset_id = dataset_id;
-    }
-
-    @Input()
-    set chromosome(chromosome: Chromosome) {
-        this.plotService.chromosome = chromosome;
-    }
-
-    @Input()
-    set interval(interval: number[]) {
-        this.plotService.interval = interval;
-    }
-
-    @Input()
-    set reference(reference_accession: string) {
-        this.plotService.reference = reference_accession;
-    }
-
-    @Input()
-    set binsize(binsize: number) {
-        this.plotService.binsize = binsize;
-    }
-
-    @Input()
-    set accessions(accessions: string[]) {
-        this.plotService.accessions = accessions;
-    }
-
-    @Input()
-    set accessionDisplayStyle(accessionDisplayStyle: AccessionDisplayStyle) {
-        if (accessionDisplayStyle !== this.plotService.accession_display) {
-            this.plotService.accession_display = accessionDisplayStyle;
-            this.redrawPlot();
-        }
-    }
-
-    @Input()
-    set accession_dictionary(accession_dictionary: AccessionDictionary) {
-        if (isNullOrUndefined(this.plotService.accession_dictionary)) {
-            // No need to redraw anything for the initial dictionary
-            this.plotService.accession_dictionary = accession_dictionary;
-        } else {
-            this.plotService.accession_dictionary = accession_dictionary;
-            this.redrawPlot();
-        }
-    }
-
-    /**
-     * Zoom level in percentages.
-     */
-    @Input()
-    set zoom_level(zoom_level: number) {
-        if (zoom_level !== this.plotService.zoom_level) {
-            this.plotService.zoom_level = zoom_level;
-            this.redrawPlot();
-        }
-    }
-
     get error_message() {
         return this.plotService.error_message;
     }
@@ -93,6 +31,14 @@ export class IntrogressionPlotComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.plotState.accession_style$.subscribe(() => {
+            this.redrawPlot();
+        });
+
+        this.plotState.zoom_level$.subscribe(() => {
+            this.redrawPlot();
+        });
+
         this.plotService.plot_position_source.subscribe(() => {
             this.redrawPlot();
         });
@@ -124,7 +70,8 @@ export class IntrogressionPlotComponent implements OnInit {
         this.plotMouseMove.emit($event);
     }
 
-    constructor(private plotService: IntrogressionPlotService) { }
+    constructor(private plotState: PlotStateService,
+                private plotService: IntrogressionPlotService) { }
 
     @HostListener('window:orientationchange', ['$event'])
     @HostListener('window:resize', ['$event'])

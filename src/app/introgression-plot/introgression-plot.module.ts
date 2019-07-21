@@ -9,6 +9,7 @@ import { IntrogressionPlotComponent } from './introgression-plot.component';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
+import { PlotStateService } from './services/plot-state.service';
 
 @NgModule({
     declarations: [
@@ -25,7 +26,8 @@ import { BinPlotComponent } from './bin-plot/bin-plot.component';
         ProgressSpinnerModule
     ],
     providers: [
-        TersectBackendService
+        TersectBackendService,
+        PlotStateService
     ]
 })
 export class IntrogressionPlotModule { }

@@ -3,6 +3,7 @@ import { IntrogressionPlotService } from '../services/introgression-plot.service
 import { isNullOrUndefined } from 'util';
 import { PlotPosition, PlotArea, PlotBin } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
+import { PlotStateService } from '../services/plot-state.service';
 
 @Component({
     selector: 'app-bin-plot',
@@ -23,15 +24,16 @@ export class BinPlotComponent extends CanvasPlotElement {
         return this.plotService.gui_margins;
     }
 
-    constructor(private plotService: IntrogressionPlotService) { super(); }
+    constructor(private plotState: PlotStateService,
+                private plotService: IntrogressionPlotService) { super(); }
 
     draw() {
         if (isNullOrUndefined(this.plotService.plot_array)) { return; }
 
         this.canvas.nativeElement
-                   .style.width = `${this.plotService.zoom_level}%`;
+                   .style.width = `${this.plotState.zoom_level}%`;
         this.canvas.nativeElement
-                   .style.height = `${this.plotService.zoom_level
+                   .style.height = `${this.plotState.zoom_level
                                       / this.plotService.aspect_ratio}%`;
 
         this.canvas.nativeElement.width = this.canvas.nativeElement
@@ -63,13 +65,13 @@ export class BinPlotComponent extends CanvasPlotElement {
         if (isNullOrUndefined(this.plotService.highlight)) {
             this.highlight.nativeElement.style.visibility = 'hidden';
         } else {
-            const bp_per_pixel = this.plotService.binsize
+            const bp_per_pixel = this.plotState.binsize
                                  / this.plotService.zoom_factor;
             const plot_offset = (this.plotService.gui_margins.left
                                  + this.plotService.plot_position.x);
 
             const left_pos = (this.plotService.highlight.start
-                              - this.plotService.interval[0]) / bp_per_pixel
+                              - this.plotState.interval[0]) / bp_per_pixel
                              + plot_offset * this.plotService.bin_width;
 
             const width = (this.plotService.highlight.end
@@ -96,10 +98,10 @@ export class BinPlotComponent extends CanvasPlotElement {
             return { type: 'background' };
         }
 
-        const interval = this.plotService.interval;
-        const binsize = this.plotService.binsize;
+        const interval = this.plotState.interval;
+        const binsize = this.plotState.binsize;
 
-        const accession = this.plotService.sorted_accessions[accession_index];
+        const accession = this.plotState.sorted_accessions[accession_index];
 
         const result: PlotBin = {
             type: 'bin',

@@ -3,8 +3,8 @@ import { formatPosition, findClosest, ceilTo, extractTags } from '../../utils/ut
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
-import { start } from 'repl';
 import { isNullOrUndefined } from 'util';
+import { PlotStateService } from '../services/plot-state.service';
 
 interface ScaleTick {
     position: number;
@@ -43,7 +43,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
      */
     readonly GUI_TICK_DISTANCE = 120;
 
-    constructor(private plotService: IntrogressionPlotService,
+    constructor(private plotState: PlotStateService,
+                private plotService: IntrogressionPlotService,
                 private renderer: Renderer2) {
         super();
         this.hover_state.hover_delay = 0;
@@ -51,13 +52,13 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     private drawScaleTick(ctx: CanvasRenderingContext2D,
-                           tick: ScaleTick) {
+                          tick: ScaleTick) {
         const canvas_height = this.canvas.nativeElement.offsetHeight;
-        const bp_per_pixel = this.plotService.binsize
+        const bp_per_pixel = this.plotState.binsize
                              / this.plotService.zoom_factor;
         const tick_x = (this.plotService.plot_position.x
-                        * this.plotService.binsize
-                        + tick.position - this.plotService.interval[0])
+                        * this.plotState.binsize
+                        + tick.position - this.plotState.interval[0])
                        / bp_per_pixel;
         const tick_size = tick.type === 'major' ? this.GUI_TICK_LENGTH
                                                 : this.GUI_TICK_LENGTH / 2;
@@ -84,11 +85,11 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     private drawTicks(ctx: CanvasRenderingContext2D,
-                       tick_bp_distance: number,
-                       generic_tick: ScaleTick) {
-        for (let pos = ceilTo(this.plotService.interval[0] - 1,
+                      tick_bp_distance: number,
+                      generic_tick: ScaleTick) {
+        for (let pos = ceilTo(this.plotState.interval[0] - 1,
                               tick_bp_distance);
-                 pos < this.plotService.interval[1];
+                 pos < this.plotState.interval[1];
                  pos += tick_bp_distance) {
             generic_tick.position = pos;
             this.drawScaleTick(ctx, generic_tick);
@@ -118,6 +119,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     draw() {
+        if (isNullOrUndefined(this.plotState.interval)) { return; }
+
         const canvas_width = this.canvas.nativeElement
                                         .parentElement
                                         .parentElement
@@ -143,7 +146,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
         ctx.textAlign = 'center';
         ctx.font = `${this.GUI_SCALE_FONT_SIZE}px ${this.GUI_SCALE_FONT}`;
 
-        const bp_per_pixel = this.plotService.binsize
+        const interval = this.plotState.interval;
+        const bp_per_pixel = this.plotState.binsize
                              / this.plotService.zoom_factor;
         const tick_bp_distance = findClosest(this.GUI_TICK_DISTANCE
                                              * bp_per_pixel,
@@ -151,12 +155,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const unit = tick_bp_distance < 100000 ? 'kbp' : 'Mbp';
 
         const x_start = (this.plotService.plot_position.x
-                         * this.plotService.binsize)
+                         * this.plotState.binsize)
                         / bp_per_pixel;
         const x_end = (this.plotService.plot_position.x
-                       * this.plotService.binsize
-                       + this.plotService.interval[1]
-                       - this.plotService.interval[0])
+                       * this.plotState.binsize + interval[1] - interval[0])
                       / bp_per_pixel;
 
         // Baseline
@@ -167,12 +169,12 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         // Start / end ticks
         this.drawScaleTick(ctx, {
-            position: this.plotService.interval[0],
+            position: interval[0],
             type: 'major',
             useLabel: false
         });
         this.drawScaleTick(ctx, {
-            position: this.plotService.interval[1],
+            position: interval[1],
             type: 'major',
             useLabel: false
         });
@@ -187,15 +189,14 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected getPositionTarget(position: PlotPosition): PlotArea {
-        const bp_per_pixel = this.plotService.binsize
+        const interval = this.plotState.interval;
+        const bp_per_pixel = this.plotState.binsize
                              / this.plotService.zoom_factor;
-        const bp_position = position.x * bp_per_pixel
-                            + this.plotService.interval[0]
+        const bp_position = position.x * bp_per_pixel + interval[0]
                             - (this.plotService.plot_position.x
                                + this.plotService.gui_margins.left)
-                              * this.plotService.binsize;
-        if (bp_position < this.plotService.interval[0]
-            || bp_position > this.plotService.interval[1]) {
+                              * this.plotState.binsize;
+        if (bp_position < interval[0] || bp_position > interval[1]) {
             return { type: 'background' };
         }
         const result: PlotSequencePosition = {
@@ -243,10 +244,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
         this.plotService.highlight = {
             start: start_target.type === 'position'
                     ? (start_target as PlotSequencePosition).position
-                    : this.plotService.interval[0],
+                    : this.plotState.interval[0],
             end: end_target.type === 'position'
                   ? (end_target as PlotSequencePosition).position
-                  : this.plotService.interval[1]
+                  : this.plotState.interval[1]
         };
 
         const target_interval: PlotSequenceInterval = {

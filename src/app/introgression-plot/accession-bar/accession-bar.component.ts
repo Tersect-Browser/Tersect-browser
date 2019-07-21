@@ -5,6 +5,7 @@ import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clu
 import { ceilTo } from '../../utils/utils';
 import { isNullOrUndefined } from 'util';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
+import { PlotStateService } from '../services/plot-state.service';
 
 @Component({
     selector: 'app-accession-bar',
@@ -39,10 +40,11 @@ export class AccessionBarComponent extends CanvasPlotElement {
         return this.plotService.gui_margins;
     }
 
-    constructor(private plotService: IntrogressionPlotService) { super(); }
+    constructor(private plotState: PlotStateService,
+                private plotService: IntrogressionPlotService) { super(); }
 
     draw() {
-        if (isNullOrUndefined(this.plotService.sorted_accessions)) { return; }
+        if (isNullOrUndefined(this.plotState.sorted_accessions)) { return; }
 
         this.canvas.nativeElement.height = this.canvas.nativeElement
                                                       .parentElement
@@ -69,7 +71,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
                      this.canvas.nativeElement.height);
 
         // Draw labels
-        if (this.plotService.accession_display === 'labels') {
+        if (this.plotState.accession_style === 'labels') {
             this.drawSimpleLabels(ctx, text_height, yoffset);
         } else {
             this.drawLabelTree(ctx, text_height, yoffset);
@@ -77,9 +79,9 @@ export class AccessionBarComponent extends CanvasPlotElement {
     }
 
     private getEdgeLength(node: TreeNode): number {
-        if (this.plotService.accession_display === 'tree_simple') {
+        if (this.plotState.accession_style === 'tree_simple') {
             return 1;
-        } else if (this.plotService.accession_display === 'tree_linear') {
+        } else if (this.plotState.accession_style === 'tree_linear') {
             return node.length;
         } else {
             // Should not happen
@@ -158,10 +160,10 @@ export class AccessionBarComponent extends CanvasPlotElement {
                                 - this.getMaxLabelWidth(ctx)
                                 - this.plotService.bin_width
                                 - this.GUI_TREE_LEFT_MARGIN;
-        if (this.plotService.accession_display === 'tree_simple') {
+        if (this.plotState.accession_style === 'tree_simple') {
             return available_width / getTreeDepth(this.plotService
                                                       .phyloTree.tree);
-        } else if (this.plotService.accession_display === 'tree_linear') {
+        } else if (this.plotState.accession_style === 'tree_linear') {
             return available_width / getTreeDepthLinear(this.plotService
                                                             .phyloTree.tree);
         } else {
@@ -174,7 +176,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
                              text_height: number, yoffset: number) {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
-        this.plotService.sorted_accessions.forEach((acc, index) => {
+        this.plotState.sorted_accessions.forEach((acc, index) => {
             ctx.fillText(this.plotService.getAccesionLabel(acc),
                          0, yoffset + index * text_height);
         });
@@ -183,7 +185,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
     private updateComponentWidth() {
         const ctx: CanvasRenderingContext2D = this.canvas.nativeElement
                                                          .getContext('2d');
-        if (this.plotService.accession_display === 'labels') {
+        if (this.plotState.accession_style === 'labels') {
             // Rounding up to the bin width
             const bar_width = ceilTo(this.getMaxLabelWidth(ctx),
                                      this.plotService.bin_width);
@@ -208,7 +210,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
         ctx.font = `${this.plotService.bin_height}px ${this.GUI_TREE_FONT}`;
         return Math.max(
-            ...this.plotService.sorted_accessions.map(acc =>
+            ...this.plotState.sorted_accessions.map(acc =>
                 ctx.measureText(this.plotService.getAccesionLabel(acc)).width
             )
         );
@@ -221,7 +223,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
         if (accession_index >= this.plotService.row_num) {
             return { type: 'background' };
         }
-        const accession = this.plotService.sorted_accessions[accession_index];
+        const accession = this.plotState.sorted_accessions[accession_index];
         const result: PlotAccession = {
             type: 'accession',
             accession_label: this.plotService.getAccesionLabel(accession),
