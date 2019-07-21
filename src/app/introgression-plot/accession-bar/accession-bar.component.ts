@@ -89,43 +89,48 @@ export class AccessionBarComponent extends CanvasPlotElement {
         }
     }
 
-    private _drawLabelTree(subtree: TreeNode, xpos: number,
+    private _drawLabelTree(subtree: TreeNode, base_xpos: number,
                            ctx: CanvasRenderingContext2D,
                            background_width: number, text_height: number,
                            yoffset: number, scale: number,
                            draw_state: { current_row: number }) {
-        const ypos = [ yoffset + draw_state.current_row * text_height ];
+        let prev_ypos = yoffset + draw_state.current_row * text_height;
+        const subtree_xpos = [];
+        const subtree_ypos = [];
 
         if (subtree.children.length) {
-            const top_xpos = xpos + this.getEdgeLength(subtree.children[0])
-                                    * scale;
-
-            this._drawLabelTree(subtree.children[0], top_xpos, ctx,
-                                background_width, text_height, yoffset, scale,
-                                draw_state);
-            ypos.push(yoffset + draw_state.current_row * text_height);
-
-            const bottom_xpos = xpos + this.getEdgeLength(subtree.children[1])
-                                       * scale;
-
-            this._drawLabelTree(subtree.children[1], bottom_xpos, ctx,
-                                background_width, text_height, yoffset, scale,
-                                draw_state);
-            ypos.push(yoffset + draw_state.current_row * text_height);
+            subtree.children.forEach((child) => {
+                const child_xpos = base_xpos + this.getEdgeLength(child)
+                                               * scale;
+                this._drawLabelTree(child, child_xpos, ctx,
+                                    background_width, text_height,
+                                    yoffset, scale,
+                                    draw_state);
+                subtree_xpos.push(child_xpos);
+                const cur_ypos = yoffset + draw_state.current_row * text_height;
+                subtree_ypos.push((prev_ypos + cur_ypos) / 2);
+                prev_ypos = cur_ypos;
+            });
 
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_WIDTH
                             * this.plotService.zoom_factor;
             ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
-            ctx.moveTo(top_xpos, (ypos[0] + ypos[1]) / 2);
-            ctx.lineTo(xpos, (ypos[0] + ypos[1]) / 2);
-            ctx.lineTo(xpos, (ypos[1] + ypos[2]) / 2);
-            ctx.lineTo(bottom_xpos, (ypos[1] + ypos[2]) / 2);
+
+            // Vertical line (from center of first to center of second subtrees)
+            ctx.moveTo(base_xpos, subtree_ypos[0]);
+            ctx.lineTo(base_xpos, subtree_ypos[subtree_ypos.length - 1]);
+
+            // Horizontal lines to individual subtrees
+            subtree_xpos.forEach((child_xpos, i) => {
+                ctx.moveTo(base_xpos, subtree_ypos[i]);
+                ctx.lineTo(child_xpos, subtree_ypos[i])
+            });
             ctx.stroke();
         } else {
             const label = this.plotService.getAccesionLabel(subtree.taxon.name);
-            ctx.fillText(label, xpos, ypos[0]);
+            ctx.fillText(label, base_xpos, prev_ypos);
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
                             * this.plotService.zoom_factor;
@@ -133,9 +138,9 @@ export class AccessionBarComponent extends CanvasPlotElement {
             ctx.setLineDash(this.GUI_TREE_LINE_DASH.map(
                 x => x * this.plotService.zoom_factor
             ));
-            ctx.moveTo(xpos + ctx.measureText(label).width + 5,
-                       ypos[0] + text_height / 2 - 0.5);
-            ctx.lineTo(background_width, ypos[0] + text_height / 2 - 0.5);
+            ctx.moveTo(base_xpos + ctx.measureText(label).width + 5,
+                       prev_ypos + text_height / 2 - 0.5);
+            ctx.lineTo(background_width, prev_ypos + text_height / 2 - 0.5);
             ctx.stroke();
             draw_state.current_row++;
         }
