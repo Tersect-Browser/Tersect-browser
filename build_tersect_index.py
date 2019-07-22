@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import json
 import os
@@ -90,6 +90,7 @@ def generate_partition_indices(cfg, dataset_id, tsi_file,
     for pos in range(part_size, part_ceil, part_size):
         start_pos = pos - part_size + 1
         if len(partition_divisors):
+            pass
             # Build index based on smaller partitions already in the database
             add_region_index_db(matrices, dataset_id,
                                 chrom['name'], start_pos, pos,
