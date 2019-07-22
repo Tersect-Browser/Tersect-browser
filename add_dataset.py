@@ -30,12 +30,13 @@ def add_default_view(cfg, client, dataset_id, accession_dictionary):
 
 def get_accession_names(tsi_file):
     proc = subprocess.Popen(['tersect', 'samples', '-n', tsi_file],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            universal_newlines=True)
     output, error = proc.communicate()
     if (error):
         print(error)
         return None
-    accessions = [accession for accession in output.strip().split('\n')]
+    accessions = output.strip().split('\n')
     return accessions
 
 def rename_accession(tsi_file, old_name, new_name):
@@ -130,6 +131,7 @@ if not os.path.isfile(tsi_file):
     print('ERROR: Not a valid Tersect file: %s' % tsi_file)
     exit()
 
+'''
 if args.reference_file is not None:
     ref_file = abspath(args.reference_file)
     if not os.path.isfile(ref_file):
@@ -139,6 +141,7 @@ if args.reference_file is not None:
     if (args.f):
         command.append('-f')
     subprocess.call(command, cwd=cwd)
+'''
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       force=args.f, verbose=True)

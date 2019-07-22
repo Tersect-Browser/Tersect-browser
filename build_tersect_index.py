@@ -6,6 +6,7 @@ import subprocess
 from pymongo import ASCENDING, MongoClient
 from math import ceil
 from timeit import default_timer as timer
+from tbutils import randomHash
 
 # Assumes matrices have the same dimensions (or m1 is None), saves result in m1
 def matrix_sum(m1, m2):
@@ -16,6 +17,18 @@ def matrix_sum(m1, m2):
         for j in range(len(m2[0])):
             m1[i][j] += m2[i][j]
     return m1
+
+def openPhylipFile():
+    tb_path = os.path.dirname(os.path.realpath(__file__))
+    dm_path = os.path.join(tb_path, 'local_db', 'distmats')
+    if not os.path.exists(dm_path):
+        os.makedirs(dm_path)
+    filename = randomHash() + '.phylip'
+    filepath = os.path.join(dm_path, filename)
+    try:
+        return open(filepath, 'x')
+    except FileExistsError:
+        return openPhylipFile()
 
 def add_region_index_db(matrices, dataset_id,
                         chromosome_name, start_pos, end_pos,
@@ -51,25 +64,19 @@ def add_region_index_tersect(matrices, dataset_id,
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
     if (verbose):
         print('    Adding index for %s' % region)
-    proc = subprocess.Popen(['tersect', 'dist', '-j',
-                             tersect_db_location, region],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = proc.communicate()
-    if (error):
-        print(error)
-        return False
-    output = json.loads(output)
+    fh = openPhylipFile()
+    subprocess.call(['tersect', 'dist', tersect_db_location, region], stdout=fh)
+    fh.close()
     matrices.insert({
         'dataset_id': dataset_id,
         'region': region,
-        'samples': output['rows'],
-        'matrix': output['matrix']
+        'matrix_file': fh.name
     })
-    return True
 
 def get_chromosome_sizes(tersect_db_location):
     proc = subprocess.Popen(['tersect', 'chroms', '-n', tersect_db_location],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            universal_newlines=True)
     output, error = proc.communicate()
     if (error):
         print(error)
