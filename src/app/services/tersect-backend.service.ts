@@ -60,6 +60,10 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
             interval: [start, end],
             accessions: accessions,
         };
+        const alt_query = `http://localhost:8060/tbapi/query/${dataset_id}/rtree`;
+        this.http.post<TreeNode>(alt_query, tree_query, httpOptions).subscribe((tree) => {
+            console.log(tree);
+        });
         return combineLatest(of(tree_query),
                              this.http.post<TreeNode>(query, tree_query,
                                                       httpOptions));

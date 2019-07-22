@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as csvparse from 'csv-parse';
 
 import { Router } from 'express';
-import { exec, execSync } from 'child_process';
+import { exec, execSync, spawn } from 'child_process';
 
 import { DBMatrix } from './db/dbmatrix';
 import { ChromosomeIndex } from './db/chromosomeindex';
@@ -11,10 +12,12 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
-import { buildNJTree } from '../app/clustering/clustering';
+import { buildNJTree, newickToTree } from '../app/clustering/clustering';
 import { PhyloTree, IPhyloTree } from './db/phylotree';
 import { TreeQuery } from '../app/models/TreeQuery';
 import { DistanceMatrix } from '../app/models/DistanceMatrix';
+import { formatRegion } from '../app/utils/utils';
+import { fileSync, FileResult } from 'tmp';
 
 export const router = Router();
 
@@ -452,4 +455,93 @@ router.route('/query/:dataset_id/tree')
             res.json(result.tree);
         }
     });
+});
+
+function create_tree(req, res, phylip_file) {
+    const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
+    rapidnj.stderr.on('data', (data) => {
+        // Progress percentages
+        // console.log(data.toString().trim());
+    });
+    let newick_output = '';
+    rapidnj.stdout.on('data', (data) => {
+        newick_output += data.toString();
+    });
+    rapidnj.stdout.on('close', () => {
+        res.json(newickToTree(newick_output));
+    });
+}
+
+interface PhylipData {
+    accessions: string[];
+    distances: number[][];
+    indices?: number[];
+}
+
+function readPhylip(filename: string,
+                    accessions: string[], parser): Promise<PhylipData> {
+    return new Promise<PhylipData>(resolve => {
+        const found_distances = [];
+        const found_indices = [];
+        const found_accessions = [];
+        let line = 0;
+        const parse_stream = fs.createReadStream(filename).pipe(parser);
+        parse_stream.on('data', (row: string[]) => {
+            if (accessions.includes(row[0])) {
+                found_distances.push(row.slice(1));
+                found_accessions.push(row[0]);
+                found_indices.push(line);
+            }
+            line += 1;
+        });
+        return parse_stream.on('end', () => {
+            found_accessions.forEach((acc, i) => {
+                found_distances[i] = found_indices.map(
+                    index => parseInt(found_distances[i][index])
+                );
+            });
+            resolve({
+                accessions: found_accessions,
+                distances: found_distances,
+                indices: found_indices
+            });
+        });
+    });
+}
+
+function combine_files(files: string[], accessions: string[]): FileResult {
+    const parser = csvparse({ delimiter: ' ', from_line: 2 });
+    const combined_file = fileSync();
+
+    readPhylip(files[0], accessions, parser).then((pd: PhylipData) => {
+
+        const output_stream = fs.createWriteStream(combined_file.name,
+                                                   { flags: 'a' });
+        output_stream.write(pd.accessions.length.toString() + '\n');
+        pd.accessions.forEach((acc, i) => {
+            output_stream.write(acc + ' ');
+            output_stream.write(pd.distances[i].join(' ') + '\n');
+        });
+        output_stream.end();
+
+    });
+
+    console.log(combined_file.name);
+
+    return combined_file;
+}
+
+router.route('/query/:dataset_id/rtree')
+      .post((req, res) => {
+    const tsi_location = res.locals.dataset.tsi_location;
+    const tree_query: TreeQuery = req.body;
+    const region = formatRegion(tree_query.chromosome_name,
+                                tree_query.interval[0],
+                                tree_query.interval[1]);
+    const tersect_output = fileSync();
+    const tersect_command = `tersect dist ${tsi_location} ${region} > ${tersect_output.name}`;
+    execSync(tersect_command);
+    const combined_file = combine_files([tersect_output.name],
+                                        tree_query.accessions);
+    create_tree(req, res, combined_file.name);
 });
