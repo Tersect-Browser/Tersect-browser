@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import argparse
-import hashids
 import os
 import random
 import shutil
@@ -9,17 +8,13 @@ import subprocess
 
 from hashids import Hashids
 from pymongo import errors, ASCENDING, MongoClient
+from tbutils import abspath, randomHash
 
-def abspath(path):
-    return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
-
-def randomHash(cfg):
-    hashids = Hashids(salt=cfg['salt'])
-    MAX_VIEW_ID = 2000000000
-    return hashids.encode(random.randint(0, MAX_VIEW_ID))
+# Supporting up to two billion views
+MAX_VIEW_ID = 2000000000
 
 def add_default_view(cfg, client, dataset_id, accession_dictionary):
-    view_id = randomHash(cfg)
+    view_id = randomHash(cfg['salt'], MAX_VIEW_ID)
     views = client[cfg['db_name']][cfg['view_collection']]
     try:
         views.insert({
