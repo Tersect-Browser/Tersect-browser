@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
 import argparse
+import csv
 import json
+import numpy
 import os
 import subprocess
+
+from contextlib import ExitStack
 from pymongo import ASCENDING, MongoClient
 from math import ceil
 from timeit import default_timer as timer
 from tbutils import randomHash
 
-# Assumes matrices have the same dimensions (or m1 is None), saves result in m1
-def matrix_sum(m1, m2):
-    if m1 is None:
-        # Initialize empty result matrix
-        m1 = [x[:] for x in [[0] * len(m2[0])] * len(m2)]
-    for i in range(len(m2)):
-        for j in range(len(m2[0])):
-            m1[i][j] += m2[i][j]
-    return m1
-
-def openPhylipFile():
+def open_phylip_file(mode='x'):
     tb_path = os.path.dirname(os.path.realpath(__file__))
     dm_path = os.path.join(tb_path, 'local_db', 'distmats')
     if not os.path.exists(dm_path):
@@ -26,9 +20,33 @@ def openPhylipFile():
     filename = randomHash() + '.phylip'
     filepath = os.path.join(dm_path, filename)
     try:
-        return open(filepath, 'x')
+        return open(filepath, mode)
     except FileExistsError:
-        return openPhylipFile()
+        return open_phylip_file()
+
+def merge_phylip_files(filenames):
+    output_file = open_phylip_file()
+    with ExitStack() as stack:
+        readers = [
+            csv.reader(stack.enter_context(open(filename, 'r')), delimiter=' ')
+            for filename in filenames
+        ]
+        writer = csv.writer(output_file, delimiter=' ', lineterminator='\n')
+
+        # First line is the number of genomes
+        genome_num = [int(next(reader)[0]) for reader in readers][0]
+        writer.writerow([genome_num]);
+
+        for lines in zip(*readers):
+            arrays = [
+                numpy.asarray(list(map(int, line[1:])))
+                for line in lines
+            ]
+            output_file.write(lines[0][0] + ' ')
+            writer.writerow(sum(arrays))
+
+    output_file.close()
+    return output_file.name
 
 def add_region_index_db(matrices, dataset_id,
                         chromosome_name, start_pos, end_pos,
@@ -37,24 +55,20 @@ def add_region_index_db(matrices, dataset_id,
     if (verbose):
         print('    Building index for %s based on existing indices' % region)
 
-    region_matrix = None
-    samples = None
+    subregion_files = []
     for substart_pos in range(start_pos, end_pos + 1, subpart_size):
         subend_pos = substart_pos + subpart_size - 1
         subregion = '%s:%d-%d' % (chromosome_name, substart_pos, subend_pos)
         res = matrices.find_one({'region': subregion})
         if res is not None:
-            region_matrix = matrix_sum(region_matrix, res['matrix'])
-            if samples is None:
-                samples = res['samples']
+            subregion_files.append(res['matrix_file'])
         else:
             # Reached the end of region covered by subpartitions
             break
     matrices.insert({
         'dataset_id': dataset_id,
         'region': region,
-        'samples': samples,
-        'matrix': region_matrix
+        'matrix_file': merge_phylip_files(subregion_files)
     })
     return True
 
@@ -64,7 +78,7 @@ def add_region_index_tersect(matrices, dataset_id,
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
     if (verbose):
         print('    Adding index for %s' % region)
-    fh = openPhylipFile()
+    fh = open_phylip_file()
     subprocess.call(['tersect', 'dist', tersect_db_location, region], stdout=fh)
     fh.close()
     matrices.insert({

@@ -131,7 +131,6 @@ if not os.path.isfile(tsi_file):
     print('ERROR: Not a valid Tersect file: %s' % tsi_file)
     exit()
 
-'''
 if args.reference_file is not None:
     ref_file = abspath(args.reference_file)
     if not os.path.isfile(ref_file):
@@ -141,7 +140,6 @@ if args.reference_file is not None:
     if (args.f):
         command.append('-f')
     subprocess.call(command, cwd=cwd)
-'''
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       force=args.f, verbose=True)
