@@ -73,8 +73,8 @@ args = parser.parse_args()
 if (args.reference_id is None):
     args.reference_id = os.path.basename(args.reference_file)
 
-tb_path = os.path.dirname(os.path.realpath(__file__))
-cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
+cwd = os.path.dirname(os.path.realpath(__file__))
+cfg_path = os.path.join(cwd, 'config.json')
 
 with open(cfg_path, 'r') as cfg_file:
     cfg = json.load(cfg_file)

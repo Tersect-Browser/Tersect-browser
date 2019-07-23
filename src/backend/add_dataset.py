@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import argparse
+import sys
 import os
+import argparse
 import random
 import shutil
 import json
@@ -53,11 +54,12 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
     if verbose:
         print("Adding dataset '%s'..." % dataset_id)
 
-    tb_path = os.path.dirname(os.path.realpath(__file__))
-    tsi_path = os.path.join(tb_path, 'local_db')
-    if not os.path.exists(tsi_path):
-        os.makedirs(tsi_path)
-    local_tsi_path = os.path.join(tsi_path, os.path.basename(tersect_db_file))
+    local_db_location = os.path.realpath(cfg['local_db_location'])
+    if not os.path.exists(local_db_location):
+        os.makedirs(local_db_location)
+
+    local_tsi_path = os.path.join(local_db_location,
+                                  os.path.basename(tersect_db_file))
     shutil.copyfile(tersect_db_file, local_tsi_path)
 
     accession_dictionary = process_accession_names(local_tsi_path)
@@ -104,10 +106,8 @@ parser.add_argument('-f', required=False, action='store_true',
 
 args = parser.parse_args()
 
-cwd = os.path.dirname((os.path.realpath(__file__)))
-
-tb_path = os.path.dirname(os.path.realpath(__file__))
-cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
+cwd = os.path.dirname(os.path.realpath(__file__))
+cfg_path = os.path.join(cwd, 'config.json')
 with open(cfg_path, 'r') as cfg_file:
     cfg = json.load(cfg_file)
 

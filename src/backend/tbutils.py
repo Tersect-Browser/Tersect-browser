@@ -13,20 +13,16 @@ def randomHash(salt='', max_id=1000000000000):
     hashids = Hashids(salt=salt)
     return hashids.encode(random.randint(0, max_id))
 
-def open_phylip_file(mode='x'):
-    tb_path = os.path.dirname(os.path.realpath(__file__))
-    dm_path = os.path.join(tb_path, 'local_db', 'distmats')
-    if not os.path.exists(dm_path):
-        os.makedirs(dm_path)
+def open_phylip_file(location='/tmp', mode='x'):
     filename = randomHash() + '.phylip'
-    filepath = os.path.join(dm_path, filename)
+    filepath = os.path.join(location, filename)
     try:
         return open(filepath, mode)
     except FileExistsError:
-        return open_phylip_file()
+        return open_phylip_file(location=location, mode=mode)
 
-def merge_phylip_files(filenames):
-    output_file = open_phylip_file()
+def merge_phylip_files(filenames, output_location='/tmp'):
+    output_file = open_phylip_file(location=output_location)
     with ExitStack() as stack:
         readers = [
             csv.reader(stack.enter_context(open(filename, 'r')), delimiter=' ')

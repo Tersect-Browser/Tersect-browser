@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import sys
+import os
 import argparse
 import json
-import os
 import subprocess
 
 from pymongo import ASCENDING, MongoClient
@@ -12,7 +13,7 @@ from tersectutils import get_chromosome_sizes
 
 def add_region_index_db(matrices, dataset_id,
                         chromosome_name, start_pos, end_pos,
-                        subpart_size, verbose=False):
+                        subpart_size, distmap_db_location, verbose=False):
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
     if (verbose):
         print('    Building index for %s based on existing indices' % region)
@@ -30,17 +31,18 @@ def add_region_index_db(matrices, dataset_id,
     matrices.insert({
         'dataset_id': dataset_id,
         'region': region,
-        'matrix_file': merge_phylip_files(subregion_files)
+        'matrix_file': merge_phylip_files(subregion_files, distmap_db_location)
     })
     return True
 
 def add_region_index_tersect(matrices, dataset_id,
                              chromosome_name, start_pos, end_pos,
-                             tersect_db_location, verbose=False):
+                             tersect_db_location, distmap_db_location,
+                             verbose=False):
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
     if (verbose):
         print('    Adding index for %s' % region)
-    fh = open_phylip_file()
+    fh = open_phylip_file(location=distmap_db_location)
     subprocess.call(['tersect', 'dist', tersect_db_location, region], stdout=fh)
     fh.close()
     matrices.insert({
@@ -51,7 +53,9 @@ def add_region_index_tersect(matrices, dataset_id,
 
 def generate_partition_indices(cfg, dataset_id, tsi_file,
                                matrices, chrom, part_size,
-                               existing_partitions=[], verbose=False):
+                               distmap_db_location,
+                               existing_partitions=[],
+                               verbose=False):
     if verbose:
         print('  Generating %d-sized partition indices' % part_size)
 
@@ -61,16 +65,16 @@ def generate_partition_indices(cfg, dataset_id, tsi_file,
     for pos in range(part_size, part_ceil, part_size):
         start_pos = pos - part_size + 1
         if len(partition_divisors):
-            pass
             # Build index based on smaller partitions already in the database
             add_region_index_db(matrices, dataset_id,
                                 chrom['name'], start_pos, pos,
-                                max(partition_divisors), verbose)
+                                max(partition_divisors), distmap_db_location,
+                                verbose)
         else:
             # Create index from scratch by calling tersect
             add_region_index_tersect(matrices, dataset_id,
                                      chrom['name'], start_pos, pos,
-                                     tsi_file, verbose)
+                                     tsi_file, distmap_db_location, verbose)
 
 def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
     start = timer()
@@ -95,6 +99,11 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
             client.close()
             return
 
+    local_db_location = os.path.realpath(cfg['local_db_location'])
+    distmap_db_location = os.path.join(local_db_location, 'distmats')
+    if not os.path.exists(distmap_db_location):
+        os.makedirs(distmap_db_location)
+
     cfg['index_partitions'].sort()
     for chrom in chromosomes:
         if verbose:
@@ -104,6 +113,7 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
             if part_size < chrom['size']:
                 generate_partition_indices(cfg, dataset_id, tsi_file,
                                            matrices, chrom, part_size,
+                                           distmap_db_location,
                                            existing_partitions, verbose)
                 existing_partitions.append(part_size)
 
@@ -113,11 +123,12 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
         if len(existing_partitions):
             add_region_index_db(matrices, dataset_id,
                                 chrom['name'], 1, chrom['size'],
-                                max(existing_partitions), verbose)
+                                max(existing_partitions), distmap_db_location,
+                                verbose)
         else:
             add_region_index_tersect(matrices, dataset_id,
                                      chrom['name'], 1, chrom['size'],
-                                     tsi_file, verbose)
+                                     tsi_file, distmap_db_location, verbose)
     client.close()
 
     if verbose:
@@ -131,8 +142,8 @@ parser.add_argument('-f', required=False, action='store_true', help='force dista
 
 args = parser.parse_args()
 
-tb_path = os.path.dirname(os.path.realpath(__file__))
-cfg_path = os.path.join(tb_path, 'src', 'backend', 'config.json')
+cwd = os.path.dirname(os.path.realpath(__file__))
+cfg_path = os.path.join(cwd, 'config.json')
 
 with open(cfg_path, 'r') as cfg_file:
     cfg = json.load(cfg_file)
