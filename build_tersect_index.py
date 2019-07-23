@@ -1,52 +1,14 @@
 #!/usr/bin/env python3
 import argparse
-import csv
 import json
-import numpy
 import os
 import subprocess
 
-from contextlib import ExitStack
 from pymongo import ASCENDING, MongoClient
 from math import ceil
 from timeit import default_timer as timer
-from tbutils import randomHash
-
-def open_phylip_file(mode='x'):
-    tb_path = os.path.dirname(os.path.realpath(__file__))
-    dm_path = os.path.join(tb_path, 'local_db', 'distmats')
-    if not os.path.exists(dm_path):
-        os.makedirs(dm_path)
-    filename = randomHash() + '.phylip'
-    filepath = os.path.join(dm_path, filename)
-    try:
-        return open(filepath, mode)
-    except FileExistsError:
-        return open_phylip_file()
-
-def merge_phylip_files(filenames):
-    output_file = open_phylip_file()
-    with ExitStack() as stack:
-        readers = [
-            csv.reader(stack.enter_context(open(filename, 'r')), delimiter=' ')
-            for filename in filenames
-        ]
-        writer = csv.writer(output_file, delimiter=' ', lineterminator='\n')
-
-        # First line is the number of genomes
-        genome_num = [int(next(reader)[0]) for reader in readers][0]
-        writer.writerow([genome_num]);
-
-        for lines in zip(*readers):
-            arrays = [
-                numpy.asarray(list(map(int, line[1:])))
-                for line in lines
-            ]
-            output_file.write(lines[0][0] + ' ')
-            writer.writerow(sum(arrays))
-
-    output_file.close()
-    return output_file.name
+from tbutils import randomHash, merge_phylip_files, open_phylip_file
+from tersectutils import get_chromosome_sizes
 
 def add_region_index_db(matrices, dataset_id,
                         chromosome_name, start_pos, end_pos,
@@ -86,18 +48,6 @@ def add_region_index_tersect(matrices, dataset_id,
         'region': region,
         'matrix_file': fh.name
     })
-
-def get_chromosome_sizes(tersect_db_location):
-    proc = subprocess.Popen(['tersect', 'chroms', '-n', tersect_db_location],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True)
-    output, error = proc.communicate()
-    if (error):
-        print(error)
-        return None
-    lines = [line.split('\t') for line in output.strip().split('\n')]
-    chroms = [ { 'name': line[0], 'size': int(line[1]) } for line in lines]
-    return chroms
 
 def generate_partition_indices(cfg, dataset_id, tsi_file,
                                matrices, chrom, part_size,

@@ -9,6 +9,7 @@ import subprocess
 from hashids import Hashids
 from pymongo import errors, ASCENDING, MongoClient
 from tbutils import abspath, randomHash
+from tersectutils import get_accession_names, rename_accession
 
 # Supporting up to two billion views
 MAX_VIEW_ID = 2000000000
@@ -27,21 +28,6 @@ def add_default_view(cfg, client, dataset_id, accession_dictionary):
         return view_id
     except errors.DuplicateKeyError:
         return add_default_view(cfg, client, dataset_id, accession_dictionary)
-
-def get_accession_names(tsi_file):
-    proc = subprocess.Popen(['tersect', 'samples', '-n', tsi_file],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True)
-    output, error = proc.communicate()
-    if (error):
-        print(error)
-        return None
-    accessions = output.strip().split('\n')
-    return accessions
-
-def rename_accession(tsi_file, old_name, new_name):
-    command = ['tersect', 'rename', tsi_file, old_name, new_name]
-    subprocess.call(command)
 
 # Fixes accession names by removing forbidden characters (spaces, periods, and
 # dollar signs) and returns  a dictionary which maps the new names (as keys)
