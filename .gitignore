@@ -5,6 +5,7 @@
 /dist-server
 /tmp
 /out-tsc
+*.pyc
 
 # local data storage
 /local_db
