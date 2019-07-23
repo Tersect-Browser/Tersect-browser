@@ -497,7 +497,7 @@ function readPhylip(filename: string,
         return parse_stream.on('end', () => {
             found_accessions.forEach((acc, i) => {
                 found_distances[i] = found_indices.map(
-                    index => parseInt(found_distances[i][index])
+                    index => parseInt(found_distances[i][index], 10)
                 );
             });
             resolve({
