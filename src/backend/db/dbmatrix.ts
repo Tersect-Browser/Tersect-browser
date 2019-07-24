@@ -5,9 +5,9 @@
 import { Schema, model } from 'mongoose';
 
 const MatrixSchema = new Schema({
-    region: String,
-    samples: [String],
-    matrix: [[Number]]
+    dataset_id: String,
+    matrix_file: String,
+    region: String
 });
 
 export const DBMatrix = model('matrices', MatrixSchema,

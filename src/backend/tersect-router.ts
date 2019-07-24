@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as csvparse from 'csv-parse';
 
 import { Router } from 'express';
-import { exec, execSync, spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 
 import { DBMatrix } from './db/dbmatrix';
 import { ChromosomeIndex } from './db/chromosomeindex';
@@ -12,12 +11,11 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
-import { buildNJTree, newickToTree } from '../app/clustering/clustering';
+import { newickToTree } from '../app/clustering/clustering';
 import { PhyloTree, IPhyloTree } from './db/phylotree';
 import { TreeQuery } from '../app/models/TreeQuery';
-import { DistanceMatrix } from '../app/models/DistanceMatrix';
-import { formatRegion } from '../app/utils/utils';
-import { fileSync, FileResult } from 'tmp';
+import { fileSync, } from 'tmp';
+import { partitionQuery } from './partitioning';
 
 export const router = Router();
 
@@ -27,27 +25,6 @@ function loadConfig() {
 }
 
 const config = loadConfig();
-
-interface ChromosomePartitions {
-    [chromosome_names: string]: number[];
-}
-
-function loadChromosomePartitions(tsi_location: string): ChromosomePartitions {
-    const output = {};
-    const command = `tersect chroms -n ${tsi_location}`;
-
-    execSync(command).toString().trim().split('\n').forEach(line => {
-        const cols = line.split('\t');
-        const partitions = [ parseInt(cols[1], 10) ];
-        // Include only partitions smaller than the chromosome size
-        partitions.push(...config['index_partitions'].filter(x => {
-             return x < partitions[0];
-        }));
-        output[cols[0]] = partitions;
-    });
-
-    return output;
-}
 
 function execPromise(command: string, options = {}) {
     return new Promise((resolve, reject) => {
@@ -59,7 +36,7 @@ function execPromise(command: string, options = {}) {
                 reject(stderr);
                 return;
             }
-            resolve(JSON.parse(stdout.trim()));
+            resolve(stdout);
         });
     });
 }
@@ -71,93 +48,6 @@ router.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     next();
 });
-
-interface Interval {
-    start: number;
-    end: number;
-    type?: 'add' | 'subtract';
-}
-
-/**
- * Interval partitioned into (indexed, i.e. pre-computed) intervals to be taken
- * from the database and nonindexed intervals to be fetched from Tersect.
- */
-interface IntervalPartitions {
-    indexed: Interval[];
-    nonindexed: Interval[];
-}
-
-function _partitionInterval(input: Interval,
-                            part_size: number): IntervalPartitions {
-    const intervals: IntervalPartitions = { indexed: [], nonindexed: []};
-    for (let i = Math.round(input.start / part_size) * part_size;
-             i < Math.round(input.end / part_size) * part_size;
-             i += part_size) {
-        intervals.indexed.push({
-            start: i + 1,
-            end: i + part_size,
-            type: input.type === 'subtract' ? 'subtract' : 'add'
-        });
-    }
-    if (intervals.indexed.length === 0) {
-        intervals.nonindexed.push({
-            start: input.start,
-            end: input.end,
-            type: input.type === 'subtract' ? 'subtract' : 'add'
-        });
-        return intervals;
-    }
-    if (input.start < intervals.indexed[0].start) {
-        intervals.nonindexed.push({
-            start: input.start,
-            end: intervals.indexed[0].start - 1,
-            type: input.type === 'subtract' ? 'subtract' : 'add'
-        });
-    } else if (input.start > intervals.indexed[0].start) {
-        intervals.nonindexed.push({
-            start: intervals.indexed[0].start,
-            end: input.start - 1,
-            // Reversing type
-            type: input.type === 'subtract' ? 'add' : 'subtract'
-        });
-    }
-    if (input.end > intervals.indexed[intervals.indexed.length - 1].end) {
-        intervals.nonindexed.push({
-            start: intervals.indexed[intervals.indexed.length - 1].end + 1,
-            end: input.end,
-            type: input.type === 'subtract' ? 'subtract' : 'add'
-        });
-    } else if (input.end < intervals.indexed[intervals.indexed.length - 1].end) {
-        intervals.nonindexed.push({
-            start: input.end + 1,
-            end: intervals.indexed[intervals.indexed.length - 1].end,
-            // Reversing type
-            type: input.type === 'subtract' ? 'add' : 'subtract'
-        });
-    }
-    return intervals;
-}
-
-function partitionInterval(input: Interval,
-                           partition_sizes: number[]): IntervalPartitions {
-    partition_sizes = [...partition_sizes]; // cloning
-    partition_sizes.sort((a, b) => a - b); // Ascending order
-    let part_size = partition_sizes.pop();
-    const intervals = _partitionInterval(input, part_size);
-    while (partition_sizes.length) {
-        part_size = partition_sizes.pop();
-        const new_indexed: Interval[] = [];
-        const new_nonindexed: Interval[] = [];
-        intervals.nonindexed.forEach((inter) => {
-            const new_inter = _partitionInterval(inter, part_size);
-            new_indexed.push(...new_inter.indexed);
-            new_nonindexed.push(...new_inter.nonindexed);
-        });
-        intervals.indexed.push(...new_indexed);
-        intervals.nonindexed = new_nonindexed;
-    }
-    return intervals;
-}
 
 function init_distance_matrix(sample_num: number) {
     const output = { matrix: Array(sample_num), samples: [] };
@@ -233,76 +123,6 @@ router.route('/query/:dataset_id/gaps/:chromosome')
         }
     });
 });
-
-async function prepare_distance_matrix(tsi_location: string,
-                                       chromosome: string,
-                                       start_pos: number,
-                                       end_pos: number): Promise<any> {
-    const options = {
-        maxBuffer: 100 * 1024 * 1024 // 100 megabytes
-    };
-
-    // TODO: check if calling this each time affects performance
-    const chromosome_partitions = loadChromosomePartitions(tsi_location);
-
-    const partitions = partitionInterval({
-        start: start_pos, end: end_pos
-    }, chromosome_partitions[chromosome]);
-
-    // Skip partitions which lie entirely outiside the chromosome
-    partitions.indexed = partitions.indexed.filter(
-        p => p.start <= chromosome_partitions[chromosome][0]
-    );
-    partitions.nonindexed = partitions.nonindexed.filter(
-        p => p.start <= chromosome_partitions[chromosome][0]
-    );
-
-    const tersect_calls = partitions.nonindexed.map(interval => {
-        const region = `${chromosome}:${interval.start}-${interval.end}`;
-        const command = `tersect dist -j ${tsi_location} ${region}`;
-        return execPromise(command, options);
-    });
-
-    const index_calls = partitions.indexed.map(interval => {
-        const region = `${chromosome}:${interval.start}-${interval.end}`;
-        return DBMatrix.findOne({ region: region }).exec();
-    });
-
-    const all_promises = tersect_calls.concat(index_calls);
-
-    const all_types = partitions.nonindexed.map(x => x.type).concat(
-                      partitions.indexed.map(x => x.type));
-
-    const results = await Promise.all(all_promises);
-    return new Promise((resolve, reject) => {
-        // The field containing sample names is called 'rows' in tersect
-        // results but 'samples' in the MongoDB collection.
-        // Using whichever is in the first result.
-        const sample_field_name = tersect_calls.length ? 'rows' : 'samples';
-        let output: {
-            matrix: number[][];
-            samples: string[];
-            region?: string;
-        };
-        const sample_num = results[0][sample_field_name].length;
-        output = init_distance_matrix(sample_num);
-        output.samples = results[0][sample_field_name];
-        output.region = `${chromosome}:${start_pos}-${end_pos}`;
-        // Adding up results
-        for (let i = 0; i < all_promises.length; i++) {
-            results[i]['matrix'].forEach((row, row_idx) => {
-                row.forEach((col, col_idx) => {
-                    if (all_types[i] === 'subtract') {
-                        output.matrix[row_idx][col_idx] -= col;
-                    } else {
-                        output.matrix[row_idx][col_idx] += col;
-                    }
-                });
-            });
-        }
-        resolve(output);
-    });
-}
 
 router.route('/query/:dataset_id/dist/:accession/:chromosome/:start/:stop/:binsize')
       .get((req, res) => {
@@ -411,29 +231,6 @@ function exportView(req, res) {
 router.route('/views/export')
       .post(exportView);
 
-function generate_tree(req, res) {
-    const tsi_location = res.locals.dataset.tsi_location;
-    const tree_query: TreeQuery = req.body;
-    prepare_distance_matrix(tsi_location,
-                            tree_query.chromosome_name,
-                            tree_query.interval[0],
-                            tree_query.interval[1])
-                            .then((matrix: DistanceMatrix) => {
-        const tree = buildNJTree(matrix, tree_query.accessions);
-        new PhyloTree({
-            dataset_id: req.params.dataset_id,
-            query: tree_query,
-            tree: tree
-        }).save((err) => {
-            if (err) {
-                res.json(err);
-            } else {
-                res.json(tree);
-            }
-        });
-    });
-}
-
 router.route('/query/:dataset_id/tree')
       .post((req, res) => {
     const tree_query: TreeQuery = req.body;
@@ -457,7 +254,7 @@ router.route('/query/:dataset_id/tree')
     });
 });
 
-function create_tree(req, res, phylip_file) {
+function create_rapidnj_tree(req, res, phylip_file) {
     const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
     rapidnj.stderr.on('data', (data) => {
         // Progress percentages
@@ -472,76 +269,65 @@ function create_tree(req, res, phylip_file) {
     });
 }
 
-interface PhylipData {
-    accessions: string[];
-    distances: number[][];
-    indices?: number[];
-}
-
-function readPhylip(filename: string,
-                    accessions: string[], parser): Promise<PhylipData> {
-    return new Promise<PhylipData>(resolve => {
-        const found_distances = [];
-        const found_indices = [];
-        const found_accessions = [];
-        let line = 0;
-        const parse_stream = fs.createReadStream(filename).pipe(parser);
-        parse_stream.on('data', (row: string[]) => {
-            if (accessions.includes(row[0])) {
-                found_distances.push(row.slice(1));
-                found_accessions.push(row[0]);
-                found_indices.push(line);
-            }
-            line += 1;
-        });
-        return parse_stream.on('end', () => {
-            found_accessions.forEach((acc, i) => {
-                found_distances[i] = found_indices.map(
-                    index => parseInt(found_distances[i][index], 10)
-                );
-            });
-            resolve({
-                accessions: found_accessions,
-                distances: found_distances,
-                indices: found_indices
-            });
-        });
-    });
-}
-
-function combine_files(files: string[], accessions: string[]): FileResult {
-    const parser = csvparse({ delimiter: ' ', from_line: 2 });
-    const combined_file = fileSync();
-
-    readPhylip(files[0], accessions, parser).then((pd: PhylipData) => {
-
-        const output_stream = fs.createWriteStream(combined_file.name,
-                                                   { flags: 'a' });
-        output_stream.write(pd.accessions.length.toString() + '\n');
-        pd.accessions.forEach((acc, i) => {
-            output_stream.write(acc + ' ');
-            output_stream.write(pd.distances[i].join(' ') + '\n');
-        });
-        output_stream.end();
-
-    });
-
-    console.log(combined_file.name);
-
-    return combined_file;
-}
-
-router.route('/query/:dataset_id/rtree')
-      .post((req, res) => {
+function generate_tree(req, res) {
     const tsi_location = res.locals.dataset.tsi_location;
     const tree_query: TreeQuery = req.body;
-    const region = formatRegion(tree_query.chromosome_name,
-                                tree_query.interval[0],
-                                tree_query.interval[1]);
-    const tersect_output = fileSync();
-    const tersect_command = `tersect dist ${tsi_location} ${region} > ${tersect_output.name}`;
-    execSync(tersect_command);
-    const combined_file = combine_files([tersect_output.name],
-                                        tree_query.accessions);
-    create_tree(req, res, combined_file.name);
-});
+
+    const partitions = partitionQuery(tsi_location, config['index_partitions'],
+                                      tree_query);
+
+    const db_files = partitions.indexed.map(async interval => {
+        const region = `${tree_query.chromosome_name}:${interval.start}-${interval.end}`;
+        const result = await DBMatrix.findOne(
+            { region: region }, { _id: 0, matrix_file: 1 }
+        );
+        return result['matrix_file'];
+    });
+
+    const tersect_output_files = partitions.nonindexed.map(async interval => {
+        const output_file = fileSync();
+        const region = `${tree_query.chromosome_name}:${interval.start}-${interval.end}`;
+        const command = `tersect dist ${tsi_location} ${region} > ${output_file.name}`;
+        const result = await execPromise(command);
+        // TODO: error handling on tersect result / promise rejection
+        return output_file.name;
+    });
+
+    const positive_matrix_files = [];
+    const negative_matrix_files = [];
+
+    partitions.indexed.forEach((interval, i) => {
+        if (interval.type === 'add') {
+            positive_matrix_files.push(db_files[i]);
+        } else if (interval.type === 'subtract') {
+            negative_matrix_files.push(db_files[i]);
+        }
+    });
+    partitions.nonindexed.forEach((interval, i) => {
+        if (interval.type === 'add') {
+            positive_matrix_files.push(tersect_output_files[i]);
+        } else if (interval.type === 'subtract') {
+            negative_matrix_files.push(tersect_output_files[i]);
+        }
+    });
+
+    const matrix_files = positive_matrix_files.concat(negative_matrix_files);
+
+    Promise.all(matrix_files).then((results) => {
+        const positive = results.slice(0, positive_matrix_files.length)
+                                .join(' ');
+        const negative = results.slice(positive_matrix_files.length,
+                                       results.length).join(' ');
+        const accessions = tree_query.accessions.join(' ');
+        const script = path.join(__dirname, 'merge_phylip.py');
+        let merge_command: string;
+        if (negative.length) {
+            merge_command = `${script} ${tsi_location} ${positive} -n ${negative} -a ${accessions}`;
+        } else {
+            merge_command = `${script} ${tsi_location} ${positive} -a ${accessions}`;
+        }
+        return execPromise(merge_command);
+    }).then((output_filename: string) => {
+        create_rapidnj_tree(req, res, output_filename.trim());
+    });
+}
