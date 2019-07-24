@@ -31,7 +31,8 @@ def add_region_index_db(matrices, dataset_id,
     matrices.insert({
         'dataset_id': dataset_id,
         'region': region,
-        'matrix_file': merge_phylip_files(subregion_files, distmap_db_location)
+        'matrix_file': merge_phylip_files(subregion_files,
+                                          output_location=distmap_db_location)
     })
     return True
 

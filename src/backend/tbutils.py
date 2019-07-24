@@ -21,12 +21,18 @@ def open_phylip_file(location='/tmp', mode='x'):
     except FileExistsError:
         return open_phylip_file(location=location, mode=mode)
 
-def merge_phylip_files(filenames, output_location='/tmp', indices=None):
+def merge_phylip_files(filenames, negative_filenames=None,
+                       output_location='/tmp', indices=None):
     output_file = open_phylip_file(location=output_location)
+    all_filenames = filenames
+    negative_indices = None
+    if negative_filenames is not None:
+        all_filenames += negative_filenames
+    negative_indices = list(range(len(filenames), len(all_filenames)))
     with ExitStack() as stack:
         readers = [
             csv.reader(stack.enter_context(open(filename, 'r')), delimiter=' ')
-            for filename in filenames
+            for filename in all_filenames
         ]
         writer = csv.writer(output_file, delimiter=' ', lineterminator='\n')
 
@@ -38,9 +44,11 @@ def merge_phylip_files(filenames, output_location='/tmp', indices=None):
             writer.writerow([genome_num])
             for lines in zip(*readers):
                 arrays = [
-                    numpy.asarray(list(map(int,line[1:])))
+                    numpy.asarray(list(map(int, line[1:])))
                     for line in lines
                 ]
+                for i in negative_indices:
+                    numpy.negative(arrays[i], out=arrays[i])
                 output_file.write(lines[0][0] + ' ')
                 writer.writerow(sum(arrays))
         else:
@@ -54,6 +62,8 @@ def merge_phylip_files(filenames, output_location='/tmp', indices=None):
                         [ line[1:][i] for i in indices ])
                     )) for line in lines
                 ]
+                for i in negative_indices:
+                    numpy.negative(arrays[i], out=arrays[i])
                 output_file.write(lines[0][0] + ' ')
                 writer.writerow(sum(arrays))
 
