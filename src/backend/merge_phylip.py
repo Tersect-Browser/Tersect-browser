@@ -17,12 +17,12 @@ def merge_inputs(phylip_files, neg_phylip_files=None,
 parser = argparse.ArgumentParser(description='Merge specified Phylip files, limited to selected accessions')
 parser.add_argument('tsi_file', type=str, help='tsi file path')
 parser.add_argument('phylip_files', nargs='+', help='Phylip files (positive')
-parser.add_argument('neg_phylip_files', nargs='+', help='Phylip files (negative)')
+parser.add_argument('-n', required=False, nargs='+', help='Phylip files (negative)')
 parser.add_argument('-a', required=False, nargs='+', help='accessions')
 
 args = parser.parse_args()
 
-tmp_merged_file = merge_inputs(args.phylip_files, args.neg_phylip_files,
+tmp_merged_file = merge_inputs(args.phylip_files, args.n,
                                args.tsi_file, args.a)
 
 print(tmp_merged_file)
