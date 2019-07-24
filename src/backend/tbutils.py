@@ -24,7 +24,7 @@ def open_phylip_file(location='/tmp', mode='x'):
 def merge_phylip_files(filenames, negative_filenames=None,
                        output_location='/tmp', indices=None):
     output_file = open_phylip_file(location=output_location)
-    all_filenames = filenames
+    all_filenames = filenames.copy()
     negative_indices = None
     if negative_filenames is not None:
         all_filenames += negative_filenames
