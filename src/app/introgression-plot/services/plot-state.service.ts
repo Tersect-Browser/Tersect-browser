@@ -1,11 +1,11 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
-import { BrowserSettings, AccessionDictionary } from "../../introgression-browser/browser-settings";
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
-import { AccessionDisplayStyle } from "./introgression-plot.service";
-import { sameElements, ceilTo, floorTo } from "../../utils/utils";
-import { Chromosome } from "../../models/Chromosome";
-import { Subject } from "rxjs/Subject";
+import { BrowserSettings, AccessionDictionary } from '../../introgression-browser/browser-settings';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { AccessionDisplayStyle } from './introgression-plot.service';
+import { sameElements, ceilTo, floorTo } from '../../utils/utils';
+import { Chromosome } from '../../models/Chromosome';
+import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class PlotStateService {
@@ -34,7 +34,7 @@ export class PlotStateService {
             selected_interval: this.interval,
             selected_binsize: this.binsize,
             zoom_level: this.zoom_level
-        }
+        };
     }
 
     /**

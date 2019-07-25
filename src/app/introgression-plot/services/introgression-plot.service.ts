@@ -228,7 +228,7 @@ export class IntrogressionPlotService {
         this.plotState.settings$.subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
             this.plot_data$.subscribe(this.generate_plot);
-        })
+        });
     }
 
     private generate_plot = ([ref_dist, [tree_query, tree],
