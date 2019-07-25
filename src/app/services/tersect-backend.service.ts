@@ -11,6 +11,7 @@ import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
 import { TreeNode } from '../clustering/clustering';
 import { combineLatest } from 'rxjs/observable/combineLatest';
+import { IPhyloTree } from '../../backend/db/phylotree';
 
 @Injectable()
 export class TersectBackendService {
@@ -49,8 +50,7 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
      */
     getPhylogeneticTree(dataset_id: string, chromosome: string,
                         start: number, end: number,
-                        accessions: string[]): Observable<[TreeQuery,
-                                                           TreeNode]> {
+                        accessions: string[]): Observable<IPhyloTree> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -60,9 +60,7 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
             interval: [start, end],
             accessions: accessions,
         };
-        return combineLatest(of(tree_query),
-                             this.http.post<TreeNode>(query, tree_query,
-                                                      httpOptions));
+        return this.http.post<IPhyloTree>(query, tree_query, httpOptions);
     }
 
     /**

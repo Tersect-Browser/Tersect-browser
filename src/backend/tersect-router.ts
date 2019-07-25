@@ -11,11 +11,11 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
-import { newickToTree } from '../app/clustering/clustering';
 import { PhyloTree, IPhyloTree } from './db/phylotree';
 import { TreeQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
+import { formatRegion } from '../app/utils/utils';
 
 export const router = Router();
 
@@ -233,6 +233,7 @@ router.route('/views/export')
 
 router.route('/query/:dataset_id/tree')
       .post((req, res) => {
+    const tsi_location = res.locals.dataset.tsi_location;
     const tree_query: TreeQuery = req.body;
     const db_query = {
         dataset_id: req.params.dataset_id,
@@ -243,41 +244,58 @@ router.route('/query/:dataset_id/tree')
     PhyloTree.findOne(db_query)
              .exec((err, result: IPhyloTree) => {
         if (err) {
-            res.json(err);
+            return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {
             // Generating new tree
-            generate_tree(req, res);
+            const phylo_tree = new PhyloTree({
+                dataset_id: req.params.dataset_id,
+                'query.chromosome_name': tree_query.chromosome_name,
+                'query.interval': tree_query.interval,
+                'query.accessions': tree_query.accessions,
+                status: 'Loading data...'
+            }).save((save_err: any) => {
+                if (save_err) {
+                    return res.status(500).send('Tree creation failed');
+                }
+                generate_tree(tsi_location, tree_query, db_query);
+            });
+            res.json(phylo_tree);
         } else {
             // Retrieved previously generated tree
-            res.json(result.tree);
+            res.json(result);
         }
     });
 });
 
-function create_rapidnj_tree(req, res, phylip_file) {
+function create_rapidnj_tree(db_query, phylip_file) {
     const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
     rapidnj.stderr.on('data', (data) => {
         // Progress percentages
-        // console.log(data.toString().trim());
+        const status_updates = data.toString().trim().split(' ');
+        const status = status_updates[status_updates.length - 1].trim();
+        PhyloTree.updateOne(db_query, {
+            status: status
+        }).exec();
     });
     let newick_output = '';
     rapidnj.stdout.on('data', (data) => {
         newick_output += data.toString();
     });
     rapidnj.stdout.on('close', () => {
-        res.json(newickToTree(newick_output));
+        PhyloTree.updateOne(db_query, {
+            status: 'ready',
+            tree_newick: newick_output
+        }).exec();
     });
 }
 
-function generate_tree(req, res) {
-    const tsi_location = res.locals.dataset.tsi_location;
-    const tree_query: TreeQuery = req.body;
-
+function generate_tree(tsi_location: string, tree_query: TreeQuery, db_query) {
     const partitions = partitionQuery(tsi_location, config['index_partitions'],
                                       tree_query);
 
     const db_files = partitions.indexed.map(async interval => {
-        const region = `${tree_query.chromosome_name}:${interval.start}-${interval.end}`;
+        const region = formatRegion(tree_query.chromosome_name, interval.start,
+                                    interval.end);
         const result = await DBMatrix.findOne(
             { region: region }, { _id: 0, matrix_file: 1 }
         );
@@ -286,7 +304,8 @@ function generate_tree(req, res) {
 
     const tersect_output_files = partitions.nonindexed.map(async interval => {
         const output_file = fileSync();
-        const region = `${tree_query.chromosome_name}:${interval.start}-${interval.end}`;
+        const region = formatRegion(tree_query.chromosome_name, interval.start,
+                                    interval.end);
         const command = `tersect dist ${tsi_location} ${region} > ${output_file.name}`;
         const result = await execPromise(command);
         // TODO: error handling on tersect result / promise rejection
@@ -328,6 +347,6 @@ function generate_tree(req, res) {
         }
         return execPromise(merge_command);
     }).then((output_filename: string) => {
-        create_rapidnj_tree(req, res, output_filename.trim());
+        create_rapidnj_tree(db_query, output_filename.trim());
     });
 }

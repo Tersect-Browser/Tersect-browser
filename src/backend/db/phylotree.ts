@@ -4,12 +4,12 @@
 
 import { Schema, model, Document } from 'mongoose';
 import { TreeQuery } from '../../app/models/TreeQuery';
-import { TreeNode } from '../../app/clustering/clustering';
 
 export interface IPhyloTree extends Document {
     dataset_id: string;
     query: TreeQuery;
-    tree: TreeNode;
+    status: string;
+    tree_newick?: string;
 }
 
 const PhyloTreeSchema = new Schema({
@@ -20,8 +20,9 @@ const PhyloTreeSchema = new Schema({
         interval: [Number],
         accessions: [String]
     },
+    status: String,
     // TODO: match with TreeNode interface
-    tree: Schema.Types.Mixed
+    tree_newick: String
 });
 
 export const PhyloTree = model<IPhyloTree>('PhyloTree',

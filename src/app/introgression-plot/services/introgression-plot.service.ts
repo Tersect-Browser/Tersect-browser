@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { PlotPosition } from '../../models/PlotPosition';
-import { TreeNode, treeToSortedList } from '../../clustering/clustering';
+import { TreeNode, treeToSortedList, newickToTree } from '../../clustering/clustering';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { filter, tap, debounceTime, switchMap } from 'rxjs/operators';
+import { filter, tap, debounceTime, switchMap, delay, retryWhen } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
 import { sameElements, ceilTo, floorTo, formatRegion } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
@@ -14,6 +14,7 @@ import { TreeQuery } from '../../models/TreeQuery';
 import * as deepEqual from 'fast-deep-equal';
 import { PlotStateService } from './plot-state.service';
 import { Observable } from 'rxjs/Observable';
+import { IPhyloTree } from '../../../backend/db/phylotree';
 
 export interface GUIMargins {
     top: number;
@@ -33,6 +34,8 @@ export class IntrogressionPlotService {
     readonly GUI_SCALE_BAR_SIZE = 24;
 
     readonly DEBOUNCE_TIME = 700;
+
+    readonly TREE_RETRY_DELAY = 1000;
 
     // R, G, B, A color
     readonly GAP_COLOR = [240, 180, 180, 255];
@@ -194,7 +197,17 @@ export class IntrogressionPlotService {
                 this.tersectBackendService
                     .getPhylogeneticTree(ds, chrom.name,
                                          interval[0], interval[1],
-                                         accessions)
+                                         accessions).pipe(
+                    tap((tree_output: IPhyloTree) => {
+                        if (tree_output.status !== 'ready') {
+                            console.log(tree_output.status);
+                            throw new Error('Tree still loading');
+                        }
+                    }),
+                    retryWhen(errors => {
+                        return errors.pipe(delay(this.TREE_RETRY_DELAY));
+                    })
+                )
             )
         );
 
@@ -215,10 +228,13 @@ export class IntrogressionPlotService {
                 !inputs.some(isNullOrUndefined)
             ),
             tap(this.startLoading),
-            filter(([ref_dist, [tree_query, tree], , ]) =>
-                ref_dist['region'] === formatRegion(tree_query.chromosome_name,
-                                                    tree_query.interval[0],
-                                                    tree_query.interval[1])
+            filter(([ref_dist, tree_output, , ]) =>
+                ref_dist['region'] === formatRegion(tree_output.query
+                                                               .chromosome_name,
+                                                    tree_output.query
+                                                               .interval[0],
+                                                    tree_output.query
+                                                               .interval[1])
                 && ref_dist['region'].split(':')[0] === this.plotState
                                                             .chromosome.name
                 && ref_dist['reference'] === this.plotState.reference
@@ -231,12 +247,15 @@ export class IntrogressionPlotService {
         });
     }
 
-    private generate_plot = ([ref_dist, [tree_query, tree],
+    private generate_plot = ([ref_dist, tree_output,
                               accessions, gaps]) => {
         this.distanceBins = ref_dist['bins'];
         if (!sameElements(accessions, this.plotState.sorted_accessions)
-             || !deepEqual(this.phyloTree.query, tree_query)) {
-            this.phyloTree = { query: tree_query, tree: tree };
+            || !deepEqual(this.phyloTree.query, tree_output.query)) {
+            this.phyloTree = {
+                query: tree_output.query,
+                tree: newickToTree(tree_output.tree_newick)
+            };
             this.plotState
                 .sorted_accessions = treeToSortedList(this.phyloTree.tree);
             this.sequenceGaps = gaps;
