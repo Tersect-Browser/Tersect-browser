@@ -58,9 +58,8 @@ def merge_phylip_files(filenames, negative_filenames=None,
                 if index not in indices:
                     continue
                 arrays = [
-                    numpy.asarray(list(map(int,
-                        [ line[1:][i] for i in indices ])
-                    )) for line in lines
+                    numpy.asarray(list(map(int, line[1:])))[indices]
+                    for line in lines
                 ]
                 for i in negative_indices:
                     numpy.negative(arrays[i], out=arrays[i])
