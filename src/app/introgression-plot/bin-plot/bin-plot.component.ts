@@ -27,6 +27,37 @@ export class BinPlotComponent extends CanvasPlotElement {
     constructor(private plotState: PlotStateService,
                 private plotService: IntrogressionPlotService) { super(); }
 
+    private extract_visible_image(): ImageData {
+        const full_array = this.plotService.plot_array;
+        const pos = this.plotService.plot_position;
+        const col_num = this.plotService.col_num;
+
+        let visible_cols = Math.ceil(this.canvas.nativeElement.width
+                                     / this.plotService.bin_width)
+                           - this.plotService.gui_margins.left;
+        if (visible_cols > col_num + pos.x) {
+            // More visible area than available columns
+            visible_cols = col_num + pos.x;
+            if (visible_cols < 1) {
+                visible_cols = 1;
+            }
+        }
+
+        const visible_rows = Math.ceil(this.canvas.nativeElement.height
+                                     / this.plotService.bin_height);
+
+        const visible_array = new Uint8ClampedArray(4 * visible_rows
+                                                    * visible_cols);
+
+        for (let i = 0; i < visible_rows; i++) {
+            const row_start = 4 * (col_num * (i - pos.y) - pos.x);
+            visible_array.set(full_array.slice(row_start,
+                                               row_start + 4 * visible_cols),
+                              4 * i * visible_cols);
+        }
+        return new ImageData(visible_array, visible_cols, visible_rows);
+    }
+
     draw() {
         if (isNullOrUndefined(this.plotService.plot_array)) { return; }
 
@@ -51,13 +82,9 @@ export class BinPlotComponent extends CanvasPlotElement {
                                                          .getContext('2d');
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
-        ctx.putImageData(new ImageData(this.plotService.plot_array,
-                                       this.plotService.col_num,
-                                       this.plotService.row_num),
-                         this.plotService.plot_position.x + this.plotService
-                                                                .gui_margins
-                                                                .left,
-                         this.plotService.plot_position.y);
+        ctx.putImageData(this.extract_visible_image(),
+                         this.plotService.gui_margins.left,
+                         0);
         this.updateHighlight();
     }
 
