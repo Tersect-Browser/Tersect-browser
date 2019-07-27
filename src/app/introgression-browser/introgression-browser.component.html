@@ -132,7 +132,8 @@
 <p-sidebar [(visible)]="display_sidebar" position="left"
            (onHide)="updateAccessions()">
     <b>Displayed accessions</b>
-    <p-listbox [options]="accessions" [(ngModel)]="widget_accessions"
+    <p-listbox *ngIf="display_sidebar"
+        [options]="accessions" [(ngModel)]="widget_accessions"
         filter="true" multiple="true" checkbox="true"
         [style]="{'width': '100%', 'height': '95%'}"
         [listStyle]="{'max-height':'100%'}">
