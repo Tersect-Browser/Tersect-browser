@@ -1,5 +1,6 @@
 import express = require('express'); // Legacy (non-ES6) import syntax
 import mongoose = require('mongoose');
+import bodyParser = require('body-parser');
 
 import { router } from './src/backend/tersect-router';
 import { cleanDatabase } from './src/backend/db/dbutils';
@@ -10,6 +11,7 @@ const port = process.env.PORT || 8060;
 mongoose.connect('mongodb://localhost:27017/tersect', { useNewUrlParser: true });
 mongoose.set('useCreateIndex', true);
 
+app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.json());
 app.use('/tbapi', router);
 
