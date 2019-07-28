@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 
 import { Router } from 'express';
 import { exec, spawn } from 'child_process';
@@ -289,6 +290,15 @@ function create_rapidnj_tree(db_query, phylip_file) {
     });
 }
 
+/**
+ * Save list of accessions into a temporary file and return the file name.
+ */
+async function write_accessions(accessions: string[]): Promise<string> {
+    const output_file = fileSync();
+    await util.promisify(fs.writeFile)(output_file.name, accessions.join('\n'));
+    return output_file.name;
+}
+
 function generate_tree(tsi_location: string, tree_query: TreeQuery, db_query) {
     const partitions = partitionQuery(tsi_location, config['index_partitions'],
                                       tree_query);
@@ -330,20 +340,23 @@ function generate_tree(tsi_location: string, tree_query: TreeQuery, db_query) {
         }
     });
 
-    const matrix_files = positive_matrix_files.concat(negative_matrix_files);
+    const input_files = [
+        write_accessions(tree_query.accessions),
+        ...positive_matrix_files,
+        ...negative_matrix_files
+    ];
 
-    Promise.all(matrix_files).then((results) => {
-        const positive = results.slice(0, positive_matrix_files.length)
-                                .join(' ');
-        const negative = results.slice(positive_matrix_files.length,
-                                       results.length).join(' ');
-        const accessions = tree_query.accessions.join(' ');
+    Promise.all(input_files).then(([acc_file, ...matrix_files]) => {
+        const positive = matrix_files.slice(0, positive_matrix_files.length)
+                                     .join(' ');
+        const negative = matrix_files.slice(positive_matrix_files.length,
+                                            matrix_files.length).join(' ');
         const script = path.join(__dirname, 'merge_phylip.py');
         let merge_command: string;
         if (negative.length) {
-            merge_command = `${script} ${tsi_location} ${positive} -n ${negative} -a ${accessions}`;
+            merge_command = `${script} ${tsi_location} ${positive} -n ${negative} -a ${acc_file}`;
         } else {
-            merge_command = `${script} ${tsi_location} ${positive} -a ${accessions}`;
+            merge_command = `${script} ${tsi_location} ${positive} -a ${acc_file}`;
         }
         return execPromise(merge_command);
     }).then((output_filename: string) => {
