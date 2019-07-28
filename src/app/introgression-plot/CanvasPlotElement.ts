@@ -1,5 +1,6 @@
-import { HostListener, Output, EventEmitter } from '@angular/core';
 import { PlotArea, PlotPosition, PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
+
+import { HostListener, Output, EventEmitter } from '@angular/core';
 
 export interface DragState {
     enable_dragging: boolean;

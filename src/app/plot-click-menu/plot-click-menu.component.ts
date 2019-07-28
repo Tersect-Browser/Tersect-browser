@@ -1,7 +1,8 @@
-import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
-import { MenuItem } from 'primeng/components/common/menuitem';
 import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition, PlotSequenceInterval } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
+
+import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
+import { MenuItem } from 'primeng/components/common/menuitem';
 
 @Component({
     selector: 'app-plot-click-menu',

@@ -1,20 +1,20 @@
-import { Injectable } from '@angular/core';
-import { PlotPosition } from '../../models/PlotPosition';
 import { TreeNode, treeToSortedList, newickToTree } from '../../clustering/clustering';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { TersectBackendService } from '../../services/tersect-backend.service';
-import { combineLatest } from 'rxjs/observable/combineLatest';
-import { filter, tap, debounceTime, switchMap, delay, retryWhen } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 import { sameElements, ceilTo, floorTo, formatRegion } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
+import { PlotPosition } from '../../models/PlotPosition';
 import { TreeQuery } from '../../models/TreeQuery';
-
-import * as deepEqual from 'fast-deep-equal';
-import { PlotStateService } from './plot-state.service';
-import { Observable } from 'rxjs/Observable';
 import { IPhyloTree } from '../../../backend/db/phylotree';
+import { PlotStateService } from './plot-state.service';
+import { TersectBackendService } from '../../services/tersect-backend.service';
+
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { combineLatest } from 'rxjs/observable/combineLatest';
+import { filter, tap, debounceTime, switchMap, delay, retryWhen } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+import { isNullOrUndefined } from 'util';
+import * as deepEqual from 'fast-deep-equal';
 
 export interface GUIMargins {
     top: number;

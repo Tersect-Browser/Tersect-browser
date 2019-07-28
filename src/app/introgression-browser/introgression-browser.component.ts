@@ -1,22 +1,21 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { PlatformLocation } from '@angular/common';
-
-import { SelectItem } from 'primeng/components/common/selectitem';
-import { Chromosome } from '../models/Chromosome';
-import { TersectBackendService } from '../services/tersect-backend.service';
 import { formatPosition } from '../utils/utils';
 import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from '../tooltip/tooltip.component';
+import { Chromosome } from '../models/Chromosome';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { switchMap } from 'rxjs/operators';
-import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
-import { forkJoin } from 'rxjs/observable/forkJoin';
-import { isNullOrUndefined } from 'util';
-
-import * as path from 'path';
-import { PlotStateService } from '../introgression-plot/services/plot-state.service';
 import { BrowserSettings } from './browser-settings';
+import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
+import { TersectBackendService } from '../services/tersect-backend.service';
+import { PlotStateService } from '../introgression-plot/services/plot-state.service';
+
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { PlatformLocation } from '@angular/common';
+import { isNullOrUndefined } from 'util';
+import { forkJoin } from 'rxjs/observable/forkJoin';
+import { switchMap } from 'rxjs/operators';
+import { SelectItem } from 'primeng/components/common/selectitem';
+import * as path from 'path';
 
 @Component({
     selector: 'app-introgression-browser',

@@ -9,8 +9,6 @@ import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
-import { TreeNode } from '../clustering/clustering';
-import { combineLatest } from 'rxjs/observable/combineLatest';
 import { IPhyloTree } from '../../backend/db/phylotree';
 
 @Injectable()

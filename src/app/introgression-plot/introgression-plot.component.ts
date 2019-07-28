@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild, HostListener, Output, EventEmitter } from '@angular/core';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
-import { IntrogressionPlotService } from './services/introgression-plot.service';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
 import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
+import { IntrogressionPlotService } from './services/introgression-plot.service';
 import { PlotStateService } from './services/plot-state.service';
+
+import { Component, OnInit, ViewChild, HostListener, Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'app-introgression-plot',

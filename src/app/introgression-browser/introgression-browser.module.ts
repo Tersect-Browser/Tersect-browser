@@ -1,3 +1,10 @@
+import { IntrogressionPlotModule } from '../introgression-plot/introgression-plot.module';
+
+import { IntrogressionBrowserComponent } from './introgression-browser.component';
+
+import { PlotClickMenuModule } from '../plot-click-menu/plot-click-menu.module';
+import { TooltipModule } from '../tooltip/tooltip.module';
+
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -12,12 +19,6 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { PlotClickMenuModule } from '../plot-click-menu/plot-click-menu.module';
-import { TooltipModule } from '../tooltip/tooltip.module';
-
-import { IntrogressionPlotModule } from '../introgression-plot/introgression-plot.module';
-
-import { IntrogressionBrowserComponent } from './introgression-browser.component';
 
 @NgModule({
     declarations: [

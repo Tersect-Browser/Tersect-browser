@@ -1,8 +1,3 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { RouterModule, Routes } from '@angular/router';
-
 import { IntrogressionBrowserModule } from './introgression-browser/introgression-browser.module';
 import { IntroPageModule } from './intro-page/intro-page.module';
 
@@ -10,6 +5,11 @@ import { IntrogressionBrowserComponent } from './introgression-browser/introgres
 import { IntroPageComponent } from './intro-page/intro-page.component';
 
 import { AppComponent } from './app.component';
+
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { RouterModule, Routes } from '@angular/router';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: IntrogressionBrowserComponent },

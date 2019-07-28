@@ -1,4 +1,5 @@
 import { DistanceMatrix } from '../models/DistanceMatrix';
+
 import { isNullOrUndefined } from 'util';
 import * as nj from 'neighbor-joining';
 import * as newick_parser from 'biojs-io-newick';

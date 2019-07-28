@@ -1,11 +1,12 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
-import { isNullOrUndefined } from 'util';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
+import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotStateService } from '../services/plot-state.service';
+
+import { Component, ViewChild, ElementRef } from '@angular/core';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-accession-bar',
