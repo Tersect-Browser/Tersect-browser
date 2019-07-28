@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as util from 'util';
 
 import { Router } from 'express';
 import { exec, spawn } from 'child_process';
@@ -10,7 +9,7 @@ import { ChromosomeIndex } from './db/chromosomeindex';
 import { ViewSettings } from './db/viewsettings';
 
 import { default as Hashids } from 'hashids';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined, promisify } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
 import { PhyloTree, IPhyloTree } from './db/phylotree';
 import { TreeQuery } from '../app/models/TreeQuery';
@@ -295,7 +294,7 @@ function create_rapidnj_tree(db_query, phylip_file) {
  */
 async function write_accessions(accessions: string[]): Promise<string> {
     const output_file = fileSync();
-    await util.promisify(fs.writeFile)(output_file.name, accessions.join('\n'));
+    await promisify(fs.writeFile)(output_file.name, accessions.join('\n'));
     return output_file.name;
 }
 
