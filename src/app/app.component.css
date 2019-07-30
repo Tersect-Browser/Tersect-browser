@@ -1,18 +1,16 @@
 .tb-top-bar {
     background-color: #1b4d32;
     height: 4em;
-    padding-left: 5em;
-    padding-right: 5em;
     box-shadow: 0px 3px 3px grey;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     z-index: 1000;
+}
+
+.tb-top-bar > div {
+    height: 100%;
 }
 
 .tb-logo {
     height: 60%;
-    margin-left: 0.5em;
 }
 
 .cranfield-logo {
