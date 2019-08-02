@@ -252,7 +252,7 @@ router.route('/query/:dataset_id/tree')
                 'query.chromosome_name': tree_query.chromosome_name,
                 'query.interval': tree_query.interval,
                 'query.accessions': tree_query.accessions,
-                status: 'Loading data...'
+                status: 'Collating data...'
             }).save((save_err: any) => {
                 if (save_err) {
                     return res.status(500).send('Tree creation failed');
@@ -272,7 +272,8 @@ function create_rapidnj_tree(db_query, phylip_file) {
     rapidnj.stderr.on('data', (data) => {
         // Progress percentages
         const status_updates = data.toString().trim().split(' ');
-        const status = status_updates[status_updates.length - 1].trim();
+        const percentage = status_updates[status_updates.length - 1].trim();
+        const status = `Building tree: ${percentage}`;
         PhyloTree.updateOne(db_query, {
             status: status
         }).exec();
