@@ -27,8 +27,8 @@ export class IntrogressionPlotComponent implements OnInit {
         return this.plotService.error_message;
     }
 
-    get plot_loading() {
-        return this.plotService.plot_loading;
+    get plot_load_message() {
+        return this.plotService.plot_load_message;
     }
 
     ngOnInit() {

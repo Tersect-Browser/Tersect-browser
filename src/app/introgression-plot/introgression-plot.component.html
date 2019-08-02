@@ -1,7 +1,10 @@
-<div [ngStyle]="{'visibility': plot_loading && error_message == '' ? 'visible'
-                                                                   : 'hidden'}">
+<div [ngStyle]="{'visibility': plot_load_message != ''
+                               && error_message == '' ? 'visible' : 'hidden'}">
     <div class="update-spinner">
         <p-progressSpinner></p-progressSpinner>
+    </div>
+    <div class="update-status">
+        {{ plot_load_message }}
     </div>
     <div class="update-shadow"></div>
 </div>

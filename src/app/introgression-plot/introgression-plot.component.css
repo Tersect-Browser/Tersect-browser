@@ -1,9 +1,19 @@
 .update-spinner {
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 40%;
     transform: translate(-50%, -50%);
     z-index: 1001;
+}
+
+.update-status {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1002;
+    color: white;
+    font-weight: bold;
 }
 
 .error-message {

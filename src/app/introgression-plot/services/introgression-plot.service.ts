@@ -40,6 +40,8 @@ export class IntrogressionPlotService {
     // R, G, B, A color
     readonly GAP_COLOR = [240, 180, 180, 255];
 
+    readonly DEFAULT_LOAD_MESSAGE = 'Loading...';
+
     /**
      * Bin aspect ratio (width / height). By default bins are twice as high as
      * they are wide. This is to more easily fit accession labels without making
@@ -55,10 +57,10 @@ export class IntrogressionPlotService {
     };
 
     /**
-     * Plot load status (when true, spinner overlay is displayed, unless an
-     * error message is displayed).
+     * Plot load status. When not an empty string, spinner overlay is displayed
+     * (unless an error message is displayed, as those take priority).
      */
-    plot_loading = true;
+    plot_load_message = '';
 
     /**
      * Error message string. When not an empty string, error message overlay is
@@ -200,7 +202,7 @@ export class IntrogressionPlotService {
                                          accessions).pipe(
                     tap((tree_output: IPhyloTree) => {
                         if (tree_output.status !== 'ready') {
-                            console.log(tree_output.status);
+                            this.plot_load_message = tree_output.status;
                             throw new Error('Tree still loading');
                         }
                     }),
@@ -268,8 +270,15 @@ export class IntrogressionPlotService {
         this.stopLoading();
     }
 
-    private startLoading = () => this.plot_loading = true;
-    private stopLoading = () => this.plot_loading = false;
+    private startLoading = () => {
+        if (this.plot_load_message === '') {
+            this.plot_load_message = this.DEFAULT_LOAD_MESSAGE;
+        }
+    }
+
+    private stopLoading = () => {
+        this.plot_load_message = '';
+    }
 
     private validateInputs = () => {
         if (!isNullOrUndefined(this.plotState.accessions)
