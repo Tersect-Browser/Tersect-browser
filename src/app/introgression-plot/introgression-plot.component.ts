@@ -7,6 +7,7 @@ import { PlotStateService } from './services/plot-state.service';
 
 import { Component, OnInit, ViewChild, HostListener, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+import { combineLatest } from 'rxjs/observable/combineLatest';
 
 @Component({
     selector: 'app-introgression-plot',
@@ -24,11 +25,8 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
     @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
-    private accession_sub: Subscription;
-    private zoom_level_sub: Subscription;
-    private plot_position_sub: Subscription;
-    private plot_array_sub: Subscription;
-    private highlight_sub: Subscription;
+    private full_redraw: Subscription;
+    private bin_redraw: Subscription;
 
     get error_message() {
         return this.plotService.error_message;
@@ -39,35 +37,22 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.accession_sub = this.plotState.accession_style$.subscribe(() => {
+        this.full_redraw = combineLatest(this.plotState.accession_style$,
+                                         this.plotState.zoom_level$,
+                                         this.plotService.plot_position_source,
+                                         this.plotService.plot_array_source)
+                                         .subscribe(() => {
             this.redrawPlot();
         });
 
-        this.zoom_level_sub = this.plotState.zoom_level$.subscribe(() => {
-            this.redrawPlot();
-        });
-
-        this.plot_position_sub = this.plotService.plot_position_source
-                                                 .subscribe(() => {
-            this.redrawPlot();
-        });
-
-        this.plot_array_sub = this.plotService.plot_array_source
-                                              .subscribe(() => {
-            this.redrawPlot();
-        });
-
-        this.highlight_sub = this.plotService.highlight_source.subscribe(() => {
+        this.bin_redraw = this.plotService.highlight_source.subscribe(() => {
             this.binPlot.draw();
         });
     }
 
     ngOnDestroy() {
-        this.accession_sub.unsubscribe();
-        this.zoom_level_sub.unsubscribe();
-        this.plot_position_sub.unsubscribe();
-        this.plot_array_sub.unsubscribe();
-        this.highlight_sub.unsubscribe();
+        this.full_redraw.unsubscribe();
+        this.bin_redraw.unsubscribe();
     }
 
     private redrawPlot() {
