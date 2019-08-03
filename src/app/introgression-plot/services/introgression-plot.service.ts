@@ -8,11 +8,12 @@ import { IPhyloTree } from '../../../backend/db/phylotree';
 import { PlotStateService } from './plot-state.service';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { filter, tap, debounceTime, switchMap, delay, retryWhen, first } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
 import { isNullOrUndefined } from 'util';
 import * as deepEqual from 'fast-deep-equal';
 
@@ -27,7 +28,7 @@ export type AccessionDisplayStyle = 'labels' | 'tree_simple'
                                     | 'tree_linear';
 
 @Injectable()
-export class IntrogressionPlotService {
+export class IntrogressionPlotService implements OnDestroy {
     /**
      * Default top bar size.
      */
@@ -106,6 +107,7 @@ export class IntrogressionPlotService {
     } = { query: null, tree: null };
 
     private plot_data$: Observable<any[]>;
+    private plot_data_sub: Subscription;
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -245,8 +247,14 @@ export class IntrogressionPlotService {
 
         this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
-            this.plot_data$.subscribe(this.generate_plot);
+            this.plot_data_sub = this.plot_data$.subscribe(this.generate_plot);
         });
+    }
+
+    ngOnDestroy() {
+        if (!isNullOrUndefined(this.plot_data_sub)) {
+            this.plot_data_sub.unsubscribe();
+        }
     }
 
     private generate_plot = ([ref_dist, tree_output,
