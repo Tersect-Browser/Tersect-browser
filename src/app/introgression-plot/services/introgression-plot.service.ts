@@ -11,7 +11,7 @@ import { TersectBackendService } from '../../services/tersect-backend.service';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { filter, tap, debounceTime, switchMap, delay, retryWhen } from 'rxjs/operators';
+import { filter, tap, debounceTime, switchMap, delay, retryWhen, first } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { isNullOrUndefined } from 'util';
 import * as deepEqual from 'fast-deep-equal';
@@ -243,7 +243,7 @@ export class IntrogressionPlotService {
             )
         );
 
-        this.plotState.settings$.subscribe(() => {
+        this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
             this.plot_data$.subscribe(this.generate_plot);
         });
