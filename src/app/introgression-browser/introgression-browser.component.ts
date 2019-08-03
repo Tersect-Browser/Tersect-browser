@@ -8,12 +8,13 @@ import { AccessionDisplayStyle } from '../introgression-plot/services/introgress
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 import { isNullOrUndefined } from 'util';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { switchMap } from 'rxjs/operators';
+import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import * as path from 'path';
 
@@ -23,7 +24,7 @@ import * as path from 'path';
     styleUrls: ['./introgression-browser.component.css'],
     providers: [ PlotStateService ]
 })
-export class IntrogressionBrowserComponent implements OnInit {
+export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     @ViewChild(PlotClickMenuComponent) plotClickMenu: PlotClickMenuComponent;
     @ViewChild(TooltipComponent) tooltip: TooltipComponent;
 
@@ -82,6 +83,8 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     display_tree = false;
     display_sidebar = false;
+
+    interval_sub: Subscription;
 
     zoomIn() {
         this.plotState.zoomIn();
@@ -149,12 +152,19 @@ export class IntrogressionBrowserComponent implements OnInit {
                 this.widget_accessions = settings.selected_accessions;
                 this.widget_binsize = settings.selected_binsize;
                 this.widget_chromosome = settings.selected_chromosome;
-                this.plotState.interval$.subscribe((interval) => {
+                this.interval_sub = this.plotState.interval$
+                                                  .subscribe((interval) => {
                     // Creating new interval array to ensure widget update
                     this.widget_interval = [...interval];
                 });
             });
         });
+    }
+
+    ngOnDestroy() {
+        if (!isNullOrUndefined(this.interval_sub)) {
+            this.interval_sub.unsubscribe();
+        }
     }
 
     exportView($event) {
