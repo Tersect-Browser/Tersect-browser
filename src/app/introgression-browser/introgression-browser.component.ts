@@ -20,7 +20,8 @@ import * as path from 'path';
 @Component({
     selector: 'app-introgression-browser',
     templateUrl: './introgression-browser.component.html',
-    styleUrls: ['./introgression-browser.component.css']
+    styleUrls: ['./introgression-browser.component.css'],
+    providers: [ PlotStateService ]
 })
 export class IntrogressionBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent) plotClickMenu: PlotClickMenuComponent;

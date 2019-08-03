@@ -2,7 +2,6 @@ import { IntrogressionPlotComponent } from './introgression-plot.component';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';
 import { AccessionBarComponent } from './accession-bar/accession-bar.component';
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
-import { PlotStateService } from './services/plot-state.service';
 import { TersectBackendService } from '../services/tersect-backend.service';
 
 import { NgModule } from '@angular/core';
@@ -24,8 +23,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         ProgressSpinnerModule
     ],
     providers: [
-        TersectBackendService,
-        PlotStateService
+        TersectBackendService
     ]
 })
 export class IntrogressionPlotModule { }
