@@ -75,10 +75,10 @@ interface RapidNJNode {
     branch_length?: number;
 }
 
-function _convertNode(rnjNode: RapidNJNode): TreeNode {
+function rnjToTreeNode(rnjNode: RapidNJNode): TreeNode {
     const output: TreeNode = {
         children: isNullOrUndefined(rnjNode.children)
-                    ? [] : rnjNode.children.map(child => _convertNode(child))
+                    ? [] : rnjNode.children.map(child => rnjToTreeNode(child))
     };
     if (!isNullOrUndefined(rnjNode.branch_length)) {
         output.length = rnjNode.branch_length;
@@ -94,5 +94,5 @@ function _convertNode(rnjNode: RapidNJNode): TreeNode {
  */
 export function newickToTree(newick: string): TreeNode {
     const parsed = newick_parser.parse_newick(newick.replace(/'/g, ''));
-    return _convertNode(parsed);
+    return rnjToTreeNode(parsed);
 }
