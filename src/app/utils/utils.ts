@@ -79,6 +79,20 @@ export function extractTags(element: HTMLElement): string[] {
 }
 
 /**
+ * Sort input array according to the sort order of a second parallel array
+ * as sorted by a specified comparison function (ascending order).
+ * @param toSort array to be sorted based on the order of the second array.
+ * @param sortBy parallel array to base the sort order on.
+ * @param compFn sort comparison function to use.
+ */
+export function syncSort(toSort: any[], sortBy: any[],
+                compFn: (a: any, b: any) => number = (a, b) => a - b): any[] {
+    return toSort.map((n, i) => [n, sortBy[i]])
+                 .sort((a, b) => compFn(a[1], b[1]))
+                 .map(sorted => sorted[0]);
+}
+
+/**
  * Formats a region string as used by Tersect and tabix.
  */
 export function formatRegion(chromosome_name: string,
