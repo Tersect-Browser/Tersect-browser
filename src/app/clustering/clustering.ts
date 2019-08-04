@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from 'util';
 import * as newick_parser from 'biojs-io-newick';
+import { syncSort } from '../utils/utils';
 
 export type TreeNode = {
     taxon?: { name: string, genotype?: string },
@@ -67,6 +68,25 @@ function _getTreeDepth(subtree: TreeNode, depth: number,
 }
 
 /**
+ * Returns number of taxons in subtree.
+ */
+function _ladderizeSubtree(node: TreeNode): number {
+    if (node.children.length) {
+        const subtree_sizes = node.children
+                                  .map((child) => _ladderizeSubtree(child));
+        node.children = syncSort(node.children, subtree_sizes);
+        return subtree_sizes.reduce((a, b) => a + b, 0);
+    } else {
+        return 1;
+    }
+}
+
+function ladderizeTree(tree: TreeNode): TreeNode {
+    _ladderizeSubtree(tree);
+    return tree;
+}
+
+/**
  * Nodes as output by the biojs-io-newick parser.
  */
 interface RapidNJNode {
@@ -93,6 +113,7 @@ function rnjToTreeNode(rnjNode: RapidNJNode): TreeNode {
  * Converts a Newick-format output of RapidNJ to a TreeNode tree.
  */
 export function newickToTree(newick: string): TreeNode {
-    const parsed = newick_parser.parse_newick(newick.replace(/'/g, ''));
-    return rnjToTreeNode(parsed);
+    const newick_string = newick.replace(/'/g, '');
+    const parsed: RapidNJNode = newick_parser.parse_newick(newick_string);
+    return ladderizeTree(rnjToTreeNode(parsed));
 }
