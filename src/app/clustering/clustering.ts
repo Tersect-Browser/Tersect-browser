@@ -68,21 +68,23 @@ function _getTreeDepth(subtree: TreeNode, depth: number,
 }
 
 /**
- * Returns number of taxons in subtree.
+ * Returns number of taxons in subtree (if weighted is false - the default)
+ * or sum of lengths (distances) inside the subtree (if weighted is true)
  */
-function _ladderizeSubtree(node: TreeNode): number {
+function _ladderizeSubtree(node: TreeNode, weighted = false): number {
     if (node.children.length) {
         const subtree_sizes = node.children
-                                  .map((child) => _ladderizeSubtree(child));
+                                  .map((child) => _ladderizeSubtree(child,
+                                                                    weighted));
         node.children = syncSort(node.children, subtree_sizes);
         return subtree_sizes.reduce((a, b) => a + b, 0);
     } else {
-        return 1;
+        return weighted ? node.length : 1;
     }
 }
 
-function ladderizeTree(tree: TreeNode): TreeNode {
-    _ladderizeSubtree(tree);
+function ladderizeTree(tree: TreeNode, weighted = false): TreeNode {
+    _ladderizeSubtree(tree, weighted);
     return tree;
 }
 
@@ -115,5 +117,5 @@ function rnjToTreeNode(rnjNode: RapidNJNode): TreeNode {
 export function newickToTree(newick: string): TreeNode {
     const newick_string = newick.replace(/'/g, '');
     const parsed: RapidNJNode = newick_parser.parse_newick(newick_string);
-    return ladderizeTree(rnjToTreeNode(parsed));
+    return ladderizeTree(rnjToTreeNode(parsed), true);
 }
