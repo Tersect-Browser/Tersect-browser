@@ -126,7 +126,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
             // Horizontal lines to individual subtrees
             subtree_xpos.forEach((child_xpos, i) => {
                 ctx.moveTo(base_xpos, subtree_ypos[i]);
-                ctx.lineTo(child_xpos, subtree_ypos[i])
+                ctx.lineTo(child_xpos, subtree_ypos[i]);
             });
             ctx.stroke();
         } else {
