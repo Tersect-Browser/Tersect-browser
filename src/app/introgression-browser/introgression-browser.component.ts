@@ -182,8 +182,8 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     generateMissingSettings(settings: BrowserSettings,
                             accessions: string[],
                             chromosomes: Chromosome[]) {
-        if (isNullOrUndefined(settings.selectedAccessionDisplayStyle)) {
-            settings.selectedAccessionDisplayStyle = this.DEFAULT_DISPLAY_STYLE;
+        if (isNullOrUndefined(settings.accession_style)) {
+            settings.accession_style = this.DEFAULT_DISPLAY_STYLE;
         }
         if (isNullOrUndefined(settings.selected_accessions)) {
             settings.selected_accessions = accessions;

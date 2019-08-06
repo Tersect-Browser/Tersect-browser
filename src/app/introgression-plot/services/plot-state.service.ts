@@ -13,7 +13,7 @@ export class PlotStateService {
     settings$ = this.settings_source.asObservable();
     set settings(settings: BrowserSettings) {
         this.dataset_id = settings.dataset_id;
-        this.accession_style = settings.selectedAccessionDisplayStyle;
+        this.accession_style = settings.accession_style;
         this.accession_dictionary = settings.accession_dictionary;
         this.accessions = settings.selected_accessions;
         this.reference = settings.selected_reference;
@@ -26,7 +26,7 @@ export class PlotStateService {
     get settings(): BrowserSettings {
         return {
             dataset_id: this.dataset_id,
-            selectedAccessionDisplayStyle: this.accession_style,
+            accession_style: this.accession_style,
             accession_dictionary: this.accession_dictionary,
             selected_accessions: this.accessions,
             selected_reference: this.reference,
@@ -50,7 +50,7 @@ export class PlotStateService {
     }
 
     /**
-     * Type of labels to draw - simple labels or phylogenetic tree.
+     * Type of labels to draw - simple labels or phenetic tree.
      */
     private accession_style_source = new BehaviorSubject<AccessionDisplayStyle>('labels');
     accession_style$ = this.accession_style_source.asObservable();

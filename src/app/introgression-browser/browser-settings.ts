@@ -10,7 +10,7 @@ export interface AccessionDictionary {
  */
 export interface BrowserSettings {
     dataset_id: string;
-    selectedAccessionDisplayStyle?: AccessionDisplayStyle;
+    accession_style?: AccessionDisplayStyle;
     accession_dictionary?: AccessionDictionary;
     selected_accessions?: string[];
     selected_reference?: string;
