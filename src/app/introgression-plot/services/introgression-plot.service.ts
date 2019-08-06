@@ -4,7 +4,7 @@ import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { PlotPosition } from '../../models/PlotPosition';
 import { TreeQuery } from '../../models/TreeQuery';
-import { IPhyloTree } from '../../../backend/db/phylotree';
+import { IPheneticTree } from '../../../backend/db/phenetictree';
 import { PlotStateService } from './plot-state.service';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 
@@ -99,9 +99,9 @@ export class IntrogressionPlotService implements OnDestroy {
     private sequenceGaps: SequenceInterval[];
 
     /**
-     * Phylogenetic tree built for the selected accessions (specified in query).
+     * Phenetic tree built for the selected accessions (specified in query).
      */
-    phyloTree: {
+    phenTree: {
         query: TreeQuery
         tree: TreeNode
     } = { query: null, tree: null };
@@ -183,11 +183,11 @@ export class IntrogressionPlotService implements OnDestroy {
             debounceTime(this.DEBOUNCE_TIME),
         );
 
-        const phylo_tree$ = combineLatest(this.plotState.dataset_id$,
-                                          this.plotState.chromosome$,
-                                          this.plotState.interval$,
-                                          updated_accessions$,
-                                          this.plotState.binsize$).pipe(
+        const phenTree$ = combineLatest(this.plotState.dataset_id$,
+                                        this.plotState.chromosome$,
+                                        this.plotState.interval$,
+                                        updated_accessions$,
+                                        this.plotState.binsize$).pipe(
             filter(([ds, chrom, interval, accessions, binsize]) => {
                     return ![ds, chrom, interval,
                              accessions, binsize].some(isNullOrUndefined);
@@ -199,10 +199,9 @@ export class IntrogressionPlotService implements OnDestroy {
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([ds, chrom, interval, accessions]) =>
                 this.tersectBackendService
-                    .getPhylogeneticTree(ds, chrom.name,
-                                         interval[0], interval[1],
-                                         accessions).pipe(
-                    tap((tree_output: IPhyloTree) => {
+                    .getPheneticTree(ds, chrom.name, interval[0], interval[1],
+                                     accessions).pipe(
+                    tap((tree_output: IPheneticTree) => {
                         if (tree_output.status !== 'ready') {
                             this.plot_load_message = tree_output.status;
                             throw new Error('Tree still loading');
@@ -225,7 +224,7 @@ export class IntrogressionPlotService implements OnDestroy {
         );
 
         this.plot_data$ = combineLatest(ref_distance_bins$,
-                                        phylo_tree$,
+                                        phenTree$,
                                         updated_accessions$,
                                         gaps$).pipe(
             filter((inputs) =>
@@ -261,13 +260,13 @@ export class IntrogressionPlotService implements OnDestroy {
                               accessions, gaps]) => {
         this.distanceBins = ref_dist['bins'];
         if (!sameElements(accessions, this.plotState.sorted_accessions)
-            || !deepEqual(this.phyloTree.query, tree_output.query)) {
-            this.phyloTree = {
+            || !deepEqual(this.phenTree.query, tree_output.query)) {
+            this.phenTree = {
                 query: tree_output.query,
                 tree: newickToTree(tree_output.tree_newick)
             };
             this.plotState
-                .sorted_accessions = treeToSortedList(this.phyloTree.tree);
+                .sorted_accessions = treeToSortedList(this.phenTree.tree);
             this.sequenceGaps = gaps;
             this.generatePlotArray();
             this.resetPosition();
@@ -307,12 +306,12 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     /**
-     * Check if a new phylogenetic tree needs to be retrieved due to either no
+     * Check if a new phenetic tree needs to be retrieved due to either no
      * tree being stored or the query changing.
      */
     private treeUpdateRequired = () => {
-        if (isNullOrUndefined(this.phyloTree.tree)
-            || isNullOrUndefined(this.phyloTree.query)) {
+        if (isNullOrUndefined(this.phenTree.tree)
+            || isNullOrUndefined(this.phenTree.query)) {
             return true;
         }
         const current_query: TreeQuery = {
@@ -320,7 +319,7 @@ export class IntrogressionPlotService implements OnDestroy {
             interval: this.plotState.interval,
             accessions: this.plotState.accessions
         };
-        return !deepEqual(this.phyloTree.query, current_query);
+        return !deepEqual(this.phenTree.query, current_query);
     }
 
     /**

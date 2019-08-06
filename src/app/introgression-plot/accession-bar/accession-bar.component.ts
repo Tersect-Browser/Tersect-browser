@@ -156,7 +156,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
         const scale = this.getTreeScale(ctx);
 
         const initial_xpos = this.GUI_TREE_LEFT_MARGIN;
-        this._drawLabelTree(this.plotService.phyloTree.tree, initial_xpos, ctx,
+        this._drawLabelTree(this.plotService.phenTree.tree, initial_xpos, ctx,
                             this.plotService.labels_width,
                             text_height, yoffset, scale, draw_state);
     }
@@ -168,10 +168,10 @@ export class AccessionBarComponent extends CanvasPlotElement {
                                 - this.GUI_TREE_LEFT_MARGIN;
         if (this.plotState.accession_style === 'tree_simple') {
             return available_width / getTreeDepth(this.plotService
-                                                      .phyloTree.tree);
+                                                      .phenTree.tree);
         } else if (this.plotState.accession_style === 'tree_linear') {
             return available_width / getTreeDepthLinear(this.plotService
-                                                            .phyloTree.tree);
+                                                            .phenTree.tree);
         } else {
             // Should not happen
             return 0;

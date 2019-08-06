@@ -1,18 +1,18 @@
 /**
- * Used for accessing phylogenetic trees
+ * Used for accessing phenetic trees
  */
 
 import { Schema, model, Document } from 'mongoose';
 import { TreeQuery } from '../../app/models/TreeQuery';
 
-export interface IPhyloTree extends Document {
+export interface IPheneticTree extends Document {
     dataset_id: string;
     query: TreeQuery;
     status: string;
     tree_newick?: string;
 }
 
-const PhyloTreeSchema = new Schema({
+const PheneticTreeSchema = new Schema({
     dataset_id: String,
     // Matches the TreeQuery interface
     query: {
@@ -25,6 +25,6 @@ const PhyloTreeSchema = new Schema({
     tree_newick: String
 });
 
-export const PhyloTree = model<IPhyloTree>('PhyloTree',
-                                           PhyloTreeSchema,
-                                           'trees');
+export const PheneticTree = model<IPheneticTree>('PheneticTree',
+                                                 PheneticTreeSchema,
+                                                 'trees');

@@ -11,7 +11,7 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined, promisify } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
-import { PhyloTree, IPhyloTree } from './db/phylotree';
+import { PheneticTree, IPheneticTree } from './db/phenetictree';
 import { TreeQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
@@ -241,13 +241,13 @@ router.route('/query/:dataset_id/tree')
         'query.interval': tree_query.interval,
         'query.accessions': tree_query.accessions
     };
-    PhyloTree.findOne(db_query)
-             .exec((err, result: IPhyloTree) => {
+    PheneticTree.findOne(db_query)
+                .exec((err, result: IPheneticTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {
             // Generating new tree
-            const phylo_tree = new PhyloTree({
+            const phylo_tree = new PheneticTree({
                 dataset_id: req.params.dataset_id,
                 'query.chromosome_name': tree_query.chromosome_name,
                 'query.interval': tree_query.interval,
@@ -274,7 +274,7 @@ function create_rapidnj_tree(db_query, phylip_file) {
         const status_updates = data.toString().trim().split(' ');
         const percentage = status_updates[status_updates.length - 1].trim();
         const status = `Building tree: ${percentage}`;
-        PhyloTree.updateOne(db_query, {
+        PheneticTree.updateOne(db_query, {
             status: status
         }).exec();
     });
@@ -283,7 +283,7 @@ function create_rapidnj_tree(db_query, phylip_file) {
         newick_output += data.toString();
     });
     rapidnj.stdout.on('close', () => {
-        PhyloTree.updateOne(db_query, {
+        PheneticTree.updateOne(db_query, {
             status: 'ready',
             tree_newick: newick_output
         }).exec();

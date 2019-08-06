@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
-import { IPhyloTree } from '../../backend/db/phylotree';
+import { IPheneticTree } from '../../backend/db/phenetictree';
 
 @Injectable()
 export class TersectBackendService {
@@ -37,7 +37,7 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
     }
 
     /**
-     * Retrieve a phylogenetic tree for a given list of accessions in a specific
+     * Retrieve a phenetic tree for a given list of accessions in a specific
      * dataset and chromosomal interval.
      *
      * @param dataset_id dataset being used
@@ -46,9 +46,9 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
      * @param end end position of the interval of interest
      * @param accessions array of accessions to use
      */
-    getPhylogeneticTree(dataset_id: string, chromosome: string,
-                        start: number, end: number,
-                        accessions: string[]): Observable<IPhyloTree> {
+    getPheneticTree(dataset_id: string, chromosome: string,
+                    start: number, end: number,
+                    accessions: string[]): Observable<IPheneticTree> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -58,7 +58,7 @@ ${accession}/${chromosome}/${start}/${stop}/${binsize}`;
             interval: [start, end],
             accessions: accessions,
         };
-        return this.http.post<IPhyloTree>(query, tree_query, httpOptions);
+        return this.http.post<IPheneticTree>(query, tree_query, httpOptions);
     }
 
     /**
