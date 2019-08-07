@@ -139,11 +139,6 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
 
-        this.canvas.nativeElement.width = this.stored_state.canvas.width;
-        this.plotService.gui_margins
-                        .left = Math.ceil(this.stored_state.canvas.width
-                                          / this.plotService.zoom_factor);
-
         // Offset due to plot scroll
         const text_height = this.plotService.bin_height;
         const yoffset = ceilTo(this.plotService.plot_position.y * text_height,
@@ -263,16 +258,18 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     private updateCanvasWidth(canvas: HTMLCanvasElement) {
         const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+        let width: number;
         if (this.plotState.accession_style === 'labels') {
-            // Rounding up to the bin width
-            canvas.width = ceilTo(this.getMaxLabelWidth(ctx),
-                                  this.plotService.bin_width);
+            width = ceilTo(this.getMaxLabelWidth(ctx),
+                           this.plotService.bin_width);
         } else {
-            // Rounding up to the bin width
-            canvas.width = ceilTo(this.getContainerWidth()
-                                  * this.GUI_TREE_PLOT_PROPORTION,
-                                  this.plotService.bin_width);
+            width = ceilTo(this.getContainerWidth()
+                           * this.GUI_TREE_PLOT_PROPORTION,
+                           this.plotService.bin_width);
         }
+        canvas.width = width;
+        this.canvas.nativeElement.width = width;
+        this.plotService.gui_margins.left = width / this.plotService.zoom_factor;
     }
 
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
