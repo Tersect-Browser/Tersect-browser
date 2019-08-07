@@ -2,11 +2,21 @@ import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition
 import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
-import { IntrogressionPlotService } from '../services/introgression-plot.service';
+import { IntrogressionPlotService, AccessionDisplayStyle } from '../services/introgression-plot.service';
 import { PlotStateService } from '../services/plot-state.service';
+import { TreeQuery } from '../../models/TreeQuery';
 
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { isNullOrUndefined } from 'util';
+import * as deepEqual from 'fast-deep-equal';
+
+interface StoredAccessionBarState {
+    canvas: HTMLCanvasElement;
+    accession_style: AccessionDisplayStyle;
+    zoom_level: number;
+    tree_query: TreeQuery;
+    container_width: number;
+}
 
 @Component({
     selector: 'app-accession-bar',
@@ -14,7 +24,7 @@ import { isNullOrUndefined } from 'util';
     styleUrls: ['./accession-bar.component.css']
 })
 
-export class AccessionBarComponent extends CanvasPlotElement {
+export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     @ViewChild('canvas') canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
@@ -37,6 +47,14 @@ export class AccessionBarComponent extends CanvasPlotElement {
      */
     private drag_start_index = 0;
 
+    private stored_state: StoredAccessionBarState = {
+        canvas: undefined,
+        accession_style: undefined,
+        container_width: undefined,
+        tree_query: undefined,
+        zoom_level: undefined
+    };
+
     get gui_margins() {
         return this.plotService.gui_margins;
     }
@@ -44,39 +62,93 @@ export class AccessionBarComponent extends CanvasPlotElement {
     constructor(private plotState: PlotStateService,
                 private plotService: IntrogressionPlotService) { super(); }
 
+    ngOnInit() {
+        this.stored_state.canvas = document.createElement('canvas');
+    }
+
+    private getContainerWidth(): number {
+        return this.canvas.nativeElement
+                          .parentElement
+                          .parentElement
+                          .parentElement
+                          .offsetWidth;
+    }
+
+    private getContainerHeight(): number {
+        return this.canvas.nativeElement
+                          .parentElement
+                          .parentElement
+                          .parentElement
+                          .offsetHeight;
+    }
+
+    private updateRequired(): boolean {
+        const container_width = this.getContainerWidth();
+        if (isNullOrUndefined(this.stored_state)
+            || isNullOrUndefined(this.stored_state.canvas)
+            || this.stored_state.zoom_level !== this.plotState.zoom_level
+            || this.stored_state.accession_style
+               !== this.plotState.accession_style
+            || this.stored_state.container_width !== container_width
+            || !deepEqual(this.stored_state.tree_query,
+                          this.plotService.phenTree.query)) {
+            return true;
+        }
+        return false;
+    }
+
+    private updateImage() {
+        const text_height = this.plotService.bin_height;
+        this.stored_state.canvas.height = this.plotService.row_num
+                                          * text_height;
+        this.updateCanvasWidth(this.stored_state.canvas);
+
+        const ctx: CanvasRenderingContext2D = this.stored_state
+                                                  .canvas.getContext('2d');
+
+        // Draw background
+        ctx.fillStyle = this.GUI_TREE_BG_COLOR;
+        ctx.fillRect(0, 0, this.plotService.labels_width,
+                     this.stored_state.canvas.height);
+
+        // Draw labels
+        ctx.font = `${text_height}px ${this.GUI_TREE_FONT}`;
+        if (this.plotState.accession_style === 'labels') {
+            this.drawSimpleLabels(ctx);
+        } else {
+            this.drawLabelTree(ctx);
+        }
+
+        // Save current state
+        this.stored_state.accession_style = this.plotState.accession_style;
+        this.stored_state.container_width = this.getContainerWidth();
+        this.stored_state.tree_query = this.plotService.phenTree.query;
+        this.stored_state.zoom_level = this.plotState.zoom_level;
+    }
+
     draw() {
         if (isNullOrUndefined(this.plotState.sorted_accessions)) { return; }
 
-        this.canvas.nativeElement.height = this.canvas.nativeElement
-                                                      .parentElement
-                                                      .parentElement
-                                                      .parentElement
-                                                      .offsetHeight;
+        if (this.updateRequired()) {
+            this.updateImage();
+        }
+
+        this.canvas.nativeElement.height = this.getContainerHeight();
         const ctx: CanvasRenderingContext2D = this.canvas.nativeElement
                                                          .getContext('2d');
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
 
-        this.updateComponentWidth();
-
-        const text_height = this.plotService.bin_height;
-        ctx.font = `${text_height}px ${this.GUI_TREE_FONT}`;
+        this.canvas.nativeElement.width = this.stored_state.canvas.width;
+        this.plotService.gui_margins.left = this.stored_state.canvas.width
+                                            / this.plotService.zoom_factor;
 
         // Offset due to plot scroll
+        const text_height = this.plotService.bin_height;
         const yoffset = ceilTo(this.plotService.plot_position.y * text_height,
                                text_height);
 
-        // Draw background
-        ctx.fillStyle = this.GUI_TREE_BG_COLOR;
-        ctx.fillRect(0, 0, this.plotService.labels_width,
-                     this.canvas.nativeElement.height);
-
-        // Draw labels
-        if (this.plotState.accession_style === 'labels') {
-            this.drawSimpleLabels(ctx, text_height, yoffset);
-        } else {
-            this.drawLabelTree(ctx, text_height, yoffset);
-        }
+        ctx.drawImage(this.stored_state.canvas, 0, yoffset);
     }
 
     private getEdgeLength(node: TreeNode): number {
@@ -147,8 +219,8 @@ export class AccessionBarComponent extends CanvasPlotElement {
         }
     }
 
-    private drawLabelTree(ctx: CanvasRenderingContext2D,
-                          text_height: number, yoffset: number) {
+    private drawLabelTree(ctx: CanvasRenderingContext2D) {
+        const text_height = this.plotService.bin_height;
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         const draw_state = { current_row: 0 };
@@ -158,11 +230,11 @@ export class AccessionBarComponent extends CanvasPlotElement {
         const initial_xpos = this.GUI_TREE_LEFT_MARGIN;
         this._drawLabelTree(this.plotService.phenTree.tree, initial_xpos, ctx,
                             this.plotService.labels_width,
-                            text_height, yoffset, scale, draw_state);
+                            text_height, 0, scale, draw_state);
     }
 
     private getTreeScale(ctx: CanvasRenderingContext2D): number {
-        const available_width = this.canvas.nativeElement.width
+        const available_width = this.stored_state.canvas.width
                                 - this.getMaxLabelWidth(ctx)
                                 - this.plotService.bin_width
                                 - this.GUI_TREE_LEFT_MARGIN;
@@ -178,38 +250,27 @@ export class AccessionBarComponent extends CanvasPlotElement {
         }
     }
 
-    private drawSimpleLabels(ctx: CanvasRenderingContext2D,
-                             text_height: number, yoffset: number) {
+    private drawSimpleLabels(ctx: CanvasRenderingContext2D) {
+        const text_height = this.plotService.bin_height;
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         this.plotState.sorted_accessions.forEach((acc, index) => {
             ctx.fillText(this.plotService.getAccesionLabel(acc),
-                         0, yoffset + index * text_height);
+                         0, index * text_height);
         });
     }
 
-    private updateComponentWidth() {
-        const ctx: CanvasRenderingContext2D = this.canvas.nativeElement
-                                                         .getContext('2d');
+    private updateCanvasWidth(canvas: HTMLCanvasElement) {
+        const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
         if (this.plotState.accession_style === 'labels') {
             // Rounding up to the bin width
-            const bar_width = ceilTo(this.getMaxLabelWidth(ctx),
-                                     this.plotService.bin_width);
-            this.plotService.gui_margins.left = bar_width / this.plotService
-                                                                .zoom_factor;
-            this.canvas.nativeElement.width = bar_width;
+            canvas.width = ceilTo(this.getMaxLabelWidth(ctx),
+                                  this.plotService.bin_width);
         } else {
             // Rounding up to the bin width
-            const bar_width = ceilTo(this.canvas.nativeElement
-                                                .parentElement
-                                                .parentElement
-                                                .parentElement
-                                                .offsetWidth
-                                     * this.GUI_TREE_PLOT_PROPORTION,
-                                     this.plotService.bin_width);
-            this.canvas.nativeElement.width = bar_width;
-            this.plotService.gui_margins.left = bar_width / this.plotService
-                                                                .zoom_factor;
+            canvas.width = ceilTo(this.getContainerWidth()
+                                  * this.GUI_TREE_PLOT_PROPORTION,
+                                  this.plotService.bin_width);
         }
     }
 
