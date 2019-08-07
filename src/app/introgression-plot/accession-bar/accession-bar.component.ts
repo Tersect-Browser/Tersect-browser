@@ -140,8 +140,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                       this.canvas.nativeElement.height);
 
         this.canvas.nativeElement.width = this.stored_state.canvas.width;
-        this.plotService.gui_margins.left = this.stored_state.canvas.width
-                                            / this.plotService.zoom_factor;
+        this.plotService.gui_margins
+                        .left = Math.ceil(this.stored_state.canvas.width
+                                          / this.plotService.zoom_factor);
 
         // Offset due to plot scroll
         const text_height = this.plotService.bin_height;
