@@ -77,6 +77,20 @@ export class IntrogressionPlotService implements OnDestroy {
         return this.plot_position_source.getValue();
     }
 
+    /**
+     * Horizontal offset / position of the plot in terms of pixels
+     */
+    get xoffset() {
+        return ceilTo(this.plot_position.x * this.bin_width, this.bin_width);
+    }
+
+    /**
+     * Vertical offset / position of the plot in terms of pixels
+     */
+    get yoffset() {
+        return ceilTo(this.plot_position.y * this.bin_height, this.bin_height);
+    }
+
     plot_array_source = new BehaviorSubject<Uint8ClampedArray>(null);
     get plot_array() {
         return this.plot_array_source.getValue();
