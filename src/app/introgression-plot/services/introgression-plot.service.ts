@@ -70,7 +70,7 @@ export class IntrogressionPlotService implements OnDestroy {
     error_message = '';
 
     /**
-     * Horizontal / vertical scroll position of the plot.
+     * Horizontal / vertical scroll position (in terms of bins) of the plot.
      */
     plot_position_source = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
     get plot_position() {
