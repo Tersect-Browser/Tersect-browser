@@ -12,6 +12,7 @@ import * as deepEqual from 'fast-deep-equal';
 
 interface StoredAccessionBarState {
     canvas: HTMLCanvasElement;
+    canvas_yoffset: number;
     accession_style: AccessionDisplayStyle;
     zoom_level: number;
     tree_query: TreeQuery;
@@ -47,8 +48,21 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
      */
     private drag_start_index = 0;
 
+    /**
+     * The stored canvas height is limited due to browser-specific limits.
+     * The image requires redrawing when the user scrolls past this limit.
+     */
+    readonly STORED_CANVAS_HEIGHT = 16000;
+
+    /**
+     * Step size used when vertically offsetting the stored canvas.
+     */
+    readonly STORED_CANVAS_OFFSET_STEP = ceilTo(this.STORED_CANVAS_HEIGHT / 2,
+                                                this.plotService.bin_height);
+
     private stored_state: StoredAccessionBarState = {
         canvas: undefined,
+        canvas_yoffset: 0,
         accession_style: undefined,
         container_width: undefined,
         tree_query: undefined,
@@ -64,6 +78,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     ngOnInit() {
         this.stored_state.canvas = document.createElement('canvas');
+        this.stored_state.canvas.height = this.STORED_CANVAS_HEIGHT;
     }
 
     private getContainerWidth(): number {
@@ -82,7 +97,55 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                           .offsetHeight;
     }
 
+    private getAccessionBarHeight(): number {
+        return this.getContainerHeight() - this.gui_margins.top;
+    }
+
+    /**
+     * Return the height of the stored canvas that overflows the visible area.
+     * This represents a pre-drawn area available for scrolling. When this is
+     * negative, more of the canvas needs to be drawn.
+     */
+    private getStoredOverflowHeight(): number {
+        const yoffset = this.plotService.yoffset;
+        return this.STORED_CANVAS_HEIGHT - this.getAccessionBarHeight()
+               + yoffset - this.stored_state.canvas_yoffset;
+    }
+
+    /**
+     * Return true if stored canvas requires redrawing due to scrolling.
+     * Note: this method applies the required vertical offset to the stored
+     * canvas as a side-effect.
+     */
+    private scrollUpdate(): boolean {
+        // Update yoffset and redraw stored canvas when out of scrolling area.
+        let overflow = this.getStoredOverflowHeight();
+        if (overflow <= 0) {
+            while (overflow <= 0) {
+                this.stored_state
+                    .canvas_yoffset -= this.STORED_CANVAS_OFFSET_STEP;
+                overflow = this.getStoredOverflowHeight();
+            }
+            return true;
+        }
+        if (overflow > this.STORED_CANVAS_HEIGHT
+                        - this.getAccessionBarHeight()) {
+            while (overflow > this.STORED_CANVAS_HEIGHT
+                                - this.getAccessionBarHeight()) {
+                this.stored_state
+                    .canvas_yoffset += this.STORED_CANVAS_OFFSET_STEP;
+                overflow = this.getStoredOverflowHeight();
+            }
+            return true;
+        }
+        return false;
+    }
+
     private updateRequired(): boolean {
+        if (this.scrollUpdate()) {
+            return true;
+        }
+
         const container_width = this.getContainerWidth();
         if (isNullOrUndefined(this.stored_state)
             || isNullOrUndefined(this.stored_state.canvas)
@@ -94,13 +157,12 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                           this.plotService.phenTree.query)) {
             return true;
         }
+
         return false;
     }
 
     private updateImage() {
         const text_height = this.plotService.bin_height;
-        this.stored_state.canvas.height = this.plotService.row_num
-                                          * text_height;
         this.updateCanvasWidth(this.stored_state.canvas);
 
         const ctx: CanvasRenderingContext2D = this.stored_state
@@ -139,12 +201,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
 
-        // Offset due to plot scroll
-        const text_height = this.plotService.bin_height;
-        const yoffset = ceilTo(this.plotService.plot_position.y * text_height,
-                               text_height);
-
-        ctx.drawImage(this.stored_state.canvas, 0, yoffset);
+        ctx.drawImage(this.stored_state.canvas, 0,
+                      this.plotService.yoffset
+                      - this.stored_state.canvas_yoffset);
     }
 
     private getEdgeLength(node: TreeNode): number {
@@ -226,7 +285,8 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const initial_xpos = this.GUI_TREE_LEFT_MARGIN;
         this._drawLabelTree(this.plotService.phenTree.tree, initial_xpos, ctx,
                             this.plotService.labels_width,
-                            text_height, 0, scale, draw_state);
+                            text_height, this.stored_state.canvas_yoffset,
+                            scale, draw_state);
     }
 
     private getTreeScale(ctx: CanvasRenderingContext2D): number {
@@ -251,8 +311,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         this.plotState.sorted_accessions.forEach((acc, index) => {
-            ctx.fillText(this.plotService.getAccesionLabel(acc),
-                         0, index * text_height);
+            ctx.fillText(this.plotService.getAccesionLabel(acc), 0,
+                         index * text_height + this.stored_state
+                                                   .canvas_yoffset);
         });
     }
 
