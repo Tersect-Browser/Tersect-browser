@@ -1,6 +1,26 @@
 <h3>Genome selection</h3>
-<p-table [columns]="cols" [value]="accessions_rows"
-         [(selection)]="selectedAccessions" [scrollable]="true" scrollHeight="80vh">
+
+<!--
+
+    <p-table [columns]="cols" [value]="virtualCars" [scrollable]="true"
+    [rows]="20" scrollHeight="200px" [virtualScroll]="true"
+    (onLazyLoad)="loadDataOnScroll($event)"
+    [lazy]="true" [totalRecords]="totalRecords" [virtualRowHeight]="34">
+
+-->
+
+<p-table styleClass="accession-table"
+         [columns]="cols"
+         [value]="virtual_accession_rows"
+         [(selection)]="selectedAccessions"
+         [scrollable]="true"
+         [virtualScroll]="true"
+         scrollHeight="80vh"
+         [totalRecords]="accession_count"
+         [virtualRowHeight]="40"
+         [rows]="20"
+         (onLazyLoad)="loadDataOnScroll($event)"
+         [lazy]="true">
     <ng-template pTemplate="header" let-columns>
         <tr>
             <th style="width: 3em">
