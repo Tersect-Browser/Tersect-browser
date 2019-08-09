@@ -1,4 +1,5 @@
 import { IntrogressionPlotModule } from '../introgression-plot/introgression-plot.module';
+import { AccessionTabModule } from '../accession-tab/accession-tab.module';
 
 import { IntrogressionBrowserComponent } from './introgression-browser.component';
 
@@ -43,7 +44,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         RadioButtonModule,
         IntrogressionPlotModule,
         PlotClickMenuModule,
-        TooltipModule
+        TooltipModule,
+        AccessionTabModule
     ],
     providers: []
 })

@@ -130,12 +130,16 @@
 <app-tooltip></app-tooltip>
 
 <p-sidebar [(visible)]="display_sidebar" position="left"
+           [style]="{width: '70vh'}"
            (onHide)="updateAccessions()">
-    <b>Displayed accessions</b>
-    <p-listbox *ngIf="display_sidebar"
+    <app-accession-tab *ngIf="display_sidebar"
+        [selectedAccessions]="widget_accessions">
+    </app-accession-tab>
+    <!--<p-listbox *ngIf="display_sidebar"
         [options]="accessions" [(ngModel)]="widget_accessions"
         filter="true" multiple="true" checkbox="true"
         [style]="{'width': '100%', 'height': '95%'}"
         [listStyle]="{'max-height':'100%'}">
-    </p-listbox>
+    </p-listbox>-->
+
 </p-sidebar>
