@@ -1,6 +1,6 @@
-import express = require('express'); // Legacy (non-ES6) import syntax
-import mongoose = require('mongoose');
-import bodyParser = require('body-parser');
+import express from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
 
 import { router } from './src/backend/tersect-router';
 import { cleanDatabase } from './src/backend/db/dbutils';

@@ -21,7 +21,7 @@ interface ScaleTick {
 })
 
 export class ScaleBarComponent extends CanvasPlotElement {
-    @ViewChild('canvas') canvas: ElementRef;
+    @ViewChild('canvas', { static: true }) canvas: ElementRef;
 
     get gui_margins() {
         return this.plotService.gui_margins;

@@ -26,7 +26,7 @@ interface StoredAccessionBarState {
 })
 
 export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
-    @ViewChild('canvas') canvas: ElementRef;
+    @ViewChild('canvas', { static: true }) canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
     readonly GUI_TREE_FONT = 'Courier New';

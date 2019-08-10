@@ -13,8 +13,8 @@ import { isNullOrUndefined } from 'util';
 })
 
 export class BinPlotComponent extends CanvasPlotElement {
-    @ViewChild('canvas') canvas: ElementRef;
-    @ViewChild('highlight') highlight: ElementRef;
+    @ViewChild('canvas', { static: true }) canvas: ElementRef;
+    @ViewChild('highlight', { static: true }) highlight: ElementRef;
 
     /**
      * Drag start position in terms of the accession / bin index.

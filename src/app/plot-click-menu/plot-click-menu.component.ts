@@ -11,7 +11,7 @@ import { MenuItem } from 'primeng/components/common/menuitem';
 })
 
 export class PlotClickMenuComponent implements OnInit {
-    @ViewChild('menuContainer') menuContainer: ElementRef;
+    @ViewChild('menuContainer', { static: true }) menuContainer: ElementRef;
 
     @Output() setReference = new EventEmitter<string>();
     @Output() removeAccession = new EventEmitter<string>();
