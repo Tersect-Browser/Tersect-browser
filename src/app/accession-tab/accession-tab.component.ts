@@ -33,7 +33,7 @@ export class AccessionTabComponent implements OnInit {
             };
         });
         this.accession_count = this.accession_rows.length;
-        this.virtual_accession_rows = this.accession_rows.slice(0, 40);
+        this.virtual_accession_rows = this.accession_rows.slice(0, 100);
         this.cols = [
             { field: 'id', header: 'ID' }
         ];
@@ -41,6 +41,8 @@ export class AccessionTabComponent implements OnInit {
 
     loadDataOnScroll($event) {
         console.log($event);
-        this.virtual_accession_rows = this.accession_rows.slice(0, 40);
+        this.virtual_accession_rows = this.accession_rows.slice($event.first,
+                                                                $event.first
+                                                                + $event.rows);
     }
 }

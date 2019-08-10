@@ -1,14 +1,5 @@
 <h3>Genome selection</h3>
 
-<!--
-
-    <p-table [columns]="cols" [value]="virtualCars" [scrollable]="true"
-    [rows]="20" scrollHeight="200px" [virtualScroll]="true"
-    (onLazyLoad)="loadDataOnScroll($event)"
-    [lazy]="true" [totalRecords]="totalRecords" [virtualRowHeight]="34">
-
--->
-
 <p-table styleClass="accession-table"
          [columns]="cols"
          [value]="virtual_accession_rows"
@@ -17,8 +8,9 @@
          [virtualScroll]="true"
          scrollHeight="80vh"
          [totalRecords]="accession_count"
-         [virtualRowHeight]="40"
-         [rows]="20"
+         [virtualRowHeight]="20"
+         [virtualScrollDelay]="20"
+         [rows]="50"
          (onLazyLoad)="loadDataOnScroll($event)"
          [lazy]="true">
     <ng-template pTemplate="header" let-columns>
@@ -32,12 +24,19 @@
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-rowData let-columns="columns">
-        <tr [pSelectableRow]="rowData">
+        <tr style="height:20px" [pSelectableRow]="rowData">
             <td>
                 <p-tableCheckbox [value]="rowData"></p-tableCheckbox>
             </td>
             <td *ngFor="let col of columns">
                 {{rowData[col.field]}}
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns="columns">
+        <tr style="height:20px">
+            <td *ngFor="let col of columns">
+                <div class="loading-text"></div>
             </td>
         </tr>
     </ng-template>
