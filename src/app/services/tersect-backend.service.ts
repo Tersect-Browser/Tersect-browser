@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
+import { Observable ,  of } from 'rxjs';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
-
-import { of } from 'rxjs/observable/of';
 import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';

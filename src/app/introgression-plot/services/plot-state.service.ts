@@ -4,8 +4,7 @@ import { Chromosome } from '../../models/Chromosome';
 import { AccessionDisplayStyle } from './introgression-plot.service';
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subject } from 'rxjs/Subject';
+import { BehaviorSubject ,  Subject } from 'rxjs';
 
 @Injectable()
 export class PlotStateService {

@@ -12,11 +12,10 @@ import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 import { isNullOrUndefined } from 'util';
-import { forkJoin } from 'rxjs/observable/forkJoin';
+import { forkJoin, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/components/common/selectitem';
-import * as path from 'path';
+import { join } from 'path';
 
 @Component({
     selector: 'app-introgression-browser',
@@ -171,8 +170,8 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         this.tersectBackendService.exportSettings(this.plotState.settings)
                                   .subscribe((id) => {
             const host = this.platformLocation['location'].origin;
-            this.share_link = path.join(host, 'TersectBrowser', 'share',
-                                        id.toString());
+            this.share_link = join(host, 'TersectBrowser', 'share',
+                                   id.toString());
         });
     }
 

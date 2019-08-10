@@ -9,11 +9,8 @@ import { PlotStateService } from './plot-state.service';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { combineLatest } from 'rxjs/observable/combineLatest';
+import { BehaviorSubject ,  combineLatest ,  Observable ,  Subscription } from 'rxjs';
 import { filter, tap, debounceTime, switchMap, delay, retryWhen, first } from 'rxjs/operators';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
 import { isNullOrUndefined } from 'util';
 import * as deepEqual from 'fast-deep-equal';
 

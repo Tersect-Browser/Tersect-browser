@@ -6,8 +6,7 @@ import { IntrogressionPlotService } from './services/introgression-plot.service'
 import { PlotStateService } from './services/plot-state.service';
 
 import { Component, OnInit, ViewChild, HostListener, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
-import { combineLatest } from 'rxjs/observable/combineLatest';
+import { Subscription ,  combineLatest } from 'rxjs';
 
 @Component({
     selector: 'app-introgression-plot',
