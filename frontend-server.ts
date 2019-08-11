@@ -1,4 +1,4 @@
-import express = require('express'); // Legacy (non-ES6) import syntax
+import express = require('express');
 import path = require('path');
 import cors = require('cors');
 

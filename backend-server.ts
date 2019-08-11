@@ -1,6 +1,6 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
+import express = require('express');
+import mongoose = require('mongoose');
+import bodyParser = require('body-parser');
 
 import { router } from './src/backend/tersect-router';
 import { cleanDatabase } from './src/backend/db/dbutils';
