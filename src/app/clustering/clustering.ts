@@ -119,3 +119,43 @@ export function newickToTree(newick: string): TreeNode {
     const parsed: RapidNJNode = newick_parser.parse_newick(newick_string);
     return ladderizeTree(rnjToTreeNode(parsed), true);
 }
+
+function* newickTokens(newick: string, stripQuotes = true): Iterator<string> {
+    const tokens = newick.split(/\s*(,|:|;|\(|\))\s*/);
+    for (let token of tokens) {
+        if (token === '') continue;
+        stripQuotes ? yield token.replace(/^'+|'+$/g, '') : yield token;
+    }
+
+}
+
+function _parseNewick(tokens: Iterator<string>): TreeNode {
+    const output: TreeNode = { children: [] };
+
+    let token = tokens.next().value;
+    console.log(token);
+
+    while (token !== ')') {
+        if (token === '(') {
+            // Interior node
+            output.children.push(_parseNewick(tokens));
+        } else {
+            // Leaf node
+            if (token === ',') {
+                output.taxon = { name: '' };
+            } else {
+                output.taxon = { name: token };
+            }
+            break;
+        }
+    }
+    if (tokens.next().value === ':') {
+        output.length = parseFloat(tokens.next().value);
+    }
+    return output;
+}
+
+export function parseNewick(newick: string) {
+    const tokens = newickTokens(newick);
+    return _parseNewick(tokens);
+}
