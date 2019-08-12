@@ -15,7 +15,7 @@
          [lazy]="true">
     <ng-template pTemplate="header" let-columns>
         <tr>
-            <th style="width: 3em">
+            <th style="width: 2.5em">
                 <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
             </th>
             <th *ngFor="let col of columns">
@@ -24,8 +24,8 @@
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-rowData let-columns="columns">
-        <tr style="height:20px" [pSelectableRow]="rowData">
-            <td>
+        <tr style="height: 20px;" [pSelectableRow]="rowData">
+            <td style="width: 2.5em; text-align: center;">
                 <p-tableCheckbox [value]="rowData"></p-tableCheckbox>
             </td>
             <td *ngFor="let col of columns">
