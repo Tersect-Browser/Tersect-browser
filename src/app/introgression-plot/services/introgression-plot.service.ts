@@ -158,7 +158,7 @@ export class IntrogressionPlotService implements OnDestroy {
      * Get accession label from dictionary if available. Otherwise the input
      * identifier is used.
      */
-    getAccesionLabel(accession: string) {
+    getAccessionLabel(accession: string) {
         if (isNullOrUndefined(this.plotState.accession_dictionary)) {
             return accession;
         } else if (accession in this.plotState.accession_dictionary) {
