@@ -27,7 +27,6 @@
     "@types/hashids": "^1.0.30",
     "@types/mongodb": "3.1.10",
     "@types/tmp": "^0.1.0",
-    "biojs-io-newick": "^1.5.0",
     "core-js": "^2.4.1",
     "cors": "^2.8.4",
     "csv-parse": "^4.4.3",

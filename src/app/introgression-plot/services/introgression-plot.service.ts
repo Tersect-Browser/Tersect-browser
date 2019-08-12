@@ -1,4 +1,5 @@
-import { TreeNode, treeToSortedList, newickToTree, parseNewick } from '../../clustering/clustering';
+import { TreeNode, treeToSortedList } from '../../clustering/clustering';
+import { parseNewick } from '../../clustering/newick-parser';
 import { sameElements, ceilTo, floorTo, formatRegion } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
@@ -274,10 +275,8 @@ export class IntrogressionPlotService implements OnDestroy {
             || !deepEqual(this.phenTree.query, tree_output.query)) {
             this.phenTree = {
                 query: tree_output.query,
-                tree: newickToTree(tree_output.tree_newick)
+                tree: parseNewick(tree_output.tree_newick, true)
             };
-            // console.log(this.phenTree.tree);
-            // console.log(parseNewick(tree_output.tree_newick));
             this.plotState
                 .sorted_accessions = treeToSortedList(this.phenTree.tree);
             this.sequenceGaps = gaps;
