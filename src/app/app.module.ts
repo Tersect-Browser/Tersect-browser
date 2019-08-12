@@ -7,6 +7,7 @@ import { IntroPageComponent } from './intro-page/intro-page.component';
 import { AppComponent } from './app.component';
 
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
@@ -22,6 +23,7 @@ const appRoutes: Routes = [
         AppComponent
     ],
     imports: [
+        BrowserAnimationsModule,
         HttpClientModule,
         BrowserModule,
         IntroPageModule,
