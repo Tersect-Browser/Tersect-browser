@@ -2,11 +2,24 @@
     font-size: 70%;
 }
 
-.loading-text {
-    display: block;
-    background-color: rgba(70, 160, 0, 0.2);
-    min-height: 19px;
-    animation: pulse 1s infinite ease-in-out;
-    text-indent: -99999px;
-    overflow: hidden;
+.loading-container {
+    text-align: center;
+    font-style: italic;
+    padding: 0px;
+    margin: 0px;
+    min-height: 20px;
+    -webkit-animation: pulse 0.8s infinite ease-in-out;
+    animation: pulse 0.8s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        background-color: rgba(70, 160, 0, 0.1)
+    }
+    50% {
+        background-color: rgba(70, 160, 0, 0.2)
+    }
+    100% {
+        background-color: rgba(70, 160, 0, 0.1)
+    }
 }

@@ -35,8 +35,8 @@
     </ng-template>
     <ng-template pTemplate="loadingbody" let-columns="columns">
         <tr style="height:20px">
-            <td *ngFor="let col of columns">
-                <div class="loading-text"></div>
+            <td *ngFor="let col of columns" class="loading-container">
+                Loading...
             </td>
         </tr>
     </ng-template>
