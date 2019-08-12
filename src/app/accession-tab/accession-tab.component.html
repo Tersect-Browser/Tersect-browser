@@ -9,7 +9,7 @@
          scrollHeight="80vh"
          [totalRecords]="accession_count"
          [virtualRowHeight]="20"
-         [virtualScrollDelay]="20"
+         [virtualScrollDelay]="100"
          [rows]="50"
          (onLazyLoad)="loadDataOnScroll($event)"
          [lazy]="true">
