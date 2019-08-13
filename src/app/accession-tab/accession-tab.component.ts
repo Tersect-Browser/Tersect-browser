@@ -1,4 +1,3 @@
-import { sameElements } from '../utils/utils';
 import { TableState } from 'primeng/components/common/tablestate';
 
 import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } from '@angular/core';
@@ -59,6 +58,7 @@ export class AccessionTabComponent implements OnInit {
                     this.selectedAccessions.push(acc.id);
                 }
             });
+            this.selectedAccessions = [...this.selectedAccessions];
         } else {
             // Unchecking all matching filters
             const filtered_ids = this.filtered_accessions.map(acc => acc.id);
