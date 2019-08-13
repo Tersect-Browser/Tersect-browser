@@ -133,7 +133,8 @@
            [style]="{width: '70vh'}"
            (onHide)="updateAccessions()">
     <app-accession-tab *ngIf="display_sidebar"
-        [selectedAccessions]="widget_accessions">
+        [accession_options]="accessions_full"
+        [(selectedAccessions)]="widget_accessions">
     </app-accession-tab>
     <!--<p-listbox *ngIf="display_sidebar"
         [options]="accessions" [(ngModel)]="widget_accessions"

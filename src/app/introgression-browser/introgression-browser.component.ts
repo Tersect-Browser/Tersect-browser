@@ -7,6 +7,7 @@ import { BrowserSettings } from './browser-settings';
 import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
+import { AccessionRow } from '../accession-tab/accession-tab.component';
 
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -33,6 +34,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     chromosomes: SelectItem[];
     accessions: SelectItem[];
+    accessions_full: AccessionRow[];
 
     constructor(private plotState: PlotStateService,
                 private tersectBackendService: TersectBackendService,
@@ -119,10 +121,23 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         }));
     }
 
-    formatAccessionSelection(accession_names: string[]): SelectItem[] {
-        return accession_names.map((n: string) => ({
-            label: this.plotState.accession_dictionary[n],
-            value: n
+    /**
+     * Create array of simple accession options.
+     */
+    formatAccessionOptionsSimple(accession_ids: string[]): SelectItem[] {
+        return accession_ids.map((acc: string) => ({
+            label: this.plotState.accession_dictionary[acc],
+            value: acc
+        }));
+    }
+
+    /**
+     * Create full array of accession options.
+     */
+    formatAccessionOptions(accession_ids: string[]): AccessionRow[] {
+        return accession_ids.map((acc: string) => ({
+            id: acc,
+            name: this.plotState.accession_dictionary[acc]
         }));
     }
 
@@ -146,7 +161,8 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                                                               chromosomes]) => {
                 this.generateMissingSettings(settings, accessions, chromosomes);
                 this.plotState.settings = settings;
-                this.accessions = this.formatAccessionSelection(accessions);
+                this.accessions = this.formatAccessionOptionsSimple(accessions);
+                this.accessions_full = this.formatAccessionOptions(accessions);
                 this.chromosomes = this.formatChromosomeSelection(chromosomes);
                 this.widget_accessions = settings.selected_accessions;
                 this.widget_binsize = settings.selected_binsize;

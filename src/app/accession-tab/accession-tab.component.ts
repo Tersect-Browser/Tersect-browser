@@ -4,7 +4,7 @@ import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } fro
 import { IntrogressionPlotService } from '../introgression-plot/services/introgression-plot.service';
 import { isNullOrUndefined } from 'util';
 
-interface AccessionRow {
+export interface AccessionRow {
     id?: string;
     name?: string;
 }
@@ -23,51 +23,48 @@ export class AccessionTabComponent implements OnInit {
     @Input()
     set selectedAccessions(accessions: string[]) {
         this._selectedAccessions = accessions;
-        if (!isNullOrUndefined(this.accession_rows)) {
-            this.all_selected = this.accession_rows.length
+        if (!isNullOrUndefined(this.accession_options)) {
+            this.all_selected = this.accession_options.length
                                 === this.selectedAccessions.length;
         }
+        this.selectedAccessionsChange.emit(this._selectedAccessions);
     }
     get selectedAccessions(): string[] {
         return this._selectedAccessions;
     }
+    @Output() selectedAccessionsChange = new EventEmitter();
+
+    @Input()
+    accession_options: AccessionRow[];
 
     cols: any[];
 
-    accession_rows: AccessionRow[];
     virtual_accession_rows: AccessionRow[];
 
     all_selected: boolean;
 
-    constructor(private plotState: PlotStateService,
-                private plotService: IntrogressionPlotService) { }
-
-    formatRow = (accession_id: string) => ({
-        id: accession_id,
-        name: this.plotService.getAccessionLabel(accession_id)
-    })
+    constructor(private plotState: PlotStateService) { }
 
     ngOnInit() {
-        this.accession_rows = this.plotState.accessions.map(this.formatRow);
-        this.virtual_accession_rows = this.accession_rows.slice(0, 100);
+        this.virtual_accession_rows = this.accession_options.slice(0, 100);
         this.cols = [
             { field: 'name', header: 'Name' }
         ];
-        this.all_selected = this.accession_rows.length
+        this.all_selected = this.accession_options.length
                             === this.selectedAccessions.length;
     }
 
     headerCheckboxChange($event: boolean) {
         if ($event) {
-            this.selectedAccessions = [...this.plotState.accessions];
+            this.selectedAccessions = this.accession_options.map(acc => acc.id);
         } else {
             this.selectedAccessions = [];
         }
     }
 
     loadDataOnScroll($event) {
-        this.virtual_accession_rows = this.accession_rows.slice($event.first,
-                                                                $event.first
-                                                                + $event.rows);
+        this.virtual_accession_rows = this.accession_options
+                                          .slice($event.first,
+                                                 $event.first + $event.rows);
     }
 }
