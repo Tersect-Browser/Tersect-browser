@@ -1,4 +1,4 @@
-<h3>Genome selection</h3>
+<h3>Accession selection</h3>
 
 <p-table styleClass="accession-table"
          [columns]="cols"
@@ -7,7 +7,7 @@
          [scrollable]="true"
          [virtualScroll]="true"
          scrollHeight="80vh"
-         [totalRecords]="accession_count"
+         [totalRecords]="accession_rows.length"
          [virtualRowHeight]="20"
          [virtualScrollDelay]="100"
          [rows]="50"
@@ -16,7 +16,11 @@
     <ng-template pTemplate="header" let-columns>
         <tr>
             <th class="checkbox-cell">
-                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                <p-checkbox
+                    [(ngModel)]="all_selected"
+                    (onChange)="headerCheckboxChange($event)"
+                    binary="true">
+                </p-checkbox>
             </th>
             <th *ngFor="let col of columns">
                 {{col.header}}
@@ -26,7 +30,7 @@
     <ng-template pTemplate="body" let-rowData let-columns="columns">
         <tr class="accession-table-row" [pSelectableRow]="rowData">
             <td class="checkbox-cell">
-                <p-tableCheckbox [value]="rowData"></p-tableCheckbox>
+                <p-tableCheckbox [value]="rowData['id']"></p-tableCheckbox>
             </td>
             <td *ngFor="let col of columns" class="accession-table-cell">
                 {{rowData[col.field]}}
@@ -41,6 +45,6 @@
         </tr>
     </ng-template>
     <ng-template pTemplate="summary">
-        Empty
+        Selected {{selectedAccessions.length}} accessions
     </ng-template>
 </p-table>

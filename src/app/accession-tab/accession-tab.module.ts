@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     declarations: [
@@ -17,7 +18,8 @@ import { TableModule } from 'primeng/table';
         CommonModule,
         BrowserAnimationsModule,
         FormsModule,
-        TableModule
+        TableModule,
+        CheckboxModule
     ],
     providers: []
 })
