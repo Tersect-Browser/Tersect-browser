@@ -1,8 +1,7 @@
-import { PlotStateService } from '../introgression-plot/services/plot-state.service';
-
 import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } from '@angular/core';
-import { IntrogressionPlotService } from '../introgression-plot/services/introgression-plot.service';
 import { isNullOrUndefined } from 'util';
+
+import { TableState } from 'primeng/components/common/tablestate';
 
 export interface AccessionRow {
     id?: string;
@@ -13,7 +12,6 @@ export interface AccessionRow {
     selector: 'app-accession-tab',
     templateUrl: './accession-tab.component.html',
     styleUrls: ['./accession-tab.component.css'],
-    providers: [IntrogressionPlotService],
     encapsulation: ViewEncapsulation.None
 })
 export class AccessionTabComponent implements OnInit {
@@ -37,16 +35,18 @@ export class AccessionTabComponent implements OnInit {
     @Input()
     accession_options: AccessionRow[];
 
-    cols: any[];
-
+    filtered_accessions: AccessionRow[];
     virtual_accession_rows: AccessionRow[];
+
+    cols: any[];
 
     all_selected: boolean;
 
-    constructor(private plotState: PlotStateService) { }
+    constructor() { }
 
     ngOnInit() {
-        this.virtual_accession_rows = this.accession_options.slice(0, 100);
+        this.filtered_accessions = this.accession_options;
+        this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
         this.cols = [
             { field: 'name', header: 'Name' }
         ];
@@ -62,8 +62,15 @@ export class AccessionTabComponent implements OnInit {
         }
     }
 
-    loadDataOnScroll($event) {
-        this.virtual_accession_rows = this.accession_options
+    loadDataOnScroll($event: TableState) {
+        this.filtered_accessions = this.accession_options;
+        for (const filter_field of Object.keys($event.filters)) {
+            const contains = $event.filters[filter_field].value.toUpperCase();
+            this.filtered_accessions = this.filtered_accessions.filter(acc => {
+                return acc[filter_field].toUpperCase().includes(contains);
+            });
+        }
+        this.virtual_accession_rows = this.filtered_accessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
     }

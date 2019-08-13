@@ -1,19 +1,26 @@
 <h3>Accession selection</h3>
 
-<p-table styleClass="accession-table"
+<p-table #dt
+         styleClass="accession-table"
          [columns]="cols"
          [value]="virtual_accession_rows"
          [(selection)]="selectedAccessions"
          [scrollable]="true"
          [virtualScroll]="true"
          scrollHeight="80vh"
-         [totalRecords]="accession_options.length"
+         [totalRecords]="filtered_accessions.length"
          [virtualRowHeight]="20"
          [virtualScrollDelay]="100"
          [rows]="50"
          (onLazyLoad)="loadDataOnScroll($event)"
          [lazy]="true">
     <ng-template pTemplate="header" let-columns>
+        <tr>
+            <th class="checkbox-cell"></th>
+            <th *ngFor="let col of columns">
+                {{col.header}}
+            </th>
+        </tr>
         <tr>
             <th class="checkbox-cell">
                 <p-checkbox
@@ -23,7 +30,10 @@
                 </p-checkbox>
             </th>
             <th *ngFor="let col of columns">
-                {{col.header}}
+                <input pInputText type="text" style="width: 100%;"
+                    (input)="dt.filter($event.target.value,
+                                       col.field,
+                                       'contains')">
             </th>
         </tr>
     </ng-template>
