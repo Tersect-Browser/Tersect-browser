@@ -18,7 +18,7 @@
         <tr>
             <th class="checkbox-cell"></th>
             <th *ngFor="let col of columns">
-                {{col.header}}
+                {{ col.header }}
             </th>
         </tr>
         <tr>
@@ -43,7 +43,7 @@
                 <p-tableCheckbox [value]="rowData['id']"></p-tableCheckbox>
             </td>
             <td *ngFor="let col of columns" class="accession-table-cell">
-                {{rowData[col.field]}}
+                {{ rowData[col.field] }}
             </td>
         </tr>
     </ng-template>
@@ -55,6 +55,13 @@
         </tr>
     </ng-template>
     <ng-template pTemplate="summary">
-        Selected {{selectedAccessions.length}} accessions
+        <div>
+            {{ filtered_accessions.length }}
+            <span *ngIf="filtersUsed()">matching</span>
+            accessions
+        </div>
+        <div>
+            ({{ selectedAccessions.length }} selected)
+        </div>
     </ng-template>
 </p-table>
