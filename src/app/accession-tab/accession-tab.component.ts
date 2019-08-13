@@ -51,7 +51,6 @@ export class AccessionTabComponent implements OnInit {
         this.accession_rows = this.plotState.accessions.map(this.formatRow);
         this.virtual_accession_rows = this.accession_rows.slice(0, 100);
         this.cols = [
-            { field: 'id', header: 'ID' },
             { field: 'name', header: 'Name' }
         ];
         this.all_selected = this.accession_rows.length
