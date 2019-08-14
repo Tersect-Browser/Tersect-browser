@@ -4,7 +4,7 @@ import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } fro
 import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
-import { deepCopy, isSubset, arrayUnion } from '../utils/utils';
+import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
 
 
 export interface AccessionRow {
@@ -60,17 +60,15 @@ export class AccessionTabComponent implements OnInit {
     }
 
     headerCheckboxChange($event: boolean) {
+        const filtered_acc_ids = this.filtered_accessions.map(acc => acc.id);
         if ($event) {
             // Checking all matching accessions
             this.selectedAccessions = arrayUnion(this.selectedAccessions,
-                                                 this.filtered_accessions
-                                                     .map(acc => acc.id));
+                                                 filtered_acc_ids);
         } else {
             // Unchecking all matching accessions
-            const filtered_ids = this.filtered_accessions.map(acc => acc.id);
-            this.selectedAccessions = this.selectedAccessions.filter(acc => {
-                return !filtered_ids.includes(acc);
-            });
+            this.selectedAccessions = arraySubtract(this.selectedAccessions,
+                                                    filtered_acc_ids);
         }
     }
 

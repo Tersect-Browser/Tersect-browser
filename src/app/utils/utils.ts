@@ -118,3 +118,12 @@ export function isSubset(subset: any[], superset: any[]): boolean {
 export function arrayUnion(a: any[], b: any[]): any[] {
     return Array.from(new Set(a.concat(b)));
 }
+
+/**
+ * Remove all elements in the second array from the first array
+ */
+export function arraySubtract(a: any[], b: any[]): any[] {
+    const set = new Set(a);
+    b.forEach(x => set.delete(x));
+    return Array.from(set);
+}
