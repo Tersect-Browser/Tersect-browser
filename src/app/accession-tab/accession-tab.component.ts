@@ -4,7 +4,7 @@ import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } fro
 import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
-import { deepCopy } from '../utils/utils';
+import { deepCopy, isSubset } from '../utils/utils';
 
 
 export interface AccessionRow {
@@ -78,9 +78,9 @@ export class AccessionTabComponent implements OnInit {
 
     updateAllSelected() {
         if (!isNullOrUndefined(this.filtered_accessions)) {
-            this.all_selected = this.filtered_accessions.every(
-                acc => this.selectedAccessions.includes(acc.id)
-            );
+            this.all_selected = isSubset(this.filtered_accessions
+                                             .map(acc => acc.id),
+                                         this.selectedAccessions);
         }
     }
 
