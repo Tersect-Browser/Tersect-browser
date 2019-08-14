@@ -100,3 +100,7 @@ export function formatRegion(chromosome_name: string,
 
     return `${chromosome_name}:${start_pos}-${end_pos}`;
 }
+
+export function deepCopy(object: any): any {
+    return JSON.parse(JSON.stringify(object));
+}

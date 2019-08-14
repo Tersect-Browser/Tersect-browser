@@ -2,6 +2,10 @@ import { TableState } from 'primeng/components/common/tablestate';
 
 import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { isNullOrUndefined } from 'util';
+import { FilterMetadata } from 'primeng/components/common/filtermetadata';
+import * as deepEqual from 'fast-deep-equal';
+import { deepCopy } from '../utils/utils';
+
 
 export interface AccessionRow {
     id?: string;
@@ -38,6 +42,10 @@ export class AccessionTabComponent implements OnInit {
     cols: any[];
 
     all_selected: boolean;
+
+    previous_filters: {
+        [s: string]: FilterMetadata;
+    } = {};
 
     constructor() { }
 
@@ -92,6 +100,9 @@ export class AccessionTabComponent implements OnInit {
         this.virtual_accession_rows = this.filtered_accessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
-        this.updateAllSelected();
+        if (!deepEqual($event.filters, this.previous_filters)) {
+            this.updateAllSelected();
+        }
+        this.previous_filters = deepCopy($event.filters);
     }
 }
