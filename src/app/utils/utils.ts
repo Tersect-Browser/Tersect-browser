@@ -109,7 +109,5 @@ export function deepCopy(object: any): any {
  * Check if subset array is a subset of superset array.
  */
 export function isSubset(subset: any[], superset: any[]): boolean {
-    console.log((new Set(superset.concat(subset))).size);
-    console.log(superset.length);
     return (new Set(superset.concat(subset))).size === superset.length;
 }
