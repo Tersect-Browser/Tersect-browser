@@ -111,3 +111,10 @@ export function deepCopy(object: any): any {
 export function isSubset(subset: any[], superset: any[]): boolean {
     return (new Set(superset.concat(subset))).size === superset.length;
 }
+
+/**
+ * Merge two arrays, leaving with no duplicate elements.
+ */
+export function arrayUnion(a: any[], b: any[]): any[] {
+    return Array.from(new Set(a.concat(b)));
+}
