@@ -5,11 +5,19 @@ import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
-import { SelectItem } from 'primeng/components/common/selectitem';
 
 export interface AccessionRow {
     id?: string;
     name?: string;
+}
+
+interface FilterSet {
+    [s: string]: FilterMetadata;
+}
+
+interface SortSettings {
+    sortField: string;
+    sortOrder: number;
 }
 
 @Component({
@@ -43,9 +51,10 @@ export class AccessionTabComponent implements OnInit {
 
     all_selected: boolean;
 
-    previous_filters: {
-        [s: string]: FilterMetadata;
-    } = {};
+    previous_filters: FilterSet = {};
+    previous_sort_settings: SortSettings = {
+        sortField: undefined, sortOrder: 1
+    };
 
     constructor() { }
 
@@ -85,41 +94,67 @@ export class AccessionTabComponent implements OnInit {
                !== this.accession_options.length;
     }
 
-    loadDataOnScroll($event: TableState) {
-        this.filtered_accessions = this.accession_options;
-        for (const filter_field of Object.keys($event.filters)) {
-            const contains = $event.filters[filter_field].value.toUpperCase();
-            this.filtered_accessions = this.filtered_accessions.filter(acc => {
+    filterAccessions(accessions: AccessionRow[],
+                     filters: FilterSet): AccessionRow[] {
+        let filtered_accessions = accessions;
+        for (const filter_field of Object.keys(filters)) {
+            const contains = filters[filter_field].value.toUpperCase();
+            filtered_accessions = filtered_accessions.filter(acc => {
                 return acc[filter_field].toUpperCase().includes(contains);
             });
         }
-        if (!isNullOrUndefined($event.sortField)) {
-            if ($event.sortField === 'selected') {
+        return filtered_accessions;
+    }
+
+    /**
+     * Sorts accession row array in place according to the provided settings.
+     */
+    sortAccessions(accessions: AccessionRow[],
+                   sort_settings: SortSettings): void {
+        if (!isNullOrUndefined(sort_settings.sortField)) {
+            if (sort_settings.sortField === 'selected') {
                 const selected: AccessionRow[] = [];
                 const unselected: AccessionRow[] = [];
-                this.filtered_accessions.forEach((acc) => {
+                accessions.forEach((acc) => {
                     if (this.selectedAccessions.includes(acc.id)) {
                         selected.push(acc);
                     } else {
                         unselected.push(acc);
                     }
                 });
-                this.filtered_accessions = [...selected, ...unselected];
+                Object.assign(accessions, [...selected, ...unselected]);
             } else {
-                this.filtered_accessions.sort((a, b) =>
-                    a[$event.sortField].localeCompare(b[$event.sortField])
+                accessions.sort((a, b) =>
+                    a[sort_settings.sortField].localeCompare(
+                        b[sort_settings.sortField]
+                    )
                 );
             }
-            if ($event.sortOrder === -1) {
-                this.filtered_accessions.reverse();
+            if (sort_settings.sortOrder === -1) {
+                accessions.reverse();
             }
         }
+    }
+
+    loadDataOnScroll($event: TableState) {
+        if (!deepEqual($event.filters, this.previous_filters)) {
+            this.updateAllSelected();
+            this.filtered_accessions = this.filterAccessions(this.accession_options,
+                                                             $event.filters);
+            this.previous_filters = deepCopy($event.filters);
+        }
+
+        const sort_settings: SortSettings = {
+            sortField: $event.sortField,
+            sortOrder: $event.sortOrder
+        };
+        if (!deepEqual(sort_settings, this.previous_sort_settings)) {
+            this.sortAccessions(this.filtered_accessions, sort_settings);
+            this.previous_sort_settings = deepCopy(sort_settings);
+        }
+
         this.virtual_accession_rows = this.filtered_accessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
-        if (!deepEqual($event.filters, this.previous_filters)) {
-            this.updateAllSelected();
-        }
-        this.previous_filters = deepCopy($event.filters);
     }
 }
