@@ -62,9 +62,12 @@ export class AccessionTabComponent implements OnInit {
     };
 
     accession_groups: AccessionGroup[] = [
-        { name: 'Wild species', accessions: [] },
+        { name: 'Wild species', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                                              'S_lyc_EA01049', 'S_lyc_EA01155',
+                                              'S_lyc_LYC3340' ] },
         { name: 'Cultivars', accessions: [] }
     ];
+    selected_groups: AccessionGroup[] = [];
 
     constructor() { }
 
@@ -147,6 +150,7 @@ export class AccessionTabComponent implements OnInit {
     }
 
     loadDataOnScroll($event: TableState) {
+        console.log(this.selected_groups);
         if (!deepEqual($event.filters, this.previous_filters)) {
             this.updateAllSelected();
             this.filtered_accessions = this.filterAccessions(this.accession_options,

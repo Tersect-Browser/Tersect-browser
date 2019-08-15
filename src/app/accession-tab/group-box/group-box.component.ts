@@ -1,5 +1,6 @@
-import { Component, ViewEncapsulation, Input } from '@angular/core';
 import { AccessionGroup } from '../accession-tab.component';
+
+import { Component, ViewEncapsulation, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'app-group-box',
@@ -11,12 +12,14 @@ export class GroupBoxComponent {
     @Input()
     groups: AccessionGroup[];
 
-    _selected_groups: AccessionGroup[];
-    set selected_groups(groups: AccessionGroup[]) {
-        console.log(groups);
-        this._selected_groups = groups;
+    _selectedGroups: AccessionGroup[];
+    @Input()
+    set selectedGroups(groups: AccessionGroup[]) {
+        this._selectedGroups = groups;
+        this.selectedGroupsChange.emit(this._selectedGroups);
     }
-    get selected_groups(): AccessionGroup[] {
-        return this._selected_groups;
+    get selectedGroups(): AccessionGroup[] {
+        return this._selectedGroups;
     }
+    @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
 }
