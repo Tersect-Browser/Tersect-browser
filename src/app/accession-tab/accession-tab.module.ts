@@ -1,4 +1,5 @@
 import { AccessionTabComponent } from './accession-tab.component';
+import { GroupBoxComponent } from './group-box/group-box.component';
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -10,7 +11,8 @@ import { ListboxModule } from 'primeng/listbox';
 
 @NgModule({
     declarations: [
-        AccessionTabComponent
+        AccessionTabComponent,
+        GroupBoxComponent
     ],
     exports: [
         AccessionTabComponent
