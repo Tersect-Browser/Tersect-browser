@@ -93,6 +93,14 @@ export class AccessionTabComponent implements OnInit {
                 return acc[filter_field].toUpperCase().includes(contains);
             });
         }
+        if (!isNullOrUndefined($event.sortField)) {
+            this.filtered_accessions.sort((a, b) => {
+                return a[$event.sortField].localeCompare(b[$event.sortField]);
+            });
+            if ($event.sortOrder === -1) {
+                this.filtered_accessions.reverse();
+            }
+        }
         this.virtual_accession_rows = this.filtered_accessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
