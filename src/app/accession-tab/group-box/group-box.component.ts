@@ -1,5 +1,5 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { SelectItem } from 'primeng/components/common/selectitem';
+import { Component, ViewEncapsulation, Input } from '@angular/core';
+import { AccessionGroup } from '../accession-tab.component';
 
 @Component({
     selector: 'app-group-box',
@@ -8,9 +8,15 @@ import { SelectItem } from 'primeng/components/common/selectitem';
     encapsulation: ViewEncapsulation.None
 })
 export class GroupBoxComponent {
-    accession_groups: SelectItem[] = [
-        { label: 'Wild species', value: { name: 'Wild species' } },
-        { label: 'Cultivars', value: { name: 'cultivars' } }
-    ];
-    selected_groups: string[];
+    @Input()
+    groups: AccessionGroup[];
+
+    _selected_groups: AccessionGroup[];
+    set selected_groups(groups: AccessionGroup[]) {
+        console.log(groups);
+        this._selected_groups = groups;
+    }
+    get selected_groups(): AccessionGroup[] {
+        return this._selected_groups;
+    }
 }

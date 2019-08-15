@@ -20,6 +20,11 @@ interface SortSettings {
     sortOrder: number;
 }
 
+export interface AccessionGroup {
+    name: string;
+    accessions: string[];
+}
+
 @Component({
     selector: 'app-accession-tab',
     templateUrl: './accession-tab.component.html',
@@ -55,6 +60,11 @@ export class AccessionTabComponent implements OnInit {
     previous_sort_settings: SortSettings = {
         sortField: undefined, sortOrder: 1
     };
+
+    accession_groups: AccessionGroup[] = [
+        { name: 'Wild species', accessions: [] },
+        { name: 'Cultivars', accessions: [] }
+    ];
 
     constructor() { }
 
