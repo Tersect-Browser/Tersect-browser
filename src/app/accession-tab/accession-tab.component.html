@@ -40,8 +40,8 @@
                 <th *ngFor="let col of columns">
                     <input pInputText type="text" style="width: 100%;"
                         (input)="dt.filter($event.target.value,
-                                        col.field,
-                                        'contains')">
+                                           col.field,
+                                           'contains')">
                 </th>
             </tr>
         </ng-template>
