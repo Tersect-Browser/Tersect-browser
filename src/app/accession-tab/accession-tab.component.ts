@@ -1,10 +1,11 @@
 import { TableState } from 'primeng/components/common/tablestate';
 
-import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation, ViewChild } from '@angular/core';
 import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
+import { Table } from 'primeng/table';
 
 export interface AccessionRow {
     id?: string;
@@ -32,6 +33,8 @@ export interface AccessionGroup {
     encapsulation: ViewEncapsulation.None
 })
 export class AccessionTabComponent implements OnInit {
+    @ViewChild('dt', { static: true }) dt: Table;
+
     @Output() updateAccessions = new EventEmitter<string[]>();
 
     _selectedAccessions: string[];
@@ -65,9 +68,18 @@ export class AccessionTabComponent implements OnInit {
         { name: 'Wild species', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
                                               'S_lyc_EA01049', 'S_lyc_EA01155',
                                               'S_lyc_LYC3340' ] },
-        { name: 'Cultivars', accessions: [] }
+        { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                                           'fruitDrop' ] }
     ];
-    selected_groups: AccessionGroup[] = [];
+
+    _selected_groups: AccessionGroup[] = [];
+    set selected_groups(groups: AccessionGroup[]) {
+        this.dt.filter(groups, '__groups', 'groups_union');
+        this._selected_groups = groups;
+    }
+    get selected_groups(): AccessionGroup[] {
+        return this._selected_groups;
+    }
 
     constructor() { }
 
@@ -111,6 +123,10 @@ export class AccessionTabComponent implements OnInit {
                      filters: FilterSet): AccessionRow[] {
         let filtered_accessions = accessions;
         for (const filter_field of Object.keys(filters)) {
+            if (filter_field === '__groups') {
+                // Ignore group filters
+                continue;
+            }
             const contains = filters[filter_field].value.toUpperCase();
             filtered_accessions = filtered_accessions.filter(acc => {
                 return acc[filter_field].toUpperCase().includes(contains);
@@ -150,10 +166,21 @@ export class AccessionTabComponent implements OnInit {
     }
 
     loadDataOnScroll($event: TableState) {
-        console.log(this.selected_groups);
+        let acc_options = this.accession_options;
+        if (!isNullOrUndefined($event.filters['__groups'])
+            && $event.filters['__groups'].value.length) {
+            const acc = $event.filters['__groups']
+                              .value.reduce((acc_ids: string[],
+                                             g: AccessionGroup) => {
+                return arrayUnion(acc_ids, g.accessions);
+            }, []);
+            // TODO: fix labels
+            acc_options = acc.map((a: string) => ({ id: a, name: a }));
+        }
+
         if (!deepEqual($event.filters, this.previous_filters)) {
             this.updateAllSelected();
-            this.filtered_accessions = this.filterAccessions(this.accession_options,
+            this.filtered_accessions = this.filterAccessions(acc_options,
                                                              $event.filters);
             this.previous_filters = deepCopy($event.filters);
         }
