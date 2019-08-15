@@ -94,9 +94,22 @@ export class AccessionTabComponent implements OnInit {
             });
         }
         if (!isNullOrUndefined($event.sortField)) {
-            this.filtered_accessions.sort((a, b) => {
-                return a[$event.sortField].localeCompare(b[$event.sortField]);
-            });
+            if ($event.sortField === 'selected') {
+                const selected: AccessionRow[] = [];
+                const unselected: AccessionRow[] = [];
+                this.filtered_accessions.forEach((acc) => {
+                    if (this.selectedAccessions.includes(acc.id)) {
+                        selected.push(acc);
+                    } else {
+                        unselected.push(acc);
+                    }
+                });
+                this.filtered_accessions = [...selected, ...unselected];
+            } else {
+                this.filtered_accessions.sort((a, b) =>
+                    a[$event.sortField].localeCompare(b[$event.sortField])
+                );
+            }
             if ($event.sortOrder === -1) {
                 this.filtered_accessions.reverse();
             }
