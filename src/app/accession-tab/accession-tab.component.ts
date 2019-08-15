@@ -5,7 +5,7 @@ import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
-
+import { SelectItem } from 'primeng/components/common/selectitem';
 
 export interface AccessionRow {
     id?: string;
@@ -35,6 +35,12 @@ export class AccessionTabComponent implements OnInit {
 
     @Input()
     accession_options: AccessionRow[];
+
+    accession_groups: SelectItem[] = [
+        { label: 'Wild species', value: { name: 'Wild species' } },
+        { label: 'Cultivars', value: { name: 'cultivars' } }
+    ];
+    selected_groups: string[];
 
     filtered_accessions: AccessionRow[];
     virtual_accession_rows: AccessionRow[];

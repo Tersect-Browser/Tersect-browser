@@ -1,3 +1,11 @@
+.tab-container {
+    display: flex;
+}
+
+.group-box {
+    font-size: 70%;
+}
+
 .accession-table {
     font-size: 70%;
 }

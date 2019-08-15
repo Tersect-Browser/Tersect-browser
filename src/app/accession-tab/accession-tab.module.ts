@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ListboxModule } from 'primeng/listbox';
 
 @NgModule({
     declarations: [
@@ -19,7 +20,8 @@ import { CheckboxModule } from 'primeng/checkbox';
         BrowserAnimationsModule,
         FormsModule,
         TableModule,
-        CheckboxModule
+        CheckboxModule,
+        ListboxModule
     ],
     providers: []
 })
