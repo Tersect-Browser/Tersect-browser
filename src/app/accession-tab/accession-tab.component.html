@@ -7,19 +7,19 @@
     </app-group-box>
 
     <p-table #dt
-            styleClass="accession-table"
-            [columns]="cols"
-            [value]="virtual_accession_rows"
-            [(selection)]="selectedAccessions"
-            [scrollable]="true"
-            [virtualScroll]="true"
-            scrollHeight="calc(100vh - 130px)"
-            [totalRecords]="filtered_accessions.length"
-            [virtualRowHeight]="20"
-            [virtualScrollDelay]="100"
-            [rows]="50"
-            (onLazyLoad)="loadDataOnScroll($event)"
-            [lazy]="true">
+             styleClass="accession-table"
+             [columns]="cols"
+             [value]="virtual_accession_rows"
+             [(selection)]="selectedAccessions"
+             [scrollable]="true"
+             [virtualScroll]="true"
+             scrollHeight="calc(100vh - 130px)"
+             [totalRecords]="filtered_accessions.length"
+             [virtualRowHeight]="20"
+             [virtualScrollDelay]="100"
+             [rows]="50"
+             (onLazyLoad)="loadDataOnScroll($event)"
+             [lazy]="true">
         <ng-template pTemplate="header" let-columns>
             <tr>
                 <th class="checkbox-cell" [pSortableColumn]="'selected'">
