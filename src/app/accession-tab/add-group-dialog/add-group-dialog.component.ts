@@ -10,12 +10,19 @@ import { SelectItem } from 'primeng/components/common/selectitem';
     styleUrls: ['./add-group-dialog.component.css']
 })
 export class AddGroupDialogComponent {
-    category_name: string;
     error_message = '';
+
+    _category_name = '';
+    set category_name(name: string) {
+        this._category_name = name.trim();
+    }
+    get category_name(): string {
+        return this._category_name;
+    }
 
     _group_name = '';
     set group_name(name: string) {
-        this._group_name = name;
+        this._group_name = name.trim();
         this.validateGroupName(this._group_name);
     }
     get group_name(): string {
@@ -58,7 +65,8 @@ export class AddGroupDialogComponent {
             name: this.group_name,
             accessions: this.selectedAccessions
         };
-        if (!isNullOrUndefined(this.category_name)) {
+        if (!isNullOrUndefined(this.category_name)
+            && this.category_name.length) {
             group.category = this.category_name;
         }
         this.groupSave.emit(group);
@@ -67,7 +75,7 @@ export class AddGroupDialogComponent {
 
     private hideDialog() {
         this.group_name = '';
-        this.category_name = undefined;
+        this.category_name = '';
         this.visible = false;
     }
 
