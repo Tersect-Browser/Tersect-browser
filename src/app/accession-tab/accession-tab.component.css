@@ -29,6 +29,11 @@
     animation: pulse 0.8s infinite ease-in-out;
 }
 
+.justified {
+    display: flex;
+    justify-content: space-between;
+}
+
 @keyframes pulse {
     0% {
         background-color: rgba(70, 160, 0, 0.1)

@@ -63,15 +63,32 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="summary">
-            <div>
-                {{ filtered_accessions.length }}
-                <span *ngIf="filtersUsed()">matching</span>
-                accessions
-            </div>
-            <div>
-                ({{ selectedAccessions.length }} selected)
+            <div class="justified">
+                <div class="block-center">
+                    <div>
+                        {{ filtered_accessions.length }}
+                        <span *ngIf="filtersUsed()">matching</span>
+                        accessions
+                    </div>
+                    <div>
+                        ({{ selectedAccessions.length }} selected)
+                    </div>
+                </div>
+                <button pButton
+                        icon="fa fa-plus"
+                        label="Save as a group..."
+                        style="font-size: 1.2em;"
+                        (click)="showAddGroupDialog()"
+                        [disabled]="selectedAccessions.length === 0">
+                </button>
             </div>
         </ng-template>
     </p-table>
+
+    <app-add-group-dialog (groupSave)="addGroup($event)"
+                          [selectedAccessions]="selectedAccessions"
+                          [accessionGroups]="accession_groups"
+                          [(visible)]="display_add_group_dialog">
+    </app-add-group-dialog>
 
 </div>

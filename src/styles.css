@@ -22,10 +22,29 @@ html, body {
     justify-content: center;
 }
 
+.block-center {
+    margin: 0 auto;
+}
+
 .input-label-small {
     font-size: 80%;
 }
 
 .main-bg {
     background-color: rgb(240, 239, 208);
+}
+
+.ui-message-error {
+    color: #ffffff;
+    background-color: #ff7c7c;
+    animation: fade-in 0.2s linear;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }

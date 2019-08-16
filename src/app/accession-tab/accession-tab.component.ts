@@ -54,6 +54,8 @@ export class AccessionTabComponent implements OnInit {
     @Input()
     accessionDictionary: AccessionDictionary;
 
+    display_add_group_dialog = false;
+
     filtered_accessions: AccessionRow[];
     virtual_accession_rows: AccessionRow[];
 
@@ -201,5 +203,15 @@ export class AccessionTabComponent implements OnInit {
         this.virtual_accession_rows = this.filtered_accessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
+    }
+
+    showAddGroupDialog() {
+        if (this.selectedAccessions.length !== 0) {
+            this.display_add_group_dialog = true;
+        }
+    }
+
+    addGroup($event: AccessionGroup) {
+        this.accession_groups = [...this.accession_groups, $event];
     }
 }

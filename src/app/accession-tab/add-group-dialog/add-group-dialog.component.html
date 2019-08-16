@@ -1,0 +1,45 @@
+<p-dialog header="Add group" modal="true" appendTo="body" [style]="{'width':'300px'}"
+          [(visible)]="visible" [resizable]="false" dismissableMask="true">
+    <div>
+        <span *ngIf="selectedAccessions.length > 1; else elseOneAccession">
+            Saving <b>{{ selectedAccessions.length }}</b> selected accessions as a new group.
+        </span>
+        <ng-template #elseOneAccession>
+            Saving <b>one</b> selected accession as a new group.
+        </ng-template>
+    </div>
+
+    <p-message *ngIf="error_message !== ''"
+               styleClass="fade-in"
+               severity="error"
+               text="{{ error_message }}">
+    </p-message>
+
+    <div class="group-dialog-small-margin">
+        <div class="input-label-small">Group name (<i>required</i>)</div>
+        <input pInputText style="width: 100%;"
+               [(ngModel)]="group_name" type="text">
+    </div>
+
+    <div class="group-dialog-small-margin">
+        <div class="input-label-small">Category</div>
+        <p-dropdown [style]="{'width':'100%'}"
+                    [options]="categories"
+                    [editable]="true"
+                    [(ngModel)]="category_name">
+        </p-dropdown>
+    </div>
+
+    <div>
+        <button pButton
+                (click)="saveGroup()"
+                class="group-dialog-small-margin"
+                style="float: right;"
+                icon="fa fa-plus"
+                label="Save"
+                [disabled]="selectedAccessions.length === 0
+                            || group_name.length === 0
+                            || error_message !== ''">
+        </button>
+    </div>
+</p-dialog>
