@@ -343,6 +343,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
+        if (isNullOrUndefined(this.plotState.sorted_accessions)) {
+            return { type: 'background' };
+        }
         const accession_index = Math.floor(mouse_position.y
                                            / this.plotService.bin_height)
                                 - this.plotService.plot_position.y;

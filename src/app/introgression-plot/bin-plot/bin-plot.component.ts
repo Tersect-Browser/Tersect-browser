@@ -113,6 +113,11 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
+        if ([this.plotState.sorted_accessions,
+             this.plotState.interval,
+             this.plotState.binsize].some(isNullOrUndefined)) {
+            return { type: 'background' };
+        }
         const bin_index = Math.floor(mouse_position.x
                                      / this.plotService.bin_width)
                           - this.plotService.gui_margins.left

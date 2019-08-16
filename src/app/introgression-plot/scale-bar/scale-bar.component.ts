@@ -191,15 +191,15 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
     protected getPositionTarget(position: PlotPosition): PlotArea {
         const interval = this.plotState.interval;
-        if (isNullOrUndefined(interval)) {
+        const binsize = this.plotState.binsize;
+        if ([interval, binsize].some(isNullOrUndefined)) {
             return { type: 'background' };
         }
-        const bp_per_pixel = this.plotState.binsize
-                             / this.plotService.zoom_factor;
+        const bp_per_pixel = binsize / this.plotService.zoom_factor;
         const bp_position = position.x * bp_per_pixel + interval[0]
                             - (this.plotService.plot_position.x
                                + this.plotService.gui_margins.left)
-                              * this.plotState.binsize;
+                              * binsize;
         if (bp_position < interval[0] || bp_position > interval[1]) {
             return { type: 'background' };
         }
