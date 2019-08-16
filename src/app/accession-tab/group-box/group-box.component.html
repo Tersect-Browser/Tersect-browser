@@ -14,7 +14,12 @@
             <ng-template let-group let-i="index" pTemplate="item">
                 <span class="group-label">
                     {{ group.label }}
-                    <b>{{ group.value.accessions.length }}</b>
+                    <div>
+                        <b>{{ group.value.accessions.length }}</b>
+                        <i class="fa fa-trash group-remove-icon"
+                           (click)="removeGroup(group.value)">
+                        </i>
+                    </div>
                 </span>
             </ng-template>
         </p-listbox>

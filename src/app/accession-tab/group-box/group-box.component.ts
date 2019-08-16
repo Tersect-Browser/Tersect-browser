@@ -9,11 +9,16 @@ import { Component, ViewEncapsulation, Input, Output, EventEmitter } from '@angu
     encapsulation: ViewEncapsulation.None
 })
 export class GroupBoxComponent {
+    _groups: AccessionGroup[];
     @Input()
-    groups: AccessionGroup[];
-
-    @Input()
-    categories: string[] = [];
+    set groups(groups: AccessionGroup[]) {
+        this._groups = groups;
+        this.groupsChange.emit(this._groups);
+    }
+    @Output() groupsChange = new EventEmitter<AccessionGroup[]>();
+    get groups(): AccessionGroup[] {
+        return this._groups;
+    }
 
     _selectedGroups: AccessionGroup[];
     @Input()
@@ -21,12 +26,20 @@ export class GroupBoxComponent {
         this._selectedGroups = groups;
         this.selectedGroupsChange.emit(this._selectedGroups);
     }
+    @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
     get selectedGroups(): AccessionGroup[] {
         return this._selectedGroups;
     }
-    @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
+
+    @Input()
+    categories: string[] = [];
 
     extractCategoryGroups(category: string): AccessionGroup[] {
         return this.groups.filter(grp => grp.category === category);
+    }
+
+    removeGroup(group: AccessionGroup) {
+        this.groups.splice(this.groups.indexOf(group), 1);
+        this.groups = [...this.groups];
     }
 }

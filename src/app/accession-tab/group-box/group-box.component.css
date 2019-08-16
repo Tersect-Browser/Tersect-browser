@@ -20,3 +20,8 @@
 .group-box .ui-accordion-header > a  {
     padding: .2em;
 }
+
+.group-box .group-remove-icon {
+    color: #E33C3C;
+    margin-left: 0.5em;
+}
