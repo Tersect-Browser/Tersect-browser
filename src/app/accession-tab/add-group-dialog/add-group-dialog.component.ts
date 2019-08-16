@@ -1,7 +1,8 @@
 import { AccessionGroup } from '../accession-tab.component';
 
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined, isNull } from 'util';
+import { SelectItem } from 'primeng/components/common/selectitem';
 
 @Component({
     selector: 'app-add-group-dialog',
@@ -28,7 +29,12 @@ export class AddGroupDialogComponent {
     accessionGroups: AccessionGroup[];
 
     @Input()
-    categories: string[] = [];
+    set categories(cats: string[]) {
+        // Do not allow undefined category in dropdown menu
+        this.categoryOptions = cats.filter(c => !isNullOrUndefined(c))
+                                   .map(c => ({ label: c, value: c }));
+    }
+    categoryOptions: SelectItem[];
 
     private _visible = false;
     @Input()

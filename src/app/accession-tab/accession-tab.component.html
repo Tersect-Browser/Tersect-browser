@@ -87,6 +87,7 @@
     </p-table>
 
     <app-add-group-dialog (groupSave)="addGroup($event)"
+                          [categories]="categories"
                           [selectedAccessions]="selectedAccessions"
                           [accessionGroups]="accessionGroups"
                           [(visible)]="display_add_group_dialog">

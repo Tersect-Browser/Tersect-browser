@@ -109,7 +109,6 @@ export class AccessionTabComponent implements OnInit {
                                                             'S_lyc_LYC3153',
                                                             'fruitDrop' ] }
         ];
-        console.log(this.categories);
     }
 
     headerCheckboxChange($event: boolean) {
