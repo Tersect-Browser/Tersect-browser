@@ -15,7 +15,6 @@ import { SidebarModule } from 'primeng/sidebar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToolbarModule } from 'primeng/toolbar';
 import { SliderModule } from 'primeng/slider';
-import { ListboxModule } from 'primeng/listbox';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
@@ -37,7 +36,6 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         DropdownModule,
         ToolbarModule,
         SliderModule,
-        ListboxModule,
         KeyFilterModule,
         ToggleButtonModule,
         OverlayPanelModule,
