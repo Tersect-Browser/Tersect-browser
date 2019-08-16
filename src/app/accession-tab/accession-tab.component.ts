@@ -69,16 +69,16 @@ export class AccessionTabComponent implements OnInit {
         sortField: undefined, sortOrder: 1
     };
 
-    accessionGroups: AccessionGroup[] = [
-        { name: 'Wild species', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
-                                              'S_lyc_EA01049', 'S_lyc_EA01155',
-                                              'S_lyc_LYC3340' ] },
-        { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
-                                           'fruitDrop' ] },
-        { name: 'Three', category: 'CU',  accessions: [ 'S_lyc_LYC3155',
-                                                        'S_lyc_LYC3153',
-                                                        'fruitDrop' ] }
-    ];
+    _accessionGroups: AccessionGroup[];
+    set accessionGroups(groups: AccessionGroup[]) {
+        this._accessionGroups = groups;
+        this.categories = this.extractCategories(groups);
+    }
+    get accessionGroups(): AccessionGroup[] {
+        return this._accessionGroups;
+    }
+
+    categories: string[] = [];
 
     _selected_groups: AccessionGroup[] = [];
     set selected_groups(groups: AccessionGroup[]) {
@@ -99,6 +99,17 @@ export class AccessionTabComponent implements OnInit {
         ];
         this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
+        this.accessionGroups = [
+            { name: 'Wild species', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                                                  'S_lyc_EA01049', 'S_lyc_EA01155',
+                                                  'S_lyc_LYC3340' ] },
+            { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                                               'fruitDrop' ] },
+            { name: 'Three', category: 'CU',  accessions: [ 'S_lyc_LYC3155',
+                                                            'S_lyc_LYC3153',
+                                                            'fruitDrop' ] }
+        ];
+        console.log(this.categories);
     }
 
     headerCheckboxChange($event: boolean) {
@@ -217,5 +228,12 @@ export class AccessionTabComponent implements OnInit {
 
     addGroup($event: AccessionGroup) {
         this.accessionGroups = [...this.accessionGroups, $event];
+    }
+
+    /**
+     * Extract category names from array of accession groups.
+     */
+    extractCategories(groups: AccessionGroup[]): string[] {
+        return Array.from(new Set(groups.map(grp => grp.category))).sort();
     }
 }
