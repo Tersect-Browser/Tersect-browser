@@ -1,6 +1,7 @@
 import { AccessionGroup } from '../accession-tab.component';
+import { RemoveGroupDialogComponent } from '../remove-group-dialog/remove-group-dialog.component';
 
-import { Component, ViewEncapsulation, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 
 @Component({
     selector: 'app-group-box',
@@ -9,6 +10,9 @@ import { Component, ViewEncapsulation, Input, Output, EventEmitter } from '@angu
     encapsulation: ViewEncapsulation.None
 })
 export class GroupBoxComponent {
+    @ViewChild(RemoveGroupDialogComponent, { static: true })
+    removeGroupDialog: RemoveGroupDialogComponent;
+
     _groups: AccessionGroup[];
     @Input()
     set groups(groups: AccessionGroup[]) {

@@ -17,12 +17,15 @@
                     <div>
                         <b>{{ group.value.accessions.length }}</b>
                         <i class="fa fa-trash group-remove-icon"
-                           (click)="removeGroup(group.value)">
+                           (click)="removeGroupDialog.show(group.value)">
                         </i>
                     </div>
                 </span>
             </ng-template>
         </p-listbox>
     </p-accordionTab>
+
+    <app-remove-group-dialog (deleteGroup)="removeGroup($event)">
+    </app-remove-group-dialog>
 
 </p-accordion>

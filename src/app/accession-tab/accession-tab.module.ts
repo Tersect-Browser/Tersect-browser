@@ -1,6 +1,7 @@
 import { AccessionTabComponent } from './accession-tab.component';
 import { GroupBoxComponent } from './group-box/group-box.component';
 import { AddGroupDialogComponent } from './add-group-dialog/add-group-dialog.component';
+import { RemoveGroupDialogComponent } from './remove-group-dialog/remove-group-dialog.component';
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -20,7 +21,8 @@ import { AccordionModule } from 'primeng/accordion';
     declarations: [
         AccessionTabComponent,
         GroupBoxComponent,
-        AddGroupDialogComponent
+        AddGroupDialogComponent,
+        RemoveGroupDialogComponent
     ],
     exports: [
         AccessionTabComponent
