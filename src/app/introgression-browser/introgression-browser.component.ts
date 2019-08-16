@@ -3,7 +3,7 @@ import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.compo
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { Chromosome } from '../models/Chromosome';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { BrowserSettings } from './browser-settings';
+import { BrowserSettings, AccessionDictionary } from './browser-settings';
 import { AccessionDisplayStyle } from '../introgression-plot/services/introgression-plot.service';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
@@ -68,6 +68,10 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     }
     get widget_reference(): string {
         return this.plotState.reference;
+    }
+
+    get accession_dictionary(): AccessionDictionary {
+        return this.plotState.accession_dictionary;
     }
 
     readonly TYPING_DELAY = 750;

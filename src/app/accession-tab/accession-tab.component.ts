@@ -6,6 +6,7 @@ import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
 import { Table } from 'primeng/table';
+import { AccessionDictionary } from '../introgression-browser/browser-settings';
 
 export interface AccessionRow {
     id?: string;
@@ -51,6 +52,9 @@ export class AccessionTabComponent implements OnInit {
 
     @Input()
     accessionOptions: AccessionRow[];
+
+    @Input()
+    accessionDictionary: AccessionDictionary;
 
     filtered_accessions: AccessionRow[];
     virtual_accession_rows: AccessionRow[];
@@ -174,8 +178,10 @@ export class AccessionTabComponent implements OnInit {
                                              g: AccessionGroup) => {
                 return arrayUnion(acc_ids, g.accessions);
             }, []);
-            // TODO: fix labels
-            acc_options = acc.map((a: string) => ({ id: a, name: a }));
+            acc_options = acc.map((acc_id: string) => ({
+                id: acc_id,
+                name: this.accessionDictionary[acc_id]
+            }));
         }
 
         if (!deepEqual($event.filters, this.previous_filters)) {

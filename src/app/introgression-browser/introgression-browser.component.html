@@ -134,6 +134,7 @@
            (onHide)="updateAccessions()">
     <app-accession-tab *ngIf="display_sidebar"
         [accessionOptions]="accessions_full"
+        [accessionDictionary]="accession_dictionary"
         [(selectedAccessions)]="widget_accessions">
     </app-accession-tab>
 </p-sidebar>
