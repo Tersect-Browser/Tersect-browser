@@ -1,7 +1,7 @@
 .group-box {
     font-size: 70%;
     width: 15vw;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 50px);
     display: block;
     overflow: auto;
     overflow-x: hidden;
