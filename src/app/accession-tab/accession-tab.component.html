@@ -1,7 +1,7 @@
 <h3>Accession selection</h3>
 
 <div class="tab-container">
-    <app-group-box [groups]="accession_groups"
+    <app-group-box [groups]="accessionGroups"
                    [(selectedGroups)]="selected_groups">
     </app-group-box>
 
@@ -87,7 +87,7 @@
 
     <app-add-group-dialog (groupSave)="addGroup($event)"
                           [selectedAccessions]="selectedAccessions"
-                          [accessionGroups]="accession_groups"
+                          [accessionGroups]="accessionGroups"
                           [(visible)]="display_add_group_dialog">
     </app-add-group-dialog>
 

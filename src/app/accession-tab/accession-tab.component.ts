@@ -68,7 +68,7 @@ export class AccessionTabComponent implements OnInit {
         sortField: undefined, sortOrder: 1
     };
 
-    accession_groups: AccessionGroup[] = [
+    accessionGroups: AccessionGroup[] = [
         { name: 'Wild species', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
                                               'S_lyc_EA01049', 'S_lyc_EA01155',
                                               'S_lyc_LYC3340' ] },
@@ -212,6 +212,6 @@ export class AccessionTabComponent implements OnInit {
     }
 
     addGroup($event: AccessionGroup) {
-        this.accession_groups = [...this.accession_groups, $event];
+        this.accessionGroups = [...this.accessionGroups, $event];
     }
 }
