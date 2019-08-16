@@ -50,7 +50,7 @@ export class AccessionTabComponent implements OnInit {
     @Output() selectedAccessionsChange = new EventEmitter();
 
     @Input()
-    accession_options: AccessionRow[];
+    accessionOptions: AccessionRow[];
 
     filtered_accessions: AccessionRow[];
     virtual_accession_rows: AccessionRow[];
@@ -84,12 +84,12 @@ export class AccessionTabComponent implements OnInit {
     constructor() { }
 
     ngOnInit() {
-        this.filtered_accessions = this.accession_options;
+        this.filtered_accessions = this.accessionOptions;
         this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
         this.cols = [
             { field: 'name', header: 'Name' }
         ];
-        this.all_selected = this.accession_options.length
+        this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
     }
 
@@ -116,7 +116,7 @@ export class AccessionTabComponent implements OnInit {
 
     filtersUsed(): boolean {
         return this.filtered_accessions.length
-               !== this.accession_options.length;
+               !== this.accessionOptions.length;
     }
 
     filterAccessions(accessions: AccessionRow[],
@@ -166,7 +166,7 @@ export class AccessionTabComponent implements OnInit {
     }
 
     loadDataOnScroll($event: TableState) {
-        let acc_options = this.accession_options;
+        let acc_options = this.accessionOptions;
         if (!isNullOrUndefined($event.filters['__groups'])
             && $event.filters['__groups'].value.length) {
             const acc = $event.filters['__groups']
