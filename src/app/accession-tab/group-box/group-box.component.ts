@@ -12,6 +12,9 @@ export class GroupBoxComponent {
     @Input()
     groups: AccessionGroup[];
 
+    @Input()
+    categories: string[] = [];
+
     _selectedGroups: AccessionGroup[];
     @Input()
     set selectedGroups(groups: AccessionGroup[]) {
@@ -22,4 +25,8 @@ export class GroupBoxComponent {
         return this._selectedGroups;
     }
     @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
+
+    extractCategoryGroups(category: string): AccessionGroup[] {
+        return this.groups.filter(grp => grp.category === category);
+    }
 }

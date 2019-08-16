@@ -1,8 +1,22 @@
 .group-box {
     font-size: 70%;
+    width: 15vw;
+    height: calc(100vh - 80px);
+    display: block;
+    overflow: auto;
+    overflow-x: hidden;
 }
 
 .group-label {
     display: flex;
     justify-content: space-between;
+}
+
+.group-box .ui-accordion-content {
+    padding: 0;
+    border: 0;
+}
+
+.group-box .ui-accordion-header > a  {
+    padding: .2em;
 }

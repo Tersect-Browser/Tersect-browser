@@ -1,15 +1,23 @@
-<p-listbox styleClass="group-box"
-    [options]="groups"
-    [(ngModel)]="selectedGroups"
-    optionLabel="name"
-    [metaKeySelection]="false"
-    [multiple]="true"
-    [showToggleAll]="false">
-    <p-header>Groups</p-header>
-    <ng-template let-group let-i="index" pTemplate="item">
-        <span class="group-label">
-            {{ group.label }}
-            <b>{{ group.value.accessions.length }}</b>
-        </span>
-    </ng-template>
-</p-listbox>
+<p-accordion styleClass="group-box" [multiple]="true">
+
+    <p-accordionTab *ngFor="let cat of categories" [selected]="true"
+                    [header]="cat === undefined ? 'Uncategorized'
+                                                : cat">
+        <p-listbox
+            [style]="{width: '100%'}"
+            [options]="extractCategoryGroups(cat)"
+            [(ngModel)]="selectedGroups"
+            optionLabel="name"
+            [metaKeySelection]="false"
+            [multiple]="true"
+            [showToggleAll]="false">
+            <ng-template let-group let-i="index" pTemplate="item">
+                <span class="group-label">
+                    {{ group.label }}
+                    <b>{{ group.value.accessions.length }}</b>
+                </span>
+            </ng-template>
+        </p-listbox>
+    </p-accordionTab>
+
+</p-accordion>

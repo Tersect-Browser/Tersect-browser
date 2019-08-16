@@ -14,6 +14,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { MessageModule } from 'primeng/message';
+import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
     declarations: [
@@ -35,7 +36,8 @@ import { MessageModule } from 'primeng/message';
         DialogModule,
         InputTextModule,
         DropdownModule,
-        MessageModule
+        MessageModule,
+        AccordionModule
     ],
     providers: []
 })
