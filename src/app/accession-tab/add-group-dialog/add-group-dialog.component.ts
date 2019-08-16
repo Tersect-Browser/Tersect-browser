@@ -1,7 +1,7 @@
 import { AccessionGroup } from '../accession-tab.component';
 
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { isNullOrUndefined, isNull } from 'util';
+import { isNullOrUndefined } from 'util';
 import { SelectItem } from 'primeng/components/common/selectitem';
 
 @Component({
