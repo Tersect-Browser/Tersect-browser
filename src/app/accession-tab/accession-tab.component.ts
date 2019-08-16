@@ -36,8 +36,6 @@ export interface AccessionGroup {
 export class AccessionTabComponent implements OnInit {
     @ViewChild('dt', { static: true }) dt: Table;
 
-    @Output() updateAccessions = new EventEmitter<string[]>();
-
     _selectedAccessions: string[];
     @Input()
     set selectedAccessions(accessions: string[]) {
