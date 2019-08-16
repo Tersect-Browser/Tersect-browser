@@ -24,6 +24,7 @@ interface SortSettings {
 
 export interface AccessionGroup {
     name: string;
+    category?: string;
     accessions: string[];
 }
 
@@ -73,7 +74,10 @@ export class AccessionTabComponent implements OnInit {
                                               'S_lyc_EA01049', 'S_lyc_EA01155',
                                               'S_lyc_LYC3340' ] },
         { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
-                                           'fruitDrop' ] }
+                                           'fruitDrop' ] },
+        { name: 'Three', category: 'CU',  accessions: [ 'S_lyc_LYC3155',
+                                                        'S_lyc_LYC3153',
+                                                        'fruitDrop' ] }
     ];
 
     _selected_groups: AccessionGroup[] = [];
@@ -212,6 +216,7 @@ export class AccessionTabComponent implements OnInit {
     }
 
     addGroup($event: AccessionGroup) {
+        console.log($event);
         this.accessionGroups = [...this.accessionGroups, $event];
     }
 }

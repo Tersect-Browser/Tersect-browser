@@ -1,6 +1,7 @@
 import { AccessionGroup } from '../accession-tab.component';
 
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-add-group-dialog',
@@ -8,7 +9,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
     styleUrls: ['./add-group-dialog.component.css']
 })
 export class AddGroupDialogComponent {
-    category_name = '';
+    category_name: string;
     error_message = '';
 
     _group_name = '';
@@ -47,11 +48,20 @@ export class AddGroupDialogComponent {
     groupSave = new EventEmitter<AccessionGroup>();
 
     saveGroup() {
-        this.groupSave.emit({
+        const group: AccessionGroup = {
             name: this.group_name,
             accessions: this.selectedAccessions
-        });
+        };
+        if (!isNullOrUndefined(this.category_name)) {
+            group.category = this.category_name;
+        }
+        this.groupSave.emit(group);
+        this.hideDialog();
+    }
+
+    private hideDialog() {
         this.group_name = '';
+        this.category_name = undefined;
         this.visible = false;
     }
 
