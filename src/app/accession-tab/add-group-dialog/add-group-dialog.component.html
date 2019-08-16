@@ -1,5 +1,6 @@
-<p-dialog header="Add group" modal="true" appendTo="body" [style]="{'width':'300px'}"
-          [(visible)]="visible" [resizable]="false" dismissableMask="true">
+<p-dialog header="Add group" modal="true" appendTo="body"
+          [style]="{'width':'300px'}" [(visible)]="visible"
+          [resizable]="false" dismissableMask="true">
     <div>
         <span *ngIf="selectedAccessions.length > 1; else elseOneAccession">
             Saving <b>{{ selectedAccessions.length }}</b> selected accessions as a new group.
