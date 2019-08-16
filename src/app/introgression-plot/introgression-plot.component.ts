@@ -16,9 +16,14 @@ import { Subscription ,  combineLatest } from 'rxjs';
 })
 
 export class IntrogressionPlotComponent implements OnInit, OnDestroy {
-    @ViewChild(BinPlotComponent, { static: true }) binPlot: BinPlotComponent;
-    @ViewChild(ScaleBarComponent, { static: true }) scaleBar: ScaleBarComponent;
-    @ViewChild(AccessionBarComponent, { static: true }) accessionBar: AccessionBarComponent;
+    @ViewChild(BinPlotComponent, { static: true })
+    binPlot: BinPlotComponent;
+
+    @ViewChild(ScaleBarComponent, { static: true })
+    scaleBar: ScaleBarComponent;
+
+    @ViewChild(AccessionBarComponent, { static: true })
+    accessionBar: AccessionBarComponent;
 
     @Output() plotMouseClick = new EventEmitter<PlotMouseClickEvent>();
     @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();

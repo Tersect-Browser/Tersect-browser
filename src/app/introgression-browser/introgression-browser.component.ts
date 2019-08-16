@@ -25,8 +25,11 @@ import { join } from 'path';
     providers: [ PlotStateService ]
 })
 export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
-    @ViewChild(PlotClickMenuComponent, { static: true }) plotClickMenu: PlotClickMenuComponent;
-    @ViewChild(TooltipComponent, { static: true }) tooltip: TooltipComponent;
+    @ViewChild(PlotClickMenuComponent, { static: true })
+    plotClickMenu: PlotClickMenuComponent;
+
+    @ViewChild(TooltipComponent, { static: true })
+    tooltip: TooltipComponent;
 
     readonly DEFAULT_BINSIZE = 50000;
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
