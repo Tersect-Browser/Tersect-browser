@@ -1,6 +1,6 @@
 <div class="p-grid p-justify-between tb-toolbar p-nogutter">
     <div>
-        <div class="dropdown-label">Genomes</div>
+        <div class="input-label-small">Genomes</div>
         <button pButton class="tree-settings-button"
             icon="fa fa-tree"
             (click)="tree_overlay.toggle($event)">
@@ -27,7 +27,7 @@
         </div>
     </p-overlayPanel>
     <div class="p-col accession-selector tb-toolbar-control">
-        <div class="dropdown-label">Reference</div>
+        <div class="input-label-small">Reference</div>
         <p-dropdown [options]="accessions"
             [filter]="true"
             [autoWidth]="false"
@@ -36,7 +36,7 @@
         </p-dropdown>
     </div>
     <div class="p-col tb-toolbar-control">
-        <div class="dropdown-label">Chromosome</div>
+        <div class="input-label-small">Chromosome</div>
         <p-dropdown [options]="chromosomes"
             [style]="{'width':'100%'}"
             [(ngModel)]="widget_chromosome">
