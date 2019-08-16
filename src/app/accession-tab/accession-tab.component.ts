@@ -216,7 +216,6 @@ export class AccessionTabComponent implements OnInit {
     }
 
     addGroup($event: AccessionGroup) {
-        console.log($event);
         this.accessionGroups = [...this.accessionGroups, $event];
     }
 }
