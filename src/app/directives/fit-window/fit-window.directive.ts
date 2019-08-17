@@ -1,3 +1,5 @@
+import { fixedElementPosition } from '../../utils/utils';
+
 import { Directive, ElementRef, Input } from '@angular/core';
 
 @Directive({
@@ -13,12 +15,7 @@ export class FitWindowDirective {
     private observer = new MutationObserver(() => { this.adjustPosition(); });
 
     private get position(): { x: number, y: number } {
-        const left_px = this.el.nativeElement.style.left;
-        const top_px = this.el.nativeElement.style.top;
-        return {
-            x: parseInt(left_px.substring(0, left_px.length - 2)),
-            y: parseInt(top_px.substring(0, top_px.length - 2))
-        };
+        return fixedElementPosition(this.el);
     }
 
     private set position(pos: { x: number, y: number }) {

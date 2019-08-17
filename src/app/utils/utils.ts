@@ -1,4 +1,5 @@
 import { isNullOrUndefined } from 'util';
+import { ElementRef } from '@angular/core';
 
 /**
  * Check if arrA and arrB contain the same elements
@@ -126,4 +127,17 @@ export function arraySubtract(a: any[], b: any[]): any[] {
     const set = new Set(a);
     b.forEach(x => set.delete(x));
     return Array.from(set);
+}
+
+/**
+ * Extract the pixel position of a fixed position tag.
+ */
+export function fixedElementPosition(element: ElementRef): {x: number,
+                                                            y: number} {
+    const left_px = element.nativeElement.style.left;
+    const top_px = element.nativeElement.style.top;
+    return {
+        x: parseInt(left_px.substring(0, left_px.length - 2)),
+        y: parseInt(top_px.substring(0, top_px.length - 2))
+    };
 }
