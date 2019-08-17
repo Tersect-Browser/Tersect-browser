@@ -5,7 +5,10 @@ import { Directive, ElementRef, Input } from "@angular/core";
 })
 export class FitWindowDirective {
     @Input()
-    cursorSize = 20;
+    cursorOffsetX = 0;
+
+    @Input()
+    cursorOffsetY = 0;
 
     private observer = new MutationObserver(() => { this.adjustPosition(); });
 
@@ -46,9 +49,9 @@ export class FitWindowDirective {
 
         if (x_overflow > 0 || y_overflow > 0) {
             this.position = {
-                x: x_overflow > 0 ? pos.x - x_overflow
+                x: x_overflow > 0 ? pos.x - x_overflow - this.cursorOffsetX
                                   : pos.x,
-                y: y_overflow > 0 ? pos.y - height - this.cursorSize
+                y: y_overflow > 0 ? pos.y - height - this.cursorOffsetY
                                   : pos.y
             };
             this.el.nativeElement.style.visibility = 'visible';
