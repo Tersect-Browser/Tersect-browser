@@ -25,6 +25,7 @@ interface SortSettings {
 export interface AccessionGroup {
     name: string;
     category?: string;
+    color?: string;
     accessions: string[];
 }
 
@@ -100,9 +101,13 @@ export class AccessionTabComponent implements OnInit {
         this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
         this.accessionGroups = [
-            { name: 'Wild species', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
-                                                  'S_lyc_EA01049', 'S_lyc_EA01155',
-                                                  'S_lyc_LYC3340' ] },
+            {
+                name: 'Wild species',
+                color: "#ff0000",
+                accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                              'S_lyc_EA01049', 'S_lyc_EA01155',
+                              'S_lyc_LYC3340' ]
+            },
             { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
                                                'fruitDrop' ] },
             { name: 'Three', category: 'CU',  accessions: [ 'S_lyc_LYC3155',

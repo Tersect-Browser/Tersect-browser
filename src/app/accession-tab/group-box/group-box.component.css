@@ -10,6 +10,7 @@
 .group-label {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .group-box .ui-accordion-content {
@@ -24,4 +25,9 @@
 .group-box .group-remove-icon {
     color: #E33C3C;
     margin-left: 0.5em;
+}
+
+.group-box .group-color-icon {
+    border: 1px solid;
+    padding: 0.2em;
 }

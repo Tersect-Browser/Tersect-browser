@@ -13,7 +13,11 @@
             [showToggleAll]="false">
             <ng-template let-group let-i="index" pTemplate="item">
                 <span class="group-label">
-                    {{ group.label }}
+                    <div>
+                        <i class="fa fa-paint-brush group-color-icon"
+                           [style.background-color]="group.value.color"></i>
+                        {{ group.label }}
+                    </div>
                     <div>
                         <b>{{ group.value.accessions.length }}</b>
                         <i class="fa fa-trash group-remove-icon"
