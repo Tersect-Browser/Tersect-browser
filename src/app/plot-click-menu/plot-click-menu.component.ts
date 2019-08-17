@@ -1,7 +1,7 @@
 import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition, PlotSequenceInterval } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
-import { Component, ViewChild, ElementRef, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
 
 @Component({
@@ -10,7 +10,7 @@ import { MenuItem } from 'primeng/components/common/menuitem';
     styleUrls: ['./plot-click-menu.component.css']
 })
 
-export class PlotClickMenuComponent implements OnInit {
+export class PlotClickMenuComponent {
     @ViewChild('menuContainer', { static: true }) menuContainer: ElementRef;
 
     @Output() setReference = new EventEmitter<string>();
@@ -21,44 +21,9 @@ export class PlotClickMenuComponent implements OnInit {
 
     menuItems: MenuItem[] = [];
 
-    private _position = { x: 0, y: 0 };
     private set position(pos: { x: number, y: number }) {
-        this._position = pos;
-        this.menuContainer.nativeElement.style.left = `${this._position.x}px`;
-        this.menuContainer.nativeElement.style.top = `${this._position.y}px`;
-    }
-
-    private observer = new MutationObserver(() => { this.adjustPosition(); });
-
-    ngOnInit() {
-        this.observer.observe(this.menuContainer.nativeElement,
-                              { attributes: true });
-    }
-
-    /**
-     * Adjusts menu position so that is does not overflow.
-     */
-    private adjustPosition() {
-        const menu_width = this.menuContainer.nativeElement.offsetWidth;
-        const menu_height = this.menuContainer.nativeElement.offsetHeight;
-
-        if (menu_width > window.innerWidth
-            || menu_height > window.innerHeight) {
-            // No way to fit the menu inside the plot area
-            return;
-        }
-
-        const x_overflow = this._position.x + menu_width - window.innerWidth;
-        const y_overflow = this._position.y + menu_height - window.innerHeight;
-
-        if (x_overflow > 0 || y_overflow > 0) {
-            this.position = {
-                x: x_overflow > 0 ? this._position.x - x_overflow
-                                  : this._position.x,
-                y: y_overflow > 0 ? this._position.y - menu_height
-                                  : this._position.y
-            };
-        }
+        this.menuContainer.nativeElement.style.left = `${pos.x}px`;
+        this.menuContainer.nativeElement.style.top = `${pos.y}px`;
     }
 
     private getAccessionItem(target_accession: PlotAccession): MenuItem {
