@@ -3,7 +3,7 @@ import { RemoveGroupDialogComponent } from '../remove-group-dialog/remove-group-
 
 import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { ColorSelectorComponent, ColorChangeEvent } from '../../color-selector/color-selector.component';
-import { $ } from 'protractor';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-group-box',
@@ -53,6 +53,8 @@ export class GroupBoxComponent {
     }
 
     changeGroupColor($event: ColorChangeEvent) {
-        $event.target.value.color = $event.color;
+        if (!isNullOrUndefined($event.target)) {
+            $event.target.value.color = $event.color;
+        }
     }
 }
