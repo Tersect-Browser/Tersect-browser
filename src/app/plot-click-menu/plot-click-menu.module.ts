@@ -14,8 +14,7 @@ import { MenuModule } from 'primeng/menu';
     ],
     imports: [
         CommonModule,
-        MenuModule,
-        FitWindowModule
+        MenuModule
     ]
 })
 export class PlotClickMenuModule { }

@@ -1,4 +1,2 @@
-<div #menuContainer appFitWindow class="plot-clickmenu">
-    <div class="modal-mask" (click)="clickMask($event)"></div>
-    <p-menu [model]="menuItems"></p-menu>
-</div>
+<div class="modal-mask" (click)="hide()"></div>
+<p-menu [model]="menuItems"></p-menu>

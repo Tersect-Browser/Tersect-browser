@@ -5,6 +5,7 @@ import { IntrogressionBrowserComponent } from './introgression-browser.component
 
 import { PlotClickMenuModule } from '../plot-click-menu/plot-click-menu.module';
 import { TooltipModule } from '../tooltip/tooltip.module';
+import { FitWindowModule } from '../directives/fit-window/fit-window.module';
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -43,7 +44,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         IntrogressionPlotModule,
         PlotClickMenuModule,
         TooltipModule,
-        AccessionTabModule
+        AccessionTabModule,
+        FitWindowModule
     ],
     providers: []
 })

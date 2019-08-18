@@ -1,7 +1,7 @@
 import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition, PlotSequenceInterval } from '../models/PlotPosition';
 import { formatPosition } from '../utils/utils';
 
-import { Component, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, Output, EventEmitter } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
 
 @Component({
@@ -11,7 +11,7 @@ import { MenuItem } from 'primeng/components/common/menuitem';
 })
 
 export class PlotClickMenuComponent {
-    @ViewChild('menuContainer', { static: true }) menuContainer: ElementRef;
+    constructor(private el: ElementRef) { }
 
     @Output() setReference = new EventEmitter<string>();
     @Output() removeAccession = new EventEmitter<string>();
@@ -22,8 +22,8 @@ export class PlotClickMenuComponent {
     menuItems: MenuItem[] = [];
 
     private set position(pos: { x: number, y: number }) {
-        this.menuContainer.nativeElement.style.left = `${pos.x}px`;
-        this.menuContainer.nativeElement.style.top = `${pos.y}px`;
+        this.el.nativeElement.style.left = `${pos.x}px`;
+        this.el.nativeElement.style.top = `${pos.y}px`;
     }
 
     private getAccessionItem(target_accession: PlotAccession): MenuItem {
@@ -141,15 +141,12 @@ export class PlotClickMenuComponent {
         }
 
         this.position = { x: $event.x, y: $event.y };
-        this.menuContainer.nativeElement.style.visibility = 'visible';
+        this.el.nativeElement.style.visibility = 'visible';
     }
 
     hide() {
         this.position = { x: 0, y: 0 };
-        this.menuContainer.nativeElement.style.visibility = 'hidden';
+        this.el.nativeElement.style.visibility = 'hidden';
     }
 
-    clickMask($event) {
-        this.hide();
-    }
 }
