@@ -68,6 +68,7 @@ export class AccessionTabComponent implements OnInit {
     get accessionGroups(): AccessionGroup[] {
         return this._accessionGroups;
     }
+    @Output()
     accessionGroupsChange = new EventEmitter<AccessionGroup[]>();
 
     display_add_group_dialog = false;
