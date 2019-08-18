@@ -59,9 +59,11 @@ export class AccessionTabComponent implements OnInit {
     _accessionGroups: AccessionGroup[];
     @Input()
     set accessionGroups(groups: AccessionGroup[]) {
-        this._accessionGroups = groups;
-        this.categories = this.extractCategories(groups);
-        this.accessionGroupsChange.emit(this._accessionGroups);
+        if (groups !== this._accessionGroups) {
+            this._accessionGroups = groups;
+            this.categories = this.extractCategories(groups);
+            this.accessionGroupsChange.emit(this._accessionGroups);
+        }
     }
     get accessionGroups(): AccessionGroup[] {
         return this._accessionGroups;
