@@ -48,7 +48,7 @@ export class AccessionTabComponent implements OnInit {
     get selectedAccessions(): string[] {
         return this._selectedAccessions;
     }
-    @Output() selectedAccessionsChange = new EventEmitter();
+    @Output() selectedAccessionsChange = new EventEmitter<string[]>();
 
     @Input()
     accessionOptions: AccessionRow[];
@@ -61,10 +61,12 @@ export class AccessionTabComponent implements OnInit {
     set accessionGroups(groups: AccessionGroup[]) {
         this._accessionGroups = groups;
         this.categories = this.extractCategories(groups);
+        this.accessionGroupsChange.emit(this._accessionGroups);
     }
     get accessionGroups(): AccessionGroup[] {
         return this._accessionGroups;
     }
+    accessionGroupsChange = new EventEmitter<AccessionGroup[]>();
 
     display_add_group_dialog = false;
 
