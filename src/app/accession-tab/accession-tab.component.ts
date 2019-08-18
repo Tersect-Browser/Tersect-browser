@@ -56,6 +56,16 @@ export class AccessionTabComponent implements OnInit {
     @Input()
     accessionDictionary: AccessionDictionary;
 
+    _accessionGroups: AccessionGroup[];
+    @Input()
+    set accessionGroups(groups: AccessionGroup[]) {
+        this._accessionGroups = groups;
+        this.categories = this.extractCategories(groups);
+    }
+    get accessionGroups(): AccessionGroup[] {
+        return this._accessionGroups;
+    }
+
     display_add_group_dialog = false;
 
     filtered_accessions: AccessionRow[];
@@ -69,15 +79,6 @@ export class AccessionTabComponent implements OnInit {
     previous_sort_settings: SortSettings = {
         sortField: undefined, sortOrder: 1
     };
-
-    _accessionGroups: AccessionGroup[];
-    set accessionGroups(groups: AccessionGroup[]) {
-        this._accessionGroups = groups;
-        this.categories = this.extractCategories(groups);
-    }
-    get accessionGroups(): AccessionGroup[] {
-        return this._accessionGroups;
-    }
 
     categories: string[] = [];
 
@@ -100,20 +101,6 @@ export class AccessionTabComponent implements OnInit {
         ];
         this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
-        this.accessionGroups = [
-            {
-                name: 'Wild species',
-                color: "#ff0000",
-                accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
-                              'S_lyc_EA01049', 'S_lyc_EA01155',
-                              'S_lyc_LYC3340' ]
-            },
-            { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
-                                               'fruitDrop' ] },
-            { name: 'Three', category: 'CU',  accessions: [ 'S_lyc_LYC3155',
-                                                            'S_lyc_LYC3153',
-                                                            'fruitDrop' ] }
-        ];
     }
 
     headerCheckboxChange($event: boolean) {

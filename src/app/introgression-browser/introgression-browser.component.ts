@@ -31,6 +31,21 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     @ViewChild(TooltipComponent, { static: true })
     tooltip: TooltipComponent;
 
+    accession_groups = [
+        {
+            name: 'Wild species',
+            color: "#ff0000",
+            accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                          'S_lyc_EA01049', 'S_lyc_EA01155',
+                          'S_lyc_LYC3340' ]
+        },
+        { name: 'Cultivars', accessions: [ 'S_lyc_LYC3155', 'S_lyc_LYC3153',
+                                           'fruitDrop' ] },
+        { name: 'Three', category: 'CU',  accessions: [ 'S_lyc_LYC3155',
+                                                        'S_lyc_LYC3153',
+                                                        'fruitDrop' ] }
+    ];
+
     readonly DEFAULT_BINSIZE = 50000;
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     readonly DEFAULT_ZOOM_LEVEL = 100;
