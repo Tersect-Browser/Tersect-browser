@@ -1,0 +1,10 @@
+<div class="modal-mask" (click)="hide()"></div>
+<p-panel [header]="header">
+    <div class="align-right-column">
+        <p-colorPicker [(ngModel)]="color" [inline]="true"></p-colorPicker>
+        <div>
+            <button pButton label="Cancel" (click)="cancel()"></button>
+            <button pButton label="Confirm" (click)="hide()"></button>
+        </div>
+    </div>
+</p-panel>

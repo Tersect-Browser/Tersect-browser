@@ -2,6 +2,8 @@ import { AccessionGroup } from '../accession-tab.component';
 import { RemoveGroupDialogComponent } from '../remove-group-dialog/remove-group-dialog.component';
 
 import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import { ColorSelectorComponent, ColorChangeEvent } from '../../color-selector/color-selector.component';
+import { $ } from 'protractor';
 
 @Component({
     selector: 'app-group-box',
@@ -12,6 +14,9 @@ import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } 
 export class GroupBoxComponent {
     @ViewChild(RemoveGroupDialogComponent, { static: true })
     removeGroupDialog: RemoveGroupDialogComponent;
+
+    @ViewChild(ColorSelectorComponent, { static: true })
+    colorSelector: ColorSelectorComponent;
 
     _groups: AccessionGroup[];
     @Input()
@@ -45,5 +50,9 @@ export class GroupBoxComponent {
     removeGroup(group: AccessionGroup) {
         this.groups.splice(this.groups.indexOf(group), 1);
         this.groups = [...this.groups];
+    }
+
+    changeGroupColor($event: ColorChangeEvent) {
+        $event.target.value.color = $event.color;
     }
 }

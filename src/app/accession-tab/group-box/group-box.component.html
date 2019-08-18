@@ -15,6 +15,9 @@
                 <span class="group-label">
                     <div>
                         <i class="fa fa-paint-brush group-color-icon"
+                           (click)="colorSelector.show($event,
+                                                       group.value.color,
+                                                       group)"
                            [style.background-color]="group.value.color"></i>
                         {{ group.label }}
                     </div>
@@ -33,3 +36,7 @@
     </app-remove-group-dialog>
 
 </p-accordion>
+
+<app-color-selector appFitWindow header="Select group color"
+                    (colorChange)="changeGroupColor($event)">
+</app-color-selector>
