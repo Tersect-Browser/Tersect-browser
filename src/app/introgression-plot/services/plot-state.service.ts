@@ -1,7 +1,6 @@
-import { BrowserSettings, AccessionDictionary } from '../../introgression-browser/browser-settings';
+import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle } from '../../introgression-browser/browser-settings';
 import { sameElements, ceilTo, floorTo } from '../../utils/utils';
 import { Chromosome } from '../../models/Chromosome';
-import { AccessionDisplayStyle } from './introgression-plot.service';
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject ,  Subject } from 'rxjs';

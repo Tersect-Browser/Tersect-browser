@@ -22,9 +22,6 @@ export interface GUIMargins {
     left: number;
 }
 
-export type AccessionDisplayStyle = 'labels' | 'tree_simple'
-                                    | 'tree_linear';
-
 @Injectable()
 export class IntrogressionPlotService implements OnDestroy {
     /**

@@ -2,9 +2,10 @@ import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition
 import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
 import { ceilTo } from '../../utils/utils';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
-import { IntrogressionPlotService, AccessionDisplayStyle } from '../services/introgression-plot.service';
+import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotStateService } from '../services/plot-state.service';
 import { TreeQuery } from '../../models/TreeQuery';
+import { AccessionDisplayStyle } from '../../introgression-browser/browser-settings';
 
 import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { isNullOrUndefined } from 'util';
