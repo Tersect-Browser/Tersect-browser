@@ -1,0 +1,9 @@
+<div *ngFor="let col of palette" class="color-button crossed-out"
+     (click)="selectColor(col)"
+     [style.background-color]="col"
+     [ngClass]="{
+         'selected-color-button': selectedColor === col,
+         'unselected-color-button': selectedColor !== col,
+         'empty-color': col === undefined
+     }">
+</div>

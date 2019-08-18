@@ -1,4 +1,5 @@
 import { ColorSelectorComponent } from './color-selector.component';
+import { ColorPaletteComponent } from './color-palette/color-palette.component';
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -9,7 +10,8 @@ import { ButtonModule } from 'primeng/button';
 
 @NgModule({
     declarations: [
-        ColorSelectorComponent
+        ColorSelectorComponent,
+        ColorPaletteComponent
     ],
     exports: [
         ColorSelectorComponent

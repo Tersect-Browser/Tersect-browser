@@ -1,6 +1,5 @@
 import { Component, ElementRef, Output, EventEmitter, Input } from '@angular/core';
 import { fixedElementPosition } from '../utils/utils';
-import { isNullOrUndefined } from 'util';
 
 export interface ColorChangeEvent {
     color: string;
@@ -30,7 +29,7 @@ export class ColorSelectorComponent {
         this.colorChange.emit({ color: this.color, target: this.target });
     }
 
-    private original_color;
+    private original_color: string;
 
     @Output()
     colorChange = new EventEmitter<ColorChangeEvent>();

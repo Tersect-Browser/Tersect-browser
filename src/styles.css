@@ -48,3 +48,8 @@ html, body {
         opacity: 1;
     }
 }
+
+.empty-color {
+    background-image: url("/assets/nofill.png");
+    background-size: cover;
+}
