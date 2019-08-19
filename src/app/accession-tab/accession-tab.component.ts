@@ -91,8 +91,6 @@ export class AccessionTabComponent implements OnInit {
         return this._selected_groups;
     }
 
-    constructor() { }
-
     ngOnInit() {
         this.filtered_accessions = this.accessionOptions;
         this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
