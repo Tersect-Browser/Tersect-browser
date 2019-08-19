@@ -16,6 +16,8 @@ import { TreeQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
 import { formatRegion } from '../app/utils/utils';
+import { fromEvent, concat } from 'rxjs';
+import { map, takeWhile, tap, take, last } from 'rxjs/operators';
 
 export const router = Router();
 
@@ -267,22 +269,33 @@ router.route('/query/:dataset_id/tree')
     });
 });
 
-function create_rapidnj_tree(db_query, phylip_file) {
+function create_rapidnj_tree(db_query, phylip_file: string) {
     const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
-    rapidnj.stderr.on('data', (data) => {
-        // Progress percentages
-        const status_updates = data.toString().trim().split(' ');
-        const percentage = status_updates[status_updates.length - 1].trim();
-        const status = `Building tree: ${percentage}`;
-        PheneticTree.updateOne(db_query, {
-            status: status
-        }).exec();
-    });
+
     let newick_output = '';
-    rapidnj.stdout.on('data', (data) => {
-        newick_output += data.toString();
-    });
-    rapidnj.stdout.on('close', () => {
+
+    const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
+        map((data) => {
+            const status_updates = data.toString().trim().split(' ');
+            const percentage = status_updates[status_updates.length - 1].trim();
+            return percentage;
+        }),
+        takeWhile((percentage: string) => percentage !== '100.00%', true),
+        map((percentage) => `Building tree: ${percentage}`),
+        tap(async (status) => {
+            await PheneticTree.updateOne(db_query, { status: status }).exec();
+        })
+    );
+
+    const stdout$ = fromEvent(rapidnj.stdout, 'data').pipe(
+        map(chunk => chunk.toString()),
+        takeWhile(chunk => chunk.indexOf('\\n') !== -1, true),
+        tap((chunk) => { newick_output += chunk.toString(); })
+    );
+
+    const close$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
+
+    concat(progress$, stdout$, close$).pipe(last()).subscribe(() => {
         PheneticTree.updateOne(db_query, {
             status: 'ready',
             tree_newick: newick_output
