@@ -6,7 +6,7 @@ import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
 import { Table } from 'primeng/table';
-import { AccessionDictionary } from '../introgression-browser/browser-settings';
+import { AccessionDictionary, AccessionGroup } from '../introgression-browser/browser-settings';
 
 export interface AccessionRow {
     id?: string;
@@ -20,13 +20,6 @@ interface FilterSet {
 interface SortSettings {
     sortField: string;
     sortOrder: number;
-}
-
-export interface AccessionGroup {
-    name: string;
-    category?: string;
-    color?: string;
-    accessions: string[];
 }
 
 @Component({

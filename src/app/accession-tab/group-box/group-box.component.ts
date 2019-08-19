@@ -1,4 +1,4 @@
-import { AccessionGroup } from '../accession-tab.component';
+import { AccessionGroup } from '../../introgression-browser/browser-settings';
 import { RemoveGroupDialogComponent } from '../remove-group-dialog/remove-group-dialog.component';
 
 import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } from '@angular/core';

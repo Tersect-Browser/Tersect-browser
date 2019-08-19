@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { AccessionGroup } from '../accession-tab.component';
+import { AccessionGroup } from '../../introgression-browser/browser-settings';
+
+import { Component, Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'app-remove-group-dialog',

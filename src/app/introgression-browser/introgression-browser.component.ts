@@ -3,10 +3,10 @@ import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.compo
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { Chromosome } from '../models/Chromosome';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle } from './browser-settings';
+import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup } from './browser-settings';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
-import { AccessionRow, AccessionGroup } from '../accession-tab/accession-tab.component';
+import { AccessionRow } from '../accession-tab/accession-tab.component';
 
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';

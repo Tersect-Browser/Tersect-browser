@@ -7,6 +7,13 @@ export interface AccessionDictionary {
     [internal_name: string]: string;
 }
 
+export interface AccessionGroup {
+    name: string;
+    category?: string;
+    color?: string;
+    accessions: string[];
+}
+
 /**
  * Records the current state of the browser interface
  */

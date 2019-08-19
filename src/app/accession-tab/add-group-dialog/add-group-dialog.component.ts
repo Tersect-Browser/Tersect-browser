@@ -1,4 +1,4 @@
-import { AccessionGroup } from '../accession-tab.component';
+import { AccessionGroup } from '../../introgression-browser/browser-settings';
 
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { isNullOrUndefined } from 'util';
