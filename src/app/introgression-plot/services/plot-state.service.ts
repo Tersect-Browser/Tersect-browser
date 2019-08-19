@@ -13,6 +13,7 @@ export class PlotStateService {
         this.dataset_id = settings.dataset_id;
         this.accession_style = settings.accession_style;
         this.accession_dictionary = settings.accession_dictionary;
+        this.accession_groups = settings.accession_groups;
         this.accessions = settings.selected_accessions;
         this.reference = settings.selected_reference;
         this.chromosome = settings.selected_chromosome;
@@ -26,6 +27,7 @@ export class PlotStateService {
             dataset_id: this.dataset_id,
             accession_style: this.accession_style,
             accession_dictionary: this.accession_dictionary,
+            accession_groups: this.accession_groups,
             selected_accessions: this.accessions,
             selected_reference: this.reference,
             selected_chromosome: this.chromosome,

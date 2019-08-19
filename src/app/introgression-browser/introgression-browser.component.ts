@@ -30,8 +30,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     @ViewChild(TooltipComponent, { static: true })
     tooltip: TooltipComponent;
 
-    accession_groups: AccessionGroup[] = [];
-
     readonly DEFAULT_BINSIZE = 50000;
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     readonly DEFAULT_ZOOM_LEVEL = 100;
@@ -87,6 +85,8 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     widget_binsize: number;
 
     widget_accessions: string[];
+
+    widget_accession_groups: AccessionGroup[];
 
     share_link = '';
 
@@ -172,6 +172,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                 this.accessions = this.formatAccessionOptionsSimple(accessions);
                 this.accessions_full = this.formatAccessionOptions(accessions);
                 this.chromosomes = this.formatChromosomeSelection(chromosomes);
+                this.widget_accession_groups = settings.accession_groups;
                 this.widget_accessions = settings.selected_accessions;
                 this.widget_binsize = settings.selected_binsize;
                 this.widget_chromosome = settings.selected_chromosome;
@@ -207,6 +208,9 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                             chromosomes: Chromosome[]) {
         if (isNullOrUndefined(settings.accession_style)) {
             settings.accession_style = this.DEFAULT_DISPLAY_STYLE;
+        }
+        if (isNullOrUndefined(settings.accession_groups)) {
+            settings.accession_groups = [];
         }
         if (isNullOrUndefined(settings.selected_accessions)) {
             settings.selected_accessions = accessions;
@@ -266,6 +270,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
             this.plotState.reference = this.widget_accessions[0];
         }
         this.plotState.accessions = this.widget_accessions.slice(0);
+        this.plotState.accession_groups = this.widget_accession_groups;
     }
 
     updateBinsize() {

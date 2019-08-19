@@ -21,6 +21,7 @@ export interface BrowserSettings {
     dataset_id: string;
     accession_style?: AccessionDisplayStyle;
     accession_dictionary?: AccessionDictionary;
+    accession_groups?: AccessionGroup[];
     selected_accessions?: string[];
     selected_reference?: string;
     selected_chromosome?: Chromosome;
