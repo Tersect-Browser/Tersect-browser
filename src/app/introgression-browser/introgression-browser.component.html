@@ -133,8 +133,7 @@
            [style]="{width: '70vw', padding: 0, border: 0}"
            (onHide)="updateAccessions()">
     <app-accession-tab *ngIf="display_sidebar"
-        [accessionOptions]="accessions_full"
-        [accessionDictionary]="accession_dictionary"
+        [accessionOptions]="accession_infos"
         [(accessionGroups)]="widget_accession_groups"
         [(selectedAccessions)]="widget_accessions">
     </app-accession-tab>

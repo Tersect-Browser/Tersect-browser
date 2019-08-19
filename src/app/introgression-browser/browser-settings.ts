@@ -7,6 +7,23 @@ export interface AccessionDictionary {
     [internal_name: string]: string;
 }
 
+export interface AccessionInfo {
+    id?: string;
+    Label?: string;
+    [s: string]: string;
+}
+
+/**
+ * Extract accession dictionary for quick lookup from accession info array.
+ */
+export function extractAccessionDictionary(infos: AccessionInfo[]): AccessionDictionary {
+    const dict: AccessionDictionary = {};
+    infos.forEach((info: AccessionInfo) => {
+        dict[info.id] = info.Label;
+    });
+    return dict;
+}
+
 export interface AccessionGroup {
     name: string;
     category?: string;
@@ -20,7 +37,7 @@ export interface AccessionGroup {
 export interface BrowserSettings {
     dataset_id: string;
     accession_style?: AccessionDisplayStyle;
-    accession_dictionary?: AccessionDictionary;
+    accession_infos?: AccessionInfo[];
     accession_groups?: AccessionGroup[];
     selected_accessions?: string[];
     selected_reference?: string;

@@ -6,12 +6,7 @@ import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
 import { Table } from 'primeng/table';
-import { AccessionDictionary, AccessionGroup } from '../introgression-browser/browser-settings';
-
-export interface AccessionRow {
-    id?: string;
-    name?: string;
-}
+import { AccessionDictionary, AccessionGroup, AccessionInfo, extractAccessionDictionary } from '../introgression-browser/browser-settings';
 
 interface FilterSet {
     [s: string]: FilterMetadata;
@@ -43,10 +38,17 @@ export class AccessionTabComponent implements OnInit {
     }
     @Output() selectedAccessionsChange = new EventEmitter<string[]>();
 
+    _accessionOptions: AccessionInfo[];
     @Input()
-    accessionOptions: AccessionRow[];
+    set accessionOptions(acc_infos: AccessionInfo[]) {
+        this._accessionOptions = acc_infos;
+        this.accessionDictionary = {};
+        this.accessionDictionary = extractAccessionDictionary(acc_infos);
+    }
+    get accessionOptions(): AccessionInfo[] {
+        return this._accessionOptions;
+    }
 
-    @Input()
     accessionDictionary: AccessionDictionary;
 
     _accessionGroups: AccessionGroup[];
@@ -66,8 +68,8 @@ export class AccessionTabComponent implements OnInit {
 
     display_add_group_dialog = false;
 
-    filtered_accessions: AccessionRow[];
-    virtual_accession_rows: AccessionRow[];
+    filtered_accessions: AccessionInfo[];
+    virtual_accession_rows: AccessionInfo[];
 
     cols: any[];
 
@@ -95,7 +97,7 @@ export class AccessionTabComponent implements OnInit {
         this.filtered_accessions = this.accessionOptions;
         this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
         this.cols = [
-            { field: 'name', header: 'Name' }
+            { field: 'Label', header: 'Label' }
         ];
         this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
@@ -127,8 +129,8 @@ export class AccessionTabComponent implements OnInit {
                !== this.accessionOptions.length;
     }
 
-    filterAccessions(accessions: AccessionRow[],
-                     filters: FilterSet): AccessionRow[] {
+    filterAccessions(accessions: AccessionInfo[],
+                     filters: FilterSet): AccessionInfo[] {
         let filtered_accessions = accessions;
         for (const filter_field of Object.keys(filters)) {
             if (filter_field === '__groups') {
@@ -146,12 +148,12 @@ export class AccessionTabComponent implements OnInit {
     /**
      * Sorts accession row array in place according to the provided settings.
      */
-    sortAccessions(accessions: AccessionRow[],
+    sortAccessions(accessions: AccessionInfo[],
                    sort_settings: SortSettings): void {
         if (!isNullOrUndefined(sort_settings.sortField)) {
             if (sort_settings.sortField === 'selected') {
-                const selected: AccessionRow[] = [];
-                const unselected: AccessionRow[] = [];
+                const selected: AccessionInfo[] = [];
+                const unselected: AccessionInfo[] = [];
                 accessions.forEach((acc) => {
                     if (this.selectedAccessions.includes(acc.id)) {
                         selected.push(acc);

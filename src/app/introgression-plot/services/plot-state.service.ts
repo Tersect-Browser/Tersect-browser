@@ -1,9 +1,12 @@
-import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup } from '../../introgression-browser/browser-settings';
+import {
+    BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup,
+    AccessionInfo, extractAccessionDictionary
+} from '../../introgression-browser/browser-settings';
 import { sameElements, ceilTo, floorTo } from '../../utils/utils';
 import { Chromosome } from '../../models/Chromosome';
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject ,  Subject } from 'rxjs';
+import { BehaviorSubject ,  Subject, ReplaySubject } from 'rxjs';
 
 @Injectable()
 export class PlotStateService {
@@ -12,7 +15,7 @@ export class PlotStateService {
     set settings(settings: BrowserSettings) {
         this.dataset_id = settings.dataset_id;
         this.accession_style = settings.accession_style;
-        this.accession_dictionary = settings.accession_dictionary;
+        this.accession_infos = settings.accession_infos;
         this.accession_groups = settings.accession_groups;
         this.accessions = settings.selected_accessions;
         this.reference = settings.selected_reference;
@@ -26,7 +29,7 @@ export class PlotStateService {
         return {
             dataset_id: this.dataset_id,
             accession_style: this.accession_style,
-            accession_dictionary: this.accession_dictionary,
+            accession_infos: this.accession_infos,
             accession_groups: this.accession_groups,
             selected_accessions: this.accessions,
             selected_reference: this.reference,
@@ -63,16 +66,25 @@ export class PlotStateService {
         return this.accession_style_source.getValue();
     }
 
+    private accession_infos_source = new BehaviorSubject<AccessionInfo[]>(undefined);
+    accession_infos$ = this.accession_infos_source.asObservable();
+    set accession_infos(accession_infos: AccessionInfo[]) {
+        this.accession_infos_source.next(accession_infos);
+        this.accession_dictionary = extractAccessionDictionary(accession_infos);
+    }
+    get accession_infos(): AccessionInfo[] {
+        return this.accession_infos_source.getValue();
+    }
+
     /**
      * Dictionary of names to be used for accessions.
      */
-    private accession_dictionary_source = new BehaviorSubject<AccessionDictionary>(undefined);
-    accession_dictionary$ = this.accession_dictionary_source.asObservable();
-    set accession_dictionary(accession_dictionary: AccessionDictionary) {
-        this.accession_dictionary_source.next(accession_dictionary);
+    private _accession_dictionary: AccessionDictionary;
+    set accession_dictionary(dict: AccessionDictionary) {
+        this._accession_dictionary = dict;
     }
     get accession_dictionary(): AccessionDictionary {
-        return this.accession_dictionary_source.getValue();
+        return this._accession_dictionary;
     }
 
     /**

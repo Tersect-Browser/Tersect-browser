@@ -3,10 +3,9 @@ import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.compo
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { Chromosome } from '../models/Chromosome';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup } from './browser-settings';
+import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup, AccessionInfo } from './browser-settings';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
-import { AccessionRow } from '../accession-tab/accession-tab.component';
 
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -36,7 +35,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     chromosomes: SelectItem[];
     accessions: SelectItem[];
-    accessions_full: AccessionRow[];
 
     constructor(private plotState: PlotStateService,
                 private tersectBackendService: TersectBackendService,
@@ -71,6 +69,10 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     get accession_dictionary(): AccessionDictionary {
         return this.plotState.accession_dictionary;
+    }
+
+    get accession_infos(): AccessionInfo[] {
+        return this.plotState.accession_infos;
     }
 
     readonly TYPING_DELAY = 750;
@@ -139,16 +141,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         }));
     }
 
-    /**
-     * Create full array of accession options.
-     */
-    formatAccessionOptions(accession_ids: string[]): AccessionRow[] {
-        return accession_ids.map((acc: string) => ({
-            id: acc,
-            name: this.plotState.accession_dictionary[acc]
-        }));
-    }
-
     ngOnInit() {
         const settings$ = this.route.paramMap.pipe(
             switchMap((params: ParamMap) => {
@@ -170,7 +162,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                 this.generateMissingSettings(settings, accessions, chromosomes);
                 this.plotState.settings = settings;
                 this.accessions = this.formatAccessionOptionsSimple(accessions);
-                this.accessions_full = this.formatAccessionOptions(accessions);
                 this.chromosomes = this.formatChromosomeSelection(chromosomes);
                 this.widget_accession_groups = settings.accession_groups;
                 this.widget_accessions = settings.selected_accessions;
@@ -236,11 +227,12 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                 1, settings.selected_chromosome.size
             ];
         }
-        if (isNullOrUndefined(settings.accession_dictionary)) {
-            settings.accession_dictionary = {};
-            settings.selected_accessions.forEach((acc_name) => {
-                settings.accession_dictionary[acc_name] = acc_name;
-            });
+        if (isNullOrUndefined(settings.accession_infos)) {
+            settings.accession_infos = settings.selected_accessions
+                                               .map((acc_id) => ({
+                id: acc_id,
+                Label: acc_id
+            }));
         }
     }
 

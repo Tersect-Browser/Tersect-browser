@@ -9,7 +9,7 @@ const ViewSettingsSchema = new Schema({
     settings: {
         dataset_id: String,
         accession_style: String,
-        accession_dictionary: Schema.Types.Mixed,
+        accession_infos: Schema.Types.Mixed,
         accession_groups: Schema.Types.Mixed,
         selected_accessions: {
             type: [String],
