@@ -1,4 +1,4 @@
-import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle } from '../../introgression-browser/browser-settings';
+import { BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup } from '../../introgression-browser/browser-settings';
 import { sameElements, ceilTo, floorTo } from '../../utils/utils';
 import { Chromosome } from '../../models/Chromosome';
 
@@ -71,6 +71,18 @@ export class PlotStateService {
     }
     get accession_dictionary(): AccessionDictionary {
         return this.accession_dictionary_source.getValue();
+    }
+
+    /**
+     * Accession groups and their associated colours.
+     */
+    private accession_groups_source = new BehaviorSubject<AccessionGroup[]>(undefined);
+    accession_groups$ = this.accession_groups_source.asObservable();
+    set accession_groups(accession_groups: AccessionGroup[]) {
+        this.accession_groups_source.next(accession_groups);
+    }
+    get accession_groups(): AccessionGroup[] {
+        return this.accession_groups_source.getValue();
     }
 
     /**
