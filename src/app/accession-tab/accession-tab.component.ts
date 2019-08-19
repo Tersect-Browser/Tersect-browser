@@ -94,11 +94,16 @@ export class AccessionTabComponent implements OnInit {
     ngOnInit() {
         this.filtered_accessions = this.accessionOptions;
         this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
-        this.cols = [
-            { field: 'Label', header: 'Label' }
-        ];
+        this.cols = this.extractColumns(this.accessionOptions);
         this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
+    }
+
+    extractColumns(infos: AccessionInfo[]): { field: string, header: string }[] {
+        return Object.keys(infos[0]).filter((col) => col !== 'id' )
+                                    .map((col) => ({
+            field: col, header: col
+        }));
     }
 
     headerCheckboxChange($event: boolean) {
