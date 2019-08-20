@@ -182,7 +182,7 @@ export class IntrogressionPlotService implements OnDestroy {
                 this.tersectBackendService
                     .getRefDistanceBins(ds, ref, chrom.name,
                                         interval[0], interval[1], binsize)
-            ),
+            )
         );
 
         const updated_accessions$ = this.plotState.accessions$.pipe(
