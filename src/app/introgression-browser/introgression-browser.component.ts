@@ -258,11 +258,11 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     }
 
     updateAccessions() {
+        this.plotState.accessions = this.widget_accessions.slice(0);
+        this.plotState.accession_groups = this.widget_accession_groups;
         if (!this.widget_accessions.includes(this.plotState.reference)) {
             this.plotState.reference = this.widget_accessions[0];
         }
-        this.plotState.accessions = this.widget_accessions.slice(0);
-        this.plotState.accession_groups = this.widget_accession_groups;
     }
 
     updateBinsize() {
