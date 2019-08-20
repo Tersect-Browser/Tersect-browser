@@ -1,6 +1,6 @@
 import { TreeNode, treeToSortedList } from '../../clustering/clustering';
 import { parseNewick } from '../../clustering/newick-parser';
-import { ceilTo, floorTo, formatRegion } from '../../utils/utils';
+import { ceilTo, floorTo, formatRegion, sameElements } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { PlotPosition } from '../../models/PlotPosition';
@@ -235,27 +235,38 @@ export class IntrogressionPlotService implements OnDestroy {
         this.plot_data$ = combineLatest(ref_distance_bins$,
                                         phenTree$,
                                         gaps$).pipe(
-            filter((inputs) =>
-                !inputs.some(isNullOrUndefined)
-            ),
+            filter((inputs) => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
-            filter(([ref_dist, tree_output, ]) =>
-                ref_dist['region'] === formatRegion(tree_output.query
-                                                               .chromosome_name,
-                                                    tree_output.query
-                                                               .interval[0],
-                                                    tree_output.query
-                                                               .interval[1])
-                && ref_dist['region'].split(':')[0] === this.plotState
-                                                            .chromosome.name
-                && ref_dist['reference'] === this.plotState.reference
-            )
+            filter(([ref_dist, tree_output, ]) => {
+                return this.binsMatchTree(ref_dist, tree_output);
+            })
         );
 
         this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
             this.plot_data_sub = this.plot_data$.subscribe(this.generate_plot);
         });
+    }
+
+    /**
+     * Verify if reference distance bins match the tree in terms of chromosome
+     * region and included accessions used.
+     */
+    private binsMatchTree(ref_dist: any, tree_output: IPheneticTree): boolean {
+        const tree_region = formatRegion(tree_output.query.chromosome_name,
+                                         tree_output.query.interval[0],
+                                         tree_output.query.interval[1]);
+        const region_match = ref_dist['region'] === tree_region
+                             && (ref_dist['region'].split(':')[0]
+                                === this.plotState.chromosome.name)
+                             && ref_dist['reference']
+                                === this.plotState.reference;
+        return region_match;
+        /*if (!region_match) {
+            return false;
+        }
+        return sameElements(Object.keys(ref_dist['bins']),
+                            tree_output.query.accessions);*/
     }
 
     ngOnDestroy() {
