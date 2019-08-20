@@ -16,8 +16,8 @@ import { TreeQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
 import { formatRegion } from '../app/utils/utils';
-import { fromEvent, concat } from 'rxjs';
-import { map, takeWhile, tap, take, last } from 'rxjs/operators';
+import { fromEvent, concat, from, merge } from 'rxjs';
+import { map, takeWhile, tap, take, last, takeUntil, switchMap, mergeMap, reduce, concatMap, throttleTime } from 'rxjs/operators';
 
 export const router = Router();
 
@@ -272,35 +272,34 @@ router.route('/query/:dataset_id/tree')
 function create_rapidnj_tree(db_query, phylip_file: string) {
     const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
 
-    let newick_output = '';
+    const stdout_close$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
+    const stderr_close$ = fromEvent(rapidnj.stderr, 'close').pipe(take(1));
 
     const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
+        takeUntil(stderr_close$),
+        // throttleTime(100),
         map((data) => {
             const status_updates = data.toString().trim().split(' ');
             const percentage = status_updates[status_updates.length - 1].trim();
             return percentage;
         }),
-        takeWhile((percentage: string) => percentage !== '100.00%', true),
         map((percentage) => `Building tree: ${percentage}`),
-        tap(async (status) => {
-            await PheneticTree.updateOne(db_query, { status: status }).exec();
-        })
+        map((status_update) => ({ status: status_update }))
     );
 
-    const stdout$ = fromEvent(rapidnj.stdout, 'data').pipe(
-        map(chunk => chunk.toString()),
-        takeWhile(chunk => chunk.indexOf('\\n') !== -1, true),
-        tap((chunk) => { newick_output += chunk.toString(); })
-    );
-
-    const close$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
-
-    concat(progress$, stdout$, close$).pipe(last()).subscribe(() => {
-        PheneticTree.updateOne(db_query, {
+    const result$ = fromEvent(rapidnj.stdout, 'data').pipe(
+        takeUntil(stdout_close$),
+        reduce((newick_output, chunk) => newick_output + chunk, ''),
+        map((newick_output) => ({
             status: 'ready',
             tree_newick: newick_output
-        }).exec();
-    });
+        }))
+    );
+
+    merge(progress$, result$).pipe(
+        concatMap((update) => PheneticTree.updateOne(db_query, update))
+    ).subscribe(() => {});
+
 }
 
 /**
