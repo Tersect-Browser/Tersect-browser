@@ -189,7 +189,7 @@ export class IntrogressionPlotService implements OnDestroy {
             filter((accessions) => !isNullOrUndefined(accessions)),
             filter(this.validateInputs),
             tap(this.startLoading),
-            debounceTime(this.DEBOUNCE_TIME),
+            debounceTime(this.DEBOUNCE_TIME)
         );
 
         const phenTree$ = combineLatest(this.plotState.dataset_id$,
@@ -229,18 +229,17 @@ export class IntrogressionPlotService implements OnDestroy {
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
             switchMap(([ds, chrom]) => this.tersectBackendService
-                                           .getGapIndex(ds, chrom.name)),
+                                           .getGapIndex(ds, chrom.name))
         );
 
         this.plot_data$ = combineLatest(ref_distance_bins$,
                                         phenTree$,
-                                        updated_accessions$,
                                         gaps$).pipe(
             filter((inputs) =>
                 !inputs.some(isNullOrUndefined)
             ),
             tap(this.startLoading),
-            filter(([ref_dist, tree_output, , ]) =>
+            filter(([ref_dist, tree_output, ]) =>
                 ref_dist['region'] === formatRegion(tree_output.query
                                                                .chromosome_name,
                                                     tree_output.query
@@ -265,11 +264,10 @@ export class IntrogressionPlotService implements OnDestroy {
         }
     }
 
-    private generate_plot = ([ref_dist, tree_output,
-                              accessions, gaps]) => {
+    private generate_plot = ([ref_dist, tree_output, gaps]) => {
         this.distanceBins = ref_dist['bins'];
-        if (!sameElements(accessions, this.plotState.sorted_accessions)
-            || !deepEqual(this.phenTree.query, tree_output.query)) {
+        if (!deepEqual(this.phenTree.query, tree_output.query)) {
+            // Tree updated
             this.phenTree = {
                 query: tree_output.query,
                 tree: parseNewick(tree_output.tree_newick, true)
@@ -280,7 +278,7 @@ export class IntrogressionPlotService implements OnDestroy {
             this.generatePlotArray();
             this.resetPosition();
         } else {
-            // Don't reset position if distance matrix did not change
+            // Only distances to reference updated
             this.generatePlotArray();
         }
         this.stopLoading();
