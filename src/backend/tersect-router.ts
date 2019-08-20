@@ -277,7 +277,7 @@ function create_rapidnj_tree(db_query, phylip_file: string) {
 
     const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
         takeUntil(stderr_close$),
-        // throttleTime(100),
+        throttleTime(500),
         map((data) => {
             const status_updates = data.toString().trim().split(' ');
             const percentage = status_updates[status_updates.length - 1].trim();
@@ -299,7 +299,6 @@ function create_rapidnj_tree(db_query, phylip_file: string) {
     merge(progress$, result$).pipe(
         concatMap((update) => PheneticTree.updateOne(db_query, update))
     ).subscribe(() => {});
-
 }
 
 /**
