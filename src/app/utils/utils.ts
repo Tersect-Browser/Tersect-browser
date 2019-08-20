@@ -137,7 +137,7 @@ export function fixedElementPosition(element: ElementRef): {x: number,
     const left_px = element.nativeElement.style.left;
     const top_px = element.nativeElement.style.top;
     return {
-        x: parseInt(left_px.substring(0, left_px.length - 2)),
-        y: parseInt(top_px.substring(0, top_px.length - 2))
+        x: parseInt(left_px.substring(0, left_px.length - 2), 10),
+        y: parseInt(top_px.substring(0, top_px.length - 2), 10)
     };
 }
