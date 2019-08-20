@@ -16,8 +16,8 @@ import { TreeQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
 import { formatRegion } from '../app/utils/utils';
-import { fromEvent, concat, from, merge } from 'rxjs';
-import { map, takeWhile, tap, take, last, takeUntil, switchMap, mergeMap, reduce, concatMap, throttleTime } from 'rxjs/operators';
+import { fromEvent, merge } from 'rxjs';
+import { map, take, takeUntil, reduce, concatMap, throttleTime } from 'rxjs/operators';
 
 export const router = Router();
 
