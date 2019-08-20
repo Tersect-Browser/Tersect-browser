@@ -1,6 +1,6 @@
 import { TreeNode, treeToSortedList } from '../../clustering/clustering';
 import { parseNewick } from '../../clustering/newick-parser';
-import { sameElements, ceilTo, floorTo, formatRegion } from '../../utils/utils';
+import { ceilTo, floorTo, formatRegion } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { PlotPosition } from '../../models/PlotPosition';
