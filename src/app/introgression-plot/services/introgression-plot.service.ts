@@ -167,35 +167,37 @@ export class IntrogressionPlotService implements OnDestroy {
 
     constructor(private plotState: PlotStateService,
                 private tersectBackendService: TersectBackendService) {
-        const ref_distance_bins$ = combineLatest(this.plotState.dataset_id$,
-                                                 this.plotState.reference$,
-                                                 this.plotState.chromosome$,
-                                                 this.plotState.interval$,
-                                                 this.plotState.binsize$).pipe(
-            filter(([ds, ref, chrom, interval, binsize]) =>
-                ![ds, ref, chrom, interval, binsize].some(isNullOrUndefined)
-            ),
-            filter(this.validateInputs),
-            tap(this.startLoading),
-            debounceTime(this.DEBOUNCE_TIME),
-            switchMap(([ds, ref, chrom, interval, binsize]) =>
-                this.tersectBackendService
-                    .getRefDistanceBins(ds, ref, chrom.name,
-                                        interval[0], interval[1], binsize)
-            )
-        );
-
-        const updated_accessions$ = this.plotState.accessions$.pipe(
+        const accessions$ = this.plotState.accessions$.pipe(
             filter((accessions) => !isNullOrUndefined(accessions)),
             filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME)
         );
 
+        const ref_distance_bins$ = combineLatest(this.plotState.dataset_id$,
+                                                 this.plotState.reference$,
+                                                 this.plotState.chromosome$,
+                                                 this.plotState.interval$,
+                                                 this.plotState.binsize$,
+                                                 accessions$).pipe(
+            filter(([ds, ref, chrom, interval, binsize, accs]) =>
+                ![ds, ref, chrom, interval,
+                  binsize, accs].some(isNullOrUndefined)
+            ),
+            filter(this.validateInputs),
+            tap(this.startLoading),
+            debounceTime(this.DEBOUNCE_TIME),
+            switchMap(([ds, ref, chrom, interval, binsize, accs]) =>
+                this.tersectBackendService
+                    .getRefDistanceBins(ds, ref, chrom.name,
+                                        interval[0], interval[1], binsize, accs)
+            )
+        );
+
         const phenTree$ = combineLatest(this.plotState.dataset_id$,
                                         this.plotState.chromosome$,
                                         this.plotState.interval$,
-                                        updated_accessions$,
+                                        accessions$,
                                         this.plotState.binsize$).pipe(
             filter(([ds, chrom, interval, accessions, binsize]) => {
                     return ![ds, chrom, interval,

@@ -21,15 +21,17 @@ export class TersectBackendService {
      * chromosomal interval.
      *
      * @param dataset_id dataset being used
-     * @param reference reference accession filename
+     * @param reference reference accession id
      * @param chromosome chromosome of interest
      * @param start start position of the interval of interest
      * @param stop stop position of the interval of interest
      * @param binsize size of the bin (in base pairs)
+     * @param accessions accessions included
      */
     getRefDistanceBins(dataset_id: string, reference: string,
                        chromosome: string, start: number, stop: number,
-                       binsize: number): Observable<any[]> {
+                       binsize: number,
+                       accessions: string[]): Observable<any[]> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -39,7 +41,7 @@ export class TersectBackendService {
             chromosome_name: chromosome,
             interval: [start, stop],
             binsize: binsize,
-            accessions: []
+            accessions: accessions
         };
         return this.http.post<any>(query, ref_dist_query, httpOptions);
     }
