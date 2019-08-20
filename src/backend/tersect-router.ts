@@ -176,7 +176,7 @@ router.route('/datasets')
         if (err || isNullOrUndefined(r)) {
             res.json(undefined);
         } else {
-            const output: IDatasetPublic[] = r.map((dataset) => {
+            const output: IDatasetPublic[] = r.map(dataset => {
                 return {
                     dataset_id: dataset._id,
                     view_id: dataset.view_id,
@@ -216,7 +216,7 @@ function exportView(req, res) {
         _id: next_id,
         settings: req.body
     } as any);
-    exported_view.save((err) => {
+    exported_view.save(err => {
         if (err) {
             if (err.code === 11000) {
                 // Duplicate key error, retry
@@ -278,26 +278,26 @@ function create_rapidnj_tree(db_query, phylip_file: string) {
     const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
         takeUntil(stderr_close$),
         throttleTime(500),
-        map((data) => {
+        map(data => {
             const status_updates = data.toString().trim().split(' ');
             const percentage = status_updates[status_updates.length - 1].trim();
             return percentage;
         }),
-        map((percentage) => `Building tree: ${percentage}`),
-        map((status_update) => ({ status: status_update }))
+        map(percentage => `Building tree: ${percentage}`),
+        map(status_update => ({ status: status_update }))
     );
 
     const result$ = fromEvent(rapidnj.stdout, 'data').pipe(
         takeUntil(stdout_close$),
         reduce((newick_output, chunk) => newick_output + chunk, ''),
-        map((newick_output) => ({
+        map(newick_output => ({
             status: 'ready',
             tree_newick: newick_output
         }))
     );
 
     merge(progress$, result$).pipe(
-        concatMap((update) => PheneticTree.updateOne(db_query, update))
+        concatMap(update => PheneticTree.updateOne(db_query, update))
     ).subscribe(() => {});
 }
 

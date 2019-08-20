@@ -9,7 +9,7 @@ export function sameElements(arrA: any[], arrB: any[]): boolean {
     if (isNullOrUndefined(arrA) || isNullOrUndefined(arrB)) { return false; }
     return arrA === arrB
            || (arrA.length === arrB.length &&
-               arrA.every((element) => arrB.includes(element)));
+               arrA.every(element => arrB.includes(element)));
 }
 
 /**
@@ -53,7 +53,7 @@ export function formatPosition(genome_position: number,
 export function findClosest(x: number, choices: number[]): number {
     let result = NaN;
     let min_distance = Infinity;
-    choices.forEach((choice) => {
+    choices.forEach(choice => {
         const dist = Math.abs(x - choice);
         if (dist < min_distance) {
             min_distance = dist;

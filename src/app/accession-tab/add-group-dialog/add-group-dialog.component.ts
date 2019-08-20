@@ -80,7 +80,7 @@ export class AddGroupDialogComponent {
     }
 
     validateGroupName(group_name: string) {
-        if (this.accessionGroups.some((grp) => grp.name === group_name)) {
+        if (this.accessionGroups.some(grp => grp.name === group_name)) {
             this.error_message = 'Group name already in use';
         } else {
             this.error_message = '';

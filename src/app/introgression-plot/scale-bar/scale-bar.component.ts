@@ -218,7 +218,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         }
 
         const unlisten_drag_move = this.renderer.listen('window', 'mousemove',
-                                                        (event) => {
+                                                        event => {
             this.drag_state.event = event;
             this.drag_state.current_position = {
                 x: event.clientX,
@@ -227,7 +227,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
             this.dragActionGlobal(this.drag_state);
         });
         const unlisten_drag_stop = this.renderer.listen('window', 'mouseup',
-                                                        (event) => {
+                                                        event => {
             this.drag_state.event = event;
             this.dragStopActionGlobal(this.drag_state);
             unlisten_drag_stop();
@@ -283,7 +283,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
             const unlisten_highlight_clear = this.renderer.listen('window',
                                                                   'click',
-                                                                  (event) => {
+                                                                  event => {
                 const tags = extractTags(event.target);
 
                 // Clear highlight and listener if the user clicked a menu link

@@ -100,8 +100,8 @@ export class AccessionTabComponent implements OnInit {
     }
 
     extractColumns(infos: AccessionInfo[]): { field: string, header: string }[] {
-        return Object.keys(infos[0]).filter((col) => col !== 'id' )
-                                    .map((col) => ({
+        return Object.keys(infos[0]).filter(col => col !== 'id' )
+                                    .map(col => ({
             field: col, header: col
         }));
     }
@@ -157,7 +157,7 @@ export class AccessionTabComponent implements OnInit {
             if (sort_settings.sortField === 'selected') {
                 const selected: AccessionInfo[] = [];
                 const unselected: AccessionInfo[] = [];
-                accessions.forEach((acc) => {
+                accessions.forEach(acc => {
                     if (this.selectedAccessions.includes(acc.id)) {
                         selected.push(acc);
                     } else {

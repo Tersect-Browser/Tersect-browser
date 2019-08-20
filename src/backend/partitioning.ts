@@ -105,7 +105,7 @@ function partitionInterval(input: Interval,
         part_size = partition_sizes.pop();
         const new_indexed: Interval[] = [];
         const new_nonindexed: Interval[] = [];
-        intervals.nonindexed.forEach((inter) => {
+        intervals.nonindexed.forEach(inter => {
             const new_inter = _partitionInterval(inter, part_size);
             new_indexed.push(...new_inter.indexed);
             new_nonindexed.push(...new_inter.nonindexed);

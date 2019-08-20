@@ -228,7 +228,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const subtree_ypos = [];
 
         if (subtree.children.length) {
-            subtree.children.forEach((child) => {
+            subtree.children.forEach(child => {
                 const child_xpos = base_xpos + this.getEdgeLength(child)
                                                * scale;
                 this._drawLabelTree(child, child_xpos, ctx,
