@@ -18,6 +18,7 @@ import { partitionQuery } from './partitioning';
 import { formatRegion } from '../app/utils/utils';
 import { fromEvent, merge } from 'rxjs';
 import { map, take, takeUntil, reduce, concatMap, throttleTime } from 'rxjs/operators';
+import { RefDistQuery } from '../app/models/RefDistQuery';
 
 export const router = Router();
 
@@ -126,25 +127,27 @@ router.route('/query/:dataset_id/gaps/:chromosome')
     });
 });
 
-router.route('/query/:dataset_id/dist/:accession/:chromosome/:start/:stop/:binsize')
-      .get((req, res) => {
-    const accession = req.params.accession;
-    const chromosome = req.params.chromosome;
-    const start_pos = parseInt(req.params.start, 10);
-    const stop_pos = parseInt(req.params.stop, 10);
-    const binsize = parseInt(req.params.binsize, 10);
+router.route('/query/:dataset_id/dist')
+      .post((req, res) => {
     const options = {
         maxBuffer: 200 * 1024 * 1024 // 200 megabytes
     };
 
     const tsi_location = res.locals.dataset.tsi_location;
+    const ref_dist_query: RefDistQuery = req.body;
 
-    const region = `${chromosome}:${start_pos}-${stop_pos}`;
-    const tersect_command = `tersect dist -j ${tsi_location} -a "${accession}" \
+    const region = formatRegion(ref_dist_query.chromosome_name,
+                                ref_dist_query.interval[0],
+                                ref_dist_query.interval[1]);
+
+    const reference = ref_dist_query.reference;
+    const binsize = ref_dist_query.binsize;
+
+    const tersect_command = `tersect dist -j ${tsi_location} -a "${reference}" \
 ${region} -B ${binsize}`;
 
     const output = {
-        reference: accession,
+        reference: reference,
         region: region,
         bins: {}
     };

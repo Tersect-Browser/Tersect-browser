@@ -8,6 +8,7 @@ import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
 import { IPheneticTree } from '../../backend/db/phenetictree';
+import { RefDistQuery } from '../models/RefDistQuery';
 
 @Injectable()
 export class TersectBackendService {
@@ -20,18 +21,27 @@ export class TersectBackendService {
      * chromosomal interval.
      *
      * @param dataset_id dataset being used
-     * @param accession reference accession filename
+     * @param reference reference accession filename
      * @param chromosome chromosome of interest
      * @param start start position of the interval of interest
      * @param stop stop position of the interval of interest
      * @param binsize size of the bin (in base pairs)
      */
-    getRefDistanceBins(dataset_id: string, accession: string,
+    getRefDistanceBins(dataset_id: string, reference: string,
                        chromosome: string, start: number, stop: number,
                        binsize: number): Observable<any[]> {
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/dist/\
-${accession}/${chromosome}/${start}/${stop}/${binsize}`;
-        return this.http.get<any>(query);
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        const query = `http://localhost:8060/tbapi/query/${dataset_id}/dist`;
+        const ref_dist_query: RefDistQuery = {
+            reference: reference,
+            chromosome_name: chromosome,
+            interval: [start, stop],
+            binsize: binsize,
+            accessions: []
+        };
+        return this.http.post<any>(query, ref_dist_query, httpOptions);
     }
 
     /**
