@@ -52,14 +52,6 @@ router.use((req, res, next) => {
     next();
 });
 
-function init_distance_matrix(sample_num: number) {
-    const output = { matrix: Array(sample_num), samples: [] };
-    for (let i = 0; i < output.matrix.length; i++) {
-        output.matrix[i] = Array(sample_num).fill(0);
-    }
-    return output;
-}
-
 router.use('/query/:dataset_id', (req, res, next) => {
     Dataset.findOne({ _id: req.params.dataset_id })
            .exec((err, dataset: IDataset) => {
