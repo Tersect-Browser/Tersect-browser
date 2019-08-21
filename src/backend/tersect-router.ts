@@ -135,33 +135,35 @@ router.route('/query/:dataset_id/dist')
     const reference = ref_dist_query.reference;
     const binsize = ref_dist_query.binsize;
 
-    const tersect_command = `tersect dist -j ${tsi_location} -a "${reference}" \
-${region} -B ${binsize}`;
+    write_accessions(ref_dist_query.accessions).then((acc_file) => {
+        const tersect_command = `tersect dist -j ${tsi_location} \
+-a "${reference}" --b-list-file ${acc_file} ${region} -B ${binsize}`;
 
-    const output = {
-        reference: reference,
-        region: region,
-        bins: {}
-    };
+        const output = {
+            reference: reference,
+            region: region,
+            bins: {}
+        };
 
-    exec(tersect_command, options, (err, stdout, stderr) => {
-        if (err) {
-            res.json(err);
-        } else if (stderr) {
-            res.json(stderr);
-        } else {
-            const tersect_output = JSON.parse(stdout);
-            const accessions = tersect_output['columns'];
-            accessions.forEach(accession_name => {
-                output.bins[accession_name] = [];
-            });
-            tersect_output['matrix'].forEach(bin_matrix => {
-                bin_matrix[0].forEach((dist: number, i: number) => {
-                    output.bins[accessions[i]].push(dist);
+        exec(tersect_command, options, (err, stdout, stderr) => {
+            if (err) {
+                res.json(err);
+            } else if (stderr) {
+                res.json(stderr);
+            } else {
+                const tersect_output = JSON.parse(stdout);
+                const accessions = tersect_output['columns'];
+                accessions.forEach(accession_name => {
+                    output.bins[accession_name] = [];
                 });
-            });
-            res.json(output);
-        }
+                tersect_output['matrix'].forEach(bin_matrix => {
+                    bin_matrix[0].forEach((dist: number, i: number) => {
+                        output.bins[accessions[i]].push(dist);
+                    });
+                });
+                res.json(output);
+            }
+        });
     });
 });
 
@@ -301,7 +303,7 @@ function create_rapidnj_tree(db_query, phylip_file: string) {
  */
 async function write_accessions(accessions: string[]): Promise<string> {
     const output_file = fileSync();
-    await promisify(fs.writeFile)(output_file.name, accessions.join('\n'));
+    await promisify(fs.writeFile)(output_file.name, accessions.join('\n') + '\n');
     return output_file.name;
 }
 

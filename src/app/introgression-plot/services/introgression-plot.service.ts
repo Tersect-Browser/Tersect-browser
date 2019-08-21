@@ -263,12 +263,11 @@ export class IntrogressionPlotService implements OnDestroy {
                                 === this.plotState.chromosome.name)
                              && ref_dist['reference']
                                 === this.plotState.reference;
-        return region_match;
-        /*if (!region_match) {
+        if (!region_match) {
             return false;
         }
         return sameElements(Object.keys(ref_dist['bins']),
-                            tree_output.query.accessions);*/
+                            tree_output.query.accessions);
     }
 
     ngOnDestroy() {
