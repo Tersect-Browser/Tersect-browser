@@ -15,7 +15,7 @@ from tersectutils import get_accession_names, rename_accession
 # Supporting up to two billion views
 MAX_VIEW_ID = 2000000000
 
-def add_default_view(cfg, client, dataset_id, accession_dictionary):
+def add_default_view(cfg, client, dataset_id, accession_infos):
     view_id = randomHash(cfg['salt'], MAX_VIEW_ID)
     views = client[cfg['db_name']][cfg['view_collection']]
     try:
@@ -23,16 +23,16 @@ def add_default_view(cfg, client, dataset_id, accession_dictionary):
             '_id': view_id,
             'settings': {
                 'dataset_id': dataset_id,
-                'accession_dictionary': accession_dictionary
+                'accession_infos': accession_infos
             }
         })
         return view_id
     except errors.DuplicateKeyError:
-        return add_default_view(cfg, client, dataset_id, accession_dictionary)
+        return add_default_view(cfg, client, dataset_id, accession_infos)
 
 # Fixes accession names by removing forbidden characters (spaces, periods, and
-# dollar signs) and returns  a dictionary which maps the new names (as keys)
-# to the old names (as values).
+# dollar signs) and returns a dictionary which maps the old names (as keys)
+# to the new names (as values).
 def process_accession_names(tsi_file):
     accessions = get_accession_names(tsi_file)
     accession_dictionary = dict()
@@ -46,8 +46,18 @@ def process_accession_names(tsi_file):
                 fixed = base_fixed + '_' + str(count_fixed)
                 count_fixed += 1
             rename_accession(tsi_file, acc, fixed)
-        accession_dictionary[fixed] = acc
+        accession_dictionary[acc] = fixed
     return accession_dictionary
+
+# Creates an array of accession information for the dataset
+def build_accession_infos(acc_name_map, info_file=None):
+    info_dict = dict()
+    for old_name in acc_name_map:
+        info_dict[old_name] = {
+            'id': acc_name_map[old_name],
+            'Label': old_name
+        }
+    return list(info_dict.values())
 
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
                 verbose=False):
@@ -58,20 +68,20 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
     if not os.path.exists(local_db_location):
         os.makedirs(local_db_location)
 
-    local_tsi_path = os.path.join(local_db_location,
-                                  os.path.basename(tersect_db_file))
-    shutil.copyfile(tersect_db_file, local_tsi_path)
-
-    accession_dictionary = process_accession_names(local_tsi_path)
-
     client = MongoClient(cfg['hostname'], cfg['port'])
     datasets = client[cfg['db_name']][cfg['dataset_collection']]
+    trees = client[cfg['db_name']]['trees']
+    views = client[cfg['db_name']]['views']
 
-    if (datasets.find_one({'_id': dataset_id}) is not None):
+    existing_dataset = datasets.find_one({'_id': dataset_id})
+    if (existing_dataset is not None):
         if force:
             if verbose:
                 print("Overwriting dataset '%s'..." % dataset_id)
+            os.remove(existing_dataset['tsi_location'])
             datasets.delete_many({'_id': dataset_id})
+            trees.delete_many({'dataset_id': dataset_id})
+            views.delete_many({'settings.dataset_id': dataset_id})
         else:
             if verbose:
                 print("Dataset '%s' already exists.\n"
@@ -80,7 +90,14 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
             client.close()
             return
 
-    view_id = add_default_view(cfg, client, dataset_id, accession_dictionary)
+    local_tsi_path = os.path.join(local_db_location,
+                                  os.path.basename(tersect_db_file))
+    shutil.copyfile(tersect_db_file, local_tsi_path)
+
+    acc_name_map = process_accession_names(local_tsi_path)
+    accession_infos = build_accession_infos(acc_name_map)
+
+    view_id = add_default_view(cfg, client, dataset_id, accession_infos)
 
     ds = {
         '_id': dataset_id,
