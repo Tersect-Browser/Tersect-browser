@@ -68,3 +68,6 @@ def merge_phylip_files(filenames, negative_filenames=None,
 
     output_file.close()
     return output_file.name
+
+def invert_dict(d):
+    return dict(zip(d.values(), d.keys()))
