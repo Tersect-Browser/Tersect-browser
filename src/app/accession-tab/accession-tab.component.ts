@@ -189,7 +189,7 @@ export class AccessionTabComponent implements OnInit {
             }, []);
             acc_options = acc.map((acc_id: string) => ({
                 id: acc_id,
-                name: this.accessionDictionary[acc_id]
+                Label: this.accessionDictionary[acc_id].label
             }));
         }
 
