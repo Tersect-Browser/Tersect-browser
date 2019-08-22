@@ -77,6 +77,15 @@ def load_groups(groups_filepath, acc_name_map=None):
                     group['accessions'][i] = acc_name_map[old_name]
     return groups
 
+def remove_dataset_matrices(cfg, dataset_id):
+    client = MongoClient(cfg['hostname'], cfg['port'])
+    matrices = client[cfg['db_name']]['matrices']
+    for matrix in matrices.find({'dataset_id': dataset_id}):
+        if (os.path.isfile(matrix['matrix_file'])):
+            os.remove(matrix['matrix_file'])
+    matrices.delete_many({'dataset_id': dataset_id})
+    client.close()
+
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
                 groups_file=None, force=False, verbose=False):
     if verbose:
@@ -100,6 +109,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
             datasets.delete_many({'_id': dataset_id})
             trees.delete_many({'dataset_id': dataset_id})
             views.delete_many({'settings.dataset_id': dataset_id})
+            remove_dataset_matrices(cfg, dataset_id)
         else:
             if verbose:
                 print("Dataset '%s' already exists.\n"
