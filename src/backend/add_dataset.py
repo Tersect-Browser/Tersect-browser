@@ -62,14 +62,18 @@ def build_accession_infos(acc_name_map, info_file=None):
         }
     return list(info_dict.values())
 
-def load_groups(groups_filepath, acc_name_map):
+def load_groups(groups_filepath, acc_name_map=None):
     if groups_filepath is None:
         return None
     with open(groups_filepath, 'r') as groups_file:
         groups = json.load(groups_file)['groups']
-    for group in groups:
-        group['accessions'] = [ acc_name_map[old_name]
-                                for old_name in group['accessions'] ]
+    if acc_name_map is not None:
+        # Replace old accession names with new names
+        for group in groups:
+            for name in group['accessions']:
+                if name in acc_name_map:
+                    group['accessions'] = [ acc_name_map[name]
+                                            for name in group['accessions'] ]
     return groups
 
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
