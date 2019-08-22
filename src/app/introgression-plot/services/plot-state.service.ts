@@ -6,7 +6,7 @@ import { sameElements, ceilTo, floorTo } from '../../utils/utils';
 import { Chromosome } from '../../models/Chromosome';
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject ,  Subject, ReplaySubject } from 'rxjs';
+import { BehaviorSubject , Subject } from 'rxjs';
 
 @Injectable()
 export class PlotStateService {
