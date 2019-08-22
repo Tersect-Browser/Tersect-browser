@@ -136,7 +136,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
      */
     formatAccessionOptionsSimple(accession_ids: string[]): SelectItem[] {
         return accession_ids.map((acc: string) => ({
-            label: this.plotState.accession_dictionary[acc],
+            label: this.plotState.accession_dictionary[acc].label,
             value: acc
         }));
     }

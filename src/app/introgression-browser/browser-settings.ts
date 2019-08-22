@@ -4,7 +4,10 @@ export type AccessionDisplayStyle = 'labels' | 'tree_simple'
                                     | 'tree_linear';
 
 export interface AccessionDictionary {
-    [internal_name: string]: string;
+    [internal_name: string]: {
+        label: string;
+        colors?: string[];
+    };
 }
 
 export interface AccessionInfo {
@@ -19,7 +22,10 @@ export interface AccessionInfo {
 export function extractAccessionDictionary(infos: AccessionInfo[]): AccessionDictionary {
     const dict: AccessionDictionary = {};
     infos.forEach((info: AccessionInfo) => {
-        dict[info.id] = info.Label;
+        dict[info.id] = {
+            label: info.Label,
+            colors: []
+        };
     });
     return dict;
 }
