@@ -43,6 +43,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.full_redraw = combineLatest(this.plotState.accession_style$,
                                          this.plotState.zoom_level$,
+                                         this.plotState.accession_dictionary$,
                                          this.plotService.plot_position_source,
                                          this.plotService.plot_array_source)
                                          .subscribe(() => {

@@ -81,12 +81,13 @@ export class PlotStateService {
     /**
      * Dictionary of names to be used for accessions.
      */
-    private _accession_dictionary: AccessionDictionary;
+    private accession_dictionary_source = new BehaviorSubject<AccessionDictionary>(undefined);
+    accession_dictionary$ = this.accession_dictionary_source.asObservable();
     set accession_dictionary(dict: AccessionDictionary) {
-        this._accession_dictionary = dict;
+        this.accession_dictionary_source.next(dict);
     }
     get accession_dictionary(): AccessionDictionary {
-        return this._accession_dictionary;
+        return this.accession_dictionary_source.getValue();
     }
 
     /**

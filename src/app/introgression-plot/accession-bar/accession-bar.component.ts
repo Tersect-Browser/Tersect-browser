@@ -5,7 +5,7 @@ import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotStateService } from '../services/plot-state.service';
 import { TreeQuery } from '../../models/TreeQuery';
-import { AccessionDisplayStyle } from '../../introgression-browser/browser-settings';
+import { AccessionDisplayStyle, AccessionDictionary } from '../../introgression-browser/browser-settings';
 
 import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { isNullOrUndefined } from 'util';
@@ -18,6 +18,7 @@ interface StoredAccessionBarState {
     zoom_level: number;
     tree_query: TreeQuery;
     container_width: number;
+    accession_dictionary: AccessionDictionary;
 }
 
 @Component({
@@ -67,7 +68,8 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         accession_style: undefined,
         container_width: undefined,
         tree_query: undefined,
-        zoom_level: undefined
+        zoom_level: undefined,
+        accession_dictionary: undefined
     };
 
     get gui_margins() {
@@ -155,7 +157,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                !== this.plotState.accession_style
             || this.stored_state.container_width !== container_width
             || !deepEqual(this.stored_state.tree_query,
-                          this.plotService.phenTree.query)) {
+                          this.plotService.phenTree.query)
+            || !deepEqual(this.stored_state.accession_dictionary,
+                          this.plotState.accession_dictionary)) {
             return true;
         }
 
@@ -187,6 +191,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.stored_state.container_width = this.getContainerWidth();
         this.stored_state.tree_query = this.plotService.phenTree.query;
         this.stored_state.zoom_level = this.plotState.zoom_level;
+        this.stored_state.accession_dictionary = this.plotState.accession_dictionary;
     }
 
     draw() {
