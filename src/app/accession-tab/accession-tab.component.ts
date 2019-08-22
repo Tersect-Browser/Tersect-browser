@@ -6,7 +6,7 @@ import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
 import { Table } from 'primeng/table';
-import { AccessionDictionary, AccessionGroup, AccessionInfo, extractAccessionDictionary } from '../introgression-browser/browser-settings';
+import { AccessionDictionary, AccessionGroup, AccessionInfo, extractAccessionLabels } from '../introgression-browser/browser-settings';
 
 interface FilterSet {
     [s: string]: FilterMetadata;
@@ -43,7 +43,7 @@ export class AccessionTabComponent implements OnInit {
     set accessionOptions(acc_infos: AccessionInfo[]) {
         this._accessionOptions = acc_infos;
         this.accessionDictionary = {};
-        this.accessionDictionary = extractAccessionDictionary(acc_infos);
+        this.accessionDictionary = extractAccessionLabels(acc_infos);
     }
     get accessionOptions(): AccessionInfo[] {
         return this._accessionOptions;

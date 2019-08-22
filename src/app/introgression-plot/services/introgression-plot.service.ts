@@ -158,10 +158,24 @@ export class IntrogressionPlotService implements OnDestroy {
     getAccessionLabel(accession: string): string {
         if (isNullOrUndefined(this.plotState.accession_dictionary)) {
             return accession;
-        } else if (accession in this.plotState.accession_dictionary) {
+        } else if (accession in this.plotState.accession_dictionary
+                   && 'label' in this.plotState.accession_dictionary[accession]) {
             return this.plotState.accession_dictionary[accession].label;
         } else {
             return accession;
+        }
+    }
+
+    getAccessionColors(accession: string): string[] {
+        if (isNullOrUndefined(this.plotState.accession_dictionary)) {
+            // return undefined;
+            return [ '#000000' ];
+        } else if (accession in this.plotState.accession_dictionary
+                   && 'colors' in this.plotState.accession_dictionary[accession]) {
+            return this.plotState.accession_dictionary[accession].colors;
+        } else {
+            // return undefined;
+            return [ '#000000' ];
         }
     }
 

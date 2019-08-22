@@ -1,6 +1,6 @@
 import {
     BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup,
-    AccessionInfo, extractAccessionDictionary
+    AccessionInfo, extractAccessionLabels, mergeDictionaries, extractAccessionColors
 } from '../../introgression-browser/browser-settings';
 import { sameElements, ceilTo, floorTo } from '../../utils/utils';
 import { Chromosome } from '../../models/Chromosome';
@@ -70,7 +70,9 @@ export class PlotStateService {
     accession_infos$ = this.accession_infos_source.asObservable();
     set accession_infos(accession_infos: AccessionInfo[]) {
         this.accession_infos_source.next(accession_infos);
-        this.accession_dictionary = extractAccessionDictionary(accession_infos);
+        const label_dict = extractAccessionLabels(accession_infos);
+        this.accession_dictionary = mergeDictionaries([this.accession_dictionary,
+                                                       label_dict]);
     }
     get accession_infos(): AccessionInfo[] {
         return this.accession_infos_source.getValue();
@@ -94,6 +96,9 @@ export class PlotStateService {
     accession_groups$ = this.accession_groups_source.asObservable();
     set accession_groups(accession_groups: AccessionGroup[]) {
         this.accession_groups_source.next(accession_groups);
+        const color_dict = extractAccessionColors(accession_groups);
+        this.accession_dictionary = mergeDictionaries([this.accession_dictionary,
+                                                      color_dict]);
     }
     get accession_groups(): AccessionGroup[] {
         return this.accession_groups_source.getValue();

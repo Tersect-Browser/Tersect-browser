@@ -258,7 +258,11 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
             });
             ctx.stroke();
         } else {
-            const label = this.plotService.getAccessionLabel(subtree.taxon.name);
+            const label = this.plotService
+                              .getAccessionLabel(subtree.taxon.name);
+            const color = this.plotService
+                              .getAccessionColors(subtree.taxon.name)[0];
+            ctx.fillStyle = color;
             ctx.fillText(label, base_xpos, prev_ypos);
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
@@ -312,6 +316,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         this.plotState.sorted_accessions.forEach((acc, index) => {
+            ctx.fillStyle = this.plotService.getAccessionColors(acc)[0];
             ctx.fillText(this.plotService.getAccessionLabel(acc), 0,
                          index * text_height + this.stored_state
                                                    .canvas_yoffset);
