@@ -67,13 +67,14 @@ def load_groups(groups_filepath, acc_name_map=None):
         return None
     with open(groups_filepath, 'r') as groups_file:
         groups = json.load(groups_file)['groups']
+    print(acc_name_map)
+    print(groups)
     if acc_name_map is not None:
         # Replace old accession names with new names
         for group in groups:
-            for name in group['accessions']:
-                if name in acc_name_map:
-                    group['accessions'] = [ acc_name_map[name]
-                                            for name in group['accessions'] ]
+            for old_name, i in enumerate(group['accessions']):
+                if old_name in acc_name_map:
+                    group['accessions'][i] = acc_name_map[old_name]
     return groups
 
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
