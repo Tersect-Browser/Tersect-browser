@@ -40,6 +40,11 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     readonly GUI_TREE_LINE_DASH_WIDTH = 0.2;
     readonly GUI_TREE_LEFT_MARGIN = 5;
 
+    /**
+     * Width of the color tracks in multiples of the bin width.
+     */
+    readonly GUI_TREE_COLOR_TRACK_WIDTH = 2;
+
     /* Proportion of the width of the plot taken up by accession trees. This
      * should be half of the screen by default.
      */
@@ -185,6 +190,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         } else {
             this.drawLabelTree(ctx);
         }
+        this.drawColorTracks(ctx);
 
         // Save current state
         this.stored_state.accession_style = this.plotState.accession_style;
@@ -192,6 +198,22 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.stored_state.tree_query = this.plotService.phenTree.query;
         this.stored_state.zoom_level = this.plotState.zoom_level;
         this.stored_state.accession_dictionary = this.plotState.accession_dictionary;
+    }
+
+    drawColorTracks(ctx: CanvasRenderingContext2D) {
+        this.plotState.sorted_accessions.forEach((acc_id, row_index) => {
+            const track_width = this.GUI_TREE_COLOR_TRACK_WIDTH
+                                * this.plotService.bin_width;
+            const colors = this.plotService.getAccessionColors(acc_id);
+            colors.forEach((col, j) => {
+                const xpos = this.stored_state.canvas.width
+                             - (j + 1) * track_width;
+                const ypos = row_index * this.plotService.bin_height;
+                ctx.fillStyle = col;
+                ctx.fillRect(xpos, ypos, track_width,
+                             this.plotService.bin_height);
+            });
+        });
     }
 
     draw() {
@@ -265,9 +287,6 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         } else {
             const label = this.plotService
                               .getAccessionLabel(subtree.taxon.name);
-            const color = this.plotService
-                              .getAccessionColors(subtree.taxon.name)[0];
-            ctx.fillStyle = color;
             ctx.fillText(label, base_xpos, prev_ypos);
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
@@ -302,6 +321,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     private getTreeScale(ctx: CanvasRenderingContext2D): number {
         const available_width = this.stored_state.canvas.width
                                 - this.getMaxLabelWidth(ctx)
+                                - this.getColorTracksWidth()
                                 - this.plotService.bin_width
                                 - this.GUI_TREE_LEFT_MARGIN;
         if (this.plotState.accession_style === 'tree_simple') {
@@ -321,7 +341,6 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         this.plotState.sorted_accessions.forEach((acc, index) => {
-            ctx.fillStyle = this.plotService.getAccessionColors(acc)[0];
             ctx.fillText(this.plotService.getAccessionLabel(acc), 0,
                          index * text_height + this.stored_state
                                                    .canvas_yoffset);
@@ -332,7 +351,8 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
         let width: number;
         if (this.plotState.accession_style === 'labels') {
-            width = ceilTo(this.getMaxLabelWidth(ctx),
+            width = ceilTo(this.getMaxLabelWidth(ctx)
+                           + this.getColorTracksWidth(),
                            this.plotService.bin_width);
         } else {
             width = ceilTo(this.getContainerWidth()
@@ -342,6 +362,15 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         canvas.width = width;
         this.canvas.nativeElement.width = width;
         this.plotService.gui_margins.left = width / this.plotService.zoom_factor;
+    }
+
+    /**
+     * Get the total width of the group color tracks.
+     */
+    private getColorTracksWidth() {
+        return this.GUI_TREE_COLOR_TRACK_WIDTH
+               * this.plotService.getMaxColorCount()
+               * this.plotService.bin_width;
     }
 
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {

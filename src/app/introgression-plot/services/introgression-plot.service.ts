@@ -168,15 +168,26 @@ export class IntrogressionPlotService implements OnDestroy {
 
     getAccessionColors(accession: string): string[] {
         if (isNullOrUndefined(this.plotState.accession_dictionary)) {
-            // return undefined;
-            return [ '#000000' ];
+            return [];
         } else if (accession in this.plotState.accession_dictionary
                    && 'colors' in this.plotState.accession_dictionary[accession]) {
             return this.plotState.accession_dictionary[accession].colors;
         } else {
-            // return undefined;
-            return [ '#000000' ];
+            return [];
         }
+    }
+
+    /**
+     * Return highest number of colors assigned to an accession.
+     */
+    getMaxColorCount(): number {
+        let count = 0;
+        Object.values(this.plotState.accession_dictionary).forEach(acc => {
+            if ('colors' in acc && acc.colors.length > count) {
+                count = acc.colors.length;
+            }
+        });
+        return count;
     }
 
     constructor(private plotState: PlotStateService,
