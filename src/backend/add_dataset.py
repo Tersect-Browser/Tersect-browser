@@ -15,16 +15,19 @@ from tersectutils import get_accession_names, rename_accession
 # Supporting up to two billion views
 MAX_VIEW_ID = 2000000000
 
-def add_default_view(cfg, client, dataset_id, accession_infos):
+def add_default_view(cfg, client, dataset_id, accession_infos, groups=None):
     view_id = randomHash(cfg['salt'], MAX_VIEW_ID)
-    views = client[cfg['db_name']][cfg['view_collection']]
+    views = client[cfg['db_name']]['views']
+    settings = {
+        'dataset_id': dataset_id,
+        'accession_infos': accession_infos
+    }
+    if (groups is not None):
+        settings['accession_groups'] = groups
     try:
         views.insert({
             '_id': view_id,
-            'settings': {
-                'dataset_id': dataset_id,
-                'accession_infos': accession_infos
-            }
+            'settings': settings
         })
         return view_id
     except errors.DuplicateKeyError:
@@ -59,8 +62,18 @@ def build_accession_infos(acc_name_map, info_file=None):
         }
     return list(info_dict.values())
 
-def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
-                verbose=False):
+def load_groups(groups_filepath, acc_name_map):
+    if groups_filepath is None:
+        return None
+    with open(groups_filepath, 'r') as groups_file:
+        groups = json.load(groups_file)['groups']
+    for group in groups:
+        group['accessions'] = [ acc_name_map[old_name]
+                                for old_name in group['accessions'] ]
+    return groups
+
+def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
+                groups_file=None, force=False, verbose=False):
     if verbose:
         print("Adding dataset '%s'..." % dataset_id)
 
@@ -96,8 +109,9 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id, force=False,
 
     acc_name_map = process_accession_names(local_tsi_path)
     accession_infos = build_accession_infos(acc_name_map)
+    groups = load_groups(groups_file, acc_name_map)
 
-    view_id = add_default_view(cfg, client, dataset_id, accession_infos)
+    view_id = add_default_view(cfg, client, dataset_id, accession_infos, groups)
 
     ds = {
         '_id': dataset_id,
@@ -118,6 +132,8 @@ parser.add_argument('reference_id', type=str,
                     help='reference genome identifier')
 parser.add_argument('-r', dest='reference_file', default=None, type=str,
                     help='optional reference genome FASTA file')
+parser.add_argument('-g', dest='groups_file', default=None, type=str,
+                    help='optional group JSON file')
 parser.add_argument('-f', required=False, action='store_true',
                     help='force overwrite')
 
@@ -145,7 +161,7 @@ if args.reference_file is not None:
     subprocess.call(command, cwd=cwd)
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
-                      force=args.f, verbose=True)
+                      groups_file=args.groups_file, force=args.f, verbose=True)
 
 command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
 if (args.f):
