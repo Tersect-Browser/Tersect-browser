@@ -67,12 +67,10 @@ def load_groups(groups_filepath, acc_name_map=None):
         return None
     with open(groups_filepath, 'r') as groups_file:
         groups = json.load(groups_file)['groups']
-    print(acc_name_map)
-    print(groups)
     if acc_name_map is not None:
         # Replace old accession names with new names
         for group in groups:
-            for old_name, i in enumerate(group['accessions']):
+            for i, old_name in enumerate(group['accessions']):
                 if old_name in acc_name_map:
                     group['accessions'][i] = acc_name_map[old_name]
     return groups
