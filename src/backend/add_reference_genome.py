@@ -9,6 +9,8 @@ from pymongo import ASCENDING, MongoClient
 from timeit import default_timer as timer
 from Bio import SeqIO # requires Biopython
 
+from tbutils import abspath
+
 def extract_gaps(chromosome, min_gap_size, verbose=False):
     sequence = str(chromosome.seq.upper())
     gap_pattern = 'N{%d,}' % min_gap_size
@@ -63,6 +65,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
         print("Index generation completed in: " + str(timer() - start))
 
 parser = argparse.ArgumentParser(description='Add reference genome to Tersect Browser database.')
+parser.add_argument('config_file', type=str, help="config JSON file")
 parser.add_argument('reference_file', type=str, help='reference genome FASTA file')
 parser.add_argument('reference_id', type=str, nargs='?',
                     help='reference genome identifier which will be used internally by Tersect Browser')
@@ -73,10 +76,8 @@ args = parser.parse_args()
 if (args.reference_id is None):
     args.reference_id = os.path.basename(args.reference_file)
 
-cwd = os.path.dirname(os.path.realpath(__file__))
-cfg_path = os.path.join(cwd, 'config.json')
-
-with open(cfg_path, 'r') as cfg_file:
+config_file = abspath(args.config_file)
+with open(config_file, 'r') as cfg_file:
     cfg = json.load(cfg_file)
 
 add_reference_genome(cfg, args.reference_file, args.reference_id,

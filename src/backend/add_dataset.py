@@ -79,7 +79,7 @@ def remove_dataset_matrices(cfg, dataset_id):
     client = MongoClient(cfg['hostname'], cfg['port'])
     matrices = client[cfg['db_name']]['matrices']
     for matrix in matrices.find({'dataset_id': dataset_id}):
-        if (os.path.isfile(matrix['matrix_file'])):
+        if os.path.isfile(matrix['matrix_file']):
             os.remove(matrix['matrix_file'])
     matrices.delete_many({'dataset_id': dataset_id})
     client.close()
@@ -90,6 +90,9 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
         print("Adding dataset '%s'..." % dataset_id)
 
     local_db_location = os.path.realpath(cfg['local_db_location'])
+    print('LOCAL')
+    print(local_db_location)
+    print(os.getcwd())
     if not os.path.exists(local_db_location):
         os.makedirs(local_db_location)
 
@@ -103,7 +106,8 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
         if force:
             if verbose:
                 print("Overwriting dataset '%s'..." % dataset_id)
-            os.remove(existing_dataset['tsi_location'])
+            if os.path.isfile(existing_dataset['tsi_location']):
+                os.remove(existing_dataset['tsi_location'])
             datasets.delete_many({'_id': dataset_id})
             trees.delete_many({'dataset_id': dataset_id})
             views.delete_many({'settings.dataset_id': dataset_id})
@@ -138,6 +142,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
     return ds
 
 parser = argparse.ArgumentParser(description='Add dataset to Tersect Browser database.')
+parser.add_argument('config_file', type=str, help="config JSON file")
 parser.add_argument('dataset_id', type=str, help='dataset id')
 parser.add_argument('tersect_db_file', type=str,
                     help='tersect index (tsi) file')
@@ -152,10 +157,11 @@ parser.add_argument('-f', required=False, action='store_true',
 
 args = parser.parse_args()
 
-cwd = os.path.dirname(os.path.realpath(__file__))
-cfg_path = os.path.join(cwd, 'config.json')
-with open(cfg_path, 'r') as cfg_file:
+config_file = abspath(args.config_file)
+with open(config_file, 'r') as cfg_file:
     cfg = json.load(cfg_file)
+
+script_path = os.path.dirname(os.path.realpath(__file__))
 
 tsi_file = abspath(args.tersect_db_file)
 
@@ -168,15 +174,26 @@ if args.reference_file is not None:
     if not os.path.isfile(ref_file):
         print('ERROR: Not a valid reference file: %s' % ref_file)
         exit()
-    command = ['./add_reference_genome.py', ref_file, args.reference_id]
+    command = [
+        os.path.join(script_path, 'add_reference_genome.py'),
+        config_file,
+        ref_file,
+        args.reference_id
+    ]
     if (args.f):
         command.append('-f')
-    subprocess.call(command, cwd=cwd)
+    subprocess.call(command, cwd=os.getcwd())
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       groups_file=args.groups_file, force=args.f, verbose=True)
 
-command = ['./build_tersect_index.py', dataset['_id'], dataset['tsi_location']]
+command = [
+    os.path.join(script_path, 'build_tersect_index.py'),
+    config_file,
+    dataset['_id'],
+    dataset['tsi_location']
+]
 if (args.f):
     command.append('-f')
-subprocess.call(command, cwd=cwd)
+print(command)
+subprocess.call(command, cwd=os.getcwd())

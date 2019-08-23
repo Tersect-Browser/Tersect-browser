@@ -8,7 +8,7 @@ import subprocess
 from pymongo import ASCENDING, MongoClient
 from math import ceil
 from timeit import default_timer as timer
-from tbutils import randomHash, merge_phylip_files, open_phylip_file
+from tbutils import randomHash, merge_phylip_files, open_phylip_file, get_db_location, abspath
 from tersectutils import get_chromosome_sizes
 
 def add_region_index_db(matrices, dataset_id,
@@ -100,8 +100,9 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
             client.close()
             return
 
-    local_db_location = os.path.realpath(cfg['local_db_location'])
+    local_db_location = get_db_location(cfg)
     distmap_db_location = os.path.join(local_db_location, 'distmats')
+
     if not os.path.exists(distmap_db_location):
         os.makedirs(distmap_db_location)
 
@@ -136,6 +137,7 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
         print("Index generation completed in: " + str(timer() - start))
 
 parser = argparse.ArgumentParser(description='Build tersect distance matrix index for dataset.')
+parser.add_argument('config_file', type=str, help="config JSON file")
 parser.add_argument('dataset_id', type=str, help='dataset id')
 parser.add_argument('tsi_file', type=str,
                     help='path to tsi file to build index from')
@@ -143,10 +145,8 @@ parser.add_argument('-f', required=False, action='store_true', help='force dista
 
 args = parser.parse_args()
 
-cwd = os.path.dirname(os.path.realpath(__file__))
-cfg_path = os.path.join(cwd, 'config.json')
-
-with open(cfg_path, 'r') as cfg_file:
+config_file = abspath(args.config_file)
+with open(config_file, 'r') as cfg_file:
     cfg = json.load(cfg_file)
 
 generate_indices(cfg, args.dataset_id, args.tsi_file, args.f, verbose=True)
