@@ -17,6 +17,12 @@ interface SortSettings {
     sortOrder: number;
 }
 
+interface TableColumn {
+    field: string;
+    header: string;
+    width: number;
+}
+
 @Component({
     selector: 'app-accession-tab',
     templateUrl: './accession-tab.component.html',
@@ -71,7 +77,7 @@ export class AccessionTabComponent implements OnInit {
     filtered_accessions: AccessionInfo[];
     virtual_accession_rows: AccessionInfo[];
 
-    cols: any[];
+    cols: TableColumn[];
 
     all_selected: boolean;
 
@@ -99,10 +105,10 @@ export class AccessionTabComponent implements OnInit {
                             === this.selectedAccessions.length;
     }
 
-    extractColumns(infos: AccessionInfo[]): { field: string, header: string }[] {
+    extractColumns(infos: AccessionInfo[]): TableColumn[] {
         return Object.keys(infos[0]).filter(col => col !== 'id' )
                                     .map(col => ({
-            field: col, header: col
+            field: col, header: col, width: 100
         }));
     }
 

@@ -25,7 +25,9 @@
                 <th class="checkbox-cell" [pSortableColumn]="'selected'">
                     <p-sortIcon [field]="'selected'"></p-sortIcon>
                 </th>
-                <th *ngFor="let col of columns" [pSortableColumn]="col.field">
+                <th *ngFor="let col of columns"
+                    [pSortableColumn]="col.field"
+                    [style.width.px]="col.width">
                     {{ col.header }}
                     <p-sortIcon [field]="col.field"></p-sortIcon>
                 </th>
@@ -38,7 +40,7 @@
                         binary="true">
                     </p-checkbox>
                 </th>
-                <th *ngFor="let col of columns">
+                <th *ngFor="let col of columns" [style.width.px]="col.width">
                     <input pInputText type="text" style="width: 100%;"
                         (input)="dt.filter($event.target.value,
                                            col.field,
@@ -51,7 +53,9 @@
                 <td class="checkbox-cell">
                     <p-tableCheckbox [value]="rowData['id']"></p-tableCheckbox>
                 </td>
-                <td *ngFor="let col of columns" class="accession-table-cell">
+                <td *ngFor="let col of columns"
+                    class="accession-table-cell"
+                    [style.width.px]="col.width">
                     {{ rowData[col.field] }}
                 </td>
             </tr>
