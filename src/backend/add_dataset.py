@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import collections
 import csv
 import sys
 import os
@@ -55,21 +56,22 @@ def process_accession_names(tsi_file):
 
 # Creates an array of accession information for the dataset
 def build_accession_infos(acc_name_map, infos_file=None):
-    info_dict = dict()
+    info_dict = collections.OrderedDict()
     for old_name in acc_name_map:
-        info_dict[old_name] = {
+        info_dict[old_name] = collections.OrderedDict({
             'id': acc_name_map[old_name],
             'Label': old_name
-        }
+        })
     if infos_file is not None:
         with open(infos_file, 'r') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if row['id'] in info_dict:
-                    # Update all fields except id
-                    id = row['id']
-                    del row['id']
-                    info_dict[id].update(row)
+                    # Iterating over field names to preserve order
+                    for field in reader.fieldnames:
+                        # Update all fields except id
+                        if field != 'id':
+                            info_dict[row['id']][field] = row[field]
 
             # Adding empty fiels
             for info_id in info_dict:
