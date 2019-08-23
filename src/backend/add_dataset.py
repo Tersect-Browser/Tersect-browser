@@ -182,8 +182,8 @@ with open(config_file, 'r') as cfg_file:
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 tsi_file = abspath(args.tersect_db_file)
-groups_file = abspath(args.groups_file)
-infos_file = abspath(args.infos_file)
+groups_file = None if args.groups_file is None else abspath(args.groups_file)
+infos_file = None if args.infos_file is None else abspath(args.infos_file)
 
 if not os.path.isfile(tsi_file):
     print('ERROR: Not a valid Tersect file: %s' % tsi_file)
