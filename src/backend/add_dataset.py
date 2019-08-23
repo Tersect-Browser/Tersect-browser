@@ -111,7 +111,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
         os.makedirs(local_db_location)
 
     client = MongoClient(cfg['hostname'], cfg['port'])
-    datasets = client[cfg['db_name']][cfg['dataset_collection']]
+    datasets = client[cfg['db_name']]['datasets']
     trees = client[cfg['db_name']]['trees']
     views = client[cfg['db_name']]['views']
 

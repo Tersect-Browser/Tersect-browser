@@ -3,10 +3,6 @@
     "port": 27017,
     "db_name": "tersect",
     "local_db_location": "../../local_db",
-    "dataset_collection": "datasets",
-    "matrix_collection": "matrices",
-    "chromosome_collection": "chromosomes",
-    "view_collection": "views",
     "salt": "tersectsalt",
     "index_partitions": [
         100000000,
