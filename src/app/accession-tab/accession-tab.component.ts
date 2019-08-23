@@ -32,6 +32,9 @@ interface TableColumn {
 export class AccessionTabComponent implements OnInit {
     @ViewChild('dt', { static: true }) dt: Table;
 
+    readonly sort_icon_width = 30;
+    readonly max_column_width = 200;
+
     _selectedAccessions: string[];
     @Input()
     set selectedAccessions(accessions: string[]) {
@@ -106,10 +109,24 @@ export class AccessionTabComponent implements OnInit {
     }
 
     extractColumns(infos: AccessionInfo[]): TableColumn[] {
+        const canvas = document.createElement('canvas');
+        const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+        ctx.font = '12px Arial';
+
         return Object.keys(infos[0]).filter(col => col !== 'id' )
-                                    .map(col => ({
-            field: col, header: col, width: 100
-        }));
+                                    .map(col => {
+            const column_width = Math.max(
+                ctx.measureText(col).width + this.sort_icon_width,
+                ...infos.map(info => ctx.measureText(info[col]).width)
+            );
+
+            return {
+                field: col,
+                header: col,
+                width: column_width > this.max_column_width ? this.max_column_width
+                                                            : column_width
+            };
+        });
     }
 
     headerCheckboxChange($event: boolean) {

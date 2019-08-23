@@ -62,8 +62,10 @@
         </ng-template>
         <ng-template pTemplate="loadingbody" let-columns="columns">
             <tr class="accession-table-row">
-                <td class="loading-container">
-                    Loading...
+                <td class="checkbox-cell loading-container"></td>
+                <td *ngFor="let col of columns"
+                    class="loading-container"
+                    [style.width.px]="col.width">
                 </td>
             </tr>
         </ng-template>
