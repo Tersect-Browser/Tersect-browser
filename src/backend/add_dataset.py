@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import csv
 import sys
 import os
 import argparse
@@ -53,13 +54,29 @@ def process_accession_names(tsi_file):
     return accession_dictionary
 
 # Creates an array of accession information for the dataset
-def build_accession_infos(acc_name_map, info_file=None):
+def build_accession_infos(acc_name_map, infos_file=None):
     info_dict = dict()
     for old_name in acc_name_map:
         info_dict[old_name] = {
             'id': acc_name_map[old_name],
             'Label': old_name
         }
+    if infos_file is not None:
+        with open(infos_file, 'r') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['id'] in info_dict:
+                    # Update all fields except id
+                    id = row['id']
+                    del row['id']
+                    info_dict[id].update(row)
+
+            # Adding empty fiels
+            for info_id in info_dict:
+                for field in reader.fieldnames:
+                    if field not in info_dict[info_id]:
+                        info_dict[info_id][field] = ''
+
     return list(info_dict.values())
 
 def load_groups(groups_filepath, acc_name_map=None):
@@ -85,14 +102,11 @@ def remove_dataset_matrices(cfg, dataset_id):
     client.close()
 
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
-                groups_file=None, force=False, verbose=False):
+                groups_file=None, infos_file=None, force=False, verbose=False):
     if verbose:
         print("Adding dataset '%s'..." % dataset_id)
 
     local_db_location = os.path.realpath(cfg['local_db_location'])
-    print('LOCAL')
-    print(local_db_location)
-    print(os.getcwd())
     if not os.path.exists(local_db_location):
         os.makedirs(local_db_location)
 
@@ -125,7 +139,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
     shutil.copyfile(tersect_db_file, local_tsi_path)
 
     acc_name_map = process_accession_names(local_tsi_path)
-    accession_infos = build_accession_infos(acc_name_map)
+    accession_infos = build_accession_infos(acc_name_map, infos_file)
     groups = load_groups(groups_file, acc_name_map)
 
     view_id = add_default_view(cfg, client, dataset_id, accession_infos, groups)
@@ -152,6 +166,8 @@ parser.add_argument('-r', dest='reference_file', default=None, type=str,
                     help='optional reference genome FASTA file')
 parser.add_argument('-g', dest='groups_file', default=None, type=str,
                     help='optional group JSON file')
+parser.add_argument('-i', dest='infos_file', default=None, type=str,
+                    help='optional extra sample information CSV file')
 parser.add_argument('-f', required=False, action='store_true',
                     help='force overwrite')
 
@@ -164,6 +180,8 @@ with open(config_file, 'r') as cfg_file:
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 tsi_file = abspath(args.tersect_db_file)
+groups_file = abspath(args.groups_file)
+infos_file = abspath(args.infos_file)
 
 if not os.path.isfile(tsi_file):
     print('ERROR: Not a valid Tersect file: %s' % tsi_file)
@@ -185,7 +203,8 @@ if args.reference_file is not None:
     subprocess.call(command, cwd=os.getcwd())
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
-                      groups_file=args.groups_file, force=args.f, verbose=True)
+                      groups_file=groups_file, infos_file=infos_file,
+                      force=args.f, verbose=True)
 
 command = [
     os.path.join(script_path, 'build_tersect_index.py'),
@@ -195,5 +214,4 @@ command = [
 ]
 if (args.f):
     command.append('-f')
-print(command)
 subprocess.call(command, cwd=os.getcwd())
