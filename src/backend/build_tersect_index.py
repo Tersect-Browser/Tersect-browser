@@ -22,7 +22,7 @@ def add_region_index_db(matrices, dataset_id,
     for substart_pos in range(start_pos, end_pos + 1, subpart_size):
         subend_pos = substart_pos + subpart_size - 1
         subregion = '%s:%d-%d' % (chromosome_name, substart_pos, subend_pos)
-        res = matrices.find_one({'region': subregion})
+        res = matrices.find_one({'dataset_id': dataset_id, 'region': subregion})
         if res is not None:
             subregion_files.append(res['matrix_file'])
         else:
