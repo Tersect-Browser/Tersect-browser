@@ -45,12 +45,12 @@ def add_region_index_tersect(matrices, dataset_id,
         print('    Adding index for %s' % region)
     fh = open_phylip_file(location=distmap_db_location)
     subprocess.call(['tersect', 'dist', tersect_db_location, region], stdout=fh)
-    fh.close()
     matrices.insert({
         'dataset_id': dataset_id,
         'region': region,
         'matrix_file': fh.name
     })
+    fh.close()
 
 def generate_partition_indices(cfg, dataset_id, tsi_file,
                                matrices, chrom, part_size,
