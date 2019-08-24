@@ -11,6 +11,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "baseHref" : "/TersectBrowser/",
+            "deployUrl": "/TersectBrowser/",
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
