@@ -6,7 +6,7 @@ import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
 import { Table } from 'primeng/table';
-import { AccessionDictionary, AccessionGroup, AccessionInfo, extractAccessionLabels } from '../introgression-browser/browser-settings';
+import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
 
 interface FilterSet {
     [s: string]: FilterMetadata;
@@ -21,6 +21,10 @@ interface TableColumn {
     field: string;
     header: string;
     width: number;
+}
+
+interface InfoDictionary {
+    [key: string]: AccessionInfo;
 }
 
 @Component({
@@ -51,14 +55,11 @@ export class AccessionTabComponent implements OnInit {
     @Input()
     set accessionOptions(acc_infos: AccessionInfo[]) {
         this._accessionOptions = acc_infos;
-        this.accessionDictionary = {};
-        this.accessionDictionary = extractAccessionLabels(acc_infos);
+        this.infoDictionary = this.extractOptionDictionary(acc_infos);
     }
     get accessionOptions(): AccessionInfo[] {
         return this._accessionOptions;
     }
-
-    accessionDictionary: AccessionDictionary;
 
     _accessionGroups: AccessionGroup[];
     @Input()
@@ -98,6 +99,17 @@ export class AccessionTabComponent implements OnInit {
     }
     get selected_groups(): AccessionGroup[] {
         return this._selected_groups;
+    }
+
+    private infoDictionary: InfoDictionary;
+    extractOptionDictionary(acc_infos: AccessionInfo[]): InfoDictionary {
+        const info_dict = {};
+        acc_infos.forEach(info => {
+            if ('id' in info) {
+                info_dict[info.id] = info;
+            }
+        });
+        return info_dict;
     }
 
     ngOnInit() {
@@ -210,10 +222,9 @@ export class AccessionTabComponent implements OnInit {
                                              g: AccessionGroup) => {
                 return arrayUnion(acc_ids, g.accessions);
             }, []);
-            acc_options = acc.map((acc_id: string) => ({
-                id: acc_id,
-                Label: this.accessionDictionary[acc_id].label
-            }));
+            acc_options = acc.map(
+                (acc_id: string) => this.infoDictionary[acc_id]
+            );
         }
 
         if (!deepEqual($event.filters, this.previous_filters)) {
