@@ -43,7 +43,8 @@
                 <th *ngFor="let col of columns" [style.width.px]="col.width">
                     <app-input-autocomplete
                         [options]="extractColumnOptions(col.field)"
-                        (valueChange)="filterField($event, col.field)">
+                        (valueChange)="filterField($event, col.field)"
+                        appendTo="body">
                     </app-input-autocomplete>
                 </th>
             </tr>

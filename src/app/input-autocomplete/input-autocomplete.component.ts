@@ -11,6 +11,9 @@ export class InputAutocompleteComponent {
     @ViewChild(AutoComplete, { static: true }) ac: AutoComplete;
 
     @Input()
+    appendTo = null;
+
+    @Input()
     options: string[];
 
     @Output()
