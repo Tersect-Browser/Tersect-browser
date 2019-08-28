@@ -114,17 +114,8 @@ export class AccessionTabComponent implements OnInit {
         return info_dict;
     }
 
-    loadColumnSuggestions($event: { originalEvent: Event, query: string },
-                          column: string) {
-        this.dt.filter($event.query, column, 'contains');
-        const query = $event.query.toUpperCase();
-        this.suggestions = uniqueArray(this.filtered_accessions.map(
-            acc => acc[column]
-        )).filter(acc_field => acc_field.toUpperCase().includes(query)).sort();
-    }
-
-    selectSuggestion($event: string, column: string) {
-        this.dt.filter($event, column, 'contains');
+    extractColumnOptions(column: string): string[] {
+        return uniqueArray(this.filtered_accessions.map(acc => acc[column]));
     }
 
     ngOnInit() {
@@ -261,6 +252,10 @@ export class AccessionTabComponent implements OnInit {
         this.virtual_accession_rows = this.filtered_accessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
+    }
+
+    filterField($event: string, column: string) {
+        this.dt.filter($event, column, 'contains');
     }
 
     showAddGroupDialog() {

@@ -1,0 +1,8 @@
+<p-autoComplete
+    [(ngModel)]="value"
+    [suggestions]="suggestions"
+    [style]="{'width': '100%'}"
+    [inputStyle]="{'width': '100%'}"
+    appendTo="body"
+    (completeMethod)="updateSuggestions($event)">
+</p-autoComplete>

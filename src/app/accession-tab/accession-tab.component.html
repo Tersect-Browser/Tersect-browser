@@ -41,14 +41,10 @@
                     </p-checkbox>
                 </th>
                 <th *ngFor="let col of columns" [style.width.px]="col.width">
-                    <p-autoComplete [suggestions]="suggestions"
-                        [style]="{'width': '100%'}"
-                        [inputStyle]="{'width': '100%'}"
-                        appendTo="body"
-                        (completeMethod)="loadColumnSuggestions($event,
-                                                                col.field)"
-                        (onSelect)="selectSuggestion($event, col.field)">
-                    </p-autoComplete>
+                    <app-input-autocomplete
+                        [options]="extractColumnOptions(col.field)"
+                        (valueChange)="filterField($event, col.field)">
+                    </app-input-autocomplete>
                 </th>
             </tr>
         </ng-template>

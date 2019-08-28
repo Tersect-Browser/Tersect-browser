@@ -19,6 +19,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MessageModule } from 'primeng/message';
 import { AccordionModule } from 'primeng/accordion';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { InputAutocompleteModule } from '../input-autocomplete/input-autocomplete.module';
 
 @NgModule({
     declarations: [
@@ -45,7 +46,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         AccordionModule,
         ColorSelectorModule,
         FitWindowModule,
-        AutoCompleteModule
+        InputAutocompleteModule
     ],
     providers: []
 })
