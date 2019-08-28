@@ -4,7 +4,7 @@ import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation, View
 import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
-import { deepCopy, isSubset, arrayUnion, arraySubtract } from '../utils/utils';
+import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray } from '../utils/utils';
 import { Table } from 'primeng/table';
 import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
 
@@ -101,6 +101,8 @@ export class AccessionTabComponent implements OnInit {
         return this._selected_groups;
     }
 
+    suggestions: string[];
+
     private infoDictionary: InfoDictionary;
     extractOptionDictionary(acc_infos: AccessionInfo[]): InfoDictionary {
         const info_dict = {};
@@ -110,6 +112,19 @@ export class AccessionTabComponent implements OnInit {
             }
         });
         return info_dict;
+    }
+
+    loadColumnSuggestions($event: { originalEvent: Event, query: string },
+                          column: string) {
+        this.dt.filter($event.query, column, 'contains');
+        const query = $event.query.toUpperCase();
+        this.suggestions = uniqueArray(this.filtered_accessions.map(
+            acc => acc[column]
+        )).filter(acc_field => acc_field.toUpperCase().includes(query)).sort();
+    }
+
+    selectSuggestion($event: string, column: string) {
+        this.dt.filter($event, column, 'contains');
     }
 
     ngOnInit() {
@@ -262,6 +277,6 @@ export class AccessionTabComponent implements OnInit {
      * Extract category names from array of accession groups.
      */
     extractCategories(groups: AccessionGroup[]): string[] {
-        return Array.from(new Set(groups.map(grp => grp.category))).sort();
+        return uniqueArray(groups.map(grp => grp.category)).sort();
     }
 }

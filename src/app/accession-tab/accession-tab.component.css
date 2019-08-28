@@ -58,3 +58,9 @@
         background-color: rgba(70, 160, 0, 0.1)
     }
 }
+
+.ui-autocomplete-items {
+    font-size: 70%;
+    white-space: nowrap;
+    overflow-x: hidden;
+}
