@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ViewEncapsulation } from '@angular/core';
 import { AutoComplete } from 'primeng/autocomplete';
 
 @Component({
     selector: 'app-input-autocomplete',
     templateUrl: './input-autocomplete.component.html',
-    styleUrls: ['./input-autocomplete.component.css']
+    styleUrls: ['./input-autocomplete.component.css'],
+    encapsulation: ViewEncapsulation.None
 })
 export class InputAutocompleteComponent {
     @ViewChild(AutoComplete, { static: true }) ac: AutoComplete;
