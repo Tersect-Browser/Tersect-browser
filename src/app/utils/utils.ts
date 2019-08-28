@@ -117,7 +117,14 @@ export function isSubset(subset: any[], superset: any[]): boolean {
  * Merge two arrays, leaving with no duplicate elements.
  */
 export function arrayUnion(a: any[], b: any[]): any[] {
-    return Array.from(new Set(a.concat(b)));
+    return uniqueArray(a.concat(b));
+}
+
+/**
+ * Remove duplicate elements from array.
+ */
+export function uniqueArray(a: any[]): any[] {
+    return Array.from(new Set(a));
 }
 
 /**
