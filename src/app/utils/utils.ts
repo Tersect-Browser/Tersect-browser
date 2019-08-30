@@ -148,3 +148,19 @@ export function fixedElementPosition(element: ElementRef): {x: number,
         y: parseInt(top_px.substring(0, top_px.length - 2), 10)
     };
 }
+
+/**
+ * Merge objects.
+ * Fields in later (higher index) objects overwrite the earlier (lower index)
+ * objects.
+ */
+export function mergeObjects(objs: any[]): any {
+    const output = {};
+    objs.filter(ob => !isNullOrUndefined(ob))
+        .forEach(ob => {
+        Object.keys(ob).forEach(key => {
+            output[key] = {...output[key], ...ob[key]};
+        });
+    });
+    return output;
+}

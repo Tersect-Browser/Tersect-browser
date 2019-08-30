@@ -47,21 +47,6 @@ export function extractAccessionColors(groups: AccessionGroup[]): AccessionDicti
     return dict;
 }
 
-/**
- * Merge accession dictionaries (e.g. label and color dictionaries).
- * Later (higher index) dictionaries overwrite the earlier (lower index) ones.
- */
-export function mergeDictionaries(dicts: AccessionDictionary[]): AccessionDictionary {
-    const output: AccessionDictionary = {};
-    dicts.filter(dict => !isNullOrUndefined(dict))
-         .forEach(dict => {
-        Object.keys(dict).forEach(key => {
-            output[key] = {...output[key], ...dict[key]};
-        });
-    });
-    return output;
-}
-
 export interface AccessionGroup {
     name: string;
     category?: string;
