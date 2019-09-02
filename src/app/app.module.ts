@@ -11,6 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
+import { TERSECT_BROWSER_CONFIG, APP_CONFIG } from './app.config';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: IntrogressionBrowserComponent },
@@ -31,7 +32,8 @@ const appRoutes: Routes = [
         RouterModule.forRoot(appRoutes)
     ],
     providers: [
-        HttpClient
+        HttpClient,
+        { provide: APP_CONFIG, useValue: TERSECT_BROWSER_CONFIG }
     ],
     bootstrap: [AppComponent]
 })

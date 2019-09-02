@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable ,  of } from 'rxjs';
 import { SequenceInterval } from '../models/SequenceInterval';
@@ -9,11 +9,17 @@ import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
 import { IPheneticTree } from '../../backend/db/phenetictree';
 import { RefDistQuery } from '../models/RefDistQuery';
+import { APP_CONFIG, AppConfig } from '../app.config';
 
 @Injectable()
 export class TersectBackendService {
 
-    constructor(private http: HttpClient) { }
+    private apiUrl: string;
+
+    constructor(private http: HttpClient,
+                @Inject(APP_CONFIG) config: AppConfig) {
+        this.apiUrl = config.apiUrl;
+    }
 
     /**
      * Retrieve binned genetic distances between each of the accessions in the
@@ -35,7 +41,7 @@ export class TersectBackendService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/dist`;
+        const query = `${this.apiUrl}/query/${dataset_id}/dist`;
         const ref_dist_query: RefDistQuery = {
             reference: reference,
             chromosome_name: chromosome,
@@ -62,7 +68,7 @@ export class TersectBackendService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/tree`;
+        const query = `${this.apiUrl}/query/${dataset_id}/tree`;
         const tree_query: TreeQuery = {
             chromosome_name: chromosome,
             interval: [start, end],
@@ -75,12 +81,12 @@ export class TersectBackendService {
      * Retrieve list of accessions in a Tersect dataset.
      */
     getAccessionNames(dataset_id: string): Observable<string[]> {
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/samples`;
+        const query = `${this.apiUrl}/query/${dataset_id}/samples`;
         return this.http.get<string[]>(query);
     }
 
     getChromosomes(dataset_id: string): Observable<Chromosome[]> {
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/chromosomes`;
+        const query = `${this.apiUrl}/query/${dataset_id}/chromosomes`;
         return this.http.get<Chromosome[]>(query);
     }
 
@@ -91,7 +97,7 @@ export class TersectBackendService {
      */
     getGapIndex(dataset_id: string,
                 chromosome: string): Observable<SequenceInterval[]> {
-        const query = `http://localhost:8060/tbapi/query/${dataset_id}/gaps/\
+        const query = `${this.apiUrl}/query/${dataset_id}/gaps/\
 ${chromosome}`;
         return this.http.get<SequenceInterval[]>(query);
     }
@@ -100,14 +106,14 @@ ${chromosome}`;
         if (isNullOrUndefined(export_id)) {
             return of(undefined);
         } else {
-            const query = `http://localhost:8060/tbapi/views/share/\
+            const query = `${this.apiUrl}/views/share/\
 ${export_id}`;
             return this.http.get<BrowserSettings>(query);
         }
     }
 
     getDatasets(): Observable<IDatasetPublic[]> {
-        const query = 'http://localhost:8060/tbapi/datasets';
+        const query = `${this.apiUrl}/datasets`;
         return this.http.get<IDatasetPublic[]>(query);
     }
 
@@ -115,7 +121,7 @@ ${export_id}`;
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        const query = `http://localhost:8060/tbapi/views/export`;
+        const query = `${this.apiUrl}/views/export`;
         return this.http.post<number>(query, settings, httpOptions);
     }
 
