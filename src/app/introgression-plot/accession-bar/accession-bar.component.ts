@@ -1,6 +1,6 @@
 import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
-import { ceilTo } from '../../utils/utils';
+import { ceilTo, deepCopy } from '../../utils/utils';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotStateService } from '../services/plot-state.service';
@@ -197,7 +197,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.stored_state.container_width = this.getContainerWidth();
         this.stored_state.tree_query = this.plotService.phenTree.query;
         this.stored_state.zoom_level = this.plotState.zoom_level;
-        this.stored_state.accession_dictionary = this.plotState.accession_dictionary;
+        this.stored_state
+            .accession_dictionary = deepCopy(this.plotState
+                                                 .accession_dictionary);
     }
 
     drawColorTracks(ctx: CanvasRenderingContext2D) {

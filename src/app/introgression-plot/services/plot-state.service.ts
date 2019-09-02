@@ -2,11 +2,12 @@ import {
     BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup,
     AccessionInfo, extractAccessionLabels, extractAccessionColors
 } from '../../introgression-browser/browser-settings';
-import { sameElements, ceilTo, floorTo, mergeObjects } from '../../utils/utils';
+import { sameElements, ceilTo, floorTo, deepCopy } from '../../utils/utils';
 import { Chromosome } from '../../models/Chromosome';
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject , Subject } from 'rxjs';
+import { isNullOrUndefined } from 'util';
 
 @Injectable()
 export class PlotStateService {
@@ -71,10 +72,17 @@ export class PlotStateService {
     set accession_infos(accession_infos: AccessionInfo[]) {
         this.accession_infos_source.next(accession_infos);
         const label_dict = extractAccessionLabels(accession_infos);
-        this.accession_dictionary = mergeObjects([
-            this.accession_dictionary,
-            label_dict
-        ]);
+        const dict = !isNullOrUndefined(this.accession_dictionary)
+                        ? deepCopy(this.accession_dictionary)
+                        : {};
+        Object.keys(label_dict).map(key => {
+            if (key in dict) {
+                dict[key].label = label_dict[key].label;
+            } else {
+                dict[key] = { label: label_dict[key].label };
+            }
+        });
+        this.accession_dictionary = dict;
     }
     get accession_infos(): AccessionInfo[] {
         return this.accession_infos_source.getValue();
@@ -99,10 +107,20 @@ export class PlotStateService {
     accession_groups$ = this.accession_groups_source.asObservable();
     set accession_groups(accession_groups: AccessionGroup[]) {
         this.accession_groups_source.next(accession_groups);
-        this.accession_dictionary = mergeObjects([
-            this.accession_dictionary,
-            extractAccessionColors(accession_groups)
-        ]);
+        const color_dict = extractAccessionColors(accession_groups);
+        if (isNullOrUndefined(this.accession_dictionary)) {
+            this.accession_dictionary = deepCopy(color_dict);
+        } else {
+            Object.keys(this.accession_dictionary).map(key => {
+                if (key in color_dict) {
+                    this.accession_dictionary[key]
+                        .colors = color_dict[key].colors;
+                } else {
+                    delete this.accession_dictionary[key].colors;
+                }
+            });
+            this.accession_dictionary = {...this.accession_dictionary};
+        }
     }
     get accession_groups(): AccessionGroup[] {
         return this.accession_groups_source.getValue();
