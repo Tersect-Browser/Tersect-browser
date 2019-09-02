@@ -1,5 +1,5 @@
 {
-    "hostname": "mongodb://localhost",
+    "mongo_hostname": "mongodb://localhost",
     "port": 27017,
     "db_name": "tersect",
     "local_db_location": "../../local_db",

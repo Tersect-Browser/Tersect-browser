@@ -95,7 +95,7 @@ def load_groups(groups_filepath, acc_name_map=None):
     return groups
 
 def remove_dataset_matrices(cfg, dataset_id):
-    client = MongoClient(cfg['hostname'], cfg['port'])
+    client = MongoClient(cfg['mongo_hostname'], cfg['port'])
     matrices = client[cfg['db_name']]['matrices']
     for matrix in matrices.find({'dataset_id': dataset_id}):
         if os.path.isfile(matrix['matrix_file']):
@@ -112,7 +112,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
     if not os.path.exists(local_db_location):
         os.makedirs(local_db_location)
 
-    client = MongoClient(cfg['hostname'], cfg['port'])
+    client = MongoClient(cfg['mongo_hostname'], cfg['port'])
     datasets = client[cfg['db_name']]['datasets']
     trees = client[cfg['db_name']]['trees']
     views = client[cfg['db_name']]['views']
