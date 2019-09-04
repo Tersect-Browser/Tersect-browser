@@ -3,7 +3,8 @@ import mongoose = require('mongoose');
 import bodyParser = require('body-parser');
 import * as fs from 'fs';
 
-import { router } from './src/backend/tersect-router';
+import { router as tbRouter } from './src/backend/tersect-router';
+import { router as tgrcRouter } from './src/backend/tgrc-router';
 import { cleanDatabase } from './src/backend/db/dbutils';
 
 const app = express();
@@ -19,7 +20,8 @@ mongoose.set('useCreateIndex', true);
 
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.json());
-app.use('/tbapi', router);
+app.use('/tbapi', tbRouter);
+app.use('/tgrc', tgrcRouter);
 
 cleanDatabase();
 
