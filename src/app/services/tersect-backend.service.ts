@@ -18,7 +18,7 @@ export class TersectBackendService {
 
     constructor(private http: HttpClient,
                 @Inject(APP_CONFIG) config: AppConfig) {
-        this.apiUrl = config.apiUrl;
+        this.apiUrl = config.tbApiUrl;
     }
 
     /**

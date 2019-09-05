@@ -1,11 +1,13 @@
 import { InjectionToken } from '@angular/core';
 
 export interface AppConfig {
-    apiUrl: string;
+    tbApiUrl: string;
+    tgrcApiUrl: string;
 }
 
 export const TERSECT_BROWSER_CONFIG: AppConfig = {
-    apiUrl: 'http://localhost:8060/tbapi'
+    tbApiUrl: 'http://localhost:8060/tbapi',
+    tgrcApiUrl: 'http://localhost:8060/tgrc'
 };
 
 export const APP_CONFIG = new InjectionToken<AppConfig>('app.config');
