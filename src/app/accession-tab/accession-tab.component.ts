@@ -11,6 +11,7 @@ import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray } from '../u
 import { Table } from 'primeng/table';
 import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
 import { TGRCGeneImporterComponent } from '../tgrc-gene-importer/tgrc-gene-importer.component';
+import { AccessionInfoImporterComponent } from './plugins/accession-info-importer.component';
 
 interface FilterSet {
     [s: string]: FilterMetadata;
@@ -30,6 +31,10 @@ interface TableColumn {
 interface InfoDictionary {
     [key: string]: AccessionInfo;
 }
+
+const pluginComponents = {
+    'tgrc-importer': TGRCGeneImporterComponent
+};
 
 @Component({
     selector: 'app-accession-tab',
@@ -115,7 +120,7 @@ export class AccessionTabComponent implements AfterViewInit {
 
     suggestions: string[];
 
-    importPlugins = ['tgrc'];
+    importPlugins = ['tgrc-importer'];
 
     private infoDictionary: InfoDictionary;
 
@@ -128,16 +133,15 @@ export class AccessionTabComponent implements AfterViewInit {
 
     createPlugins() {
         this.importPlugins.forEach(plugin => {
-            if (plugin === 'tgrc') {
-                const factory = this.resolver.resolveComponentFactory(
-                                    TGRCGeneImporterComponent
-                                );
-                const ref = this.pluginContainer.createComponent(factory);
-                ref.instance.infos = this.accessionOptions;
-                ref.instance.infosChange.subscribe((infos: AccessionInfo[]) => {
-                    this.accessionOptions = infos;
-                });
-            }
+            const factory = this.resolver
+                                .resolveComponentFactory<AccessionInfoImporterComponent>(
+                                pluginComponents[plugin]
+                            );
+            const ref = this.pluginContainer.createComponent(factory);
+            ref.instance.infos = this.accessionOptions;
+            ref.instance.infosChange.subscribe((infos: AccessionInfo[]) => {
+                this.accessionOptions = infos;
+            });
         });
     }
 
