@@ -1,0 +1,13 @@
+<p-dropdown
+    [dropdownIcon]="'fa fa-plus-square'"
+    [(ngModel)]="selectedTgrcGene"
+    (onChange)="importTgrcGene($event.value)"
+    [options]="tgrcGenes"
+    [style]="{'font-size': '1.2em'}"
+    panelStyleClass="tgrc-gene-importer-panel"
+    placeholder="Import TGRC gene..."
+    [virtualScroll]="true"
+    itemSize="21"
+    [filter]="true"
+    [resetFilterOnHide]="true">
+</p-dropdown>

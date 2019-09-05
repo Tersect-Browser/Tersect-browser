@@ -1,15 +1,16 @@
 import { TableState } from 'primeng/components/common/tablestate';
 
-import { Component, Output, EventEmitter, Input, OnInit, ViewEncapsulation, ViewChild } from '@angular/core';
+import {
+    Component, Output, EventEmitter, Input, ViewEncapsulation, ViewChild,
+    ViewContainerRef, ComponentFactoryResolver, AfterViewInit
+} from '@angular/core';
 import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray } from '../utils/utils';
 import { Table } from 'primeng/table';
 import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
-import { TGRCBackendService, AccessionAlleles } from '../services/tgrc-backend.service';
-import { GeneTGRC } from '../../backend/db/genetgrc';
-import { SelectItem } from 'primeng/components/common/selectitem';
+import { TGRCGeneImporterComponent } from '../tgrc-gene-importer/tgrc-gene-importer.component';
 
 interface FilterSet {
     [s: string]: FilterMetadata;
@@ -36,8 +37,11 @@ interface InfoDictionary {
     styleUrls: ['./accession-tab.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-export class AccessionTabComponent implements OnInit {
+export class AccessionTabComponent implements AfterViewInit {
     @ViewChild('dt', { static: true }) dt: Table;
+
+    @ViewChild('pluginContainer', { read: ViewContainerRef, static: false })
+    pluginContainer: ViewContainerRef;
 
     readonly sort_icon_width = 30;
     readonly max_column_width = 200;
@@ -111,13 +115,31 @@ export class AccessionTabComponent implements OnInit {
 
     suggestions: string[];
 
-    tgrcGenes: SelectItem[];
-
-    selectedTgrcGene: string;
+    importPlugins = ['tgrc'];
 
     private infoDictionary: InfoDictionary;
 
-    constructor(private tgrcBackendService: TGRCBackendService) { }
+    constructor(private resolver: ComponentFactoryResolver) {}
+
+    ngAfterViewInit() {
+        // Queued to avoid plugin ExpressionChangedAfterItHasBeenCheckedError
+        Promise.resolve().then(() => this.createPlugins());
+    }
+
+    createPlugins() {
+        this.importPlugins.forEach(plugin => {
+            if (plugin === 'tgrc') {
+                const factory = this.resolver.resolveComponentFactory(
+                                    TGRCGeneImporterComponent
+                                );
+                const ref = this.pluginContainer.createComponent(factory);
+                ref.instance.infos = this.accessionOptions;
+                ref.instance.infosChange.subscribe((infos: AccessionInfo[]) => {
+                    this.accessionOptions = infos;
+                });
+            }
+        });
+    }
 
     extractOptionDictionary(acc_infos: AccessionInfo[]): InfoDictionary {
         const info_dict = {};
@@ -131,32 +153,6 @@ export class AccessionTabComponent implements OnInit {
 
     extractColumnOptions(column: string): string[] {
         return uniqueArray(this.filtered_accessions.map(acc => acc[column]));
-    }
-
-    importTgrcGene(gene: string) {
-        this.tgrcBackendService.getTGRCAccessions(gene)
-                               .subscribe((ga: AccessionAlleles) => {
-            this.selectedTgrcGene = '';
-            this.accessionOptions = this.accessionOptions.map(opt => {
-                if (opt['TGRC #'] in ga) {
-                    opt[gene] = ga[opt['TGRC #']].allele;
-                } else {
-                    opt[gene] = '';
-                }
-                return opt;
-            });
-        });
-    }
-
-    ngOnInit() {
-        this.tgrcBackendService.getTGRCGenes()
-                               .subscribe((genes: GeneTGRC[]) => {
-            this.tgrcGenes = genes.map(gene => ({
-                label: gene.locusName.length ? `${gene.gene} (${gene.locusName})`
-                                             : `${gene.gene}`,
-                value: gene.gene
-            }));
-        });
     }
 
     extractColumns(infos: AccessionInfo[]): TableColumn[] {
@@ -307,4 +303,5 @@ export class AccessionTabComponent implements OnInit {
     extractCategories(groups: AccessionGroup[]): string[] {
         return uniqueArray(groups.map(grp => grp.category)).sort();
     }
+
 }

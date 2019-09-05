@@ -19,7 +19,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MessageModule } from 'primeng/message';
 import { AccordionModule } from 'primeng/accordion';
 import { InputAutocompleteModule } from '../input-autocomplete/input-autocomplete.module';
-import { TGRCBackendService } from '../services/tgrc-backend.service';
+import { TGRCGeneImporterModule } from '../tgrc-gene-importer/tgrc-gene-importer.module';
+import { TGRCGeneImporterComponent } from '../tgrc-gene-importer/tgrc-gene-importer.component';
 
 @NgModule({
     declarations: [
@@ -46,10 +47,11 @@ import { TGRCBackendService } from '../services/tgrc-backend.service';
         AccordionModule,
         ColorSelectorModule,
         FitWindowModule,
-        InputAutocompleteModule
+        InputAutocompleteModule,
+        TGRCGeneImporterModule
     ],
-    providers: [
-        TGRCBackendService
+    entryComponents: [
+        TGRCGeneImporterComponent
     ]
 })
 export class AccessionTabModule { }
