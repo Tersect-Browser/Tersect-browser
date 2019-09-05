@@ -17,12 +17,14 @@ from tersectutils import get_accession_names, rename_accession
 # Supporting up to two billion views
 MAX_VIEW_ID = 2000000000
 
-def add_default_view(cfg, client, dataset_id, accession_infos, groups=None):
+def add_default_view(cfg, client, dataset_id, accession_infos, groups=None,
+                     plugins=[]):
     view_id = randomHash(cfg['salt'], MAX_VIEW_ID)
     views = client[cfg['db_name']]['views']
     settings = {
         'dataset_id': dataset_id,
-        'accession_infos': accession_infos
+        'accession_infos': accession_infos,
+        'plugins': plugins
     }
     if (groups is not None):
         settings['accession_groups'] = groups
@@ -33,7 +35,8 @@ def add_default_view(cfg, client, dataset_id, accession_infos, groups=None):
         })
         return view_id
     except errors.DuplicateKeyError:
-        return add_default_view(cfg, client, dataset_id, accession_infos)
+        return add_default_view(cfg, client, dataset_id, accession_infos,
+                                groups, plugins)
 
 # Fixes accession names by removing forbidden characters (spaces, periods, and
 # dollar signs) and returns a dictionary which maps the old names (as keys)
@@ -104,7 +107,8 @@ def remove_dataset_matrices(cfg, dataset_id):
     client.close()
 
 def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
-                groups_file=None, infos_file=None, force=False, verbose=False):
+                groups_file=None, infos_file=None, plugins=[],
+                force=False, verbose=False):
     if verbose:
         print("Adding dataset '%s'..." % dataset_id)
 
@@ -144,7 +148,8 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
     accession_infos = build_accession_infos(acc_name_map, infos_file)
     groups = load_groups(groups_file, acc_name_map)
 
-    view_id = add_default_view(cfg, client, dataset_id, accession_infos, groups)
+    view_id = add_default_view(cfg, client, dataset_id, accession_infos,
+                               groups, plugins)
 
     ds = {
         '_id': dataset_id,
@@ -172,6 +177,7 @@ parser.add_argument('-i', dest='infos_file', default=None, type=str,
                     help='optional extra sample information CSV file')
 parser.add_argument('-f', required=False, action='store_true',
                     help='force overwrite')
+parser.add_argument('-p', dest='plugins', required=False, action='append', default=[])
 
 args = parser.parse_args()
 
@@ -206,7 +212,7 @@ if args.reference_file is not None:
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       groups_file=groups_file, infos_file=infos_file,
-                      force=args.f, verbose=True)
+                      plugins=args.plugins, force=args.f, verbose=True)
 
 command = [
     os.path.join(script_path, 'build_tersect_index.py'),
