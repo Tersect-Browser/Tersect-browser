@@ -25,7 +25,8 @@ const ViewSettingsSchema = new Schema({
             default: undefined
         },
         selected_binsize: Number,
-        zoom_level: Number
+        zoom_level: Number,
+        plugins: [String]
     }
 });
 

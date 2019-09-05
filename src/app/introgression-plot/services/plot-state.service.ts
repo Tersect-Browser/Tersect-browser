@@ -24,6 +24,7 @@ export class PlotStateService {
         this.interval = settings.selected_interval;
         this.binsize = settings.selected_binsize;
         this.zoom_level = this.zoom_level;
+        this.plugins = settings.plugins;
         this.settings_source.next(settings);
     }
     get settings(): BrowserSettings {
@@ -37,7 +38,8 @@ export class PlotStateService {
             selected_chromosome: this.chromosome,
             selected_interval: this.interval,
             selected_binsize: this.binsize,
-            zoom_level: this.zoom_level
+            zoom_level: this.zoom_level,
+            plugins: this.plugins
         };
     }
 
@@ -201,6 +203,8 @@ export class PlotStateService {
     get zoom_level(): number {
         return this.zoom_level_source.getValue();
     }
+
+    plugins: string[] = [];
 
     /**
      * Accession names (as used by tersect) sorted in the order to

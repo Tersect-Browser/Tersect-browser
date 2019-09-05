@@ -75,6 +75,10 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         return this.plotState.accession_infos;
     }
 
+    get plugins(): string[] {
+        return this.plotState.plugins;
+    }
+
     readonly TYPING_DELAY = 750;
     private interval_input_timeout: NodeJS.Timer;
     widget_interval: number[] = [0, 0];
@@ -233,6 +237,9 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                 id: acc_id,
                 Label: acc_id
             }));
+        }
+        if (isNullOrUndefined(settings.plugins)) {
+            settings.plugins = [];
         }
     }
 

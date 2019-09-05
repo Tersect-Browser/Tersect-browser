@@ -68,4 +68,5 @@ export interface BrowserSettings {
     selected_interval?: number[];
     selected_binsize?: number;
     zoom_level?: number;
+    plugins?: string[];
 }

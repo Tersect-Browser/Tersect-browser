@@ -93,6 +93,9 @@ export class AccessionTabComponent implements AfterViewInit {
     @Output()
     accessionGroupsChange = new EventEmitter<AccessionGroup[]>();
 
+    @Input()
+    importPlugins: string[] = [];
+
     display_add_group_dialog = false;
 
     filtered_accessions: AccessionInfo[];
@@ -120,15 +123,15 @@ export class AccessionTabComponent implements AfterViewInit {
 
     suggestions: string[];
 
-    importPlugins = ['tgrc-importer'];
-
     private infoDictionary: InfoDictionary;
 
     constructor(private resolver: ComponentFactoryResolver) {}
 
     ngAfterViewInit() {
-        // Queued to avoid plugin ExpressionChangedAfterItHasBeenCheckedError
-        Promise.resolve().then(() => this.createPlugins());
+        if (!isNullOrUndefined(this.importPlugins)) {
+            // Queued to avoid plugin ExpressionChangedAfterItHasBeenCheckedError
+            Promise.resolve().then(() => this.createPlugins());
+        }
     }
 
     createPlugins() {
