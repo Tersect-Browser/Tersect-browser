@@ -21,7 +21,8 @@ export class TGRCGeneImporterComponent extends AccessionInfoImporterComponent
     }
 
     ngOnInit() {
-        this.tgrcBackendService.getTGRCGenes()
+        const accession_tgrc_nums = this.infos.map(info => info['TGRC #']);
+        this.tgrcBackendService.getTGRCAccessionGenes(accession_tgrc_nums)
                                .subscribe((genes: GeneTGRC[]) => {
             this.tgrcGenes = genes.map(gene => ({
                 label: gene.locusName.length ? `${gene.gene} (${gene.locusName})`
@@ -32,7 +33,7 @@ export class TGRCGeneImporterComponent extends AccessionInfoImporterComponent
     }
 
     importTgrcGene(gene: string) {
-        this.tgrcBackendService.getTGRCAccessions(gene)
+        this.tgrcBackendService.getTGRCGeneAccessions(gene)
                                .subscribe((ga: AccessionAlleles) => {
             this.selectedTgrcGene = '';
 
