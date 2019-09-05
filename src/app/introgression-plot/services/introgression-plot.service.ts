@@ -5,7 +5,7 @@ import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { PlotPosition } from '../../models/PlotPosition';
 import { TreeQuery } from '../../models/TreeQuery';
-import { IPheneticTree } from '../../../backend/db/phenetictree';
+import { PheneticTree } from '../../../backend/db/phenetictree';
 import { PlotStateService } from './plot-state.service';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 
@@ -237,7 +237,7 @@ export class IntrogressionPlotService implements OnDestroy {
                 this.tersectBackendService
                     .getPheneticTree(ds, chrom.name, interval[0], interval[1],
                                      accessions).pipe(
-                    tap((tree_output: IPheneticTree) => {
+                    tap((tree_output: PheneticTree) => {
                         if (tree_output.status !== 'ready') {
                             this.plot_load_message = tree_output.status;
                             throw new Error('Tree still loading');
@@ -279,7 +279,7 @@ export class IntrogressionPlotService implements OnDestroy {
      * Verify if reference distance bins match the tree in terms of chromosome
      * region and included accessions used.
      */
-    private binsMatchTree(ref_dist: any, tree_output: IPheneticTree): boolean {
+    private binsMatchTree(ref_dist: any, tree_output: PheneticTree): boolean {
         const tree_region = formatRegion(tree_output.query.chromosome_name,
                                          tree_output.query.interval[0],
                                          tree_output.query.interval[1]);

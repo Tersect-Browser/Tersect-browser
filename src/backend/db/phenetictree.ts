@@ -5,7 +5,7 @@
 import { Schema, model, Document } from 'mongoose';
 import { TreeQuery } from '../../app/models/TreeQuery';
 
-export interface IPheneticTree extends Document {
+export interface PheneticTree extends Document {
     dataset_id: string;
     query: TreeQuery;
     status: string;
@@ -25,6 +25,6 @@ const PheneticTreeSchema = new Schema({
     tree_newick: String
 });
 
-export const PheneticTree = model<IPheneticTree>('PheneticTree',
+export const PheneticTree = model<PheneticTree>('PheneticTree',
                                                  PheneticTreeSchema,
                                                  'trees');

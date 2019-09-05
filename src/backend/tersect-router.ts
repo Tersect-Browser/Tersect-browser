@@ -11,7 +11,7 @@ import { ViewSettings } from './db/viewsettings';
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined, promisify } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
-import { PheneticTree, IPheneticTree } from './db/phenetictree';
+import { PheneticTree } from './db/phenetictree';
 import { TreeQuery, TreeDatabaseQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
@@ -241,7 +241,7 @@ router.route('/query/:dataset_id/tree')
         'query.accessions': tree_query.accessions
     };
     PheneticTree.findOne(db_query)
-                .exec((err, result: IPheneticTree) => {
+                .exec((err, result: PheneticTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {

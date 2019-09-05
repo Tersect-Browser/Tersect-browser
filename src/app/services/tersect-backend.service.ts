@@ -7,7 +7,7 @@ import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
 import { IDatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
-import { IPheneticTree } from '../../backend/db/phenetictree';
+import { PheneticTree } from '../../backend/db/phenetictree';
 import { RefDistQuery } from '../models/RefDistQuery';
 import { APP_CONFIG, AppConfig } from '../app.config';
 
@@ -64,7 +64,7 @@ export class TersectBackendService {
      */
     getPheneticTree(dataset_id: string, chromosome: string,
                     start: number, end: number,
-                    accessions: string[]): Observable<IPheneticTree> {
+                    accessions: string[]): Observable<PheneticTree> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -74,7 +74,7 @@ export class TersectBackendService {
             interval: [start, end],
             accessions: accessions,
         };
-        return this.http.post<IPheneticTree>(query, tree_query, httpOptions);
+        return this.http.post<PheneticTree>(query, tree_query, httpOptions);
     }
 
     /**
