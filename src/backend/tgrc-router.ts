@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import { GeneTGRC } from './db/genetgrc';
+import { AccessionTGRC } from './db/accessiontgrc';
+import { isNullOrUndefined } from 'util';
+import { MongooseDocument } from 'mongoose';
 
 export const router = Router();
 
@@ -18,6 +21,39 @@ router.route('/genes')
             return res.status(500).send('Genes could not be retrieved');
         } else {
             return res.json(result);
+        }
+    });
+});
+
+
+router.route('/accessions/:gene?/:filter?')
+      .get((req, res) => {
+    const gene = req.params.gene;
+    const filter = isNullOrUndefined(req.params.filter) ? false
+                                                        : req.params.filter;
+    const query = isNullOrUndefined(gene) ? {}
+                                          : { 'alleles.gene': gene };
+    const projection = { _id: 0, accession: 1, alleles: 1};
+    AccessionTGRC.find(AccessionTGRC.translateAliases(query),
+                       AccessionTGRC.translateAliases(projection))
+                 .exec((err, result: AccessionTGRC[]) => {
+        if (err) {
+            return res.status(500).send('Accessions could not be retrieved');
+        } else {
+            const output = result.map(acc => {
+                const acc_obj = acc.toObject();
+                return {
+                    accession: acc_obj.accession,
+                    alleles: acc_obj.alleles
+                };
+            });
+            if (filter) {
+                // Exclude other genes from result
+                output.forEach(acc => {
+                    acc.alleles = acc.alleles.filter(a => a.gene === gene);
+                });
+            }
+            return res.json(output);
         }
     });
 });
