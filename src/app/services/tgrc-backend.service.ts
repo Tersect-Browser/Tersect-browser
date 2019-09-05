@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { AppConfig, APP_CONFIG } from '../app.config';
 import { HttpClient } from '@angular/common/http';
-import { GeneTGRC } from '../../backend/db/genestgrc';
+import { GeneTGRC } from '../../backend/db/genetgrc';
 import { Observable } from 'rxjs';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { GeneTGRC } from './db/genestgrc';
+import { GeneTGRC } from './db/genetgrc';
 
 export const router = Router();
 
