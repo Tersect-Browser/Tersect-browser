@@ -18,7 +18,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { MessageModule } from 'primeng/message';
 import { AccordionModule } from 'primeng/accordion';
-import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputAutocompleteModule } from '../input-autocomplete/input-autocomplete.module';
 import { TGRCBackendService } from '../services/tgrc-backend.service';
 
