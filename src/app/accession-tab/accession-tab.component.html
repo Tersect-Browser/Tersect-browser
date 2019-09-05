@@ -72,6 +72,24 @@
         </ng-template>
         <ng-template pTemplate="summary">
             <div class="justified">
+                <p-dropdown
+                    [dropdownIcon]="'fa fa-plus-square'"
+                    [(ngModel)]="selectedTgrcGene"
+                    (onChange)="importTgrcGene($event.value)"
+                    [options]="tgrcGenes"
+                    [style]="{'font-size': '1.2em'}"
+                    [panelStyle]="{
+                        'white-space': 'nowrap',
+                        'width': '300px',
+                        'overflow-x': 'hidden'
+                    }"
+                    placeholder="Import TGRC gene..."
+                    [virtualScroll]="true"
+                    itemSize="21"
+                    [filter]="true"
+                    [resetFilterOnHide]="true">
+                </p-dropdown>
+
                 <div class="block-center">
                     <div>
                         {{ filtered_accessions.length }}
@@ -82,6 +100,7 @@
                         ({{ selectedAccessions.length }} selected)
                     </div>
                 </div>
+
                 <button pButton
                         icon="fa fa-plus"
                         label="Save as a group..."

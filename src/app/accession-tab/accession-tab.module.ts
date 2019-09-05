@@ -20,6 +20,7 @@ import { MessageModule } from 'primeng/message';
 import { AccordionModule } from 'primeng/accordion';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputAutocompleteModule } from '../input-autocomplete/input-autocomplete.module';
+import { TGRCBackendService } from '../services/tgrc-backend.service';
 
 @NgModule({
     declarations: [
@@ -48,6 +49,8 @@ import { InputAutocompleteModule } from '../input-autocomplete/input-autocomplet
         FitWindowModule,
         InputAutocompleteModule
     ],
-    providers: []
+    providers: [
+        TGRCBackendService
+    ]
 })
 export class AccessionTabModule { }

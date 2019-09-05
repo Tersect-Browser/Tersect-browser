@@ -7,6 +7,9 @@ import * as deepEqual from 'fast-deep-equal';
 import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray } from '../utils/utils';
 import { Table } from 'primeng/table';
 import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
+import { TGRCBackendService, AccessionAlleles } from '../services/tgrc-backend.service';
+import { GeneTGRC } from '../../backend/db/genetgrc';
+import { SelectItem } from 'primeng/components/common/selectitem';
 
 interface FilterSet {
     [s: string]: FilterMetadata;
@@ -56,6 +59,11 @@ export class AccessionTabComponent implements OnInit {
     set accessionOptions(acc_infos: AccessionInfo[]) {
         this._accessionOptions = acc_infos;
         this.infoDictionary = this.extractOptionDictionary(acc_infos);
+        this.filtered_accessions = this.accessionOptions;
+        this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
+        this.cols = this.extractColumns(this.accessionOptions);
+        this.all_selected = this.accessionOptions.length
+                            === this.selectedAccessions.length;
     }
     get accessionOptions(): AccessionInfo[] {
         return this._accessionOptions;
@@ -103,7 +111,14 @@ export class AccessionTabComponent implements OnInit {
 
     suggestions: string[];
 
+    tgrcGenes: SelectItem[];
+
+    selectedTgrcGene: string;
+
     private infoDictionary: InfoDictionary;
+
+    constructor(private tgrcBackendService: TGRCBackendService) { }
+
     extractOptionDictionary(acc_infos: AccessionInfo[]): InfoDictionary {
         const info_dict = {};
         acc_infos.forEach(info => {
@@ -118,12 +133,30 @@ export class AccessionTabComponent implements OnInit {
         return uniqueArray(this.filtered_accessions.map(acc => acc[column]));
     }
 
+    importTgrcGene(gene: string) {
+        this.tgrcBackendService.getTGRCAccessions(gene)
+                               .subscribe((ga: AccessionAlleles) => {
+            this.selectedTgrcGene = '';
+            this.accessionOptions = this.accessionOptions.map(opt => {
+                if (opt['TGRC #'] in ga) {
+                    opt[gene] = ga[opt['TGRC #']].allele;
+                } else {
+                    opt[gene] = '';
+                }
+                return opt;
+            });
+        });
+    }
+
     ngOnInit() {
-        this.filtered_accessions = this.accessionOptions;
-        this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
-        this.cols = this.extractColumns(this.accessionOptions);
-        this.all_selected = this.accessionOptions.length
-                            === this.selectedAccessions.length;
+        this.tgrcBackendService.getTGRCGenes()
+                               .subscribe((genes: GeneTGRC[]) => {
+            this.tgrcGenes = genes.map(gene => ({
+                label: gene.locusName.length ? `${gene.gene} (${gene.locusName})`
+                                             : `${gene.gene}`,
+                value: gene.gene
+            }));
+        });
     }
 
     extractColumns(infos: AccessionInfo[]): TableColumn[] {
