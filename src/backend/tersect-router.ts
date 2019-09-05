@@ -12,7 +12,7 @@ import { default as Hashids } from 'hashids';
 import { isNullOrUndefined, promisify } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
 import { PheneticTree, IPheneticTree } from './db/phenetictree';
-import { TreeQuery } from '../app/models/TreeQuery';
+import { TreeQuery, TreeDatabaseQuery } from '../app/models/TreeQuery';
 import { fileSync, } from 'tmp';
 import { partitionQuery } from './partitioning';
 import { formatRegion } from '../app/utils/utils';
@@ -234,7 +234,7 @@ router.route('/query/:dataset_id/tree')
       .post((req, res) => {
     const tsi_location = res.locals.dataset.tsi_location;
     const tree_query: TreeQuery = req.body;
-    const db_query = {
+    const db_query: TreeDatabaseQuery = {
         dataset_id: req.params.dataset_id,
         'query.chromosome_name': tree_query.chromosome_name,
         'query.interval': tree_query.interval,
@@ -266,7 +266,7 @@ router.route('/query/:dataset_id/tree')
     });
 });
 
-function create_rapidnj_tree(db_query, phylip_file: string) {
+function create_rapidnj_tree(db_query: TreeDatabaseQuery, phylip_file: string) {
     const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
 
     const stdout_close$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
@@ -307,7 +307,8 @@ async function write_accessions(accessions: string[]): Promise<string> {
     return output_file.name;
 }
 
-function generate_tree(tsi_location: string, tree_query: TreeQuery, db_query) {
+function generate_tree(tsi_location: string, tree_query: TreeQuery,
+                       db_query: TreeDatabaseQuery) {
     const partitions = partitionQuery(tsi_location, config['index_partitions'],
                                       tree_query);
 
@@ -315,7 +316,8 @@ function generate_tree(tsi_location: string, tree_query: TreeQuery, db_query) {
         const region = formatRegion(tree_query.chromosome_name, interval.start,
                                     interval.end);
         const result = await DBMatrix.findOne(
-            { region: region }, { _id: 0, matrix_file: 1 }
+            { dataset_id: db_query.dataset_id, region: region },
+            { _id: 0, matrix_file: 1 }
         );
         return result['matrix_file'];
     });
