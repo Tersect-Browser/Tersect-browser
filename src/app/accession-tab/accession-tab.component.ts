@@ -132,7 +132,8 @@ export class AccessionTabComponent implements AfterViewInit {
     }
 
     createPlugins() {
-        this.importPlugins.forEach(plugin => {
+        this.importPlugins.filter(plugin => plugin in pluginComponents)
+                          .forEach(plugin => {
             const factory = this.resolver
                                 .resolveComponentFactory<AccessionInfoImporterComponent>(
                                 pluginComponents[plugin]
