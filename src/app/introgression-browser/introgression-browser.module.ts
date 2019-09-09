@@ -20,10 +20,12 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { AccessionStyleSelectorComponent } from './accession-style-selector/accession-style-selector.component';
 
 @NgModule({
     declarations: [
-        IntrogressionBrowserComponent
+        IntrogressionBrowserComponent,
+        AccessionStyleSelectorComponent
     ],
     exports: [
         IntrogressionBrowserComponent

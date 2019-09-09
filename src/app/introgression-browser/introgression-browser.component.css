@@ -63,11 +63,6 @@
     float: right;
 }
 
-.tb-setting-button {
-    width: 2em;
-    height: 2em;
-}
-
 .plot-container {
     overflow: hidden;
     position: relative;
@@ -81,15 +76,6 @@
     padding-top: 1em;
     padding-bottom: 1em;
     border-radius: 4px;
-}
-
-.tree-settings-button {
-    width: 2em;
-    height: 2em;
-}
-
-.accession-display-overlay > p-radiobutton {
-    display: block;
 }
 
 .share-button {

@@ -1,31 +1,15 @@
 <div class="p-grid p-justify-between tb-toolbar p-nogutter">
     <div>
         <div class="input-label-small">Genomes</div>
-        <button pButton class="tree-settings-button"
-            icon="fa fa-tree"
-            (click)="tree_overlay.toggle($event)">
-        </button>
-        <button pButton class="tb-setting-button"
+        <app-accession-style-selector
+            [(accessionStyle)]="widget_accession_style">
+        </app-accession-style-selector>
+        <button pButton class="tb-square-button"
             icon="fa fa-database"
             (click)="display_sidebar = true" >
         </button>
     </div>
-    <p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
-        <div class="accession-display-overlay">
-            <p-radioButton name="display_types"
-                label="Accession labels" value="labels"
-                [(ngModel)]="widget_accession_style">
-            </p-radioButton>
-            <p-radioButton name="display_types"
-                label="Phenetic tree (simplified)" value="tree_simple"
-                [(ngModel)]="widget_accession_style">
-                </p-radioButton>
-            <p-radioButton name="display_types"
-                label="Phenetic tree" value="tree_linear"
-                [(ngModel)]="widget_accession_style">
-            </p-radioButton>
-        </div>
-    </p-overlayPanel>
+
     <div class="p-col accession-selector tb-toolbar-control">
         <div class="input-label-small">Reference</div>
         <p-dropdown [options]="accessions"

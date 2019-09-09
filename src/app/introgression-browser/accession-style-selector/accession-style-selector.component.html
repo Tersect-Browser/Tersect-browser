@@ -1,0 +1,21 @@
+<button pButton class="tb-square-button"
+    icon="fa fa-tree"
+    (click)="tree_overlay.toggle($event)">
+</button>
+
+<p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
+    <div class="accession-display-overlay">
+        <p-radioButton name="display_types"
+            label="Accession labels" value="labels"
+            [(ngModel)]="accessionStyle">
+        </p-radioButton>
+        <p-radioButton name="display_types"
+            label="Phenetic tree (simplified)" value="tree_simple"
+            [(ngModel)]="accessionStyle">
+            </p-radioButton>
+        <p-radioButton name="display_types"
+            label="Phenetic tree" value="tree_linear"
+            [(ngModel)]="accessionStyle">
+        </p-radioButton>
+    </div>
+</p-overlayPanel>
