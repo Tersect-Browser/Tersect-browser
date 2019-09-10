@@ -9,12 +9,10 @@ import { PlotStateService } from '../introgression-plot/services/plot-state.serv
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PlatformLocation } from '@angular/common';
 import { isNullOrUndefined } from 'util';
 import { forkJoin, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { SelectItem } from 'primeng/components/common/selectitem';
-import { join } from 'path';
 
 @Component({
     selector: 'app-introgression-browser',
@@ -41,8 +39,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     constructor(private plotState: PlotStateService,
                 private tersectBackendService: TersectBackendService,
                 private router: Router,
-                private route: ActivatedRoute,
-                private platformLocation: PlatformLocation) { }
+                private route: ActivatedRoute) { }
 
     set widget_chromosome(chrom: Chromosome) {
         if (this.plotState.chromosome.name !== chrom.name
@@ -165,15 +162,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         });
     }
 
-    exportView($event) {
-        this.tersectBackendService.exportSettings(this.plotState.settings)
-                                  .subscribe(id => {
-            const host = this.platformLocation['location'].origin;
-            this.share_link = join(host, 'TersectBrowser', 'share',
-                                   id.toString());
-        });
-    }
-
     /**
      * Load default values for missing settings.
      */
@@ -234,18 +222,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         if ($event.target.type !== 'background') {
             this.plotClickMenu.show($event);
         }
-    }
-
-    /**
-     * Copy view share link to clipboard.
-     */
-    copyLink() {
-        document.addEventListener('copy', ($e: ClipboardEvent) => {
-            $e.clipboardData.setData('text/plain', this.share_link);
-            $e.preventDefault();
-            document.removeEventListener('copy', null);
-        });
-        document.execCommand('copy');
     }
 
     setReference($event) {

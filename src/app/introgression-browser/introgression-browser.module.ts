@@ -25,6 +25,7 @@ import { ReferenceSelectorComponent } from './reference-selector/reference-selec
 import { ChromosomeSelectorComponent } from './chromosome-selector/chromosome-selector.component';
 import { IntervalSelectorComponent } from './interval-selector/interval-selector.component';
 import { BinsizeSelectorComponent } from './binsize-selector/binsize-selector.component';
+import { ShareButtonComponent } from './share-button/share-button.component';
 
 @NgModule({
     declarations: [
@@ -33,7 +34,8 @@ import { BinsizeSelectorComponent } from './binsize-selector/binsize-selector.co
         ReferenceSelectorComponent,
         ChromosomeSelectorComponent,
         IntervalSelectorComponent,
-        BinsizeSelectorComponent
+        BinsizeSelectorComponent,
+        ShareButtonComponent
     ],
     exports: [
         IntrogressionBrowserComponent

@@ -51,23 +51,9 @@
         <button pButton label="Download" icon="fa fa-download"
             disabled="true">
         </button>
-        <button pButton label="Share" icon="fa fa-external-link"
-            (click)="sharepanel.toggle($event)">
-        </button>
+        <app-share-button></app-share-button>
     </div>
 </div>
-
-<p-overlayPanel #sharepanel (onShow)="exportView($event)"
-                            (onHide)="share_link = ''">
-    <b>Link to current view:</b>
-    <div class="ui-inputgroup share-button">
-        <input pInputText [value]="share_link"
-            [size]="45" readonly="readonly">
-        <button pButton label="Copy" icon="fa fa-clipboard"
-            (click)="copyLink($event)">
-        </button>
-    </div>
-</p-overlayPanel>
 
 <div #plotContainer class="plot-container">
     <app-introgression-plot
