@@ -27,7 +27,6 @@ export class ChromosomeSelectorComponent {
 
     @Input()
     set chromosomes(chroms: Chromosome[]) {
-        console.log(chroms);
         this.chromosomeOptions = chroms.map(chrom => ({
             label: `${chrom.name} (${formatPosition(chrom.size, 'Mbp')})`,
             value: chrom
