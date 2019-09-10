@@ -54,13 +54,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         return this.plotState.plugins;
     }
 
-    set widget_interval(interval: number[]) {
-        this.plotState.interval = interval;
-    }
-    get widget_interval(): number[] {
-        return this.plotState.interval;
-    }
-
     widget_accessions: string[];
 
     widget_accession_groups: AccessionGroup[];
