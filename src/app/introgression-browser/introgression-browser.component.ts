@@ -84,12 +84,12 @@ export class IntrogressionBrowserComponent implements OnInit {
         return this.plotState.interval;
     }
 
-    readonly BINSIZE_SLIDER_DELAY = 750;
-    private binsize_slider_timeout: NodeJS.Timer;
-    binsize_min = 1000;
-    binsize_step = 1000;
-    binsize_max = 100000;
-    widget_binsize: number;
+    set widget_binsize(binsize: number) {
+        this.plotState.binsize = binsize;
+    }
+    get widget_binsize(): number {
+        return this.plotState.binsize;
+    }
 
     widget_accessions: string[];
 
@@ -228,16 +228,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         if (!this.widget_accessions.includes(this.plotState.reference)) {
             this.plotState.reference = this.widget_accessions[0];
         }
-    }
-
-    updateBinsize() {
-        this.plotState.binsize = this.widget_binsize;
-    }
-
-    binsizeSliderChange($event) {
-        clearTimeout(this.binsize_slider_timeout);
-        this.binsize_slider_timeout = setTimeout(() => this.updateBinsize(),
-                                                 this.BINSIZE_SLIDER_DELAY);
     }
 
     plotClick($event: PlotMouseClickEvent) {

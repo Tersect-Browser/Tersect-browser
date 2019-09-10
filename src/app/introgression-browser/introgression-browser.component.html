@@ -31,19 +31,12 @@
         </app-interval-selector>
     </div>
 
-    <div class="p-col binsize-selector tb-toolbar-control">
-        <div class="slider-label">Bin size: {{ widget_binsize }}</div>
-        <div class="binsize-slider">
-            <p-slider [(ngModel)]="widget_binsize"
-                [animate]="true"
-                [style]="{'width':'100%'}"
-                [min]="binsize_min" [max]="binsize_max"
-                [step]="binsize_step"
-                (onChange)="binsizeSliderChange($event)"
-                (onSlideEnd)="updateBinsize()">
-            </p-slider>
-        </div>
+    <div class="p-col tb-toolbar-control">
+        <app-binsize-selector
+            [(binsize)]="widget_binsize">
+        </app-binsize-selector>
     </div>
+
     <div class="p-col zoom-selector tb-toolbar-control">
         <button pButton icon="fa fa-search-minus"
             [disabled]="isZoomMin()"

@@ -1,0 +1,12 @@
+:host {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.slider-label {
+    margin-top: 0.2em;
+}
+
+.binsize-slider {
+    margin-top: 0.4em;
+}

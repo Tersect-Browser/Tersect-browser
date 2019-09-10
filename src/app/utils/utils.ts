@@ -29,6 +29,19 @@ export function floorTo(x: number, a: number): number {
 }
 
 /**
+ * Clamps the provided value between min and max.
+ */
+export function clamp(x: number, min: number, max: number): number {
+    if (x < min) {
+        return min;
+    } else if (x > max) {
+        return max;
+    } else {
+        return x;
+    }
+}
+
+/**
  * Format genomic position in terms of base pairs into a string with comma
  * separators for thousands.
  */

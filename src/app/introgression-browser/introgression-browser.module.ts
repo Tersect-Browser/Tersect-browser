@@ -24,6 +24,7 @@ import { AccessionStyleSelectorComponent } from './accession-style-selector/acce
 import { ReferenceSelectorComponent } from './reference-selector/reference-selector.component';
 import { ChromosomeSelectorComponent } from './chromosome-selector/chromosome-selector.component';
 import { IntervalSelectorComponent } from './interval-selector/interval-selector.component';
+import { BinsizeSelectorComponent } from './binsize-selector/binsize-selector.component';
 
 @NgModule({
     declarations: [
@@ -31,7 +32,8 @@ import { IntervalSelectorComponent } from './interval-selector/interval-selector
         AccessionStyleSelectorComponent,
         ReferenceSelectorComponent,
         ChromosomeSelectorComponent,
-        IntervalSelectorComponent
+        IntervalSelectorComponent,
+        BinsizeSelectorComponent
     ],
     exports: [
         IntrogressionBrowserComponent
