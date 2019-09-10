@@ -39,12 +39,8 @@ export class IntrogressionBrowserComponent implements OnInit {
                 private router: Router,
                 private route: ActivatedRoute) { }
 
-    get accession_infos(): AccessionInfo[] {
-        return this.plotState.accession_infos;
-    }
-
-    get plugins(): string[] {
-        return this.plotState.plugins;
+    get settings(): BrowserSettings {
+        return this.plotState.settings;
     }
 
     widget_accessions: string[];
