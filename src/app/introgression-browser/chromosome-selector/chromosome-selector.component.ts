@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome } from '../../models/Chromosome';
 import { formatPosition } from '../../utils/utils';
 import { isNullOrUndefined } from 'util';
+import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-chromosome-selector',
@@ -11,22 +12,12 @@ import { isNullOrUndefined } from 'util';
 export class ChromosomeSelectorComponent {
     chromosomeOptions: SelectItem[];
 
-    _selectedChromosome: Chromosome;
-
-    @Input()
     set selectedChromosome(chromosome: Chromosome) {
-        if (!isNullOrUndefined(chromosome)) {
-            this._selectedChromosome = chromosome;
-            this.selectedChromosomeChange.emit(chromosome);
-        }
+        this.plotState.chromosome = chromosome;
     }
-
     get selectedChromosome(): Chromosome {
-        return this._selectedChromosome;
+        return this.plotState.chromosome;
     }
-
-    @Output()
-    selectedChromosomeChange = new EventEmitter<Chromosome>();
 
     @Input()
     set chromosomes(chroms: Chromosome[]) {
@@ -38,4 +29,6 @@ export class ChromosomeSelectorComponent {
             value: chrom
         }));
     }
+
+    constructor(private plotState: PlotStateService) { }
 }
