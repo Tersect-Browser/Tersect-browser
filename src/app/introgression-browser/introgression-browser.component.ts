@@ -65,7 +65,6 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     widget_accession_groups: AccessionGroup[];
 
-    display_tree = false;
     display_sidebar = false;
 
     zoomIn() {
