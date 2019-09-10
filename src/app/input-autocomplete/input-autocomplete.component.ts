@@ -36,5 +36,4 @@ export class InputAutocompleteComponent {
             option => option.toUpperCase().includes(query)
         ).sort();
     }
-
 }

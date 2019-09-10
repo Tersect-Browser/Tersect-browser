@@ -11,7 +11,6 @@ import { isNullOrUndefined } from 'util';
     templateUrl: './bin-plot.component.html',
     styleUrls: ['./bin-plot.component.css']
 })
-
 export class BinPlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true }) canvas: ElementRef;
     @ViewChild('highlight', { static: true }) highlight: ElementRef;
@@ -180,5 +179,4 @@ export class BinPlotComponent extends CanvasPlotElement {
 
         this.plotService.updatePosition(new_pos);
     }
-
 }

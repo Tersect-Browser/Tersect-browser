@@ -19,7 +19,6 @@ interface ScaleTick {
     templateUrl: './scale-bar.component.html',
     styleUrls: ['./scale-bar.component.css']
 })
-
 export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true }) canvas: ElementRef;
 
@@ -305,5 +304,4 @@ export class ScaleBarComponent extends CanvasPlotElement {
     protected dragAction(drag_state: DragState): void {
         // Using dragActionGlobal instead
     }
-
 }

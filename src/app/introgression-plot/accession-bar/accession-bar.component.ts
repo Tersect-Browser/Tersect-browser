@@ -26,7 +26,6 @@ interface StoredAccessionBarState {
     templateUrl: './accession-bar.component.html',
     styleUrls: ['./accession-bar.component.css']
 })
-
 export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     @ViewChild('canvas', { static: true }) canvas: ElementRef;
 
@@ -429,5 +428,4 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
         this.plotService.updatePosition(new_pos);
     }
-
 }

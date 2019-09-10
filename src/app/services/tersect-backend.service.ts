@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable ,  of } from 'rxjs';
+import { Observable , of } from 'rxjs';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { isNullOrUndefined } from 'util';
@@ -13,7 +13,6 @@ import { APP_CONFIG, AppConfig } from '../app.config';
 
 @Injectable()
 export class TersectBackendService {
-
     private apiUrl: string;
 
     constructor(private http: HttpClient,
@@ -97,8 +96,7 @@ export class TersectBackendService {
      */
     getGapIndex(dataset_id: string,
                 chromosome: string): Observable<SequenceInterval[]> {
-        const query = `${this.apiUrl}/query/${dataset_id}/gaps/\
-${chromosome}`;
+        const query = `${this.apiUrl}/query/${dataset_id}/gaps/${chromosome}`;
         return this.http.get<SequenceInterval[]>(query);
     }
 
@@ -106,8 +104,7 @@ ${chromosome}`;
         if (isNullOrUndefined(export_id)) {
             return of(undefined);
         } else {
-            const query = `${this.apiUrl}/views/share/\
-${export_id}`;
+            const query = `${this.apiUrl}/views/share/${export_id}`;
             return this.http.get<BrowserSettings>(query);
         }
     }
@@ -124,5 +121,4 @@ ${export_id}`;
         const query = `${this.apiUrl}/views/export`;
         return this.http.post<number>(query, settings, httpOptions);
     }
-
 }

@@ -11,7 +11,6 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
     templateUrl: './tooltip.component.html',
     styleUrls: ['./tooltip.component.css']
 })
-
 export class TooltipComponent {
     @ViewChild('tooltip', { static: true }) tooltip: ElementRef;
 

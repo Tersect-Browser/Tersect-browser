@@ -189,5 +189,4 @@ export class IntrogressionBrowserComponent implements OnInit {
     setIntervalEnd($event: number) {
         this.plotState.interval = [this.plotState.interval[0], $event];
     }
-
 }

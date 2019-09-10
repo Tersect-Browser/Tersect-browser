@@ -1,5 +1,4 @@
 <p-accordion styleClass="group-box" [multiple]="true">
-
     <p-accordionTab *ngFor="let cat of categories" [selected]="true"
                     [header]="cat === undefined ? 'Uncategorized'
                                                 : cat">
@@ -32,11 +31,13 @@
         </p-listbox>
     </p-accordionTab>
 
-    <app-remove-group-dialog (deleteGroup)="removeGroup($event)">
+    <app-remove-group-dialog
+        (deleteGroup)="removeGroup($event)">
     </app-remove-group-dialog>
 
 </p-accordion>
 
-<app-color-selector appFitWindow header="Select group color"
-                    (colorChange)="changeGroupColor($event)">
+<app-color-selector appFitWindow
+    header="Select group color"
+    (colorChange)="changeGroupColor($event)">
 </app-color-selector>

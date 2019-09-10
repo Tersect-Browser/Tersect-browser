@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { GeneTGRC } from './db/genetgrc';
 import { AccessionTGRC } from './db/accessiontgrc';
 import { isNullOrUndefined } from 'util';
-import { MongooseDocument } from 'mongoose';
 
 export const router = Router();
 

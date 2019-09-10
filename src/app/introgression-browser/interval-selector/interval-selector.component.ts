@@ -79,5 +79,4 @@ export class IntervalSelectorComponent {
             this.updateInterval();
         }
     }
-
 }

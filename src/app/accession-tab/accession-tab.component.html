@@ -1,9 +1,10 @@
 <div class="tab-top-bar">Accession selection</div>
 
 <div class="tab-container">
-    <app-group-box [(groups)]="accessionGroups"
-                   [categories]="categories"
-                   [(selectedGroups)]="selected_groups">
+    <app-group-box
+        [(groups)]="accessionGroups"
+        [categories]="categories"
+        [(selectedGroups)]="selected_groups">
     </app-group-box>
 
     <p-table #dt
@@ -102,5 +103,4 @@
                           [accessionGroups]="accessionGroups"
                           [(visible)]="display_add_group_dialog">
     </app-add-group-dialog>
-
 </div>

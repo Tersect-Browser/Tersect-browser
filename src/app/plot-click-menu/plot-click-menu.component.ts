@@ -9,7 +9,6 @@ import { MenuItem } from 'primeng/components/common/menuitem';
     templateUrl: './plot-click-menu.component.html',
     styleUrls: ['./plot-click-menu.component.css']
 })
-
 export class PlotClickMenuComponent {
     constructor(private el: ElementRef) { }
 
@@ -148,5 +147,4 @@ export class PlotClickMenuComponent {
         this.position = { x: 0, y: 0 };
         this.el.nativeElement.style.visibility = 'hidden';
     }
-
 }

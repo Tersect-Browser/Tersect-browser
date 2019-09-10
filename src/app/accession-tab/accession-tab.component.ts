@@ -311,5 +311,4 @@ export class AccessionTabComponent implements AfterViewInit {
     extractCategories(groups: AccessionGroup[]): string[] {
         return uniqueArray(groups.map(grp => grp.category)).sort();
     }
-
 }
