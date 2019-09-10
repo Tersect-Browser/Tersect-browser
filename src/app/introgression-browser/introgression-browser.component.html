@@ -20,10 +20,10 @@
 
     <div class="p-col tb-toolbar-control">
         <div class="input-label-small">Chromosome</div>
-        <p-dropdown [options]="chromosomes"
-            [style]="{'width':'100%'}"
-            [(ngModel)]="widget_chromosome">
-        </p-dropdown>
+        <app-chromosome-selector
+            [chromosomes]="chromosomes"
+            [(selectedChromosome)]="widget_chromosome">
+        </app-chromosome-selector>
     </div>
     <div class="p-col interval-selector tb-toolbar-control">
         <div class="interval-label">

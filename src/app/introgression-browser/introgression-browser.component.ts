@@ -36,7 +36,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     readonly DEFAULT_ZOOM_LEVEL = 100;
 
-    chromosomes: SelectItem[];
+    chromosomes: Chromosome[];
 
     constructor(private plotState: PlotStateService,
                 private tersectBackendService: TersectBackendService,
@@ -153,7 +153,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                                                               chromosomes]) => {
                 this.generateMissingSettings(settings, accessions, chromosomes);
                 this.plotState.settings = settings;
-                this.chromosomes = this.formatChromosomeSelection(chromosomes);
+                this.chromosomes = chromosomes;
                 this.widget_accession_groups = settings.accession_groups;
                 this.widget_accessions = settings.selected_accessions;
                 this.widget_binsize = settings.selected_binsize;

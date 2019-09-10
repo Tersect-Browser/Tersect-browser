@@ -22,12 +22,14 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { AccessionStyleSelectorComponent } from './accession-style-selector/accession-style-selector.component';
 import { ReferenceSelectorComponent } from './reference-selector/reference-selector.component';
+import { ChromosomeSelectorComponent } from './chromosome-selector/chromosome-selector.component';
 
 @NgModule({
     declarations: [
         IntrogressionBrowserComponent,
         AccessionStyleSelectorComponent,
-        ReferenceSelectorComponent
+        ReferenceSelectorComponent,
+        ChromosomeSelectorComponent
     ],
     exports: [
         IntrogressionBrowserComponent
