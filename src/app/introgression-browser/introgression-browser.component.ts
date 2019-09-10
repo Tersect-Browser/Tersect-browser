@@ -52,13 +52,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         return this.plotState.chromosome;
     }
 
-    set widget_accession_style(style: AccessionDisplayStyle) {
-        this.plotState.accession_style = style;
-    }
-    get widget_accession_style(): AccessionDisplayStyle {
-        return this.plotState.accession_style;
-    }
-
     set widget_reference(reference: string) {
         this.plotState.reference = reference;
     }

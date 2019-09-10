@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component } from '@angular/core';
 import { AccessionDisplayStyle } from '../browser-settings';
+import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-accession-style-selector',
@@ -10,18 +11,12 @@ import { AccessionDisplayStyle } from '../browser-settings';
     ]
 })
 export class AccessionStyleSelectorComponent {
-    _accessionStyle: AccessionDisplayStyle;
-
-    @Input()
     set accessionStyle(accessionStyle: AccessionDisplayStyle) {
-        this._accessionStyle = accessionStyle;
-        this.accessionStyleChange.emit(accessionStyle);
+        this.plotState.accession_style = accessionStyle;
     }
-
     get accessionStyle() {
-        return this._accessionStyle;
+        return this.plotState.accession_style;
     }
 
-    @Output()
-    accessionStyleChange = new EventEmitter<AccessionDisplayStyle>();
+    constructor(private plotState: PlotStateService) { }
 }
