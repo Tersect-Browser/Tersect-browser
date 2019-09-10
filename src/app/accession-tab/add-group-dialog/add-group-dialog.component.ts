@@ -6,8 +6,7 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 
 @Component({
     selector: 'app-add-group-dialog',
-    templateUrl: './add-group-dialog.component.html',
-    styleUrls: ['./add-group-dialog.component.css']
+    templateUrl: './add-group-dialog.component.html'
 })
 export class AddGroupDialogComponent {
     error_message = '';
