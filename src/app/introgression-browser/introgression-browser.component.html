@@ -45,6 +45,17 @@
     </div>
 </div>
 
+<p-sidebar [(visible)]="displaySidebar" position="left"
+           [style]="{width: '90vw', padding: 0, border: 0}"
+           (onHide)="updateAccessions()">
+    <app-accession-tab *ngIf="displaySidebar"
+        [importPlugins]="settings.plugins"
+        [accessionOptions]="settings.accession_infos"
+        [(accessionGroups)]="accessionGroups"
+        [(selectedAccessions)]="selectedAccessions">
+    </app-accession-tab>
+</p-sidebar>
+
 <div #plotContainer class="plot-container">
     <app-introgression-plot
         (plotMouseClick)="plotClick($event)"
@@ -64,14 +75,3 @@
 </app-plot-click-menu>
 
 <app-tooltip></app-tooltip>
-
-<p-sidebar [(visible)]="displaySidebar" position="left"
-           [style]="{width: '90vw', padding: 0, border: 0}"
-           (onHide)="updateAccessions()">
-    <app-accession-tab *ngIf="displaySidebar"
-        [importPlugins]="settings.plugins"
-        [accessionOptions]="settings.accession_infos"
-        [(accessionGroups)]="widget_accession_groups"
-        [(selectedAccessions)]="widget_accessions">
-    </app-accession-tab>
-</p-sidebar>

@@ -2,7 +2,7 @@ import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.compo
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { Chromosome } from '../models/Chromosome';
 import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { BrowserSettings, AccessionDisplayStyle, AccessionGroup, AccessionInfo } from './browser-settings';
+import { BrowserSettings, AccessionDisplayStyle, AccessionGroup } from './browser-settings';
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
 
@@ -43,9 +43,13 @@ export class IntrogressionBrowserComponent implements OnInit {
         return this.plotState.settings;
     }
 
-    widget_accessions: string[];
-
-    widget_accession_groups: AccessionGroup[];
+    /**
+     * The following two properties are used to store accession tab outputs
+     * locally before the plot state is updated once the sidebar containing
+     * the tab is closed.
+     */
+    selectedAccessions: string[];
+    accessionGroups: AccessionGroup[];
 
     displaySidebar = false;
 
@@ -94,8 +98,8 @@ export class IntrogressionBrowserComponent implements OnInit {
                 this.generateMissingSettings(settings, accessions, chromosomes);
                 this.plotState.settings = settings;
                 this.chromosomes = chromosomes;
-                this.widget_accession_groups = settings.accession_groups;
-                this.widget_accessions = settings.selected_accessions;
+                this.accessionGroups = settings.accession_groups;
+                this.selectedAccessions = settings.selected_accessions;
             });
         });
     }
@@ -149,10 +153,10 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     updateAccessions() {
-        this.plotState.accessions = this.widget_accessions.slice(0);
-        this.plotState.accession_groups = this.widget_accession_groups;
-        if (!this.widget_accessions.includes(this.plotState.reference)) {
-            this.plotState.reference = this.widget_accessions[0];
+        this.plotState.accessions = [...this.selectedAccessions];
+        this.plotState.accession_groups = [...this.accessionGroups];
+        if (!this.selectedAccessions.includes(this.plotState.reference)) {
+            this.plotState.reference = this.selectedAccessions[0];
         }
     }
 
@@ -167,10 +171,10 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     removeAccession($event: string) {
-        this.widget_accessions.splice(
-            this.widget_accessions.findIndex(acc => acc === $event), 1
+        this.selectedAccessions.splice(
+            this.selectedAccessions.findIndex(acc => acc === $event), 1
         );
-        this.widget_accessions = this.widget_accessions.slice(0);
+        this.selectedAccessions = [...this.selectedAccessions];
         this.updateAccessions();
     }
 
