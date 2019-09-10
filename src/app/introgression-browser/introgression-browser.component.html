@@ -4,7 +4,7 @@
         <app-accession-style-selector></app-accession-style-selector>
         <button pButton class="tb-square-button"
             icon="fa fa-database"
-            (click)="display_sidebar = true" >
+            (click)="displaySidebar = true" >
         </button>
     </div>
 
@@ -68,10 +68,10 @@
 
 <app-tooltip></app-tooltip>
 
-<p-sidebar [(visible)]="display_sidebar" position="left"
+<p-sidebar [(visible)]="displaySidebar" position="left"
            [style]="{width: '90vw', padding: 0, border: 0}"
            (onHide)="updateAccessions()">
-    <app-accession-tab *ngIf="display_sidebar"
+    <app-accession-tab *ngIf="displaySidebar"
         [importPlugins]="plugins"
         [accessionOptions]="accession_infos"
         [(accessionGroups)]="widget_accession_groups"

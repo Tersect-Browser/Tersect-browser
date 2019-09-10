@@ -65,7 +65,7 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     widget_accession_groups: AccessionGroup[];
 
-    display_sidebar = false;
+    displaySidebar = false;
 
     zoomIn() {
         this.plotState.zoomIn();
