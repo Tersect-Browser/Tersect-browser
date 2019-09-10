@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component } from '@angular/core';
+import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
 import { Chromosome } from '../../models/Chromosome';
 import { isNullOrUndefined } from 'util';
 
@@ -11,36 +12,43 @@ export class IntervalSelectorComponent {
     readonly TYPING_DELAY = 750;
     private interval_input_timeout: NodeJS.Timer;
 
-    @Input()
-    chromosome: Chromosome;
-
-    @Input()
-    interval: number[] = [0, 0];
-
-    @Output()
-    intervalChange = new EventEmitter<number[]>();
-
+    private _intervalStart = 0;
     set intervalStart(pos: number) {
-        this.interval[0] = this.processInputPosition(pos);
+        this._intervalStart = this.processInputPosition(pos);
     }
     get intervalStart(): number {
-        if (!isNullOrUndefined(this.interval)) {
-            return this.interval[0];
+        if (!isNullOrUndefined(this.plotState.interval)) {
+            return this.plotState.interval[0];
         } else {
             return undefined;
         }
     }
 
+    private _intervalEnd = 0;
     set intervalEnd(pos: number) {
-        this.interval[1] = this.processInputPosition(pos);
+        this._intervalEnd = this.processInputPosition(pos);
     }
     get intervalEnd(): number {
-        if (!isNullOrUndefined(this.interval)) {
-            return this.interval[1];
+        if (!isNullOrUndefined(this.plotState.interval)) {
+            return this.plotState.interval[1];
         } else {
             return undefined;
         }
     }
+
+    set interval(interval: number[]) {
+        this.intervalStart = interval[0];
+        this.intervalEnd = interval[1];
+    }
+    get interval(): number[] {
+        return this.plotState.interval;
+    }
+
+    get chromosome(): Chromosome {
+        return this.plotState.chromosome;
+    }
+
+    constructor(private plotState: PlotStateService) { }
 
     private processInputPosition(pos: number): number {
         // used as a workaround due to possible PrimeNG bug
@@ -60,7 +68,7 @@ export class IntervalSelectorComponent {
     }
 
     updateInterval() {
-        this.intervalChange.emit([this.intervalStart, this.intervalEnd]);
+        this.plotState.interval = [this._intervalStart, this._intervalEnd];
     }
 
     intervalSliderChange($event: { event: Event, values: number[] }) {

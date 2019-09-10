@@ -39,17 +39,6 @@ export class IntrogressionBrowserComponent implements OnInit {
                 private router: Router,
                 private route: ActivatedRoute) { }
 
-    set widget_chromosome(chrom: Chromosome) {
-        if (this.plotState.chromosome.name !== chrom.name
-            || this.plotState.chromosome.size !== chrom.size) {
-            this.plotState.interval = [1, chrom.size];
-            this.plotState.chromosome = chrom;
-        }
-    }
-    get widget_chromosome(): Chromosome {
-        return this.plotState.chromosome;
-    }
-
     set widget_reference(reference: string) {
         this.plotState.reference = reference;
     }
@@ -126,7 +115,6 @@ export class IntrogressionBrowserComponent implements OnInit {
                 this.chromosomes = chromosomes;
                 this.widget_accession_groups = settings.accession_groups;
                 this.widget_accessions = settings.selected_accessions;
-                this.widget_chromosome = settings.selected_chromosome;
             });
         });
     }
