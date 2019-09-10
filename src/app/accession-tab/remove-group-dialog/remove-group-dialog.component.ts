@@ -4,8 +4,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'app-remove-group-dialog',
-    templateUrl: './remove-group-dialog.component.html',
-    styleUrls: ['./remove-group-dialog.component.css']
+    templateUrl: './remove-group-dialog.component.html'
 })
 export class RemoveGroupDialogComponent {
     visible = false;
