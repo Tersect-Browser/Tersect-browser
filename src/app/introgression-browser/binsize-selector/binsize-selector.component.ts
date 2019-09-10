@@ -1,5 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component } from '@angular/core';
 import { ceilTo, clamp } from '../../utils/utils';
+import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-binsize-selector',
@@ -8,24 +10,25 @@ import { ceilTo, clamp } from '../../utils/utils';
 })
 export class BinsizeSelectorComponent {
     private _binsize: number;
-    @Input()
     set binsize(binsize: number) {
         this._binsize = this.roundAndClampBinsize(binsize);
     }
     get binsize(): number {
-        return this._binsize;
+        return this.plotState.binsize;
     }
-
-    @Output()
-    binsizeChange = new EventEmitter<number>();
 
     binsize_min = 1000;
     binsize_step = 1000;
     binsize_max = 100000;
-    widget_binsize: number;
 
-    updateBinsize() {
-        this.binsizeChange.emit(this.binsize);
+    constructor(private plotState: PlotStateService) { }
+
+    updateBinsize(binsize?: number) {
+        if (isNullOrUndefined(binsize)) {
+            this.plotState.binsize = this._binsize;
+        } else {
+            this.plotState.binsize = this.roundAndClampBinsize(binsize);
+        }
     }
 
     /**
@@ -41,7 +44,7 @@ export class BinsizeSelectorComponent {
 
     binsizeSliderChange($event: { event: Event, value: number }) {
         if ($event.event.type === 'click') {
-            this.binsizeChange.emit(this.roundAndClampBinsize($event.value));
+            this.updateBinsize($event.value);
         }
     }
 }

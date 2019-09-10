@@ -74,13 +74,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         return this.plotState.interval;
     }
 
-    set widget_binsize(binsize: number) {
-        this.plotState.binsize = binsize;
-    }
-    get widget_binsize(): number {
-        return this.plotState.binsize;
-    }
-
     widget_accessions: string[];
 
     widget_accession_groups: AccessionGroup[];
@@ -149,7 +142,6 @@ export class IntrogressionBrowserComponent implements OnInit {
                 this.chromosomes = chromosomes;
                 this.widget_accession_groups = settings.accession_groups;
                 this.widget_accessions = settings.selected_accessions;
-                this.widget_binsize = settings.selected_binsize;
                 this.widget_chromosome = settings.selected_chromosome;
             });
         });

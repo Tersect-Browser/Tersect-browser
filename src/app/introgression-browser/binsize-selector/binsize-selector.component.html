@@ -1,6 +1,7 @@
 <div class="slider-label">Bin size: {{ binsize }}</div>
 <div class="binsize-slider">
-    <p-slider [(ngModel)]="binsize"
+    <p-slider
+        [(ngModel)]="binsize"
         [animate]="true"
         [style]="{'width':'100%'}"
         [min]="binsize_min" [max]="binsize_max"
