@@ -7,7 +7,7 @@ import { BrowserSettings, AccessionDisplayStyle, AccessionGroup, AccessionInfo }
 import { TersectBackendService } from '../services/tersect-backend.service';
 import { PlotStateService } from '../introgression-plot/services/plot-state.service';
 
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 import { isNullOrUndefined } from 'util';
@@ -25,7 +25,7 @@ import { join } from 'path';
     ],
     providers: [ PlotStateService ]
 })
-export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
+export class IntrogressionBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
     plotClickMenu: PlotClickMenuComponent;
 
@@ -77,9 +77,12 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         return this.plotState.plugins;
     }
 
-    readonly TYPING_DELAY = 750;
-    private interval_input_timeout: NodeJS.Timer;
-    widget_interval: number[] = [0, 0];
+    set widget_interval(interval: number[]) {
+        this.plotState.interval = interval;
+    }
+    get widget_interval(): number[] {
+        return this.plotState.interval;
+    }
 
     readonly BINSIZE_SLIDER_DELAY = 750;
     private binsize_slider_timeout: NodeJS.Timer;
@@ -158,19 +161,8 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                 this.widget_accessions = settings.selected_accessions;
                 this.widget_binsize = settings.selected_binsize;
                 this.widget_chromosome = settings.selected_chromosome;
-                this.interval_sub = this.plotState.interval$
-                                                  .subscribe(interval => {
-                    // Creating new interval array to ensure widget update
-                    this.widget_interval = [...interval];
-                });
             });
         });
-    }
-
-    ngOnDestroy() {
-        if (!isNullOrUndefined(this.interval_sub)) {
-            this.interval_sub.unsubscribe();
-        }
     }
 
     exportView($event) {
@@ -230,27 +222,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         }
     }
 
-    typeInterval(event) {
-        // workaround due to possible PrimeNG bug
-        // numbers typed into text box are sometimes interpreted as strings
-        const interval_start = parseInt(this.widget_interval[0].toString(), 10);
-        const interval_end = parseInt(this.widget_interval[1].toString(), 10);
-        if (!isNaN(interval_start)) {
-            this.widget_interval[0] = interval_start;
-        }
-        if (!isNaN(interval_end)) {
-            this.widget_interval[1] = interval_end;
-        }
-        // fix end
-        clearTimeout(this.interval_input_timeout);
-        this.interval_input_timeout = setTimeout(() => this.updateInterval(),
-                                                 this.TYPING_DELAY);
-    }
-
-    updateInterval() {
-        this.plotState.interval = this.widget_interval;
-    }
-
     updateAccessions() {
         this.plotState.accessions = this.widget_accessions.slice(0);
         this.plotState.accession_groups = this.widget_accession_groups;
@@ -261,13 +232,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     updateBinsize() {
         this.plotState.binsize = this.widget_binsize;
-    }
-
-    intervalSliderChange($event) {
-        // Selecting full chromosome on click
-        if ($event.event.type === 'click') {
-            this.plotState.interval = [1, this.plotState.chromosome.size];
-        }
     }
 
     binsizeSliderChange($event) {

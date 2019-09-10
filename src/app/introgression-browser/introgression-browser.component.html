@@ -23,28 +23,14 @@
             [(selectedChromosome)]="widget_chromosome">
         </app-chromosome-selector>
     </div>
-    <div class="p-col interval-selector tb-toolbar-control">
-        <div class="interval-label">
-            Interval:
-            <input class="interval-input" type="text" pKeyFilter="pint"
-                [(ngModel)]="widget_interval[0]"
-                (input)="typeInterval($event)" pInputText>
-            -
-            <input class="interval-input" type="text" pKeyFilter="pint"
-                [(ngModel)]="widget_interval[1]"
-                (input)="typeInterval($event)" pInputText>
-        </div>
-        <div class="interval-slider">
-            <p-slider [(ngModel)]="widget_interval"
-                [range]="true"
-                [animate]="true"
-                [style]="{'width':'100%'}"
-                (onChange)="intervalSliderChange($event)"
-                (onSlideEnd)="updateInterval()"
-                [min]="1" [max]="widget_chromosome?.size">
-            </p-slider>
-        </div>
+
+    <div class="p-col tb-toolbar-control">
+        <app-interval-selector
+            [chromosome]="widget_chromosome"
+            [(interval)]="widget_interval">
+        </app-interval-selector>
     </div>
+
     <div class="p-col binsize-selector tb-toolbar-control">
         <div class="slider-label">Bin size: {{ widget_binsize }}</div>
         <div class="binsize-slider">

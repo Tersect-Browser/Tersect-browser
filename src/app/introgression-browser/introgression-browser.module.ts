@@ -23,13 +23,15 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { AccessionStyleSelectorComponent } from './accession-style-selector/accession-style-selector.component';
 import { ReferenceSelectorComponent } from './reference-selector/reference-selector.component';
 import { ChromosomeSelectorComponent } from './chromosome-selector/chromosome-selector.component';
+import { IntervalSelectorComponent } from './interval-selector/interval-selector.component';
 
 @NgModule({
     declarations: [
         IntrogressionBrowserComponent,
         AccessionStyleSelectorComponent,
         ReferenceSelectorComponent,
-        ChromosomeSelectorComponent
+        ChromosomeSelectorComponent,
+        IntervalSelectorComponent
     ],
     exports: [
         IntrogressionBrowserComponent

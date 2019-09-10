@@ -10,11 +10,6 @@
     background-color: #f5f3e5;
 }
 
-.tb-toolbar .interval-selector {
-    text-align: center;
-    white-space: nowrap;
-}
-
 .tb-toolbar .binsize-selector {
     text-align: center;
     white-space: nowrap;
@@ -26,23 +21,6 @@
 
 .tb-toolbar .binsize-selector .binsize-slider {
     margin-top: 0.4em;
-}
-
-.tb-toolbar .interval-selector .interval-label {
-    margin-top: 0.1em;
-    width: 100%;
-}
-
-.tb-toolbar .interval-selector .interval-label .interval-input {
-    text-align: left;
-    width: 6em;
-    display: inline-block;
-}
-
-.tb-toolbar .interval-selector .interval-slider {
-    margin-top: 0.4em;
-    width: 100%;
-    display: inline-block;
 }
 
 .tb-toolbar .zoom-selector button {

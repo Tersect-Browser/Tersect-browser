@@ -1,0 +1,21 @@
+
+<div class="interval-label">
+    Interval:
+    <input class="interval-input" type="text" pKeyFilter="pint"
+        [(ngModel)]="intervalStart"
+        (input)="typeInterval()" pInputText>
+    -
+    <input class="interval-input" type="text" pKeyFilter="pint"
+        [(ngModel)]="intervalEnd"
+        (input)="typeInterval()" pInputText>
+</div>
+<div class="interval-slider">
+    <p-slider [(ngModel)]="interval"
+        [range]="true"
+        [animate]="true"
+        [style]="{'width':'100%'}"
+        (onChange)="intervalSliderChange($event)"
+        (onSlideEnd)="updateInterval()"
+        [min]="1" [max]="chromosome?.size">
+    </p-slider>
+</div>
