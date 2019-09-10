@@ -127,7 +127,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
      * Create array of chromosome SelectItems based on array of chromosomes.
      */
     formatChromosomeSelection(chromosomes: Chromosome[]): SelectItem[] {
-        return chromosomes.map((chrom: Chromosome) => ({
+        return chromosomes.map(chrom => ({
             label: `${chrom.name} (${formatPosition(chrom.size, 'Mbp')})`,
             value: chrom
         }));
@@ -135,7 +135,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         const settings$ = this.route.paramMap.pipe(
-            switchMap((params: ParamMap) => {
+            switchMap(params => {
                 return this.tersectBackendService
                            .getExportedSettings(params.get('exportid'));
             })
@@ -159,7 +159,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                 this.widget_binsize = settings.selected_binsize;
                 this.widget_chromosome = settings.selected_chromosome;
                 this.interval_sub = this.plotState.interval$
-                                                  .subscribe((interval) => {
+                                                  .subscribe(interval => {
                     // Creating new interval array to ensure widget update
                     this.widget_interval = [...interval];
                 });
@@ -175,7 +175,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     exportView($event) {
         this.tersectBackendService.exportSettings(this.plotState.settings)
-                                  .subscribe((id) => {
+                                  .subscribe(id => {
             const host = this.platformLocation['location'].origin;
             this.share_link = join(host, 'TersectBrowser', 'share',
                                    id.toString());
@@ -220,7 +220,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         }
         if (isNullOrUndefined(settings.accession_infos)) {
             settings.accession_infos = settings.selected_accessions
-                                               .map((acc_id) => ({
+                                               .map(acc_id => ({
                 id: acc_id,
                 Label: acc_id
             }));
@@ -300,7 +300,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
 
     removeAccession($event) {
         this.widget_accessions.splice(
-            this.widget_accessions.findIndex((acc) => acc === $event), 1
+            this.widget_accessions.findIndex(acc => acc === $event), 1
         );
         this.widget_accessions = this.widget_accessions.slice(0);
         this.updateAccessions();
