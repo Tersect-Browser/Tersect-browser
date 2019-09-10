@@ -42,7 +42,7 @@ export class IntervalSelectorComponent {
         }
     }
 
-    processInputPosition(pos: number): number {
+    private processInputPosition(pos: number): number {
         // used as a workaround due to possible PrimeNG bug
         // numbers typed into text box are sometimes interpreted as strings
         const fixed_pos = parseInt(pos.toString(), 10);
@@ -63,7 +63,7 @@ export class IntervalSelectorComponent {
         this.intervalChange.emit([this.intervalStart, this.intervalEnd]);
     }
 
-    intervalSliderChange($event) {
+    intervalSliderChange($event: { event: Event, values: number[] }) {
         // Selecting full chromosome on click
         if ($event.event.type === 'click') {
             this.intervalStart = 1;
