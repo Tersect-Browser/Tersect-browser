@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { AccessionInfo } from '../browser-settings';
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-reference-selector',
@@ -13,8 +14,10 @@ export class ReferenceSelectorComponent {
 
     @Input()
     set referenceAccession(accession: string) {
-        this._referenceAccession = accession;
-        this.referenceAccessionChange.emit(accession);
+        if (isNullOrUndefined(accession)) {
+            this._referenceAccession = accession;
+            this.referenceAccessionChange.emit(accession);
+        }
     }
 
     get referenceAccession(): string {
@@ -26,6 +29,9 @@ export class ReferenceSelectorComponent {
 
     @Input()
     set accessionInfos(infos: AccessionInfo[]) {
+        if (isNullOrUndefined(infos)) {
+            return;
+        }
         this.accessionOptions = infos.map(info => ({
             label: info.Label,
             value: info.id
