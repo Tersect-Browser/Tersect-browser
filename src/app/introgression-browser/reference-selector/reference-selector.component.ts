@@ -1,40 +1,41 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
-import { AccessionInfo } from '../browser-settings';
 import { isNullOrUndefined } from 'util';
+import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-reference-selector',
     templateUrl: './reference-selector.component.html'
 })
-export class ReferenceSelectorComponent {
+export class ReferenceSelectorComponent implements OnInit, OnDestroy {
     accessionOptions: SelectItem[];
 
-    _referenceAccession: string;
-
-    @Input()
     set referenceAccession(accession: string) {
-        if (isNullOrUndefined(accession)) {
-            this._referenceAccession = accession;
-            this.referenceAccessionChange.emit(accession);
+        if (!isNullOrUndefined(accession)) {
+            this.plotState.reference = accession;
         }
     }
-
     get referenceAccession(): string {
-        return this._referenceAccession;
+        return this.plotState.reference;
     }
 
-    @Output()
-    referenceAccessionChange = new EventEmitter<string>();
+    private infoUpdate: Subscription;
 
-    @Input()
-    set accessionInfos(infos: AccessionInfo[]) {
-        if (isNullOrUndefined(infos)) {
-            return;
-        }
-        this.accessionOptions = infos.map(info => ({
-            label: info.Label,
-            value: info.id
-        }));
+    constructor(private plotState: PlotStateService) { }
+
+    ngOnInit() {
+        this.infoUpdate = this.plotState.accession_infos$.subscribe(infos => {
+            if (!isNullOrUndefined(infos)) {
+                this.accessionOptions = infos.map(info => ({
+                    label: info.Label,
+                    value: info.id
+                }));
+            }
+        });
+    }
+
+    ngOnDestroy() {
+        this.infoUpdate.unsubscribe();
     }
 }
