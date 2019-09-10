@@ -1,4 +1,3 @@
-import { formatPosition } from '../utils/utils';
 import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.component';
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { Chromosome } from '../models/Chromosome';
@@ -10,9 +9,8 @@ import { PlotStateService } from '../introgression-plot/services/plot-state.serv
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNullOrUndefined } from 'util';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { SelectItem } from 'primeng/components/common/selectitem';
 
 @Component({
     selector: 'app-introgression-browser',
@@ -78,12 +76,8 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     widget_accession_groups: AccessionGroup[];
 
-    share_link = '';
-
     display_tree = false;
     display_sidebar = false;
-
-    interval_sub: Subscription;
 
     zoomIn() {
         this.plotState.zoomIn();
@@ -107,16 +101,6 @@ export class IntrogressionBrowserComponent implements OnInit {
         } else {
             this.zoomIn();
         }
-    }
-
-    /**
-     * Create array of chromosome SelectItems based on array of chromosomes.
-     */
-    formatChromosomeSelection(chromosomes: Chromosome[]): SelectItem[] {
-        return chromosomes.map(chrom => ({
-            label: `${chrom.name} (${formatPosition(chrom.size, 'Mbp')})`,
-            value: chrom
-        }));
     }
 
     ngOnInit() {
