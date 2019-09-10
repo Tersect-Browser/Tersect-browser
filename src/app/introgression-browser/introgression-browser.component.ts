@@ -180,11 +180,11 @@ export class IntrogressionBrowserComponent implements OnInit {
         }
     }
 
-    setReference($event) {
+    setReference($event: string) {
         this.plotState.reference = $event;
     }
 
-    removeAccession($event) {
+    removeAccession($event: string) {
         this.widget_accessions.splice(
             this.widget_accessions.findIndex(acc => acc === $event), 1
         );
@@ -196,11 +196,11 @@ export class IntrogressionBrowserComponent implements OnInit {
         this.plotState.interval = $event;
     }
 
-    setIntervalStart($event) {
+    setIntervalStart($event: number) {
         this.plotState.interval = [$event, this.plotState.interval[1]];
     }
 
-    setIntervalEnd($event) {
+    setIntervalEnd($event: number) {
         this.plotState.interval = [this.plotState.interval[0], $event];
     }
 
