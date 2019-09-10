@@ -10,15 +10,14 @@
         </button>
     </div>
 
-    <div class="p-col accession-selector tb-toolbar-control">
+    <div class="p-col tb-toolbar-control">
         <div class="input-label-small">Reference</div>
-        <p-dropdown [options]="accessions"
-            [filter]="true"
-            [autoWidth]="false"
-            [style]="{'width':'100%'}"
-            [(ngModel)]="widget_reference">
-        </p-dropdown>
+        <app-reference-selector
+            [accessionInfos]="accession_infos"
+            [(referenceAccession)]="widget_reference">
+        </app-reference-selector>
     </div>
+
     <div class="p-col tb-toolbar-control">
         <div class="input-label-small">Chromosome</div>
         <p-dropdown [options]="chromosomes"

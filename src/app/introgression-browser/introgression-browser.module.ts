@@ -21,11 +21,13 @@ import { ToggleButtonModule } from 'primeng/togglebutton';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { AccessionStyleSelectorComponent } from './accession-style-selector/accession-style-selector.component';
+import { ReferenceSelectorComponent } from './reference-selector/reference-selector.component';
 
 @NgModule({
     declarations: [
         IntrogressionBrowserComponent,
-        AccessionStyleSelectorComponent
+        AccessionStyleSelectorComponent,
+        ReferenceSelectorComponent
     ],
     exports: [
         IntrogressionBrowserComponent

@@ -12,8 +12,8 @@ export interface AccessionDictionary {
 }
 
 export interface AccessionInfo {
-    id?: string;
-    Label?: string;
+    id: string;
+    Label: string;
     [s: string]: string;
 }
 

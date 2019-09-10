@@ -37,7 +37,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     readonly DEFAULT_ZOOM_LEVEL = 100;
 
     chromosomes: SelectItem[];
-    accessions: SelectItem[];
 
     constructor(private plotState: PlotStateService,
                 private tersectBackendService: TersectBackendService,
@@ -138,16 +137,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
         }));
     }
 
-    /**
-     * Create array of simple accession options.
-     */
-    formatAccessionOptionsSimple(accession_ids: string[]): SelectItem[] {
-        return accession_ids.map((acc: string) => ({
-            label: this.plotState.accession_dictionary[acc].label,
-            value: acc
-        }));
-    }
-
     ngOnInit() {
         const settings$ = this.route.paramMap.pipe(
             switchMap((params: ParamMap) => {
@@ -168,7 +157,6 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
                                                               chromosomes]) => {
                 this.generateMissingSettings(settings, accessions, chromosomes);
                 this.plotState.settings = settings;
-                this.accessions = this.formatAccessionOptionsSimple(accessions);
                 this.chromosomes = this.formatChromosomeSelection(chromosomes);
                 this.widget_accession_groups = settings.accession_groups;
                 this.widget_accessions = settings.selected_accessions;
