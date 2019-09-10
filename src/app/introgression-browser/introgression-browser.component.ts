@@ -285,7 +285,7 @@ export class IntrogressionBrowserComponent implements OnInit, OnDestroy {
     /**
      * Copy view share link to clipboard.
      */
-    copyLink($event) {
+    copyLink() {
         document.addEventListener('copy', ($e: ClipboardEvent) => {
             $e.clipboardData.setData('text/plain', this.share_link);
             $e.preventDefault();
