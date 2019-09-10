@@ -39,13 +39,6 @@ export class IntrogressionBrowserComponent implements OnInit {
                 private router: Router,
                 private route: ActivatedRoute) { }
 
-    set widget_reference(reference: string) {
-        this.plotState.reference = reference;
-    }
-    get widget_reference(): string {
-        return this.plotState.reference;
-    }
-
     get accession_infos(): AccessionInfo[] {
         return this.plotState.accession_infos;
     }
