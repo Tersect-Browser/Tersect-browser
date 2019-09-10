@@ -2,5 +2,7 @@
 <p-dropdown [options]="accessionOptions"
     [filter]="true"
     [style]="{'width':'100%'}"
+    [virtualScroll]="true"
+    itemSize="25"
     [(ngModel)]="referenceAccession">
 </p-dropdown>
