@@ -12,8 +12,12 @@ import { PlotStateService } from '../../introgression-plot/services/plot-state.s
 export class ChromosomeSelectorComponent {
     chromosomeOptions: SelectItem[];
 
-    set selectedChromosome(chromosome: Chromosome) {
-        this.plotState.chromosome = chromosome;
+    set selectedChromosome(chrom: Chromosome) {
+        if (this.plotState.chromosome.name !== chrom.name
+            || this.plotState.chromosome.size !== chrom.size) {
+            this.plotState.interval = [1, chrom.size];
+            this.plotState.chromosome = chrom;
+        }
     }
     get selectedChromosome(): Chromosome {
         return this.plotState.chromosome;
