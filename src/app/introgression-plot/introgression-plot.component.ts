@@ -29,8 +29,8 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
     @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
-    private full_redraw: Subscription;
-    private bin_redraw: Subscription;
+    private fullRedraw: Subscription;
+    private binRedraw: Subscription;
 
     get error_message() {
         return this.plotService.error_message;
@@ -41,7 +41,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.full_redraw = combineLatest([
+        this.fullRedraw = combineLatest([
             this.plotState.accession_style$,
             this.plotState.zoom_level$,
             this.plotState.accession_dictionary$,
@@ -51,14 +51,14 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
             this.redrawPlot();
         });
 
-        this.bin_redraw = this.plotService.highlight_source.subscribe(() => {
+        this.binRedraw = this.plotService.highlight_source.subscribe(() => {
             this.binPlot.draw();
         });
     }
 
     ngOnDestroy() {
-        this.full_redraw.unsubscribe();
-        this.bin_redraw.unsubscribe();
+        this.fullRedraw.unsubscribe();
+        this.binRedraw.unsubscribe();
     }
 
     private redrawPlot() {
