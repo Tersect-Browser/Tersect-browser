@@ -9,23 +9,23 @@ import { isNullOrUndefined } from '../../utils/utils';
     templateUrl: './add-group-dialog.component.html'
 })
 export class AddGroupDialogComponent {
-    error_message = '';
+    errorMessage = '';
 
-    private _category_name = '';
+    private _categoryName = '';
     set category_name(name: string) {
-        this._category_name = name.trim();
+        this._categoryName = name.trim();
     }
     get category_name(): string {
-        return this._category_name;
+        return this._categoryName;
     }
 
-    private _group_name = '';
+    private _groupName = '';
     set group_name(name: string) {
-        this._group_name = name.trim();
-        this.validateGroupName(this._group_name);
+        this._groupName = name.trim();
+        this.validateGroupName(this._groupName);
     }
     get group_name(): string {
-        return this._group_name;
+        return this._groupName;
     }
 
     @Input()
@@ -78,11 +78,11 @@ export class AddGroupDialogComponent {
         this.visible = false;
     }
 
-    private validateGroupName(group_name: string) {
-        if (this.accessionGroups.some(grp => grp.name === group_name)) {
-            this.error_message = 'Group name already in use';
+    private validateGroupName(groupName: string) {
+        if (this.accessionGroups.some(grp => grp.name === groupName)) {
+            this.errorMessage = 'Group name already in use';
         } else {
-            this.error_message = '';
+            this.errorMessage = '';
         }
     }
 }

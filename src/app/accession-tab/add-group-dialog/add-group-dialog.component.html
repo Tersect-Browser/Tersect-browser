@@ -10,10 +10,10 @@
         </ng-template>
     </div>
 
-    <p-message *ngIf="error_message !== ''"
+    <p-message *ngIf="errorMessage !== ''"
                styleClass="fade-in"
                severity="error"
-               text="{{ error_message }}">
+               text="{{ errorMessage }}">
     </p-message>
 
     <div class="group-dialog-small-margin">
@@ -40,7 +40,7 @@
                 label="Save"
                 [disabled]="selectedAccessions.length === 0
                             || group_name.length === 0
-                            || error_message !== ''">
+                            || errorMessage !== ''">
         </button>
     </div>
 </p-dialog>
