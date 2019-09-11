@@ -4,7 +4,7 @@
         [(ngModel)]="binsize"
         [animate]="true"
         [style]="{'width':'100%'}"
-        [min]="binsize_min" [max]="binsize_max"
+        [min]="BINSIZE_MIN" [max]="BINSIZE_MAX"
         (onChange)="binsizeSliderChange($event)"
         (onSlideEnd)="updateBinsize()">
     </p-slider>

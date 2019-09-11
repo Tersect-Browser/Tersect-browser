@@ -16,9 +16,9 @@ export class BinsizeSelectorComponent {
         return this.plotState.binsize;
     }
 
-    binsize_min = 1000;
-    binsize_step = 1000;
-    binsize_max = 100000;
+    readonly BINSIZE_MIN = 1000;
+    readonly BINSIZE_STEP = 1000;
+    readonly BINSIZE_MAX = 100000;
 
     constructor(private plotState: PlotStateService) { }
 
@@ -37,8 +37,8 @@ export class BinsizeSelectorComponent {
      * the original event which we need to distinguish slider clicks from drags.
      */
     private roundAndClampBinsize(binsize: number): number {
-        return clamp(ceilTo(binsize, this.binsize_step),
-                            this.binsize_min, this.binsize_max);
+        return clamp(ceilTo(binsize, this.BINSIZE_STEP),
+                            this.BINSIZE_MIN, this.BINSIZE_MAX);
     }
 
     binsizeSliderChange($event: { event: Event, value: number }) {
