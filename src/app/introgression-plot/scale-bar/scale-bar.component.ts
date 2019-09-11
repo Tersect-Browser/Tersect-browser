@@ -113,7 +113,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const tick: ScaleTick = {
             position: undefined,
             type: 'minor',
-            useLabel: false,
+            useLabel: false
         };
         this.drawTicks(ctx, tick_bp_distance, tick);
     }

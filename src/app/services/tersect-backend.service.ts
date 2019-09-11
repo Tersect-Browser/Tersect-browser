@@ -71,7 +71,7 @@ export class TersectBackendService {
         const tree_query: TreeQuery = {
             chromosome_name: chromosome,
             interval: [start, end],
-            accessions: accessions,
+            accessions: accessions
         };
         return this.http.post<PheneticTree>(query, tree_query, httpOptions);
     }

@@ -77,7 +77,7 @@ export abstract class CanvasPlotElement {
         this.plotMouseClick.emit({
             x: click_state.event.clientX,
             y: click_state.event.clientY,
-            target: target,
+            target: target
         });
     }
 
