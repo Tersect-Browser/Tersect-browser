@@ -25,7 +25,7 @@ export class TersectBackendService {
      * tersect database and a chosen 'reference' accession in a specified
      * chromosomal interval.
      *
-     * @param dataset_id dataset being used
+     * @param datasetId dataset being used
      * @param reference reference accession id
      * @param chromosome chromosome of interest
      * @param start start position of the interval of interest
@@ -33,78 +33,78 @@ export class TersectBackendService {
      * @param binsize size of the bin (in base pairs)
      * @param accessions accessions included
      */
-    getRefDistanceBins(dataset_id: string, reference: string,
+    getRefDistanceBins(datasetId: string, reference: string,
                        chromosome: string, start: number, stop: number,
                        binsize: number,
                        accessions: string[]): Observable<any[]> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        const query = `${this.apiUrl}/query/${dataset_id}/dist`;
-        const ref_dist_query: RefDistQuery = {
+        const query = `${this.apiUrl}/query/${datasetId}/dist`;
+        const refDistQuery: RefDistQuery = {
             reference: reference,
             chromosome_name: chromosome,
             interval: [start, stop],
             binsize: binsize,
             accessions: accessions
         };
-        return this.http.post<any>(query, ref_dist_query, httpOptions);
+        return this.http.post<any>(query, refDistQuery, httpOptions);
     }
 
     /**
      * Retrieve a phenetic tree for a given list of accessions in a specific
      * dataset and chromosomal interval.
      *
-     * @param dataset_id dataset being used
+     * @param datasetId dataset being used
      * @param chromosome chromosome of interest
      * @param start start position of the interval of interest
      * @param end end position of the interval of interest
      * @param accessions array of accessions to use
      */
-    getPheneticTree(dataset_id: string, chromosome: string,
+    getPheneticTree(datasetId: string, chromosome: string,
                     start: number, end: number,
                     accessions: string[]): Observable<PheneticTree> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        const query = `${this.apiUrl}/query/${dataset_id}/tree`;
-        const tree_query: TreeQuery = {
+        const query = `${this.apiUrl}/query/${datasetId}/tree`;
+        const treeQuery: TreeQuery = {
             chromosome_name: chromosome,
             interval: [start, end],
             accessions: accessions
         };
-        return this.http.post<PheneticTree>(query, tree_query, httpOptions);
+        return this.http.post<PheneticTree>(query, treeQuery, httpOptions);
     }
 
     /**
      * Retrieve list of accessions in a Tersect dataset.
      */
-    getAccessionNames(dataset_id: string): Observable<string[]> {
-        const query = `${this.apiUrl}/query/${dataset_id}/samples`;
+    getAccessionNames(datasetId: string): Observable<string[]> {
+        const query = `${this.apiUrl}/query/${datasetId}/samples`;
         return this.http.get<string[]>(query);
     }
 
-    getChromosomes(dataset_id: string): Observable<Chromosome[]> {
-        const query = `${this.apiUrl}/query/${dataset_id}/chromosomes`;
+    getChromosomes(datasetId: string): Observable<Chromosome[]> {
+        const query = `${this.apiUrl}/query/${datasetId}/chromosomes`;
         return this.http.get<Chromosome[]>(query);
     }
 
     /**
      * Retrieve list of gaps for a given chromosome.
-     * @param dataset_id dataset being used
+     * @param datasetId dataset being used
      * @param chromosome chromosome of interest
      */
-    getGapIndex(dataset_id: string,
+    getGapIndex(datasetId: string,
                 chromosome: string): Observable<SequenceInterval[]> {
-        const query = `${this.apiUrl}/query/${dataset_id}/gaps/${chromosome}`;
+        const query = `${this.apiUrl}/query/${datasetId}/gaps/${chromosome}`;
         return this.http.get<SequenceInterval[]>(query);
     }
 
-    getExportedSettings(export_id: string): Observable<BrowserSettings> {
-        if (isNullOrUndefined(export_id)) {
+    getExportedSettings(exportId: string): Observable<BrowserSettings> {
+        if (isNullOrUndefined(exportId)) {
             return of(undefined);
         } else {
-            const query = `${this.apiUrl}/views/share/${export_id}`;
+            const query = `${this.apiUrl}/views/share/${exportId}`;
             return this.http.get<BrowserSettings>(query);
         }
     }

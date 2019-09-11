@@ -17,7 +17,7 @@ export class TooltipComponent {
     /**
      * Tooltip position relative to mouse.
      */
-    readonly tooltip_offset: PlotPosition = { x: 0, y: 20 };
+    readonly tooltipOffset: PlotPosition = { x: 0, y: 20 };
 
     private formatBinTooltip(target: PlotBin): string {
         return `${target.accession_label}<br>
@@ -53,9 +53,9 @@ ${formatPosition(target.start_position)}
 
     show($event: PlotMouseHoverEvent) {
         this.tooltip.nativeElement.style.left = `${$event.x
-                                                   + this.tooltip_offset.x}px`;
+                                                   + this.tooltipOffset.x}px`;
         this.tooltip.nativeElement.style.top = `${$event.y
-                                                  + this.tooltip_offset.y}px`;
+                                                  + this.tooltipOffset.y}px`;
         this.tooltip.nativeElement.style.visibility = 'visible';
         this.tooltip.nativeElement.innerHTML = this.formatContent($event);
     }

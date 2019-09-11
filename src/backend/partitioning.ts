@@ -23,19 +23,19 @@ interface IntervalPartitions {
 }
 
 interface ChromosomePartitions {
-    [chromosome_names: string]: number[];
+    [chromosomeNames: string]: number[];
 }
 
-function loadChromosomePartitions(tsi_location: string,
-                                  index_partitions: number[]): ChromosomePartitions {
+function loadChromosomePartitions(tsiLocation: string,
+                                  indexPartitions: number[]): ChromosomePartitions {
     const output = {};
-    const command = `tersect chroms -n ${tsi_location}`;
+    const command = `tersect chroms -n ${tsiLocation}`;
 
     execSync(command).toString().trim().split('\n').forEach(line => {
         const cols = line.split('\t');
         const partitions = [ parseInt(cols[1], 10) ];
         // Include only partitions smaller than the chromosome size
-        partitions.push(...index_partitions.filter(x => {
+        partitions.push(...indexPartitions.filter(x => {
              return x < partitions[0];
         }));
         output[cols[0]] = partitions;
@@ -45,14 +45,14 @@ function loadChromosomePartitions(tsi_location: string,
 }
 
 function _partitionInterval(input: Interval,
-                            part_size: number): IntervalPartitions {
+                            partSize: number): IntervalPartitions {
     const intervals: IntervalPartitions = { indexed: [], nonindexed: []};
-    for (let i = Math.round(input.start / part_size) * part_size;
-             i < Math.round(input.end / part_size) * part_size;
-             i += part_size) {
+    for (let i = Math.round(input.start / partSize) * partSize;
+             i < Math.round(input.end / partSize) * partSize;
+             i += partSize) {
         intervals.indexed.push({
             start: i + 1,
-            end: i + part_size,
+            end: i + partSize,
             type: input.type === 'subtract' ? 'subtract' : 'add'
         });
     }
@@ -96,43 +96,43 @@ function _partitionInterval(input: Interval,
 }
 
 function partitionInterval(input: Interval,
-                           partition_sizes: number[]): IntervalPartitions {
-    partition_sizes = [...partition_sizes]; // cloning
-    partition_sizes.sort((a, b) => a - b); // Ascending order
-    let part_size = partition_sizes.pop();
-    const intervals = _partitionInterval(input, part_size);
-    while (partition_sizes.length) {
-        part_size = partition_sizes.pop();
-        const new_indexed: Interval[] = [];
-        const new_nonindexed: Interval[] = [];
+                           partitionSizes: number[]): IntervalPartitions {
+    partitionSizes = [...partitionSizes]; // cloning
+    partitionSizes.sort((a, b) => a - b); // Ascending order
+    let partSize = partitionSizes.pop();
+    const intervals = _partitionInterval(input, partSize);
+    while (partitionSizes.length) {
+        partSize = partitionSizes.pop();
+        const newIndexed: Interval[] = [];
+        const newNonindexed: Interval[] = [];
         intervals.nonindexed.forEach(inter => {
-            const new_inter = _partitionInterval(inter, part_size);
-            new_indexed.push(...new_inter.indexed);
-            new_nonindexed.push(...new_inter.nonindexed);
+            const newInter = _partitionInterval(inter, partSize);
+            newIndexed.push(...newInter.indexed);
+            newNonindexed.push(...newInter.nonindexed);
         });
-        intervals.indexed.push(...new_indexed);
-        intervals.nonindexed = new_nonindexed;
+        intervals.indexed.push(...newIndexed);
+        intervals.nonindexed = newNonindexed;
     }
     return intervals;
 }
 
-export function partitionQuery(tsi_location: string,
-                               index_partitions: number[],
+export function partitionQuery(tsiLocation: string,
+                               indexPartitions: number[],
                                query: TreeQuery): IntervalPartitions {
     // TODO: check if calling this each time affects performance
-    const chromosome_partitions = loadChromosomePartitions(tsi_location,
-                                                           index_partitions);
+    const chromosomePartitions = loadChromosomePartitions(tsiLocation,
+                                                           indexPartitions);
 
     const partitions = partitionInterval({
         start: query.interval[0], end: query.interval[1]
-    }, chromosome_partitions[query.chromosome_name]);
+    }, chromosomePartitions[query.chromosome_name]);
 
     // Skip partitions which lie entirely outiside the chromosome
     partitions.indexed = partitions.indexed.filter(
-        p => p.start <= chromosome_partitions[query.chromosome_name][0]
+        p => p.start <= chromosomePartitions[query.chromosome_name][0]
     );
     partitions.nonindexed = partitions.nonindexed.filter(
-        p => p.start <= chromosome_partitions[query.chromosome_name][0]
+        p => p.start <= chromosomePartitions[query.chromosome_name][0]
     );
 
     return partitions;

@@ -7,7 +7,7 @@ import { AccessionTGRC } from '../../backend/db/accessiontgrc';
 import { map } from 'rxjs/operators';
 
 export interface AccessionAlleles {
-    [tgrc_id: string]: {
+    [tgrcId: string]: {
         gene: string;
         allele: string;
     };
@@ -33,13 +33,13 @@ export class TGRCBackendService {
     getTGRCAccessionGenes(accessions: string[]): Observable<GeneTGRC[]> {
         // TODO: implement this more efficiently on the back end
         return forkJoin([this.getTGRCGenes(), this.getTGRCAccessions()]).pipe(
-            map(([all_genes, all_acc]) => {
-                const gene_ids = new Set();
-                all_acc.filter(acc => accessions.includes(acc.accession))
-                       .forEach(acc => {
-                    acc.alleles.forEach(allele => gene_ids.add(allele.gene));
+            map(([allGenes, allAcc]) => {
+                const geneIds = new Set();
+                allAcc.filter(acc => accessions.includes(acc.accession))
+                      .forEach(acc => {
+                    acc.alleles.forEach(allele => geneIds.add(allele.gene));
                 });
-                return all_genes.filter(gene => gene_ids.has(gene.gene));
+                return allGenes.filter(gene => geneIds.has(gene.gene));
             })
         );
     }

@@ -21,8 +21,8 @@ export class TGRCGeneImporterComponent extends AccessionInfoImporterComponent
     }
 
     ngOnInit() {
-        const accession_tgrc_nums = this.infos.map(info => info['TGRC #']);
-        this.tgrcBackendService.getTGRCAccessionGenes(accession_tgrc_nums)
+        const accessionTgrcNums = this.infos.map(info => info['TGRC #']);
+        this.tgrcBackendService.getTGRCAccessionGenes(accessionTgrcNums)
                                .subscribe((genes: GeneTGRC[]) => {
             this.tgrcGenes = genes.map(gene => ({
                 label: gene.locusName.length ? `${gene.gene} (${gene.locusName})`

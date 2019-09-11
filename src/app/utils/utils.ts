@@ -44,9 +44,9 @@ export function clamp(x: number, min: number, max: number): number {
  * Format genomic position in terms of base pairs into a string with comma
  * separators for thousands.
  */
-export function formatPosition(genome_position: number,
+export function formatPosition(genomePosition: number,
                                unit?: 'kbp' | 'Mbp'): string {
-    const pos = Math.abs(genome_position); // preventing -0
+    const pos = Math.abs(genomePosition); // preventing -0
     if (isNullOrUndefined(unit)) {
         return pos.toLocaleString('en');
     } else {
@@ -64,11 +64,11 @@ export function formatPosition(genome_position: number,
  */
 export function findClosest(x: number, choices: number[]): number {
     let result = NaN;
-    let min_distance = Infinity;
+    let minDistance = Infinity;
     choices.forEach(choice => {
         const dist = Math.abs(x - choice);
-        if (dist < min_distance) {
-            min_distance = dist;
+        if (dist < minDistance) {
+            minDistance = dist;
             result = choice;
         }
     });
@@ -108,10 +108,10 @@ export function syncSort(toSort: any[], sortBy: any[],
 /**
  * Formats a region string as used by Tersect and tabix.
  */
-export function formatRegion(chromosome_name: string,
-                             start_pos: number, end_pos: number): string {
+export function formatRegion(chromosomeName: string,
+                             startPos: number, endPos: number): string {
 
-    return `${chromosome_name}:${start_pos}-${end_pos}`;
+    return `${chromosomeName}:${startPos}-${endPos}`;
 }
 
 export function deepCopy(object: any): any {
@@ -153,11 +153,11 @@ export function arraySubtract(a: any[], b: any[]): any[] {
  */
 export function fixedElementPosition(element: ElementRef): {x: number,
                                                             y: number} {
-    const left_px = element.nativeElement.style.left;
-    const top_px = element.nativeElement.style.top;
+    const leftPx = element.nativeElement.style.left;
+    const topPx = element.nativeElement.style.top;
     return {
-        x: parseInt(left_px.substring(0, left_px.length - 2), 10),
-        y: parseInt(top_px.substring(0, top_px.length - 2), 10)
+        x: parseInt(leftPx.substring(0, leftPx.length - 2), 10),
+        y: parseInt(topPx.substring(0, topPx.length - 2), 10)
     };
 }
 
