@@ -25,15 +25,15 @@ export class PlotClickMenuComponent {
         this.el.nativeElement.style.top = `${pos.y}px`;
     }
 
-    private getAccessionItem(target_accession: PlotAccession): MenuItem {
+    private getAccessionItem(targetAccession: PlotAccession): MenuItem {
         return {
-            label: target_accession.accession_label,
+            label: targetAccession.accession_label,
             items: [
                 {
                     label: 'Set as reference',
                     icon: 'fa fa-star-o',
                     command: () => {
-                        this.setReference.emit(target_accession.accession);
+                        this.setReference.emit(targetAccession.accession);
                         this.hide();
                     }
                 },
@@ -41,7 +41,7 @@ export class PlotClickMenuComponent {
                     label: 'Remove from plot',
                     icon: 'fa fa-remove',
                     command: () => {
-                        this.removeAccession.emit(target_accession.accession);
+                        this.removeAccession.emit(targetAccession.accession);
                         this.hide();
                     }
                 }
