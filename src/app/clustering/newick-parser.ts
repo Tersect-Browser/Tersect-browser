@@ -8,11 +8,11 @@ import { syncSort, isNullOrUndefined } from '../utils/utils';
  */
 function _ladderizeSubtree(node: TreeNode, weighted = false): number {
     if (node.children.length) {
-        const subtree_sizes = node.children
+        const subtreeSizes = node.children
                                   .map((child) => _ladderizeSubtree(child,
                                                                     weighted));
-        node.children = syncSort(node.children, subtree_sizes);
-        return subtree_sizes.reduce((a, b) => a + b, 0);
+        node.children = syncSort(node.children, subtreeSizes);
+        return subtreeSizes.reduce((a, b) => a + b, 0);
     } else {
         return weighted ? node.length : 1;
     }
@@ -33,33 +33,33 @@ function* newickTokens(newick: string, stripQuotes = true): Iterator<string> {
 }
 
 function _parseNewick(tokens: Iterator<string>,
-                      current_token: { value: string } = null): TreeNode {
+                      currentToken: { value: string } = null): TreeNode {
     const output: TreeNode = { children: [] };
 
-    if (isNullOrUndefined(current_token)) {
-        current_token = { value: tokens.next().value };
+    if (isNullOrUndefined(currentToken)) {
+        currentToken = { value: tokens.next().value };
     }
 
-    if (current_token.value === '(') {
+    if (currentToken.value === '(') {
         // Interior node
-        while (current_token.value !== ')') {
-            current_token.value = tokens.next().value;
-            output.children.push(_parseNewick(tokens, current_token));
+        while (currentToken.value !== ')') {
+            currentToken.value = tokens.next().value;
+            output.children.push(_parseNewick(tokens, currentToken));
         }
-        current_token.value = tokens.next().value;
+        currentToken.value = tokens.next().value;
     }
-    if (current_token.value !== ',' && current_token.value !== ')'
-                                    && current_token.value !== ':') {
+    if (currentToken.value !== ',' && currentToken.value !== ')'
+                                   && currentToken.value !== ':') {
         // Named node
-        if (!isNullOrUndefined(current_token.value)) {
-            output.taxon = { name: current_token.value };
-            current_token.value = tokens.next().value;
+        if (!isNullOrUndefined(currentToken.value)) {
+            output.taxon = { name: currentToken.value };
+            currentToken.value = tokens.next().value;
         }
     }
-    if (current_token.value === ':') {
+    if (currentToken.value === ':') {
         // Length specified
         output.length = parseFloat(tokens.next().value);
-        current_token.value = tokens.next().value;
+        currentToken.value = tokens.next().value;
     }
     return output;
 }
