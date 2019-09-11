@@ -13,7 +13,7 @@ import { isNullOrUndefined, promisify } from 'util';
 import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
 import { PheneticTree } from './db/phenetictree';
 import { TreeQuery, TreeDatabaseQuery } from '../app/models/TreeQuery';
-import { fileSync, } from 'tmp';
+import { fileSync } from 'tmp';
 import { partitionQuery } from './partitioning';
 import { formatRegion } from '../app/utils/utils';
 import { fromEvent, merge } from 'rxjs';
