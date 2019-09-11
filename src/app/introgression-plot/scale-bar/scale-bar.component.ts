@@ -47,8 +47,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 private plotService: IntrogressionPlotService,
                 private renderer: Renderer2) {
         super();
-        this.hover_state.hover_delay = 0;
-        this.drag_state.drag_cursor = 'col-resize';
+        this.hoverState.hover_delay = 0;
+        this.dragState.drag_cursor = 'col-resize';
     }
 
     private drawScaleTick(ctx: CanvasRenderingContext2D,
@@ -218,17 +218,17 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         const unlisten_drag_move = this.renderer.listen('window', 'mousemove',
                                                         event => {
-            this.drag_state.event = event;
-            this.drag_state.current_position = {
+            this.dragState.event = event;
+            this.dragState.current_position = {
                 x: event.clientX,
                 y: event.clientX
             };
-            this.dragActionGlobal(this.drag_state);
+            this.dragActionGlobal(this.dragState);
         });
         const unlisten_drag_stop = this.renderer.listen('window', 'mouseup',
                                                         event => {
-            this.drag_state.event = event;
-            this.dragStopActionGlobal(this.drag_state);
+            this.dragState.event = event;
+            this.dragStopActionGlobal(this.dragState);
             unlisten_drag_stop();
             unlisten_drag_move();
         });
