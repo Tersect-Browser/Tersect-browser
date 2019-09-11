@@ -9,63 +9,63 @@ export abstract class DistancePalette {
      */
     constructor() {}
     abstract distanceToColors(distances: number[],
-                              max_distances: number[]): ImageData[];
-    protected _distanceToColors(distances: number[], max_distances: number[],
+                              maxDistances: number[]): ImageData[];
+    protected _distanceToColors(distances: number[], maxDistances: number[],
                                 palette: ImageData[]): ImageData[] {
         // const max_distance = Math.max(...distances);
         return distances.map((d, i) => {
-            if (max_distances[i] === 0) {
+            if (maxDistances[i] === 0) {
                 return palette[0];
             }
-            return palette[Math.round((d / max_distances[i])
+            return palette[Math.round((d / maxDistances[i])
                                       * DistancePalette.MAX_DISTANCE)];
         });
     }
 }
 
 export class GreyscalePalette extends DistancePalette {
-    static palette_pixels: ImageData[];
+    static palettePixels: ImageData[];
     constructor() {
         super();
-        if (!GreyscalePalette.palette_pixels) {
-            GreyscalePalette.palette_pixels = [];
+        if (!GreyscalePalette.palettePixels) {
+            GreyscalePalette.palettePixels = [];
             for (let i = 0; i <= DistancePalette.MAX_DISTANCE; i++) {
                 /* ImageData constructor is experimental; with it we won't need
                 the context. */
                 // GreyscalePalette.palette_pixels[i] = ctx.createImageData(1, 1);
-                GreyscalePalette.palette_pixels[i] = new ImageData(1, 1);
-                GreyscalePalette.palette_pixels[i].data[0] = 255 - i; // R
-                GreyscalePalette.palette_pixels[i].data[1] = 255 - i; // G
-                GreyscalePalette.palette_pixels[i].data[2] = 255 - i; // B
-                GreyscalePalette.palette_pixels[i].data[3] = 255; // alpha
+                GreyscalePalette.palettePixels[i] = new ImageData(1, 1);
+                GreyscalePalette.palettePixels[i].data[0] = 255 - i; // R
+                GreyscalePalette.palettePixels[i].data[1] = 255 - i; // G
+                GreyscalePalette.palettePixels[i].data[2] = 255 - i; // B
+                GreyscalePalette.palettePixels[i].data[3] = 255; // alpha
             }
         }
     }
     distanceToColors(distances: number[],
-                     max_distances: number[]): ImageData[] {
-        return this._distanceToColors(distances, max_distances,
-                                      GreyscalePalette.palette_pixels);
+                     maxDistances: number[]): ImageData[] {
+        return this._distanceToColors(distances, maxDistances,
+                                      GreyscalePalette.palettePixels);
     }
 }
 
 export class RedPalette extends DistancePalette {
-    static palette_pixels: ImageData[];
+    static palettePixels: ImageData[];
     constructor(ctx: CanvasRenderingContext2D) {
         super();
-        if (!RedPalette.palette_pixels) {
-            RedPalette.palette_pixels = [];
+        if (!RedPalette.palettePixels) {
+            RedPalette.palettePixels = [];
             for (let i = 0; i <= DistancePalette.MAX_DISTANCE; i++) {
-                RedPalette.palette_pixels[i] = ctx.createImageData(1, 1);
-                RedPalette.palette_pixels[i].data[0] = 255; // R
-                RedPalette.palette_pixels[i].data[1] = 255 - i; // G
-                RedPalette.palette_pixels[i].data[2] = 255 - i; // B
-                RedPalette.palette_pixels[i].data[3] = 255; // alpha
+                RedPalette.palettePixels[i] = ctx.createImageData(1, 1);
+                RedPalette.palettePixels[i].data[0] = 255; // R
+                RedPalette.palettePixels[i].data[1] = 255 - i; // G
+                RedPalette.palettePixels[i].data[2] = 255 - i; // B
+                RedPalette.palettePixels[i].data[3] = 255; // alpha
             }
         }
     }
     distanceToColors(distances: number[],
-                     max_distances: number[]): ImageData[] {
-        return this._distanceToColors(distances, max_distances,
-                                      RedPalette.palette_pixels);
+                     maxDistances: number[]): ImageData[] {
+        return this._distanceToColors(distances, maxDistances,
+                                      RedPalette.palettePixels);
     }
 }
