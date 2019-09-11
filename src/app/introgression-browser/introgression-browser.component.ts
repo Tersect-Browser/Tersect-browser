@@ -127,10 +127,10 @@ export class IntrogressionBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(settings.selected_chromosome)) {
             // Selecting the largest chromosome
-            const largest_chrom = chromosomes.reduce((prev, current) => {
+            const largestChrom = chromosomes.reduce((prev, current) => {
                 return (current.size > prev.size) ? current : prev;
             });
-            settings.selected_chromosome = largest_chrom;
+            settings.selected_chromosome = largestChrom;
         }
         if (isNullOrUndefined(settings.zoom_level)) {
             settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
@@ -142,9 +142,9 @@ export class IntrogressionBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(settings.accession_infos)) {
             settings.accession_infos = settings.selected_accessions
-                                               .map(acc_id => ({
-                id: acc_id,
-                Label: acc_id
+                                               .map(accId => ({
+                id: accId,
+                Label: accId
             }));
         }
         if (isNullOrUndefined(settings.plugins)) {
