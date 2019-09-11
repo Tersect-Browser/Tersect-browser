@@ -114,7 +114,11 @@
             }
         ],
         "unified-signatures": true,
-        "variable-name": false,
+        "variable-name": [
+            true,
+            "allow-leading-underscore",
+            "allow-pascal-case"
+        ],
         "whitespace": [
             true,
             "check-branch",
