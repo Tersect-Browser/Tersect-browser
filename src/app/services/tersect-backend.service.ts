@@ -5,7 +5,7 @@ import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
-import { IDatasetPublic } from '../../backend/db/dataset';
+import { DatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
 import { PheneticTree } from '../../backend/db/phenetictree';
 import { RefDistQuery } from '../models/RefDistQuery';
@@ -109,9 +109,9 @@ export class TersectBackendService {
         }
     }
 
-    getDatasets(): Observable<IDatasetPublic[]> {
+    getDatasets(): Observable<DatasetPublic[]> {
         const query = `${this.apiUrl}/datasets`;
-        return this.http.get<IDatasetPublic[]>(query);
+        return this.http.get<DatasetPublic[]>(query);
     }
 
     exportSettings(settings: BrowserSettings): Observable<number> {

@@ -10,7 +10,7 @@ import { ViewSettings } from './db/viewsettings';
 
 import { default as Hashids } from 'hashids';
 import { isNullOrUndefined, promisify } from 'util';
-import { Dataset, IDataset, IDatasetPublic } from './db/dataset';
+import { Dataset, DatasetPublic } from './db/dataset';
 import { PheneticTree } from './db/phenetictree';
 import { TreeQuery, TreeDatabaseQuery } from '../app/models/TreeQuery';
 import { fileSync } from 'tmp';
@@ -54,7 +54,7 @@ router.use((req, res, next) => {
 
 router.use('/query/:dataset_id', (req, res, next) => {
     Dataset.findOne({ _id: req.params.dataset_id })
-           .exec((err, dataset: IDataset) => {
+           .exec((err, dataset: Dataset) => {
         if (err) {
             res.send(err);
             return;
@@ -169,11 +169,11 @@ router.route('/query/:dataset_id/dist')
 
 router.route('/datasets')
       .get((req, res) => {
-    Dataset.find().exec((err, r: IDataset[]) => {
+    Dataset.find().exec((err, r: Dataset[]) => {
         if (err || isNullOrUndefined(r)) {
             res.json(undefined);
         } else {
-            const output: IDatasetPublic[] = r.map(dataset => {
+            const output: DatasetPublic[] = r.map(dataset => {
                 return {
                     dataset_id: dataset._id,
                     view_id: dataset.view_id,

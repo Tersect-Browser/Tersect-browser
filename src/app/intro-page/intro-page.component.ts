@@ -1,5 +1,5 @@
 import { TersectBackendService } from '../services/tersect-backend.service';
-import { IDatasetPublic } from '../../backend/db/dataset';
+import { DatasetPublic } from '../../backend/db/dataset';
 
 import { Component, OnInit } from '@angular/core';
 
@@ -11,7 +11,7 @@ import { Component, OnInit } from '@angular/core';
 export class IntroPageComponent implements OnInit {
     constructor(private tersectBackendService: TersectBackendService) {}
 
-    datasets: IDatasetPublic[];
+    datasets: DatasetPublic[];
 
     ngOnInit() {
         this.tersectBackendService.getDatasets().subscribe(ds => {

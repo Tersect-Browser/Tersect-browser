@@ -11,7 +11,7 @@ const DatasetSchema = new Schema({
     reference: String
 });
 
-export interface IDataset {
+export interface Dataset {
     _id: string;
     view_id: string;
     tsi_location: string;
@@ -21,7 +21,7 @@ export interface IDataset {
 /**
  * Publicly visible information on a dataset.
  */
-export interface IDatasetPublic {
+export interface DatasetPublic {
     dataset_id: string;
     view_id: string;
     reference: string;
