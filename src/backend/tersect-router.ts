@@ -74,8 +74,8 @@ router.route('/query/:dataset_id/samples')
         maxBuffer: 5 * 1024 * 1024 // 5 megabytes
     };
     const tsi_location = res.locals.dataset.tsi_location;
-    const tersect_command = `tersect samples -n ${tsi_location}`;
-    exec(tersect_command, options, (err, stdout, stderr) => {
+    const tersectCommand = `tersect samples -n ${tsi_location}`;
+    exec(tersectCommand, options, (err, stdout, stderr) => {
         if (err) {
             res.json(err);
         } else if (stderr) {
@@ -126,18 +126,18 @@ router.route('/query/:dataset_id/dist')
     };
 
     const tsi_location = res.locals.dataset.tsi_location;
-    const ref_dist_query: RefDistQuery = req.body;
+    const refDistQuery: RefDistQuery = req.body;
 
-    const region = formatRegion(ref_dist_query.chromosome_name,
-                                ref_dist_query.interval[0],
-                                ref_dist_query.interval[1]);
+    const region = formatRegion(refDistQuery.chromosome_name,
+                                refDistQuery.interval[0],
+                                refDistQuery.interval[1]);
 
-    const reference = ref_dist_query.reference;
-    const binsize = ref_dist_query.binsize;
+    const reference = refDistQuery.reference;
+    const binsize = refDistQuery.binsize;
 
-    write_accessions(ref_dist_query.accessions).then((acc_file) => {
-        const tersect_command = `tersect dist -j ${tsi_location} \
--a "${reference}" --b-list-file ${acc_file} ${region} -B ${binsize}`;
+    write_accessions(refDistQuery.accessions).then((accFile) => {
+        const tersectCommand = `tersect dist -j ${tsi_location} \
+-a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
         const output = {
             reference: reference,
@@ -145,19 +145,19 @@ router.route('/query/:dataset_id/dist')
             bins: {}
         };
 
-        exec(tersect_command, options, (err, stdout, stderr) => {
+        exec(tersectCommand, options, (err, stdout, stderr) => {
             if (err) {
                 res.json(err);
             } else if (stderr) {
                 res.json(stderr);
             } else {
-                const tersect_output = JSON.parse(stdout);
-                const accessions = tersect_output['columns'];
-                accessions.forEach(accession_name => {
-                    output.bins[accession_name] = [];
+                const tersectOutput = JSON.parse(stdout);
+                const accessions = tersectOutput['columns'];
+                accessions.forEach(accessionName => {
+                    output.bins[accessionName] = [];
                 });
-                tersect_output['matrix'].forEach(bin_matrix => {
-                    bin_matrix[0].forEach((dist: number, i: number) => {
+                tersectOutput['matrix'].forEach(binMatrix => {
+                    binMatrix[0].forEach((dist: number, i: number) => {
                         output.bins[accessions[i]].push(dist);
                     });
                 });
@@ -205,15 +205,15 @@ function randomHash(): string {
 }
 
 function exportView(req, res) {
-    const next_id = randomHash();
+    const nextId = randomHash();
     // Casting to any to fix compilation bug where the settings are not
     // recognized as a known property
     // TODO: match interface to mongoose schema
-    const exported_view = new ViewSettings({
-        _id: next_id,
+    const exportedView = new ViewSettings({
+        _id: nextId,
         settings: req.body
     } as any);
-    exported_view.save(err => {
+    exportedView.save(err => {
         if (err) {
             if (err.code === 11000) {
                 // Duplicate key error, retry
@@ -223,7 +223,7 @@ function exportView(req, res) {
             }
             return;
         }
-        res.json(next_id);
+        res.json(nextId);
     });
 }
 
@@ -233,32 +233,32 @@ router.route('/views/export')
 router.route('/query/:dataset_id/tree')
       .post((req, res) => {
     const tsi_location = res.locals.dataset.tsi_location;
-    const tree_query: TreeQuery = req.body;
-    const db_query: TreeDatabaseQuery = {
+    const treeQuery: TreeQuery = req.body;
+    const dbQuery: TreeDatabaseQuery = {
         dataset_id: req.params.dataset_id,
-        'query.chromosome_name': tree_query.chromosome_name,
-        'query.interval': tree_query.interval,
-        'query.accessions': tree_query.accessions
+        'query.chromosome_name': treeQuery.chromosome_name,
+        'query.interval': treeQuery.interval,
+        'query.accessions': treeQuery.accessions
     };
-    PheneticTree.findOne(db_query)
+    PheneticTree.findOne(dbQuery)
                 .exec((err, result: PheneticTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {
             // Generating new tree
-            const phylo_tree = new PheneticTree({
+            const phyloTree = new PheneticTree({
                 dataset_id: req.params.dataset_id,
-                'query.chromosome_name': tree_query.chromosome_name,
-                'query.interval': tree_query.interval,
-                'query.accessions': tree_query.accessions,
+                'query.chromosome_name': treeQuery.chromosome_name,
+                'query.interval': treeQuery.interval,
+                'query.accessions': treeQuery.accessions,
                 status: 'Collating data...'
-            }).save((save_err: any) => {
-                if (save_err) {
+            }).save((saveErr: any) => {
+                if (saveErr) {
                     return res.status(500).send('Tree creation failed');
                 }
-                generate_tree(tsi_location, tree_query, db_query);
+                generate_tree(tsi_location, treeQuery, dbQuery);
             });
-            res.json(phylo_tree);
+            res.json(phyloTree);
         } else {
             // Retrieved previously generated tree
             res.json(result);
@@ -266,35 +266,35 @@ router.route('/query/:dataset_id/tree')
     });
 });
 
-function create_rapidnj_tree(db_query: TreeDatabaseQuery, phylip_file: string) {
-    const rapidnj = spawn('rapidnj', ['-i', 'pd', phylip_file]);
+function create_rapidnj_tree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
+    const rapidnj = spawn('rapidnj', ['-i', 'pd', phylipFile]);
 
-    const stdout_close$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
-    const stderr_close$ = fromEvent(rapidnj.stderr, 'close').pipe(take(1));
+    const stdoutClose$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
+    const stderrClose$ = fromEvent(rapidnj.stderr, 'close').pipe(take(1));
 
     const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
-        takeUntil(stderr_close$),
+        takeUntil(stderrClose$),
         throttleTime(500),
         map(data => {
-            const status_updates = data.toString().trim().split(' ');
-            const percentage = status_updates[status_updates.length - 1].trim();
+            const statusUpdates = data.toString().trim().split(' ');
+            const percentage = statusUpdates[statusUpdates.length - 1].trim();
             return percentage;
         }),
         map(percentage => `Building tree: ${percentage}`),
-        map(status_update => ({ status: status_update }))
+        map(statusUpdate => ({ status: statusUpdate }))
     );
 
     const result$ = fromEvent(rapidnj.stdout, 'data').pipe(
-        takeUntil(stdout_close$),
-        reduce((newick_output, chunk) => newick_output + chunk, ''),
-        map(newick_output => ({
+        takeUntil(stdoutClose$),
+        reduce((newickOutput, chunk) => newickOutput + chunk, ''),
+        map(newickOutput => ({
             status: 'ready',
-            tree_newick: newick_output
+            tree_newick: newickOutput
         }))
     );
 
     merge(progress$, result$).pipe(
-        concatMap(update => PheneticTree.updateOne(db_query, update))
+        concatMap(update => PheneticTree.updateOne(dbQuery, update))
     ).subscribe(() => {});
 }
 
@@ -302,74 +302,74 @@ function create_rapidnj_tree(db_query: TreeDatabaseQuery, phylip_file: string) {
  * Save list of accessions into a temporary file and return the file name.
  */
 async function write_accessions(accessions: string[]): Promise<string> {
-    const output_file = fileSync();
-    await promisify(fs.writeFile)(output_file.name, accessions.join('\n') + '\n');
-    return output_file.name;
+    const outputFile = fileSync();
+    await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
+    return outputFile.name;
 }
 
-function generate_tree(tsi_location: string, tree_query: TreeQuery,
-                       db_query: TreeDatabaseQuery) {
-    const partitions = partitionQuery(tsi_location, config['index_partitions'],
-                                      tree_query);
+function generate_tree(tsiLocation: string, treeQuery: TreeQuery,
+                       dbQuery: TreeDatabaseQuery) {
+    const partitions = partitionQuery(tsiLocation, config['index_partitions'],
+                                      treeQuery);
 
-    const db_files = partitions.indexed.map(async interval => {
-        const region = formatRegion(tree_query.chromosome_name, interval.start,
+    const dbFiles = partitions.indexed.map(async interval => {
+        const region = formatRegion(treeQuery.chromosome_name, interval.start,
                                     interval.end);
         const result = await DBMatrix.findOne(
-            { dataset_id: db_query.dataset_id, region: region },
+            { dataset_id: dbQuery.dataset_id, region: region },
             { _id: 0, matrix_file: 1 }
         );
         return result['matrix_file'];
     });
 
-    const tersect_output_files = partitions.nonindexed.map(async interval => {
-        const output_file = fileSync();
-        const region = formatRegion(tree_query.chromosome_name, interval.start,
+    const tersectOutputFiles = partitions.nonindexed.map(async interval => {
+        const outputFile = fileSync();
+        const region = formatRegion(treeQuery.chromosome_name, interval.start,
                                     interval.end);
-        const command = `tersect dist ${tsi_location} ${region} > ${output_file.name}`;
+        const command = `tersect dist ${tsiLocation} ${region} > ${outputFile.name}`;
         const result = await execPromise(command);
         // TODO: error handling on tersect result / promise rejection
-        return output_file.name;
+        return outputFile.name;
     });
 
-    const positive_matrix_files = [];
-    const negative_matrix_files = [];
+    const positiveMatrixFiles = [];
+    const negativeMatrixFiles = [];
 
     partitions.indexed.forEach((interval, i) => {
         if (interval.type === 'add') {
-            positive_matrix_files.push(db_files[i]);
+            positiveMatrixFiles.push(dbFiles[i]);
         } else if (interval.type === 'subtract') {
-            negative_matrix_files.push(db_files[i]);
+            negativeMatrixFiles.push(dbFiles[i]);
         }
     });
     partitions.nonindexed.forEach((interval, i) => {
         if (interval.type === 'add') {
-            positive_matrix_files.push(tersect_output_files[i]);
+            positiveMatrixFiles.push(tersectOutputFiles[i]);
         } else if (interval.type === 'subtract') {
-            negative_matrix_files.push(tersect_output_files[i]);
+            negativeMatrixFiles.push(tersectOutputFiles[i]);
         }
     });
 
-    const input_files = [
-        write_accessions(tree_query.accessions),
-        ...positive_matrix_files,
-        ...negative_matrix_files
+    const inputFiles = [
+        write_accessions(treeQuery.accessions),
+        ...positiveMatrixFiles,
+        ...negativeMatrixFiles
     ];
 
-    Promise.all(input_files).then(([acc_file, ...matrix_files]) => {
-        const positive = matrix_files.slice(0, positive_matrix_files.length)
+    Promise.all(inputFiles).then(([accFile, ...matrixFiles]) => {
+        const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
                                      .join(' ');
-        const negative = matrix_files.slice(positive_matrix_files.length,
-                                            matrix_files.length).join(' ');
+        const negative = matrixFiles.slice(positiveMatrixFiles.length,
+                                            matrixFiles.length).join(' ');
         const script = path.join(__dirname, 'merge_phylip.py');
-        let merge_command: string;
+        let mergeCommand: string;
         if (negative.length) {
-            merge_command = `${script} ${tsi_location} ${positive} -n ${negative} -a ${acc_file}`;
+            mergeCommand = `${script} ${tsiLocation} ${positive} -n ${negative} -a ${accFile}`;
         } else {
-            merge_command = `${script} ${tsi_location} ${positive} -a ${acc_file}`;
+            mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile}`;
         }
-        return execPromise(merge_command);
-    }).then((output_filename: string) => {
-        create_rapidnj_tree(db_query, output_filename.trim());
+        return execPromise(mergeCommand);
+    }).then((outputFilename: string) => {
+        create_rapidnj_tree(dbQuery, outputFilename.trim());
     });
 }
