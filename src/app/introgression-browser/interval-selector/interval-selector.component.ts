@@ -10,7 +10,7 @@ import { isNullOrUndefined } from '../../utils/utils';
 })
 export class IntervalSelectorComponent {
     readonly TYPING_DELAY = 750;
-    private interval_input_timeout: NodeJS.Timer;
+    private intervalInputTimeout: NodeJS.Timer;
 
     private _intervalStart = 0;
     set intervalStart(pos: number) {
@@ -53,17 +53,17 @@ export class IntervalSelectorComponent {
     private processInputPosition(pos: number): number {
         // used as a workaround due to possible PrimeNG bug
         // numbers typed into text box are sometimes interpreted as strings
-        const fixed_pos = parseInt(pos.toString(), 10);
-        if (!isNaN(fixed_pos)) {
-            return fixed_pos;
+        const fixedPos = parseInt(pos.toString(), 10);
+        if (!isNaN(fixedPos)) {
+            return fixedPos;
         } else {
             return 0;
         }
     }
 
     typeInterval() {
-        clearTimeout(this.interval_input_timeout);
-        this.interval_input_timeout = setTimeout(() => this.updateInterval(),
+        clearTimeout(this.intervalInputTimeout);
+        this.intervalInputTimeout = setTimeout(() => this.updateInterval(),
                                                  this.TYPING_DELAY);
     }
 
