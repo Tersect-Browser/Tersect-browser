@@ -30,34 +30,34 @@ export class BinPlotComponent extends CanvasPlotElement {
                 private plotService: IntrogressionPlotService) { super(); }
 
     private extractVisibleImage(): ImageData {
-        const full_array = this.plotService.plot_array;
+        const fullArray = this.plotService.plot_array;
         const pos = this.plotService.plot_position;
-        const col_num = this.plotService.col_num;
+        const colNum = this.plotService.col_num;
 
-        let visible_cols = Math.ceil(this.canvas.nativeElement.width
-                                     / this.plotService.bin_width)
-                           - this.plotService.gui_margins.left;
-        if (visible_cols > col_num + pos.x) {
+        let visibleCols = Math.ceil(this.canvas.nativeElement.width
+                                    / this.plotService.bin_width)
+                          - this.plotService.gui_margins.left;
+        if (visibleCols > colNum + pos.x) {
             // More visible area than available columns
-            visible_cols = col_num + pos.x;
-            if (visible_cols < 1) {
-                visible_cols = 1;
+            visibleCols = colNum + pos.x;
+            if (visibleCols < 1) {
+                visibleCols = 1;
             }
         }
 
-        const visible_rows = Math.ceil(this.canvas.nativeElement.height
-                                     / this.plotService.bin_height);
+        const visibleRows = Math.ceil(this.canvas.nativeElement.height
+                                      / this.plotService.bin_height);
 
-        const visible_array = new Uint8ClampedArray(4 * visible_rows
-                                                    * visible_cols);
+        const visibleArray = new Uint8ClampedArray(4 * visibleRows
+                                                   * visibleCols);
 
-        for (let i = 0; i < visible_rows; i++) {
-            const row_start = 4 * (col_num * (i - pos.y) - pos.x);
-            visible_array.set(full_array.slice(row_start,
-                                               row_start + 4 * visible_cols),
-                              4 * i * visible_cols);
+        for (let i = 0; i < visibleRows; i++) {
+            const rowStart = 4 * (colNum * (i - pos.y) - pos.x);
+            visibleArray.set(fullArray.slice(rowStart,
+                                             rowStart + 4 * visibleCols),
+                             4 * i * visibleCols);
         }
-        return new ImageData(visible_array, visible_cols, visible_rows);
+        return new ImageData(visibleArray, visibleCols, visibleRows);
     }
 
     draw() {
@@ -94,91 +94,91 @@ export class BinPlotComponent extends CanvasPlotElement {
         if (isNullOrUndefined(this.plotService.highlight)) {
             this.highlight.nativeElement.style.visibility = 'hidden';
         } else {
-            const bp_per_pixel = this.plotState.binsize
-                                 / this.plotService.zoom_factor;
-            const plot_offset = (this.plotService.gui_margins.left
-                                 + this.plotService.plot_position.x);
+            const bpPerPixel = this.plotState.binsize
+                               / this.plotService.zoom_factor;
+            const plotOffset = this.plotService.gui_margins.left
+                               + this.plotService.plot_position.x;
 
-            const left_pos = (this.plotService.highlight.start
-                              - this.plotState.interval[0]) / bp_per_pixel
-                             + plot_offset * this.plotService.bin_width;
+            const leftPos = (this.plotService.highlight.start
+                             - this.plotState.interval[0]) / bpPerPixel
+                            + plotOffset * this.plotService.bin_width;
 
             const width = (this.plotService.highlight.end
                            - this.plotService.highlight.start + 1)
-                          / bp_per_pixel;
+                          / bpPerPixel;
 
-            this.highlight.nativeElement.style.left = `${left_pos}px`;
+            this.highlight.nativeElement.style.left = `${leftPos}px`;
             this.highlight.nativeElement.style.width = `${width}px`;
             this.highlight.nativeElement.style.visibility = 'visible';
         }
     }
 
-    protected getPositionTarget(mouse_position: PlotPosition): PlotArea {
+    protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
         if ([this.plotState.sorted_accessions,
              this.plotState.interval,
              this.plotState.binsize].some(isNullOrUndefined)) {
             return { type: 'background' };
         }
-        const bin_index = Math.floor(mouse_position.x
-                                     / this.plotService.bin_width)
-                          - this.plotService.gui_margins.left
-                          - this.plotService.plot_position.x;
-        const accession_index = Math.floor(mouse_position.y
-                                           / this.plotService.bin_height)
-                                - this.plotService.plot_position.y;
+        const binIndex = Math.floor(mousePosition.x
+                                    / this.plotService.bin_width)
+                         - this.plotService.gui_margins.left
+                         - this.plotService.plot_position.x;
+        const accessionIndex = Math.floor(mousePosition.y
+                                          / this.plotService.bin_height)
+                               - this.plotService.plot_position.y;
 
-        if (bin_index >= this.plotService.col_num
-            || accession_index >= this.plotService.row_num) {
+        if (binIndex >= this.plotService.col_num
+            || accessionIndex >= this.plotService.row_num) {
             return { type: 'background' };
         }
 
         const interval = this.plotState.interval;
         const binsize = this.plotState.binsize;
 
-        const accession = this.plotState.sorted_accessions[accession_index];
+        const accession = this.plotState.sorted_accessions[accessionIndex];
 
         const result: PlotBin = {
             type: 'bin',
             accession_label: this.plotService.getAccessionLabel(accession),
             accession: accession,
-            start_position: interval[0] + bin_index * binsize,
-            end_position: interval[0] + (bin_index + 1) * binsize - 1
+            start_position: interval[0] + binIndex * binsize,
+            end_position: interval[0] + (binIndex + 1) * binsize - 1
         };
         return result;
     }
 
-    protected dragStartAction(drag_state: DragState): void {
+    protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.dragStartIndices = {
-            x: drag_state.start_position.x / this.plotService.bin_width
+            x: dragState.start_position.x / this.plotService.bin_width
                 - this.plotService.plot_position.x,
-            y: drag_state.start_position.y / this.plotService.bin_height
+            y: dragState.start_position.y / this.plotService.bin_height
                 - this.plotService.plot_position.y
         };
     }
 
-    protected dragStopAction(drag_state: DragState): void {
+    protected dragStopAction(dragState: DragState): void {
         // No action
     }
 
-    protected dragAction(drag_state: DragState): void {
+    protected dragAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
-        const new_pos: PlotPosition = {
-            x: Math.round(drag_state.current_position.x
-                            / this.plotService.bin_width
-                            - this.dragStartIndices.x),
-            y: Math.round(drag_state.current_position.y
-                            / this.plotService.bin_height
-                            - this.dragStartIndices.y)
+        const newPos: PlotPosition = {
+            x: Math.round(dragState.current_position.x
+                          / this.plotService.bin_width
+                          - this.dragStartIndices.x),
+            y: Math.round(dragState.current_position.y
+                          / this.plotService.bin_height
+                          - this.dragStartIndices.y)
         };
 
-        if (new_pos.x > 0) {
-            new_pos.x = 0;
+        if (newPos.x > 0) {
+            newPos.x = 0;
         }
-        if (new_pos.y > 0) {
-            new_pos.y = 0;
+        if (newPos.y > 0) {
+            newPos.y = 0;
         }
 
-        this.plotService.updatePosition(new_pos);
+        this.plotService.updatePosition(newPos);
     }
 }
