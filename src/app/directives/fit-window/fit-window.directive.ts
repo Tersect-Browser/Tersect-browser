@@ -41,15 +41,15 @@ export class FitWindowDirective {
         }
 
         const pos = this.position;
-        const x_overflow = pos.x + width - window.innerWidth;
-        const y_overflow = pos.y + height - window.innerHeight;
+        const xOverflow = pos.x + width - window.innerWidth;
+        const yOverflow = pos.y + height - window.innerHeight;
 
-        if (x_overflow > 0 || y_overflow > 0) {
+        if (xOverflow > 0 || yOverflow > 0) {
             this.position = {
-                x: x_overflow > 0 ? pos.x - x_overflow - this.cursorOffsetX
-                                  : pos.x,
-                y: y_overflow > 0 ? pos.y - height - this.cursorOffsetY
-                                  : pos.y
+                x: xOverflow > 0 ? pos.x - xOverflow - this.cursorOffsetX
+                                 : pos.x,
+                y: yOverflow > 0 ? pos.y - height - this.cursorOffsetY
+                                 : pos.y
             };
             this.el.nativeElement.style.visibility = 'visible';
         }
