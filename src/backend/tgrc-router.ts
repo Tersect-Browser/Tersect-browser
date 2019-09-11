@@ -40,10 +40,10 @@ router.route('/accessions/:gene?/:filter?')
             return res.status(500).send('Accessions could not be retrieved');
         } else {
             const output = result.map(acc => {
-                const acc_obj = acc.toObject();
+                const accObj = acc.toObject();
                 return {
-                    accession: acc_obj.accession,
-                    alleles: acc_obj.alleles
+                    accession: accObj.accession,
+                    alleles: accObj.alleles
                 };
             });
             if (filter) {
