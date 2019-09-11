@@ -10,7 +10,7 @@
     <p-table #dt
              styleClass="accession-table"
              [columns]="cols"
-             [value]="virtual_accession_rows"
+             [value]="virtualAccessionRows"
              [(selection)]="selectedAccessions"
              [scrollable]="true"
              [virtualScroll]="true"
@@ -36,7 +36,7 @@
             <tr>
                 <th class="checkbox-cell">
                     <p-checkbox
-                        [(ngModel)]="all_selected"
+                        [(ngModel)]="allSelected"
                         (onChange)="headerCheckboxChange($event)"
                         binary="true">
                     </p-checkbox>
