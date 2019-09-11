@@ -1,5 +1,5 @@
 import { Chromosome } from '../models/Chromosome';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined } from '../utils/utils';
 
 export type AccessionDisplayStyle = 'labels' | 'tree_simple' | 'tree_linear';
 

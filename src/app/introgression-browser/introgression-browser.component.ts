@@ -8,9 +8,9 @@ import { PlotStateService } from '../introgression-plot/services/plot-state.serv
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { isNullOrUndefined } from 'util';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { isNullOrUndefined } from '../utils/utils';
 
 @Component({
     selector: 'app-introgression-browser',

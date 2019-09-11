@@ -3,7 +3,7 @@ import { RemoveGroupDialogComponent } from '../remove-group-dialog/remove-group-
 
 import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { ColorSelectorComponent, ColorChangeEvent } from '../../color-selector/color-selector.component';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined } from '../../utils/utils';
 
 @Component({
     selector: 'app-group-box',

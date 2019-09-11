@@ -4,10 +4,9 @@ import {
     Component, Output, EventEmitter, Input, ViewEncapsulation, ViewChild,
     ViewContainerRef, ComponentFactoryResolver, AfterViewInit
 } from '@angular/core';
-import { isNullOrUndefined } from 'util';
 import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import * as deepEqual from 'fast-deep-equal';
-import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray } from '../utils/utils';
+import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray, isNullOrUndefined } from '../utils/utils';
 import { Table } from 'primeng/table';
 import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
 import { TGRCGeneImporterComponent } from '../tgrc-gene-importer/tgrc-gene-importer.component';

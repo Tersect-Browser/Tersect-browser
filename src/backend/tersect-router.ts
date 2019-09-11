@@ -9,13 +9,13 @@ import { ChromosomeIndex } from './db/chromosomeindex';
 import { ViewSettings } from './db/viewsettings';
 
 import { default as Hashids } from 'hashids';
-import { isNullOrUndefined, promisify } from 'util';
+import { promisify } from 'util';
 import { Dataset, DatasetPublic } from './db/dataset';
 import { PheneticTree } from './db/phenetictree';
 import { TreeQuery, TreeDatabaseQuery } from '../app/models/TreeQuery';
 import { fileSync } from 'tmp';
 import { partitionQuery } from './partitioning';
-import { formatRegion } from '../app/utils/utils';
+import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
 import { fromEvent, merge } from 'rxjs';
 import { map, take, takeUntil, reduce, concatMap, throttleTime } from 'rxjs/operators';
 import { RefDistQuery } from '../app/models/RefDistQuery';

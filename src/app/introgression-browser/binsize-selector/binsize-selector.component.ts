@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { ceilTo, clamp } from '../../utils/utils';
+import { ceilTo, clamp, isNullOrUndefined } from '../../utils/utils';
 import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
-import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-binsize-selector',

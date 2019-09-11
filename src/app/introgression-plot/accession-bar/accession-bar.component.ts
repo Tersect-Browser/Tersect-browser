@@ -1,6 +1,6 @@
 import { PlotPosition, PlotAccession, PlotArea } from '../../models/PlotPosition';
 import { TreeNode, getTreeDepth, getTreeDepthLinear } from '../../clustering/clustering';
-import { ceilTo, deepCopy } from '../../utils/utils';
+import { ceilTo, deepCopy, isNullOrUndefined } from '../../utils/utils';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 import { PlotStateService } from '../services/plot-state.service';
@@ -8,7 +8,6 @@ import { TreeQuery } from '../../models/TreeQuery';
 import { AccessionDisplayStyle, AccessionDictionary } from '../../introgression-browser/browser-settings';
 
 import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
-import { isNullOrUndefined } from 'util';
 import * as deepEqual from 'fast-deep-equal';
 
 interface StoredAccessionBarState {

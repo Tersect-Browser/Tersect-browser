@@ -1,8 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 import { Chromosome } from '../../models/Chromosome';
-import { formatPosition } from '../../utils/utils';
-import { isNullOrUndefined } from 'util';
+import { formatPosition, isNullOrUndefined } from '../../utils/utils';
 import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
 
 @Component({

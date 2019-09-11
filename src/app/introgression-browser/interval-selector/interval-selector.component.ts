@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
 import { Chromosome } from '../../models/Chromosome';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined } from '../../utils/utils';
 
 @Component({
     selector: 'app-interval-selector',

@@ -1,11 +1,10 @@
-import { formatPosition, findClosest, ceilTo, extractTags } from '../../utils/utils';
+import { formatPosition, findClosest, ceilTo, extractTags, isNullOrUndefined } from '../../utils/utils';
 import { PlotPosition, PlotArea, PlotSequencePosition, PlotSequenceInterval } from '../../models/PlotPosition';
 import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { PlotStateService } from '../services/plot-state.service';
 import { IntrogressionPlotService } from '../services/introgression-plot.service';
 
 import { Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
-import { isNullOrUndefined } from 'util';
 
 interface ScaleTick {
     position: number;

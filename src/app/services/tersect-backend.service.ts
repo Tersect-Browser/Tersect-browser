@@ -3,13 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable , of } from 'rxjs';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
-import { isNullOrUndefined } from 'util';
 import { Chromosome } from '../models/Chromosome';
 import { DatasetPublic } from '../../backend/db/dataset';
 import { TreeQuery } from '../models/TreeQuery';
 import { PheneticTree } from '../../backend/db/phenetictree';
 import { RefDistQuery } from '../models/RefDistQuery';
 import { APP_CONFIG, AppConfig } from '../app.config';
+import { isNullOrUndefined } from '../utils/utils';
 
 @Injectable()
 export class TersectBackendService {

@@ -1,4 +1,3 @@
-import { isNullOrUndefined } from 'util';
 import { ElementRef } from '@angular/core';
 
 /**
@@ -176,4 +175,11 @@ export function mergeObjects(objs: any[]): any {
         });
     });
     return output;
+}
+
+/**
+ * Replacement for util isNullOrUndefined deprecated since v4.0.0.
+ */
+export function isNullOrUndefined(value: any) {
+    return value === null || value === undefined;
 }

@@ -4,7 +4,7 @@ import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
 import { PlotStateService } from '../services/plot-state.service';
 
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined } from '../../utils/utils';
 
 @Component({
     selector: 'app-bin-plot',

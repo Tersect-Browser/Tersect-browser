@@ -1,8 +1,8 @@
 import { AccessionGroup } from '../../introgression-browser/browser-settings';
 
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { isNullOrUndefined } from 'util';
 import { SelectItem } from 'primeng/components/common/selectitem';
+import { isNullOrUndefined } from '../../utils/utils';
 
 @Component({
     selector: 'app-add-group-dialog',

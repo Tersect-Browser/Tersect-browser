@@ -1,6 +1,6 @@
 import { TreeNode, treeToSortedList } from '../../clustering/clustering';
 import { parseNewick } from '../../clustering/newick-parser';
-import { ceilTo, floorTo, formatRegion, sameElements } from '../../utils/utils';
+import { ceilTo, floorTo, formatRegion, sameElements, isNullOrUndefined } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { PlotPosition } from '../../models/PlotPosition';
@@ -12,7 +12,6 @@ import { TersectBackendService } from '../../services/tersect-backend.service';
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject ,  combineLatest ,  Observable ,  Subscription } from 'rxjs';
 import { filter, tap, debounceTime, switchMap, delay, retryWhen, first } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 import * as deepEqual from 'fast-deep-equal';
 
 export interface GUIMargins {
