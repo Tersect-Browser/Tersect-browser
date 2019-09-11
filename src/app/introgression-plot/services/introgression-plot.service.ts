@@ -198,12 +198,14 @@ export class IntrogressionPlotService implements OnDestroy {
             debounceTime(this.DEBOUNCE_TIME)
         );
 
-        const ref_distance_bins$ = combineLatest(this.plotState.dataset_id$,
-                                                 this.plotState.reference$,
-                                                 this.plotState.chromosome$,
-                                                 this.plotState.interval$,
-                                                 this.plotState.binsize$,
-                                                 accessions$).pipe(
+        const ref_distance_bins$ = combineLatest([
+            this.plotState.dataset_id$,
+            this.plotState.reference$,
+            this.plotState.chromosome$,
+            this.plotState.interval$,
+            this.plotState.binsize$,
+            accessions$
+        ]).pipe(
             filter(([ds, ref, chrom, interval, binsize, accs]) =>
                 ![ds, ref, chrom, interval,
                   binsize, accs].some(isNullOrUndefined)
@@ -218,11 +220,13 @@ export class IntrogressionPlotService implements OnDestroy {
             )
         );
 
-        const phenTree$ = combineLatest(this.plotState.dataset_id$,
-                                        this.plotState.chromosome$,
-                                        this.plotState.interval$,
-                                        accessions$,
-                                        this.plotState.binsize$).pipe(
+        const phenTree$ = combineLatest([
+            this.plotState.dataset_id$,
+            this.plotState.chromosome$,
+            this.plotState.interval$,
+            accessions$,
+            this.plotState.binsize$
+        ]).pipe(
             filter(([ds, chrom, interval, accessions, binsize]) => {
                     return ![ds, chrom, interval,
                              accessions, binsize].some(isNullOrUndefined);
@@ -249,8 +253,10 @@ export class IntrogressionPlotService implements OnDestroy {
             )
         );
 
-        const gaps$ = combineLatest(this.plotState.dataset_id$,
-                                    this.plotState.chromosome$).pipe(
+        const gaps$ = combineLatest([
+            this.plotState.dataset_id$,
+            this.plotState.chromosome$
+        ]).pipe(
             filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
             tap(this.startLoading),
             debounceTime(this.DEBOUNCE_TIME),
@@ -258,9 +264,11 @@ export class IntrogressionPlotService implements OnDestroy {
                                            .getGapIndex(ds, chrom.name))
         );
 
-        this.plot_data$ = combineLatest(ref_distance_bins$,
-                                        phenTree$,
-                                        gaps$).pipe(
+        this.plot_data$ = combineLatest([
+            ref_distance_bins$,
+            phenTree$,
+            gaps$
+        ]).pipe(
             filter((inputs) => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
             filter(([ref_dist, tree_output, ]) => {
