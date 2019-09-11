@@ -23,7 +23,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     private canvas: ElementRef;
 
     get guiMargins() {
-        return this.plotService.gui_margins;
+        return this.plotService.guiMargins;
     }
 
     readonly GUI_SCALE_COLOR = '#327e04';
@@ -55,8 +55,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
                           tick: ScaleTick) {
         const canvasHeight = this.canvas.nativeElement.offsetHeight;
         const bpPerPixel = this.plotState.binsize
-                             / this.plotService.zoom_factor;
-        const tickX = (this.plotService.plot_position.x
+                             / this.plotService.zoomFactor;
+        const tickX = (this.plotService.plotPosition.x
                        * this.plotState.binsize
                        + tick.position - this.plotState.interval[0])
                       / bpPerPixel;
@@ -136,7 +136,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         // Correct for canvas positioning (no scale over label column)
         // and canvas pixel positioning (offset by 0.5 by default)
-        const effectiveWidth = canvasWidth - this.plotService.labels_width;
+        const effectiveWidth = canvasWidth - this.plotService.accessionBarWidth;
         ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
 
         ctx.strokeStyle = this.GUI_SCALE_COLOR;
@@ -148,16 +148,16 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         const interval = this.plotState.interval;
         const bpPerPixel = this.plotState.binsize
-                           / this.plotService.zoom_factor;
+                           / this.plotService.zoomFactor;
         const tickBpDistance = findClosest(this.GUI_TICK_DISTANCE
                                            * bpPerPixel,
                                            this.GUI_SCALE_TICK_BP_DISTANCES);
         const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
 
-        const startX = (this.plotService.plot_position.x
+        const startX = (this.plotService.plotPosition.x
                         * this.plotState.binsize)
                        / bpPerPixel;
-        const endX = (this.plotService.plot_position.x
+        const endX = (this.plotService.plotPosition.x
                       * this.plotState.binsize + interval[1] - interval[0])
                      / bpPerPixel;
 
@@ -184,7 +184,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         // Hide scale over labels
         ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
-                      this.plotService.labels_width,
+                      this.plotService.accessionBarWidth,
                       canvasHeight);
     }
 
@@ -194,10 +194,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
         if ([interval, binsize].some(isNullOrUndefined)) {
             return { type: 'background' };
         }
-        const bpPerPixel = binsize / this.plotService.zoom_factor;
+        const bpPerPixel = binsize / this.plotService.zoomFactor;
         const bpPosition = position.x * bpPerPixel + interval[0]
-                           - (this.plotService.plot_position.x
-                              + this.plotService.gui_margins.left)
+                           - (this.plotService.plotPosition.x
+                              + this.plotService.guiMargins.left)
                              * binsize;
         if (bpPosition < interval[0] || bpPosition > interval[1]) {
             return { type: 'background' };

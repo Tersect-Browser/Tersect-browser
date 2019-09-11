@@ -32,12 +32,12 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     private fullRedraw: Subscription;
     private binRedraw: Subscription;
 
-    get error_message() {
-        return this.plotService.error_message;
+    get errorMessage() {
+        return this.plotService.errorMessage;
     }
 
-    get plot_load_message() {
-        return this.plotService.plot_load_message;
+    get plotLoadMessage() {
+        return this.plotService.plotLoadMessage;
     }
 
     ngOnInit() {
@@ -45,13 +45,13 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
             this.plotState.accession_style$,
             this.plotState.zoom_level$,
             this.plotState.accession_dictionary$,
-            this.plotService.plot_position_source,
-            this.plotService.plot_array_source
+            this.plotService.plotPositionSource,
+            this.plotService.plotArraySource
         ]).subscribe(() => {
             this.redrawPlot();
         });
 
-        this.binRedraw = this.plotService.highlight_source.subscribe(() => {
+        this.binRedraw = this.plotService.highlightSource.subscribe(() => {
             this.binPlot.draw();
         });
     }

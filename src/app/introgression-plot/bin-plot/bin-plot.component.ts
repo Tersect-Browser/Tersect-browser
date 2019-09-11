@@ -23,20 +23,20 @@ export class BinPlotComponent extends CanvasPlotElement {
     private dragStartIndices = { x: 0, y: 0 };
 
     get guiMargins() {
-        return this.plotService.gui_margins;
+        return this.plotService.guiMargins;
     }
 
     constructor(private plotState: PlotStateService,
                 private plotService: IntrogressionPlotService) { super(); }
 
     private extractVisibleImage(): ImageData {
-        const fullArray = this.plotService.plot_array;
-        const pos = this.plotService.plot_position;
-        const colNum = this.plotService.col_num;
+        const fullArray = this.plotService.plotArray;
+        const pos = this.plotService.plotPosition;
+        const colNum = this.plotService.colNum;
 
         let visibleCols = Math.ceil(this.canvas.nativeElement.width
-                                    / this.plotService.bin_width)
-                          - this.plotService.gui_margins.left;
+                                    / this.plotService.binWidth)
+                          - this.plotService.guiMargins.left;
         if (visibleCols > colNum + pos.x) {
             // More visible area than available columns
             visibleCols = colNum + pos.x;
@@ -46,7 +46,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         }
 
         const visibleRows = Math.ceil(this.canvas.nativeElement.height
-                                      / this.plotService.bin_height);
+                                      / this.plotService.binHeight);
 
         const visibleArray = new Uint8ClampedArray(4 * visibleRows
                                                    * visibleCols);
@@ -61,13 +61,13 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotService.plot_array)) { return; }
+        if (isNullOrUndefined(this.plotService.plotArray)) { return; }
 
         this.canvas.nativeElement
                    .style.width = `${this.plotState.zoom_level}%`;
         this.canvas.nativeElement
                    .style.height = `${this.plotState.zoom_level
-                                      / this.plotService.aspect_ratio}%`;
+                                      / this.plotService.aspectRatio}%`;
 
         this.canvas.nativeElement.width = this.canvas.nativeElement
                                                      .parentElement
@@ -85,7 +85,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
         ctx.putImageData(this.extractVisibleImage(),
-                         this.plotService.gui_margins.left,
+                         this.plotService.guiMargins.left,
                          0);
         this.updateHighlight();
     }
@@ -95,13 +95,13 @@ export class BinPlotComponent extends CanvasPlotElement {
             this.highlight.nativeElement.style.visibility = 'hidden';
         } else {
             const bpPerPixel = this.plotState.binsize
-                               / this.plotService.zoom_factor;
-            const plotOffset = this.plotService.gui_margins.left
-                               + this.plotService.plot_position.x;
+                               / this.plotService.zoomFactor;
+            const plotOffset = this.plotService.guiMargins.left
+                               + this.plotService.plotPosition.x;
 
             const leftPos = (this.plotService.highlight.start
                              - this.plotState.interval[0]) / bpPerPixel
-                            + plotOffset * this.plotService.bin_width;
+                            + plotOffset * this.plotService.binWidth;
 
             const width = (this.plotService.highlight.end
                            - this.plotService.highlight.start + 1)
@@ -120,15 +120,15 @@ export class BinPlotComponent extends CanvasPlotElement {
             return { type: 'background' };
         }
         const binIndex = Math.floor(mousePosition.x
-                                    / this.plotService.bin_width)
-                         - this.plotService.gui_margins.left
-                         - this.plotService.plot_position.x;
+                                    / this.plotService.binWidth)
+                         - this.plotService.guiMargins.left
+                         - this.plotService.plotPosition.x;
         const accessionIndex = Math.floor(mousePosition.y
-                                          / this.plotService.bin_height)
-                               - this.plotService.plot_position.y;
+                                          / this.plotService.binHeight)
+                               - this.plotService.plotPosition.y;
 
-        if (binIndex >= this.plotService.col_num
-            || accessionIndex >= this.plotService.row_num) {
+        if (binIndex >= this.plotService.colNum
+            || accessionIndex >= this.plotService.rowNum) {
             return { type: 'background' };
         }
 
@@ -150,10 +150,10 @@ export class BinPlotComponent extends CanvasPlotElement {
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.dragStartIndices = {
-            x: dragState.start_position.x / this.plotService.bin_width
-                - this.plotService.plot_position.x,
-            y: dragState.start_position.y / this.plotService.bin_height
-                - this.plotService.plot_position.y
+            x: dragState.start_position.x / this.plotService.binWidth
+                - this.plotService.plotPosition.x,
+            y: dragState.start_position.y / this.plotService.binHeight
+                - this.plotService.plotPosition.y
         };
     }
 
@@ -165,10 +165,10 @@ export class BinPlotComponent extends CanvasPlotElement {
         // Dragging 'rounded' to accession / bin indices.
         const newPos: PlotPosition = {
             x: Math.round(dragState.current_position.x
-                          / this.plotService.bin_width
+                          / this.plotService.binWidth
                           - this.dragStartIndices.x),
             y: Math.round(dragState.current_position.y
-                          / this.plotService.bin_height
+                          / this.plotService.binHeight
                           - this.dragStartIndices.y)
         };
 

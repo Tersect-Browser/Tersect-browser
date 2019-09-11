@@ -42,9 +42,9 @@ export class IntrogressionPlotService implements OnDestroy {
      * they are wide. This is to more easily fit accession labels without making
      * the plot too wide.
      */
-    aspect_ratio = 1 / 2;
+    aspectRatio = 1 / 2;
 
-    gui_margins: GUIMargins = {
+    guiMargins: GUIMargins = {
         top: this.GUI_SCALE_BAR_SIZE,
         right: 0,
         bottom: 0,
@@ -55,50 +55,50 @@ export class IntrogressionPlotService implements OnDestroy {
      * Plot load status. When not an empty string, spinner overlay is displayed
      * (unless an error message is displayed, as those take priority).
      */
-    plot_load_message = '';
+    plotLoadMessage = '';
 
     /**
      * Error message string. When not an empty string, error message overlay is
      * displayed.
      */
-    error_message = '';
+    errorMessage = '';
 
     /**
      * Horizontal / vertical scroll position (in terms of bins) of the plot.
      */
-    plot_position_source = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
-    get plot_position() {
-        return this.plot_position_source.getValue();
+    plotPositionSource = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
+    get plotPosition() {
+        return this.plotPositionSource.getValue();
     }
 
     /**
      * Horizontal offset / position of the plot in terms of pixels
      */
-    get xoffset() {
-        return ceilTo(this.plot_position.x * this.bin_width, this.bin_width);
+    get offsetX() {
+        return ceilTo(this.plotPosition.x * this.binWidth, this.binWidth);
     }
 
     /**
      * Vertical offset / position of the plot in terms of pixels
      */
-    get yoffset() {
-        return ceilTo(this.plot_position.y * this.bin_height, this.bin_height);
+    get offsetY() {
+        return ceilTo(this.plotPosition.y * this.binHeight, this.binHeight);
     }
 
-    plot_array_source = new BehaviorSubject<Uint8ClampedArray>(null);
-    get plot_array() {
-        return this.plot_array_source.getValue();
+    plotArraySource = new BehaviorSubject<Uint8ClampedArray>(null);
+    get plotArray() {
+        return this.plotArraySource.getValue();
     }
 
     /**
      * Highlighted area of the plot.
      */
-    highlight_source = new BehaviorSubject<SequenceInterval>(undefined);
-    set highlight(highlight_interval: SequenceInterval) {
-        this.highlight_source.next(highlight_interval);
+    highlightSource = new BehaviorSubject<SequenceInterval>(undefined);
+    set highlight(highlightInterval: SequenceInterval) {
+        this.highlightSource.next(highlightInterval);
     }
     get highlight(): SequenceInterval {
-        return this.highlight_source.getValue();
+        return this.highlightSource.getValue();
     }
 
     /**
@@ -114,8 +114,8 @@ export class IntrogressionPlotService implements OnDestroy {
         tree: TreeNode
     } = { query: null, tree: null };
 
-    private plot_data$: Observable<any[]>;
-    private plot_data_sub: Subscription;
+    private plotData$: Observable<any[]>;
+    private plotDataSub: Subscription;
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -123,31 +123,31 @@ export class IntrogressionPlotService implements OnDestroy {
      */
     private distanceBins = {};
 
-    get row_num(): number {
+    get rowNum(): number {
         return this.plotState.sorted_accessions.length;
     }
 
-    get col_num(): number {
+    get colNum(): number {
         return this.distanceBins[this.plotState.sorted_accessions[0]].length;
     }
 
-    get zoom_factor(): number {
+    get zoomFactor(): number {
         return this.plotState.zoom_level / 100;
     }
 
     /**
      * Width of accession label / tree area in pixels.
      */
-    get labels_width() {
-        return this.gui_margins.left * this.zoom_factor;
+    get accessionBarWidth() {
+        return this.guiMargins.left * this.zoomFactor;
     }
 
-    get bin_width() {
-        return this.zoom_factor;
+    get binWidth() {
+        return this.zoomFactor;
     }
 
-    get bin_height() {
-        return this.zoom_factor / this.aspect_ratio;
+    get binHeight() {
+        return this.zoomFactor / this.aspectRatio;
     }
 
     /**
@@ -198,7 +198,7 @@ export class IntrogressionPlotService implements OnDestroy {
             debounceTime(this.DEBOUNCE_TIME)
         );
 
-        const ref_distance_bins$ = combineLatest([
+        const refDistanceBins$ = combineLatest([
             this.plotState.dataset_id$,
             this.plotState.reference$,
             this.plotState.chromosome$,
@@ -240,9 +240,9 @@ export class IntrogressionPlotService implements OnDestroy {
                 this.tersectBackendService
                     .getPheneticTree(ds, chrom.name, interval[0], interval[1],
                                      accessions).pipe(
-                    tap((tree_output: PheneticTree) => {
-                        if (tree_output.status !== 'ready') {
-                            this.plot_load_message = tree_output.status;
+                    tap((treeOutput: PheneticTree) => {
+                        if (treeOutput.status !== 'ready') {
+                            this.plotLoadMessage = treeOutput.status;
                             throw new Error('Tree still loading');
                         }
                     }),
@@ -264,21 +264,21 @@ export class IntrogressionPlotService implements OnDestroy {
                                            .getGapIndex(ds, chrom.name))
         );
 
-        this.plot_data$ = combineLatest([
-            ref_distance_bins$,
+        this.plotData$ = combineLatest([
+            refDistanceBins$,
             phenTree$,
             gaps$
         ]).pipe(
             filter((inputs) => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
-            filter(([ref_dist, tree_output]) => {
-                return this.binsMatchTree(ref_dist, tree_output);
+            filter(([refDist, treeOutput]) => {
+                return this.binsMatchTree(refDist, treeOutput);
             })
         );
 
         this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
-            this.plot_data_sub = this.plot_data$.subscribe(this.generate_plot);
+            this.plotDataSub = this.plotData$.subscribe(this.generatePlot);
         });
     }
 
@@ -286,35 +286,35 @@ export class IntrogressionPlotService implements OnDestroy {
      * Verify if reference distance bins match the tree in terms of chromosome
      * region and included accessions used.
      */
-    private binsMatchTree(ref_dist: any, tree_output: PheneticTree): boolean {
-        const tree_region = formatRegion(tree_output.query.chromosome_name,
-                                         tree_output.query.interval[0],
-                                         tree_output.query.interval[1]);
-        const region_match = ref_dist['region'] === tree_region
-                             && (ref_dist['region'].split(':')[0]
-                                === this.plotState.chromosome.name)
-                             && ref_dist['reference']
-                                === this.plotState.reference;
-        if (!region_match) {
+    private binsMatchTree(refDist: any, treeOutput: PheneticTree): boolean {
+        const treeRegion = formatRegion(treeOutput.query.chromosome_name,
+                                        treeOutput.query.interval[0],
+                                        treeOutput.query.interval[1]);
+        const regionMatch = refDist['region'] === treeRegion
+                            && (refDist['region'].split(':')[0]
+                               === this.plotState.chromosome.name)
+                            && refDist['reference']
+                               === this.plotState.reference;
+        if (!regionMatch) {
             return false;
         }
-        return sameElements(Object.keys(ref_dist['bins']),
-                            tree_output.query.accessions);
+        return sameElements(Object.keys(refDist['bins']),
+                            treeOutput.query.accessions);
     }
 
     ngOnDestroy() {
-        if (!isNullOrUndefined(this.plot_data_sub)) {
-            this.plot_data_sub.unsubscribe();
+        if (!isNullOrUndefined(this.plotDataSub)) {
+            this.plotDataSub.unsubscribe();
         }
     }
 
-    private generate_plot = ([ref_dist, tree_output, gaps]) => {
-        this.distanceBins = ref_dist['bins'];
-        if (!deepEqual(this.phenTree.query, tree_output.query)) {
+    private generatePlot = ([refDist, treeOutput, gaps]) => {
+        this.distanceBins = refDist['bins'];
+        if (!deepEqual(this.phenTree.query, treeOutput.query)) {
             // Tree updated
             this.phenTree = {
-                query: tree_output.query,
-                tree: parseNewick(tree_output.tree_newick, true)
+                query: treeOutput.query,
+                tree: parseNewick(treeOutput.tree_newick, true)
             };
             this.plotState
                 .sorted_accessions = treeToSortedList(this.phenTree.tree);
@@ -329,19 +329,19 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     private startLoading = () => {
-        if (this.plot_load_message === '') {
-            this.plot_load_message = this.DEFAULT_LOAD_MESSAGE;
+        if (this.plotLoadMessage === '') {
+            this.plotLoadMessage = this.DEFAULT_LOAD_MESSAGE;
         }
     }
 
     private stopLoading = () => {
-        this.plot_load_message = '';
+        this.plotLoadMessage = '';
     }
 
     private validateInputs = () => {
         if (!isNullOrUndefined(this.plotState.accessions)
             && this.plotState.accessions.length < 2) {
-            this.error_message = 'At least two accessions must be selected';
+            this.errorMessage = 'At least two accessions must be selected';
             return false;
         }
         const interval = this.plotState.interval;
@@ -349,10 +349,10 @@ export class IntrogressionPlotService implements OnDestroy {
             || isNaN(parseInt(interval[0].toString(), 10))
             || isNaN(parseInt(interval[1].toString(), 10))
             || interval[1] - interval[0] < this.plotState.binsize) {
-            this.error_message = 'Invalid interval';
+            this.errorMessage = 'Invalid interval';
             return false;
         }
-        this.error_message = '';
+        this.errorMessage = '';
         return true;
     }
 
@@ -365,27 +365,27 @@ export class IntrogressionPlotService implements OnDestroy {
             || isNullOrUndefined(this.phenTree.query)) {
             return true;
         }
-        const current_query: TreeQuery = {
+        const currentQuery: TreeQuery = {
             chromosome_name: this.plotState.chromosome.name,
             interval: this.plotState.interval,
             accessions: this.plotState.accessions
         };
-        return !deepEqual(this.phenTree.query, current_query);
+        return !deepEqual(this.phenTree.query, currentQuery);
     }
 
     /**
      * Get an array of maximum distances per bin for a given set of accessions.
      */
     private getMaxDistances(accessionBins: number[][]): number[] {
-        const bin_max_distances = new Array(accessionBins[0].length).fill(0);
-        accessionBins.forEach(acc_bin => {
-            acc_bin.forEach((dist, i) => {
-                if (dist > bin_max_distances[i]) {
-                    bin_max_distances[i] = dist;
+        const binMaxDistances = new Array(accessionBins[0].length).fill(0);
+        accessionBins.forEach(accBin => {
+            accBin.forEach((dist, i) => {
+                if (dist > binMaxDistances[i]) {
+                    binMaxDistances[i] = dist;
                 }
             });
         });
-        return bin_max_distances;
+        return binMaxDistances;
     }
 
     private generatePlotArray() {
@@ -394,70 +394,70 @@ export class IntrogressionPlotService implements OnDestroy {
             accession => this.distanceBins[accession]
         );
 
-        const bin_max_distances = this.getMaxDistances(accessionBins);
+        const binMaxDistances = this.getMaxDistances(accessionBins);
 
-        const row_num = this.row_num;
-        const col_num = this.col_num;
-        const plot_array = new Uint8ClampedArray(4 * row_num * col_num);
+        const rowNum = this.rowNum;
+        const colNum = this.colNum;
+        const plotArray = new Uint8ClampedArray(4 * rowNum * colNum);
 
-        accessionBins.forEach((accession_bin, accession_index) => {
-            palette.distanceToColors(accession_bin, bin_max_distances)
-                   .forEach((color, bin_index) => {
-                const pos = 4 * (bin_index + col_num * accession_index);
-                plot_array[pos] = color.data[0];
-                plot_array[pos + 1] = color.data[1];
-                plot_array[pos + 2] = color.data[2];
-                plot_array[pos + 3] = color.data[3];
+        accessionBins.forEach((accessionBin, accessionIndex) => {
+            palette.distanceToColors(accessionBin, binMaxDistances)
+                   .forEach((color, binIndex) => {
+                const pos = 4 * (binIndex + colNum * accessionIndex);
+                plotArray[pos] = color.data[0];
+                plotArray[pos + 1] = color.data[1];
+                plotArray[pos + 2] = color.data[2];
+                plotArray[pos + 3] = color.data[3];
             });
         });
 
-        this.addPlotGaps(plot_array);
-        this.plot_array_source.next(plot_array);
+        this.addPlotGaps(plotArray);
+        this.plotArraySource.next(plotArray);
     }
 
     /**
      * Add gaps to existing plot array.
      */
-    private addPlotGaps(plot_array: Uint8ClampedArray) {
+    private addPlotGaps(plotArray: Uint8ClampedArray) {
         this.sequenceGaps.forEach(gap => {
             if (gap.size >= this.plotState.binsize) {
-                this.addPlotGap(plot_array, gap);
+                this.addPlotGap(plotArray, gap);
             }
         });
     }
 
-    private addPlotGap(plot_array: Uint8ClampedArray, gap: SequenceInterval) {
-        const row_num = this.row_num;
-        const col_num = this.col_num;
+    private addPlotGap(plotArray: Uint8ClampedArray, gap: SequenceInterval) {
+        const rowNum = this.rowNum;
+        const colNum = this.colNum;
         const interval = this.plotState.interval;
-        const start_pos = gap.start > interval[0] ? gap.start : interval[0];
-        const end_pos = gap.end < interval[1] ? gap.end : interval[1];
-        const bin_start = ceilTo(start_pos - interval[0],
-                                 this.plotState.binsize)
-                          / this.plotState.binsize;
+        const startPos = gap.start > interval[0] ? gap.start : interval[0];
+        const endPos = gap.end < interval[1] ? gap.end : interval[1];
+        const binStart = ceilTo(startPos - interval[0],
+                                this.plotState.binsize)
+                         / this.plotState.binsize;
         // NOTE: bin_end index is exclusive while gap.end position is inclusive
-        const bin_end = floorTo(end_pos - interval[0] + 1,
+        const binEnd = floorTo(endPos - interval[0] + 1,
                                 this.plotState.binsize)
                         / this.plotState.binsize;
-        for (let accession_index = 0;
-                 accession_index < row_num;
-                 accession_index++) {
-            for (let bin_index = bin_start; bin_index < bin_end; bin_index++) {
-                const pos = 4 * (bin_index + col_num * accession_index);
-                plot_array[pos] = this.GAP_COLOR[0];
-                plot_array[pos + 1] = this.GAP_COLOR[1];
-                plot_array[pos + 2] = this.GAP_COLOR[2];
-                plot_array[pos + 3] = this.GAP_COLOR[3];
+        for (let accessionIndex = 0;
+                 accessionIndex < rowNum;
+                 accessionIndex++) {
+            for (let binIndex = binStart; binIndex < binEnd; binIndex++) {
+                const pos = 4 * (binIndex + colNum * accessionIndex);
+                plotArray[pos] = this.GAP_COLOR[0];
+                plotArray[pos + 1] = this.GAP_COLOR[1];
+                plotArray[pos + 2] = this.GAP_COLOR[2];
+                plotArray[pos + 3] = this.GAP_COLOR[3];
             }
         }
     }
 
     updatePosition(pos: PlotPosition) {
-        this.plot_position_source.next(pos);
+        this.plotPositionSource.next(pos);
     }
 
     resetPosition() {
-        this.plot_position_source.next({ x: 0, y: 0 });
+        this.plotPositionSource.next({ x: 0, y: 0 });
     }
 
 }

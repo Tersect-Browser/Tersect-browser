@@ -64,7 +64,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
      * Step size used when vertically offsetting the stored canvas.
      */
     readonly STORED_CANVAS_OFFSET_STEP = ceilTo(this.STORED_CANVAS_HEIGHT / 2,
-                                                this.plotService.bin_height);
+                                                this.plotService.binHeight);
 
     private storedState: StoredAccessionBarState = {
         canvas: undefined,
@@ -77,7 +77,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     };
 
     get guiMargins() {
-        return this.plotService.gui_margins;
+        return this.plotService.guiMargins;
     }
 
     constructor(private plotState: PlotStateService,
@@ -114,7 +114,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
      * negative, more of the canvas needs to be drawn.
      */
     private getStoredOverflowHeight(): number {
-        const yoffset = this.plotService.yoffset;
+        const yoffset = this.plotService.offsetY;
         return this.STORED_CANVAS_HEIGHT - this.getAccessionBarHeight()
                + yoffset - this.storedState.canvas_yoffset;
     }
@@ -171,7 +171,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     private updateImage() {
-        const textHeight = this.plotService.bin_height;
+        const textHeight = this.plotService.binHeight;
         this.updateCanvasWidth(this.storedState.canvas);
 
         const ctx: CanvasRenderingContext2D = this.storedState
@@ -179,7 +179,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
         // Draw background
         ctx.fillStyle = this.GUI_TREE_BG_COLOR;
-        ctx.fillRect(0, 0, this.plotService.labels_width,
+        ctx.fillRect(0, 0, this.plotService.accessionBarWidth,
                      this.storedState.canvas.height);
 
         // Draw labels
@@ -204,15 +204,15 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     drawColorTracks(ctx: CanvasRenderingContext2D) {
         this.plotState.sorted_accessions.forEach((accId, rowIndex) => {
             const trackWidth = this.GUI_TREE_COLOR_TRACK_WIDTH
-                               * this.plotService.bin_width;
+                               * this.plotService.binWidth;
             const colors = this.plotService.getAccessionColors(accId);
             colors.forEach((col, j) => {
                 const xpos = this.storedState.canvas.width
                              - (j + 1) * trackWidth;
-                const ypos = rowIndex * this.plotService.bin_height;
+                const ypos = rowIndex * this.plotService.binHeight;
                 ctx.fillStyle = col;
                 ctx.fillRect(xpos, ypos, trackWidth,
-                             this.plotService.bin_height);
+                             this.plotService.binHeight);
             });
         });
     }
@@ -231,7 +231,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                       this.canvas.nativeElement.height);
 
         ctx.drawImage(this.storedState.canvas, 0,
-                      this.plotService.yoffset
+                      this.plotService.offsetY
                       - this.storedState.canvas_yoffset);
     }
 
@@ -271,7 +271,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_WIDTH
-                            * this.plotService.zoom_factor;
+                            * this.plotService.zoomFactor;
             ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
 
@@ -291,10 +291,10 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
             ctx.fillText(label, basePosX, prevPosY);
             ctx.beginPath();
             ctx.lineWidth = this.GUI_TREE_LINE_DASH_WIDTH
-                            * this.plotService.zoom_factor;
+                            * this.plotService.zoomFactor;
             ctx.strokeStyle = this.GUI_TREE_LINE_DASH_STYLE;
             ctx.setLineDash(this.GUI_TREE_LINE_DASH.map(
-                x => x * this.plotService.zoom_factor
+                x => x * this.plotService.zoomFactor
             ));
             ctx.moveTo(basePosX + ctx.measureText(label).width + 5,
                        prevPosY + textHeight / 2 - 0.5);
@@ -305,7 +305,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     private drawLabelTree(ctx: CanvasRenderingContext2D) {
-        const textHeight = this.plotService.bin_height;
+        const textHeight = this.plotService.binHeight;
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         const drawState = { current_row: 0 };
@@ -314,7 +314,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
         const initialPosX = this.GUI_TREE_LEFT_MARGIN;
         this._drawLabelTree(this.plotService.phenTree.tree, initialPosX, ctx,
-                            this.plotService.labels_width,
+                            this.plotService.accessionBarWidth,
                             textHeight, this.storedState.canvas_yoffset,
                             scale, drawState);
     }
@@ -323,7 +323,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const availableWidth = this.storedState.canvas.width
                                - this.getMaxLabelWidth(ctx)
                                - this.getColorTracksWidth()
-                               - this.plotService.bin_width
+                               - this.plotService.binWidth
                                - this.GUI_TREE_LEFT_MARGIN;
         if (this.plotState.accession_style === 'tree_simple') {
             return availableWidth / getTreeDepth(this.plotService
@@ -338,7 +338,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     private drawSimpleLabels(ctx: CanvasRenderingContext2D) {
-        const textHeight = this.plotService.bin_height;
+        const textHeight = this.plotService.binHeight;
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
         this.plotState.sorted_accessions.forEach((acc, index) => {
@@ -353,15 +353,15 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         if (this.plotState.accession_style === 'labels') {
             width = ceilTo(this.getMaxLabelWidth(ctx)
                            + this.getColorTracksWidth(),
-                           this.plotService.bin_width);
+                           this.plotService.binWidth);
         } else {
             width = ceilTo(this.getContainerWidth()
                            * this.GUI_TREE_PLOT_PROPORTION,
-                           this.plotService.bin_width);
+                           this.plotService.binWidth);
         }
         canvas.width = width;
         this.canvas.nativeElement.width = width;
-        this.plotService.gui_margins.left = width / this.plotService.zoom_factor;
+        this.plotService.guiMargins.left = width / this.plotService.zoomFactor;
     }
 
     /**
@@ -370,11 +370,11 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     private getColorTracksWidth() {
         return this.GUI_TREE_COLOR_TRACK_WIDTH
                * this.plotService.getMaxColorCount()
-               * this.plotService.bin_width;
+               * this.plotService.binWidth;
     }
 
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
-        ctx.font = `${this.plotService.bin_height}px ${this.GUI_TREE_FONT}`;
+        ctx.font = `${this.plotService.binHeight}px ${this.GUI_TREE_FONT}`;
         return Math.max(
             ...this.plotState.sorted_accessions.map(acc =>
                 ctx.measureText(this.plotService.getAccessionLabel(acc)).width
@@ -387,9 +387,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
             return { type: 'background' };
         }
         const accessionIndex = Math.floor(mousePosition.y
-                                          / this.plotService.bin_height)
-                               - this.plotService.plot_position.y;
-        if (accessionIndex >= this.plotService.row_num) {
+                                          / this.plotService.binHeight)
+                               - this.plotService.plotPosition.y;
+        if (accessionIndex >= this.plotService.rowNum) {
             return { type: 'background' };
         }
         const accession = this.plotState.sorted_accessions[accessionIndex];
@@ -404,8 +404,8 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession index.
         this.dragStartIndex = dragState.start_position.y
-                              / this.plotService.bin_height
-                              - this.plotService.plot_position.y;
+                              / this.plotService.binHeight
+                              - this.plotService.plotPosition.y;
     }
 
     protected dragStopAction(dragState: DragState): void {
@@ -415,9 +415,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     protected dragAction(dragState: DragState): void {
         // Only vertical dragging, rounded to accession indices.
         const newPos: PlotPosition = {
-            x: this.plotService.plot_position.x,
+            x: this.plotService.plotPosition.x,
             y: Math.round(dragState.current_position.y
-                          / this.plotService.bin_height
+                          / this.plotService.binHeight
                           - this.dragStartIndex)
         };
 
