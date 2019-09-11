@@ -25,7 +25,7 @@ export class ReferenceSelectorComponent implements OnInit, OnDestroy {
     constructor(private plotState: PlotStateService) { }
 
     ngOnInit() {
-        this.infoUpdate = this.plotState.accession_infos$.subscribe(infos => {
+        this.infoUpdate = this.plotState.accessionInfos$.subscribe(infos => {
             if (!isNullOrUndefined(infos)) {
                 this.accessionOptions = infos.map(info => ({
                     label: info.Label,

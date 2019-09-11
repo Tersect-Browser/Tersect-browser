@@ -6,38 +6,38 @@ import { sameElements, ceilTo, floorTo, deepCopy, isNullOrUndefined } from '../.
 import { Chromosome } from '../../models/Chromosome';
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject , Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable()
 export class PlotStateService {
-    private settings_source = new Subject<BrowserSettings>();
-    settings$ = this.settings_source.asObservable();
+    private settingsSource = new Subject<BrowserSettings>();
+    settings$ = this.settingsSource.asObservable();
     set settings(settings: BrowserSettings) {
-        this.dataset_id = settings.dataset_id;
-        this.accession_style = settings.accession_style;
-        this.accession_infos = settings.accession_infos;
-        this.accession_groups = settings.accession_groups;
+        this.datasetId = settings.dataset_id;
+        this.accessionStyle = settings.accession_style;
+        this.accessionInfos = settings.accession_infos;
+        this.accessionGroups = settings.accession_groups;
         this.accessions = settings.selected_accessions;
         this.reference = settings.selected_reference;
         this.chromosome = settings.selected_chromosome;
         this.interval = settings.selected_interval;
         this.binsize = settings.selected_binsize;
-        this.zoom_level = this.zoom_level;
+        this.zoomLevel = this.zoomLevel;
         this.plugins = settings.plugins;
-        this.settings_source.next(settings);
+        this.settingsSource.next(settings);
     }
     get settings(): BrowserSettings {
         return {
-            dataset_id: this.dataset_id,
-            accession_style: this.accession_style,
-            accession_infos: this.accession_infos,
-            accession_groups: this.accession_groups,
+            dataset_id: this.datasetId,
+            accession_style: this.accessionStyle,
+            accession_infos: this.accessionInfos,
+            accession_groups: this.accessionGroups,
             selected_accessions: this.accessions,
             selected_reference: this.reference,
             selected_chromosome: this.chromosome,
             selected_interval: this.interval,
             selected_binsize: this.binsize,
-            zoom_level: this.zoom_level,
+            zoom_level: this.zoomLevel,
             plugins: this.plugins
         };
     }
@@ -45,162 +45,162 @@ export class PlotStateService {
     /**
      * Identifier of the dataset open in the introgression plot.
      */
-    private dataset_id_source = new BehaviorSubject<string>(undefined);
-    dataset_id$ = this.dataset_id_source.asObservable();
-    set dataset_id(dataset_id) {
-        this.dataset_id_source.next(dataset_id);
+    private datasetIdSource = new BehaviorSubject<string>(undefined);
+    datasetId$ = this.datasetIdSource.asObservable();
+    set datasetId(datasetId) {
+        this.datasetIdSource.next(datasetId);
     }
-    get dataset_id(): string {
-        return this.dataset_id_source.getValue();
+    get datasetId(): string {
+        return this.datasetIdSource.getValue();
     }
 
     /**
      * Type of labels to draw - simple labels or phenetic tree.
      */
-    private accession_style_source = new BehaviorSubject<AccessionDisplayStyle>('labels');
-    accession_style$ = this.accession_style_source.asObservable();
-    set accession_style(style: AccessionDisplayStyle) {
-        if (style !== this.accession_style) {
-            this.accession_style_source.next(style);
+    private accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');
+    accessionStyle$ = this.accessionStyleSource.asObservable();
+    set accessionStyle(style: AccessionDisplayStyle) {
+        if (style !== this.accessionStyle) {
+            this.accessionStyleSource.next(style);
         }
     }
-    get accession_style(): AccessionDisplayStyle {
-        return this.accession_style_source.getValue();
+    get accessionStyle(): AccessionDisplayStyle {
+        return this.accessionStyleSource.getValue();
     }
 
-    private accession_infos_source = new BehaviorSubject<AccessionInfo[]>(undefined);
-    accession_infos$ = this.accession_infos_source.asObservable();
-    set accession_infos(accession_infos: AccessionInfo[]) {
-        this.accession_infos_source.next(accession_infos);
-        const label_dict = extractAccessionLabels(accession_infos);
-        const dict = !isNullOrUndefined(this.accession_dictionary)
-                        ? deepCopy(this.accession_dictionary)
-                        : {};
-        Object.keys(label_dict).map(key => {
+    private accessionInfosSource = new BehaviorSubject<AccessionInfo[]>(undefined);
+    accessionInfos$ = this.accessionInfosSource.asObservable();
+    set accessionInfos(accessionInfos: AccessionInfo[]) {
+        this.accessionInfosSource.next(accessionInfos);
+        const labelDict = extractAccessionLabels(accessionInfos);
+        const dict = !isNullOrUndefined(this.accessionDictionary)
+                     ? deepCopy(this.accessionDictionary)
+                     : {};
+        Object.keys(labelDict).map(key => {
             if (key in dict) {
-                dict[key].label = label_dict[key].label;
+                dict[key].label = labelDict[key].label;
             } else {
-                dict[key] = { label: label_dict[key].label };
+                dict[key] = { label: labelDict[key].label };
             }
         });
-        this.accession_dictionary = dict;
+        this.accessionDictionary = dict;
     }
-    get accession_infos(): AccessionInfo[] {
-        return this.accession_infos_source.getValue();
+    get accessionInfos(): AccessionInfo[] {
+        return this.accessionInfosSource.getValue();
     }
 
     /**
      * Dictionary of names to be used for accessions.
      */
-    private accession_dictionary_source = new BehaviorSubject<AccessionDictionary>(undefined);
-    accession_dictionary$ = this.accession_dictionary_source.asObservable();
-    set accession_dictionary(dict: AccessionDictionary) {
-        this.accession_dictionary_source.next(dict);
+    private accessionDictionarySource = new BehaviorSubject<AccessionDictionary>(undefined);
+    accessionDictionary$ = this.accessionDictionarySource.asObservable();
+    set accessionDictionary(dict: AccessionDictionary) {
+        this.accessionDictionarySource.next(dict);
     }
-    get accession_dictionary(): AccessionDictionary {
-        return this.accession_dictionary_source.getValue();
+    get accessionDictionary(): AccessionDictionary {
+        return this.accessionDictionarySource.getValue();
     }
 
     /**
      * Accession groups and their associated colours.
      */
-    private accession_groups_source = new BehaviorSubject<AccessionGroup[]>(undefined);
-    accession_groups$ = this.accession_groups_source.asObservable();
-    set accession_groups(accession_groups: AccessionGroup[]) {
-        this.accession_groups_source.next(accession_groups);
-        const color_dict = extractAccessionColors(accession_groups);
-        if (isNullOrUndefined(this.accession_dictionary)) {
-            this.accession_dictionary = deepCopy(color_dict);
+    private accessionGroupsSource = new BehaviorSubject<AccessionGroup[]>(undefined);
+    accessionGroups$ = this.accessionGroupsSource.asObservable();
+    set accessionGroups(accessionGroups: AccessionGroup[]) {
+        this.accessionGroupsSource.next(accessionGroups);
+        const colorDict = extractAccessionColors(accessionGroups);
+        if (isNullOrUndefined(this.accessionDictionary)) {
+            this.accessionDictionary = deepCopy(colorDict);
         } else {
-            Object.keys(this.accession_dictionary).map(key => {
-                if (key in color_dict) {
-                    this.accession_dictionary[key]
-                        .colors = color_dict[key].colors;
+            Object.keys(this.accessionDictionary).map(key => {
+                if (key in colorDict) {
+                    this.accessionDictionary[key]
+                        .colors = colorDict[key].colors;
                 } else {
-                    delete this.accession_dictionary[key].colors;
+                    delete this.accessionDictionary[key].colors;
                 }
             });
-            this.accession_dictionary = {...this.accession_dictionary};
+            this.accessionDictionary = {...this.accessionDictionary};
         }
     }
-    get accession_groups(): AccessionGroup[] {
-        return this.accession_groups_source.getValue();
+    get accessionGroups(): AccessionGroup[] {
+        return this.accessionGroupsSource.getValue();
     }
 
     /**
      * Accessions displayed in the plot.
      */
-    private accessions_source = new BehaviorSubject<string[]>(undefined);
-    accessions$ = this.accessions_source.asObservable();
+    private accessionsSource = new BehaviorSubject<string[]>(undefined);
+    accessions$ = this.accessionsSource.asObservable();
     set accessions(accessions: string[]) {
-        if (!sameElements(accessions, this.sorted_accessions)) {
-            this.accessions_source.next(accessions);
+        if (!sameElements(accessions, this.sortedAccessions)) {
+            this.accessionsSource.next(accessions);
         }
     }
     get accessions(): string[] {
-        return this.accessions_source.getValue();
+        return this.accessionsSource.getValue();
     }
 
     /**
      * Reference accession used by the plot.
      */
-    private reference_source = new BehaviorSubject<string>(undefined);
-    reference$ = this.reference_source.asObservable();
+    private referenceSource = new BehaviorSubject<string>(undefined);
+    reference$ = this.referenceSource.asObservable();
     set reference(reference: string) {
-        this.reference_source.next(reference);
+        this.referenceSource.next(reference);
     }
     get reference(): string {
-        return this.reference_source.getValue();
+        return this.referenceSource.getValue();
     }
 
     /**
      * Chromosome displayed by the plot.
      */
-    private chromosome_source = new BehaviorSubject<Chromosome>(undefined);
-    chromosome$ = this.chromosome_source.asObservable();
+    private chromosomeSource = new BehaviorSubject<Chromosome>(undefined);
+    chromosome$ = this.chromosomeSource.asObservable();
     set chromosome(chromosome: Chromosome) {
-        this.chromosome_source.next(chromosome);
+        this.chromosomeSource.next(chromosome);
     }
     get chromosome(): Chromosome {
-        return this.chromosome_source.getValue();
+        return this.chromosomeSource.getValue();
     }
 
     /**
      * Chromosomal interval displayed by the plot.
      */
-    private interval_source = new BehaviorSubject<number[]>(undefined);
-    interval$ = this.interval_source.asObservable();
+    private intervalSource = new BehaviorSubject<number[]>(undefined);
+    interval$ = this.intervalSource.asObservable();
     set interval(interval: number[]) {
-        this.interval_source.next(interval);
+        this.intervalSource.next(interval);
     }
     get interval(): number[] {
-        return this.interval_source.getValue();
+        return this.intervalSource.getValue();
     }
 
     /**
      * Bin size used by the plot.
      */
-    private binsize_source = new BehaviorSubject<number>(undefined);
-    binsize$ = this.binsize_source.asObservable();
+    private binsizeSource = new BehaviorSubject<number>(undefined);
+    binsize$ = this.binsizeSource.asObservable();
     set binsize(binsize: number) {
-        this.binsize_source.next(binsize);
+        this.binsizeSource.next(binsize);
     }
     get binsize(): number {
-        return this.binsize_source.getValue();
+        return this.binsizeSource.getValue();
     }
 
     /**
      * Zoom level in percentages.
      */
-    private zoom_level_source = new BehaviorSubject<number>(100);
-    zoom_level$ = this.zoom_level_source.asObservable();
-    set zoom_level(zoom_level: number) {
-        if (zoom_level !== this.zoom_level) {
-            this.zoom_level_source.next(zoom_level);
+    private zoomLevelSource = new BehaviorSubject<number>(100);
+    zoomLevel$ = this.zoomLevelSource.asObservable();
+    set zoomLevel(zoomLevel: number) {
+        if (zoomLevel !== this.zoomLevel) {
+            this.zoomLevelSource.next(zoomLevel);
         }
     }
-    get zoom_level(): number {
-        return this.zoom_level_source.getValue();
+    get zoomLevel(): number {
+        return this.zoomLevelSource.getValue();
     }
 
     plugins: string[] = [];
@@ -210,13 +210,13 @@ export class PlotStateService {
      * be displayed on the drawn plot. Generally this is the order based on
      * the neighbor joining tree clustering.
      */
-    sorted_accessions_source = new BehaviorSubject<string[]>(null);
-    sorted_accessions$ = this.sorted_accessions_source.asObservable();
-    set sorted_accessions(accessions: string[]) {
-        this.sorted_accessions_source.next(accessions);
+    sortedAccessionsSource = new BehaviorSubject<string[]>(null);
+    sortedAccessions$ = this.sortedAccessionsSource.asObservable();
+    set sortedAccessions(accessions: string[]) {
+        this.sortedAccessionsSource.next(accessions);
     }
-    get sorted_accessions(): string[] {
-        return this.sorted_accessions_source.getValue();
+    get sortedAccessions(): string[] {
+        return this.sortedAccessionsSource.getValue();
     }
 
     readonly MAX_ZOOM_LEVEL = 1000;
@@ -225,31 +225,31 @@ export class PlotStateService {
     readonly ZOOM_ROUND_TO = 50;
 
     zoomIn() {
-        let zoom_level = this.zoom_level;
-        zoom_level *= this.ZOOM_FACTOR;
-        zoom_level = ceilTo(zoom_level, this.ZOOM_ROUND_TO);
-        if (zoom_level > this.MAX_ZOOM_LEVEL) {
-            zoom_level = this.MAX_ZOOM_LEVEL;
+        let zoomLevel = this.zoomLevel;
+        zoomLevel *= this.ZOOM_FACTOR;
+        zoomLevel = ceilTo(zoomLevel, this.ZOOM_ROUND_TO);
+        if (zoomLevel > this.MAX_ZOOM_LEVEL) {
+            zoomLevel = this.MAX_ZOOM_LEVEL;
         }
-        this.zoom_level = zoom_level;
+        this.zoomLevel = zoomLevel;
     }
 
     zoomOut() {
-        let zoom_level = this.zoom_level;
-        zoom_level /= this.ZOOM_FACTOR;
-        zoom_level = floorTo(zoom_level, this.ZOOM_ROUND_TO);
-        if (zoom_level < this.MIN_ZOOM_LEVEL) {
-            zoom_level = this.MIN_ZOOM_LEVEL;
+        let zoomLevel = this.zoomLevel;
+        zoomLevel /= this.ZOOM_FACTOR;
+        zoomLevel = floorTo(zoomLevel, this.ZOOM_ROUND_TO);
+        if (zoomLevel < this.MIN_ZOOM_LEVEL) {
+            zoomLevel = this.MIN_ZOOM_LEVEL;
         }
-        this.zoom_level = zoom_level;
+        this.zoomLevel = zoomLevel;
     }
 
     isZoomMax(): boolean {
-        return this.zoom_level === this.MAX_ZOOM_LEVEL;
+        return this.zoomLevel === this.MAX_ZOOM_LEVEL;
     }
 
     isZoomMin(): boolean {
-        return this.zoom_level === this.MIN_ZOOM_LEVEL;
+        return this.zoomLevel === this.MIN_ZOOM_LEVEL;
     }
 
 }

@@ -124,15 +124,15 @@ export class IntrogressionPlotService implements OnDestroy {
     private distanceBins = {};
 
     get rowNum(): number {
-        return this.plotState.sorted_accessions.length;
+        return this.plotState.sortedAccessions.length;
     }
 
     get colNum(): number {
-        return this.distanceBins[this.plotState.sorted_accessions[0]].length;
+        return this.distanceBins[this.plotState.sortedAccessions[0]].length;
     }
 
     get zoomFactor(): number {
-        return this.plotState.zoom_level / 100;
+        return this.plotState.zoomLevel / 100;
     }
 
     /**
@@ -155,22 +155,22 @@ export class IntrogressionPlotService implements OnDestroy {
      * identifier is used.
      */
     getAccessionLabel(accession: string): string {
-        if (isNullOrUndefined(this.plotState.accession_dictionary)) {
+        if (isNullOrUndefined(this.plotState.accessionDictionary)) {
             return accession;
-        } else if (accession in this.plotState.accession_dictionary
-                   && 'label' in this.plotState.accession_dictionary[accession]) {
-            return this.plotState.accession_dictionary[accession].label;
+        } else if (accession in this.plotState.accessionDictionary
+                   && 'label' in this.plotState.accessionDictionary[accession]) {
+            return this.plotState.accessionDictionary[accession].label;
         } else {
             return accession;
         }
     }
 
     getAccessionColors(accession: string): string[] {
-        if (isNullOrUndefined(this.plotState.accession_dictionary)) {
+        if (isNullOrUndefined(this.plotState.accessionDictionary)) {
             return [];
-        } else if (accession in this.plotState.accession_dictionary
-                   && 'colors' in this.plotState.accession_dictionary[accession]) {
-            return this.plotState.accession_dictionary[accession].colors;
+        } else if (accession in this.plotState.accessionDictionary
+                   && 'colors' in this.plotState.accessionDictionary[accession]) {
+            return this.plotState.accessionDictionary[accession].colors;
         } else {
             return [];
         }
@@ -181,7 +181,7 @@ export class IntrogressionPlotService implements OnDestroy {
      */
     getMaxColorCount(): number {
         let count = 0;
-        Object.values(this.plotState.accession_dictionary).forEach(acc => {
+        Object.values(this.plotState.accessionDictionary).forEach(acc => {
             if ('colors' in acc && acc.colors.length > count) {
                 count = acc.colors.length;
             }
@@ -199,7 +199,7 @@ export class IntrogressionPlotService implements OnDestroy {
         );
 
         const refDistanceBins$ = combineLatest([
-            this.plotState.dataset_id$,
+            this.plotState.datasetId$,
             this.plotState.reference$,
             this.plotState.chromosome$,
             this.plotState.interval$,
@@ -221,7 +221,7 @@ export class IntrogressionPlotService implements OnDestroy {
         );
 
         const phenTree$ = combineLatest([
-            this.plotState.dataset_id$,
+            this.plotState.datasetId$,
             this.plotState.chromosome$,
             this.plotState.interval$,
             accessions$,
@@ -254,7 +254,7 @@ export class IntrogressionPlotService implements OnDestroy {
         );
 
         const gaps$ = combineLatest([
-            this.plotState.dataset_id$,
+            this.plotState.datasetId$,
             this.plotState.chromosome$
         ]).pipe(
             filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
@@ -317,7 +317,7 @@ export class IntrogressionPlotService implements OnDestroy {
                 tree: parseNewick(treeOutput.tree_newick, true)
             };
             this.plotState
-                .sorted_accessions = treeToSortedList(this.phenTree.tree);
+                .sortedAccessions = treeToSortedList(this.phenTree.tree);
             this.sequenceGaps = gaps;
             this.generatePlotArray();
             this.resetPosition();
@@ -390,7 +390,7 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private generatePlotArray() {
         const palette = new GreyscalePalette();
-        const accessionBins = this.plotState.sorted_accessions.map(
+        const accessionBins = this.plotState.sortedAccessions.map(
             accession => this.distanceBins[accession]
         );
 

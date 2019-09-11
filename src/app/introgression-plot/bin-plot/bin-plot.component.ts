@@ -64,9 +64,9 @@ export class BinPlotComponent extends CanvasPlotElement {
         if (isNullOrUndefined(this.plotService.plotArray)) { return; }
 
         this.canvas.nativeElement
-                   .style.width = `${this.plotState.zoom_level}%`;
+                   .style.width = `${this.plotState.zoomLevel}%`;
         this.canvas.nativeElement
-                   .style.height = `${this.plotState.zoom_level
+                   .style.height = `${this.plotState.zoomLevel
                                       / this.plotService.aspectRatio}%`;
 
         this.canvas.nativeElement.width = this.canvas.nativeElement
@@ -114,7 +114,7 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
-        if ([this.plotState.sorted_accessions,
+        if ([this.plotState.sortedAccessions,
              this.plotState.interval,
              this.plotState.binsize].some(isNullOrUndefined)) {
             return { type: 'background' };
@@ -135,7 +135,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         const interval = this.plotState.interval;
         const binsize = this.plotState.binsize;
 
-        const accession = this.plotState.sorted_accessions[accessionIndex];
+        const accession = this.plotState.sortedAccessions[accessionIndex];
 
         const result: PlotBin = {
             type: 'bin',

@@ -154,7 +154,7 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     updateAccessions() {
         this.plotState.accessions = [...this.selectedAccessions];
-        this.plotState.accession_groups = [...this.accessionGroups];
+        this.plotState.accessionGroups = [...this.accessionGroups];
         if (!this.selectedAccessions.includes(this.plotState.reference)) {
             this.plotState.reference = this.selectedAccessions[0];
         }

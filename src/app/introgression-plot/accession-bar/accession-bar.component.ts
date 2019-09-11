@@ -156,14 +156,14 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const containerWidth = this.getContainerWidth();
         if (isNullOrUndefined(this.storedState)
             || isNullOrUndefined(this.storedState.canvas)
-            || this.storedState.zoom_level !== this.plotState.zoom_level
+            || this.storedState.zoom_level !== this.plotState.zoomLevel
             || this.storedState.accession_style
-               !== this.plotState.accession_style
+               !== this.plotState.accessionStyle
             || this.storedState.container_width !== containerWidth
             || !deepEqual(this.storedState.tree_query,
                           this.plotService.phenTree.query)
             || !deepEqual(this.storedState.accession_dictionary,
-                          this.plotState.accession_dictionary)) {
+                          this.plotState.accessionDictionary)) {
             return true;
         }
 
@@ -184,7 +184,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
         // Draw labels
         ctx.font = `${textHeight}px ${this.GUI_TREE_FONT}`;
-        if (this.plotState.accession_style === 'labels') {
+        if (this.plotState.accessionStyle === 'labels') {
             this.drawSimpleLabels(ctx);
         } else {
             this.drawLabelTree(ctx);
@@ -192,17 +192,17 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.drawColorTracks(ctx);
 
         // Save current state
-        this.storedState.accession_style = this.plotState.accession_style;
+        this.storedState.accession_style = this.plotState.accessionStyle;
         this.storedState.container_width = this.getContainerWidth();
         this.storedState.tree_query = this.plotService.phenTree.query;
-        this.storedState.zoom_level = this.plotState.zoom_level;
+        this.storedState.zoom_level = this.plotState.zoomLevel;
         this.storedState
             .accession_dictionary = deepCopy(this.plotState
-                                                 .accession_dictionary);
+                                                 .accessionDictionary);
     }
 
     drawColorTracks(ctx: CanvasRenderingContext2D) {
-        this.plotState.sorted_accessions.forEach((accId, rowIndex) => {
+        this.plotState.sortedAccessions.forEach((accId, rowIndex) => {
             const trackWidth = this.GUI_TREE_COLOR_TRACK_WIDTH
                                * this.plotService.binWidth;
             const colors = this.plotService.getAccessionColors(accId);
@@ -218,7 +218,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotState.sorted_accessions)) { return; }
+        if (isNullOrUndefined(this.plotState.sortedAccessions)) { return; }
 
         if (this.updateRequired()) {
             this.updateImage();
@@ -236,9 +236,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     private getEdgeLength(node: TreeNode): number {
-        if (this.plotState.accession_style === 'tree_simple') {
+        if (this.plotState.accessionStyle === 'tree_simple') {
             return 1;
-        } else if (this.plotState.accession_style === 'tree_linear') {
+        } else if (this.plotState.accessionStyle === 'tree_linear') {
             return node.length;
         } else {
             // Should not happen
@@ -325,10 +325,10 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                                - this.getColorTracksWidth()
                                - this.plotService.binWidth
                                - this.GUI_TREE_LEFT_MARGIN;
-        if (this.plotState.accession_style === 'tree_simple') {
+        if (this.plotState.accessionStyle === 'tree_simple') {
             return availableWidth / getTreeDepth(this.plotService
                                                      .phenTree.tree);
-        } else if (this.plotState.accession_style === 'tree_linear') {
+        } else if (this.plotState.accessionStyle === 'tree_linear') {
             return availableWidth / getTreeDepthLinear(this.plotService
                                                            .phenTree.tree);
         } else {
@@ -341,7 +341,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const textHeight = this.plotService.binHeight;
         ctx.fillStyle = this.GUI_TREE_TEXT_COLOR;
         ctx.textBaseline = 'top';
-        this.plotState.sorted_accessions.forEach((acc, index) => {
+        this.plotState.sortedAccessions.forEach((acc, index) => {
             ctx.fillText(this.plotService.getAccessionLabel(acc), 0,
                          index * textHeight + this.storedState.canvas_yoffset);
         });
@@ -350,7 +350,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     private updateCanvasWidth(canvas: HTMLCanvasElement) {
         const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
         let width: number;
-        if (this.plotState.accession_style === 'labels') {
+        if (this.plotState.accessionStyle === 'labels') {
             width = ceilTo(this.getMaxLabelWidth(ctx)
                            + this.getColorTracksWidth(),
                            this.plotService.binWidth);
@@ -376,14 +376,14 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
         ctx.font = `${this.plotService.binHeight}px ${this.GUI_TREE_FONT}`;
         return Math.max(
-            ...this.plotState.sorted_accessions.map(acc =>
+            ...this.plotState.sortedAccessions.map(acc =>
                 ctx.measureText(this.plotService.getAccessionLabel(acc)).width
             )
         );
     }
 
     protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
-        if (isNullOrUndefined(this.plotState.sorted_accessions)) {
+        if (isNullOrUndefined(this.plotState.sortedAccessions)) {
             return { type: 'background' };
         }
         const accessionIndex = Math.floor(mousePosition.y
@@ -392,7 +392,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         if (accessionIndex >= this.plotService.rowNum) {
             return { type: 'background' };
         }
-        const accession = this.plotState.sorted_accessions[accessionIndex];
+        const accession = this.plotState.sortedAccessions[accessionIndex];
         const result: PlotAccession = {
             type: 'accession',
             accession_label: this.plotService.getAccessionLabel(accession),

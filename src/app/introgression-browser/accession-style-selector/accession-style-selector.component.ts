@@ -12,10 +12,10 @@ import { PlotStateService } from '../../introgression-plot/services/plot-state.s
 })
 export class AccessionStyleSelectorComponent {
     set accessionStyle(accessionStyle: AccessionDisplayStyle) {
-        this.plotState.accession_style = accessionStyle;
+        this.plotState.accessionStyle = accessionStyle;
     }
     get accessionStyle() {
-        return this.plotState.accession_style;
+        return this.plotState.accessionStyle;
     }
 
     constructor(private plotState: PlotStateService) { }
