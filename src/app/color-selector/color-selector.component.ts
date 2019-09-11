@@ -20,7 +20,7 @@ export class ColorSelectorComponent {
 
     target: any;
 
-    _color: string;
+    private _color: string;
     get color(): string {
         return this._color;
     }
@@ -28,11 +28,10 @@ export class ColorSelectorComponent {
         this._color = color;
         this.colorChange.emit({ color: this.color, target: this.target });
     }
-
-    private original_color: string;
-
     @Output()
     colorChange = new EventEmitter<ColorChangeEvent>();
+
+    private originalColor: string;
 
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
@@ -46,7 +45,7 @@ export class ColorSelectorComponent {
     show($event: MouseEvent, color?: string, target?: any) {
         this.target = target;
         this.color = color;
-        this.original_color = color;
+        this.originalColor = color;
         this.position = { x: $event.clientX, y: $event.clientY };
         this.el.nativeElement.style.visibility = 'visible';
     }
@@ -57,7 +56,7 @@ export class ColorSelectorComponent {
     }
 
     cancel() {
-        this.color = this.original_color;
+        this.color = this.originalColor;
         this.hide();
     }
 }

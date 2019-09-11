@@ -20,9 +20,10 @@ interface ScaleTick {
     styleUrls: ['./scale-bar.component.css']
 })
 export class ScaleBarComponent extends CanvasPlotElement {
-    @ViewChild('canvas', { static: true }) canvas: ElementRef;
+    @ViewChild('canvas', { static: true })
+    private canvas: ElementRef;
 
-    get gui_margins() {
+    get guiMargins() {
         return this.plotService.gui_margins;
     }
 

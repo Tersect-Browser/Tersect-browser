@@ -19,7 +19,7 @@ export class InputAutocompleteComponent {
     @Output()
     valueChange = new EventEmitter<string>();
 
-    _value: string;
+    private _value: string;
     set value(value: string) {
         this.valueChange.emit(value);
         this._value = value;

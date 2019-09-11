@@ -18,7 +18,7 @@ export class GroupBoxComponent {
     @ViewChild(ColorSelectorComponent, { static: true })
     colorSelector: ColorSelectorComponent;
 
-    _groups: AccessionGroup[];
+    private _groups: AccessionGroup[];
     @Input()
     set groups(groups: AccessionGroup[]) {
         this._groups = groups;
@@ -29,16 +29,16 @@ export class GroupBoxComponent {
         return this._groups;
     }
 
-    _selectedGroups: AccessionGroup[];
+    private _selectedGroups: AccessionGroup[];
     @Input()
     set selectedGroups(groups: AccessionGroup[]) {
         this._selectedGroups = groups;
         this.selectedGroupsChange.emit(this._selectedGroups);
     }
-    @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
     get selectedGroups(): AccessionGroup[] {
         return this._selectedGroups;
     }
+    @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
 
     @Input()
     categories: string[] = [];

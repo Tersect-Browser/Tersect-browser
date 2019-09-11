@@ -6,7 +6,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
     styleUrls: ['./color-palette.component.css']
 })
 export class ColorPaletteComponent {
-    _selectedColor: string;
+    private _selectedColor: string;
     @Input()
     set selectedColor(color: string) {
         this._selectedColor = color;

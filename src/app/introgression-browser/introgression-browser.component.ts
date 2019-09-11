@@ -23,7 +23,7 @@ import { switchMap } from 'rxjs/operators';
 })
 export class IntrogressionBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
-    plotClickMenu: PlotClickMenuComponent;
+    private plotClickMenu: PlotClickMenuComponent;
 
     @ViewChild(TooltipComponent, { static: true })
     tooltip: TooltipComponent;
@@ -107,9 +107,9 @@ export class IntrogressionBrowserComponent implements OnInit {
     /**
      * Load default values for missing settings.
      */
-    generateMissingSettings(settings: BrowserSettings,
-                            accessions: string[],
-                            chromosomes: Chromosome[]) {
+    private generateMissingSettings(settings: BrowserSettings,
+                                    accessions: string[],
+                                    chromosomes: Chromosome[]) {
         if (isNullOrUndefined(settings.accession_style)) {
             settings.accession_style = this.DEFAULT_DISPLAY_STYLE;
         }

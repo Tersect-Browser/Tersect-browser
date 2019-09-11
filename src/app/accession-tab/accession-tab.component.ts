@@ -43,15 +43,16 @@ const pluginComponents = {
     encapsulation: ViewEncapsulation.None
 })
 export class AccessionTabComponent implements AfterViewInit {
-    @ViewChild('dt', { static: true }) dt: Table;
+    @ViewChild('dt', { static: true })
+    private dt: Table;
 
     @ViewChild('pluginContainer', { read: ViewContainerRef, static: false })
-    pluginContainer: ViewContainerRef;
+    private pluginContainer: ViewContainerRef;
 
     readonly sort_icon_width = 30;
     readonly max_column_width = 200;
 
-    _selectedAccessions: string[];
+    private _selectedAccessions: string[];
     @Input()
     set selectedAccessions(accessions: string[]) {
         this._selectedAccessions = accessions;
@@ -63,13 +64,13 @@ export class AccessionTabComponent implements AfterViewInit {
     }
     @Output() selectedAccessionsChange = new EventEmitter<string[]>();
 
-    _accessionOptions: AccessionInfo[];
+    private _accessionOptions: AccessionInfo[];
     @Input()
     set accessionOptions(acc_infos: AccessionInfo[]) {
         this._accessionOptions = acc_infos;
         this.infoDictionary = this.extractOptionDictionary(acc_infos);
-        this.filtered_accessions = this.accessionOptions;
-        this.virtual_accession_rows = this.filtered_accessions.slice(0, 100);
+        this.filteredAccessions = this.accessionOptions;
+        this.virtual_accession_rows = this.filteredAccessions.slice(0, 100);
         this.cols = this.extractColumns(this.accessionOptions);
         this.all_selected = this.accessionOptions.length
                             === this.selectedAccessions.length;
@@ -78,7 +79,7 @@ export class AccessionTabComponent implements AfterViewInit {
         return this._accessionOptions;
     }
 
-    _accessionGroups: AccessionGroup[];
+    private _accessionGroups: AccessionGroup[];
     @Input()
     set accessionGroups(groups: AccessionGroup[]) {
         if (groups !== this._accessionGroups) {
@@ -96,9 +97,9 @@ export class AccessionTabComponent implements AfterViewInit {
     @Input()
     importPlugins: string[] = [];
 
-    display_add_group_dialog = false;
+    displayAddGroupDialog = false;
 
-    filtered_accessions: AccessionInfo[];
+    filteredAccessions: AccessionInfo[];
     virtual_accession_rows: AccessionInfo[];
 
     cols: TableColumn[];
@@ -160,7 +161,7 @@ export class AccessionTabComponent implements AfterViewInit {
     }
 
     extractColumnOptions(column: string): string[] {
-        return uniqueArray(this.filtered_accessions.map(acc => acc[column]));
+        return uniqueArray(this.filteredAccessions.map(acc => acc[column]));
     }
 
     extractColumns(infos: AccessionInfo[]): TableColumn[] {
@@ -185,7 +186,7 @@ export class AccessionTabComponent implements AfterViewInit {
     }
 
     headerCheckboxChange($event: boolean) {
-        const filtered_acc_ids = this.filtered_accessions.map(acc => acc.id);
+        const filtered_acc_ids = this.filteredAccessions.map(acc => acc.id);
         if ($event) {
             // Checking all matching accessions
             this.selectedAccessions = arrayUnion(this.selectedAccessions,
@@ -198,15 +199,15 @@ export class AccessionTabComponent implements AfterViewInit {
     }
 
     updateAllSelected() {
-        if (!isNullOrUndefined(this.filtered_accessions)) {
-            this.all_selected = isSubset(this.filtered_accessions
+        if (!isNullOrUndefined(this.filteredAccessions)) {
+            this.all_selected = isSubset(this.filteredAccessions
                                              .map(acc => acc.id),
                                          this.selectedAccessions);
         }
     }
 
     filtersUsed(): boolean {
-        return this.filtered_accessions.length
+        return this.filteredAccessions.length
                !== this.accessionOptions.length;
     }
 
@@ -272,7 +273,7 @@ export class AccessionTabComponent implements AfterViewInit {
 
         if (!deepEqual($event.filters, this.previous_filters)) {
             this.updateAllSelected();
-            this.filtered_accessions = this.filterAccessions(acc_options,
+            this.filteredAccessions = this.filterAccessions(acc_options,
                                                              $event.filters);
             this.previous_filters = deepCopy($event.filters);
         }
@@ -282,11 +283,11 @@ export class AccessionTabComponent implements AfterViewInit {
             sortOrder: $event.sortOrder
         };
         if (!deepEqual(sort_settings, this.previous_sort_settings)) {
-            this.sortAccessions(this.filtered_accessions, sort_settings);
+            this.sortAccessions(this.filteredAccessions, sort_settings);
             this.previous_sort_settings = deepCopy(sort_settings);
         }
 
-        this.virtual_accession_rows = this.filtered_accessions
+        this.virtual_accession_rows = this.filteredAccessions
                                           .slice($event.first,
                                                  $event.first + $event.rows);
     }
@@ -297,7 +298,7 @@ export class AccessionTabComponent implements AfterViewInit {
 
     showAddGroupDialog() {
         if (this.selectedAccessions.length !== 0) {
-            this.display_add_group_dialog = true;
+            this.displayAddGroupDialog = true;
         }
     }
 

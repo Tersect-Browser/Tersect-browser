@@ -12,22 +12,24 @@ import { isNullOrUndefined } from 'util';
     styleUrls: ['./bin-plot.component.css']
 })
 export class BinPlotComponent extends CanvasPlotElement {
-    @ViewChild('canvas', { static: true }) canvas: ElementRef;
-    @ViewChild('highlight', { static: true }) highlight: ElementRef;
+    @ViewChild('canvas', { static: true })
+    private canvas: ElementRef;
+    @ViewChild('highlight', { static: true })
+    private highlight: ElementRef;
 
     /**
      * Drag start position in terms of the accession / bin index.
      */
-    private drag_start_indices = { x: 0, y: 0 };
+    private dragStartIndices = { x: 0, y: 0 };
 
-    get gui_margins() {
+    get guiMargins() {
         return this.plotService.gui_margins;
     }
 
     constructor(private plotState: PlotStateService,
                 private plotService: IntrogressionPlotService) { super(); }
 
-    private extract_visible_image(): ImageData {
+    private extractVisibleImage(): ImageData {
         const full_array = this.plotService.plot_array;
         const pos = this.plotService.plot_position;
         const col_num = this.plotService.col_num;
@@ -82,13 +84,13 @@ export class BinPlotComponent extends CanvasPlotElement {
                                                          .getContext('2d');
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
-        ctx.putImageData(this.extract_visible_image(),
+        ctx.putImageData(this.extractVisibleImage(),
                          this.plotService.gui_margins.left,
                          0);
         this.updateHighlight();
     }
 
-    updateHighlight() {
+    private updateHighlight() {
         if (isNullOrUndefined(this.plotService.highlight)) {
             this.highlight.nativeElement.style.visibility = 'hidden';
         } else {
@@ -147,7 +149,7 @@ export class BinPlotComponent extends CanvasPlotElement {
 
     protected dragStartAction(drag_state: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
-        this.drag_start_indices = {
+        this.dragStartIndices = {
             x: drag_state.start_position.x / this.plotService.bin_width
                 - this.plotService.plot_position.x,
             y: drag_state.start_position.y / this.plotService.bin_height
@@ -164,10 +166,10 @@ export class BinPlotComponent extends CanvasPlotElement {
         const new_pos: PlotPosition = {
             x: Math.round(drag_state.current_position.x
                             / this.plotService.bin_width
-                            - this.drag_start_indices.x),
+                            - this.dragStartIndices.x),
             y: Math.round(drag_state.current_position.y
                             / this.plotService.bin_height
-                            - this.drag_start_indices.y)
+                            - this.dragStartIndices.y)
         };
 
         if (new_pos.x > 0) {

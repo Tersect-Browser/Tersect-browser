@@ -27,7 +27,8 @@ interface StoredAccessionBarState {
     styleUrls: ['./accession-bar.component.css']
 })
 export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
-    @ViewChild('canvas', { static: true }) canvas: ElementRef;
+    @ViewChild('canvas', { static: true })
+    private canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
     readonly GUI_TREE_FONT = 'Courier New';
@@ -66,7 +67,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     readonly STORED_CANVAS_OFFSET_STEP = ceilTo(this.STORED_CANVAS_HEIGHT / 2,
                                                 this.plotService.bin_height);
 
-    private stored_state: StoredAccessionBarState = {
+    private storedState: StoredAccessionBarState = {
         canvas: undefined,
         canvas_yoffset: 0,
         accession_style: undefined,
@@ -76,7 +77,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         accession_dictionary: undefined
     };
 
-    get gui_margins() {
+    get guiMargins() {
         return this.plotService.gui_margins;
     }
 
@@ -84,8 +85,8 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                 private plotService: IntrogressionPlotService) { super(); }
 
     ngOnInit() {
-        this.stored_state.canvas = document.createElement('canvas');
-        this.stored_state.canvas.height = this.STORED_CANVAS_HEIGHT;
+        this.storedState.canvas = document.createElement('canvas');
+        this.storedState.canvas.height = this.STORED_CANVAS_HEIGHT;
     }
 
     private getContainerWidth(): number {
@@ -105,7 +106,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     }
 
     private getAccessionBarHeight(): number {
-        return this.getContainerHeight() - this.gui_margins.top;
+        return this.getContainerHeight() - this.guiMargins.top;
     }
 
     /**
@@ -116,7 +117,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     private getStoredOverflowHeight(): number {
         const yoffset = this.plotService.yoffset;
         return this.STORED_CANVAS_HEIGHT - this.getAccessionBarHeight()
-               + yoffset - this.stored_state.canvas_yoffset;
+               + yoffset - this.storedState.canvas_yoffset;
     }
 
     /**
@@ -129,7 +130,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         let overflow = this.getStoredOverflowHeight();
         if (overflow <= 0) {
             while (overflow <= 0) {
-                this.stored_state
+                this.storedState
                     .canvas_yoffset -= this.STORED_CANVAS_OFFSET_STEP;
                 overflow = this.getStoredOverflowHeight();
             }
@@ -139,7 +140,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                         - this.getAccessionBarHeight()) {
             while (overflow > this.STORED_CANVAS_HEIGHT
                                 - this.getAccessionBarHeight()) {
-                this.stored_state
+                this.storedState
                     .canvas_yoffset += this.STORED_CANVAS_OFFSET_STEP;
                 overflow = this.getStoredOverflowHeight();
             }
@@ -154,15 +155,15 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         }
 
         const container_width = this.getContainerWidth();
-        if (isNullOrUndefined(this.stored_state)
-            || isNullOrUndefined(this.stored_state.canvas)
-            || this.stored_state.zoom_level !== this.plotState.zoom_level
-            || this.stored_state.accession_style
+        if (isNullOrUndefined(this.storedState)
+            || isNullOrUndefined(this.storedState.canvas)
+            || this.storedState.zoom_level !== this.plotState.zoom_level
+            || this.storedState.accession_style
                !== this.plotState.accession_style
-            || this.stored_state.container_width !== container_width
-            || !deepEqual(this.stored_state.tree_query,
+            || this.storedState.container_width !== container_width
+            || !deepEqual(this.storedState.tree_query,
                           this.plotService.phenTree.query)
-            || !deepEqual(this.stored_state.accession_dictionary,
+            || !deepEqual(this.storedState.accession_dictionary,
                           this.plotState.accession_dictionary)) {
             return true;
         }
@@ -172,15 +173,15 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     private updateImage() {
         const text_height = this.plotService.bin_height;
-        this.updateCanvasWidth(this.stored_state.canvas);
+        this.updateCanvasWidth(this.storedState.canvas);
 
-        const ctx: CanvasRenderingContext2D = this.stored_state
+        const ctx: CanvasRenderingContext2D = this.storedState
                                                   .canvas.getContext('2d');
 
         // Draw background
         ctx.fillStyle = this.GUI_TREE_BG_COLOR;
         ctx.fillRect(0, 0, this.plotService.labels_width,
-                     this.stored_state.canvas.height);
+                     this.storedState.canvas.height);
 
         // Draw labels
         ctx.font = `${text_height}px ${this.GUI_TREE_FONT}`;
@@ -192,11 +193,11 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.drawColorTracks(ctx);
 
         // Save current state
-        this.stored_state.accession_style = this.plotState.accession_style;
-        this.stored_state.container_width = this.getContainerWidth();
-        this.stored_state.tree_query = this.plotService.phenTree.query;
-        this.stored_state.zoom_level = this.plotState.zoom_level;
-        this.stored_state
+        this.storedState.accession_style = this.plotState.accession_style;
+        this.storedState.container_width = this.getContainerWidth();
+        this.storedState.tree_query = this.plotService.phenTree.query;
+        this.storedState.zoom_level = this.plotState.zoom_level;
+        this.storedState
             .accession_dictionary = deepCopy(this.plotState
                                                  .accession_dictionary);
     }
@@ -207,7 +208,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                                 * this.plotService.bin_width;
             const colors = this.plotService.getAccessionColors(acc_id);
             colors.forEach((col, j) => {
-                const xpos = this.stored_state.canvas.width
+                const xpos = this.storedState.canvas.width
                              - (j + 1) * track_width;
                 const ypos = row_index * this.plotService.bin_height;
                 ctx.fillStyle = col;
@@ -230,9 +231,9 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.clearRect(0, 0, this.canvas.nativeElement.width,
                       this.canvas.nativeElement.height);
 
-        ctx.drawImage(this.stored_state.canvas, 0,
+        ctx.drawImage(this.storedState.canvas, 0,
                       this.plotService.yoffset
-                      - this.stored_state.canvas_yoffset);
+                      - this.storedState.canvas_yoffset);
     }
 
     private getEdgeLength(node: TreeNode): number {
@@ -315,12 +316,12 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const initial_xpos = this.GUI_TREE_LEFT_MARGIN;
         this._drawLabelTree(this.plotService.phenTree.tree, initial_xpos, ctx,
                             this.plotService.labels_width,
-                            text_height, this.stored_state.canvas_yoffset,
+                            text_height, this.storedState.canvas_yoffset,
                             scale, draw_state);
     }
 
     private getTreeScale(ctx: CanvasRenderingContext2D): number {
-        const available_width = this.stored_state.canvas.width
+        const available_width = this.storedState.canvas.width
                                 - this.getMaxLabelWidth(ctx)
                                 - this.getColorTracksWidth()
                                 - this.plotService.bin_width
@@ -343,7 +344,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.textBaseline = 'top';
         this.plotState.sorted_accessions.forEach((acc, index) => {
             ctx.fillText(this.plotService.getAccessionLabel(acc), 0,
-                         index * text_height + this.stored_state
+                         index * text_height + this.storedState
                                                    .canvas_yoffset);
         });
     }

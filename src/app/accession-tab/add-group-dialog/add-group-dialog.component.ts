@@ -11,7 +11,7 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 export class AddGroupDialogComponent {
     error_message = '';
 
-    _category_name = '';
+    private _category_name = '';
     set category_name(name: string) {
         this._category_name = name.trim();
     }
@@ -19,7 +19,7 @@ export class AddGroupDialogComponent {
         return this._category_name;
     }
 
-    _group_name = '';
+    private _group_name = '';
     set group_name(name: string) {
         this._group_name = name.trim();
         this.validateGroupName(this._group_name);
@@ -78,7 +78,7 @@ export class AddGroupDialogComponent {
         this.visible = false;
     }
 
-    validateGroupName(group_name: string) {
+    private validateGroupName(group_name: string) {
         if (this.accessionGroups.some(grp => grp.name === group_name)) {
             this.error_message = 'Group name already in use';
         } else {
