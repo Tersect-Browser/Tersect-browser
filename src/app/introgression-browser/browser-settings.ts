@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '../utils/utils';
 export type AccessionDisplayStyle = 'labels' | 'tree_simple' | 'tree_linear';
 
 export interface AccessionDictionary {
-    [internal_name: string]: {
+    [accessionId: string]: {
         label?: string;
         colors?: string[];
     };
@@ -33,13 +33,13 @@ export function extractAccessionColors(groups: AccessionGroup[]): AccessionDicti
     const dict: AccessionDictionary = {};
     groups.filter((group: AccessionGroup) => !isNullOrUndefined(group.color))
           .forEach((group: AccessionGroup) => {
-        group.accessions.forEach(acc_id => {
-            if (!(acc_id in dict)) {
-                dict[acc_id] = { colors: [group.color] };
-            } else if ('colors' in dict[acc_id]) {
-                dict[acc_id].colors.push(group.color);
+        group.accessions.forEach(accId => {
+            if (!(accId in dict)) {
+                dict[accId] = { colors: [group.color] };
+            } else if ('colors' in dict[accId]) {
+                dict[accId].colors.push(group.color);
             } else {
-                dict[acc_id].colors = [group.color];
+                dict[accId].colors = [group.color];
             }
         });
     });
