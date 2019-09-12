@@ -18,19 +18,6 @@ import {
     templateUrl: './chromosome-selector.component.html'
 })
 export class ChromosomeSelectorComponent {
-    chromosomeOptions: SelectItem[];
-
-    set selectedChromosome(chrom: Chromosome) {
-        if (this.plotState.chromosome.name !== chrom.name
-            || this.plotState.chromosome.size !== chrom.size) {
-            this.plotState.interval = [1, chrom.size];
-            this.plotState.chromosome = chrom;
-        }
-    }
-    get selectedChromosome(): Chromosome {
-        return this.plotState.chromosome;
-    }
-
     @Input()
     set chromosomes(chroms: Chromosome[]) {
         if (isNullOrUndefined(chroms)) {
@@ -42,5 +29,18 @@ export class ChromosomeSelectorComponent {
         }));
     }
 
+    chromosomeOptions: SelectItem[];
+
     constructor(private readonly plotState: PlotStateService) { }
+
+    set selectedChromosome(chrom: Chromosome) {
+        if (this.plotState.chromosome.name !== chrom.name
+            || this.plotState.chromosome.size !== chrom.size) {
+            this.plotState.interval = [1, chrom.size];
+            this.plotState.chromosome = chrom;
+        }
+    }
+    get selectedChromosome(): Chromosome {
+        return this.plotState.chromosome;
+    }
 }
