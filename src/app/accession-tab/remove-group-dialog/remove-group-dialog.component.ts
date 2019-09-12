@@ -7,15 +7,10 @@ import { AccessionGroup } from '../../introgression-browser/browser-settings';
     templateUrl: './remove-group-dialog.component.html'
 })
 export class RemoveGroupDialogComponent {
-    visible = false;
-    group: AccessionGroup;
-
     @Output() deleteGroup = new EventEmitter<AccessionGroup>();
 
-    show(group: AccessionGroup) {
-        this.group = group;
-        this.visible = true;
-    }
+    group: AccessionGroup;
+    visible = false;
 
     cancel() {
         this.visible = false;
@@ -24,5 +19,10 @@ export class RemoveGroupDialogComponent {
     delete() {
         this.visible = false;
         this.deleteGroup.emit(this.group);
+    }
+
+    show(group: AccessionGroup) {
+        this.group = group;
+        this.visible = true;
     }
 }
