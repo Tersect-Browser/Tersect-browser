@@ -1,4 +1,4 @@
-import { PheneticTree } from './phenetictree';
+import { PheneticTree } from '../db/phenetictree';
 
 export async function cleanDatabase() {
     // Clean up unfinished trees.
