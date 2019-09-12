@@ -4,7 +4,7 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
     GeneTGRC
-} from '../../backend/db/genetgrc';
+} from '../../backend/models/genetgrc';
 import {
     AccessionInfoImporterComponent
 } from '../accession-tab/plugins/accession-info-importer.component';

@@ -3,8 +3,8 @@ import { Inject, Injectable } from '@angular/core';
 
 import { Observable, of } from 'rxjs';
 
-import { DatasetPublic } from '../../backend/db/dataset';
-import { PheneticTree } from '../../backend/db/phenetictree';
+import { DatasetPublic } from '../../backend/models/dataset';
+import { PheneticTree } from '../../backend/models/phenetictree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { Chromosome } from '../models/Chromosome';

@@ -19,7 +19,7 @@ import {
 
 import {
     PheneticTree
-} from '../../../backend/db/phenetictree';
+} from '../../../backend/models/phenetictree';
 import {
     TreeNode,
     treeToSortedList

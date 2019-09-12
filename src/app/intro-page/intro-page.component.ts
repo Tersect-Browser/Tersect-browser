@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { DatasetPublic } from '../../backend/db/dataset';
+import { DatasetPublic } from '../../backend/models/dataset';
 import { TersectBackendService } from '../services/tersect-backend.service';
 
 @Component({

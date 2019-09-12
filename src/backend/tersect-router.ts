@@ -17,11 +17,11 @@ import { promisify } from 'util';
 
 import { TreeDatabaseQuery, TreeQuery } from '../app/models/TreeQuery';
 import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
-import { ChromosomeIndex } from './db/chromosomeindex';
-import { Dataset, DatasetPublic } from './db/dataset';
-import { DBMatrix } from './db/dbmatrix';
-import { PheneticTree } from './db/phenetictree';
-import { ViewSettings } from './db/viewsettings';
+import { ChromosomeIndex } from './models/chromosomeindex';
+import { Dataset, DatasetPublic } from './models/dataset';
+import { DBMatrix } from './models/dbmatrix';
+import { PheneticTree } from './models/phenetictree';
+import { ViewSettings } from './models/viewsettings';
 import { partitionQuery } from './partitioning';
 
 import { RefDistQuery } from '../app/models/RefDistQuery';
