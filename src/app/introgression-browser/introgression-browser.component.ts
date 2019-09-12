@@ -52,7 +52,16 @@ export class IntrogressionBrowserComponent implements OnInit {
     @ViewChild(TooltipComponent, { static: true })
     readonly tooltip: TooltipComponent;
 
+    accessionGroups: AccessionGroup[];
     chromosomes: Chromosome[];
+    displaySidebar = false;
+
+    /**
+     * The following two properties are used to store accession tab outputs
+     * locally before the plot state is updated once the sidebar containing
+     * the tab is closed.
+     */
+    selectedAccessions: string[];
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly tersectBackendService: TersectBackendService,
@@ -61,40 +70,6 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     get settings(): BrowserSettings {
         return this.plotState.settings;
-    }
-
-    /**
-     * The following two properties are used to store accession tab outputs
-     * locally before the plot state is updated once the sidebar containing
-     * the tab is closed.
-     */
-    selectedAccessions: string[];
-    accessionGroups: AccessionGroup[];
-
-    displaySidebar = false;
-
-    zoomIn() {
-        this.plotState.zoomIn();
-    }
-
-    zoomOut() {
-        this.plotState.zoomOut();
-    }
-
-    isZoomMax(): boolean {
-        return this.plotState.isZoomMax();
-    }
-
-    isZoomMin(): boolean {
-        return this.plotState.isZoomMin();
-    }
-
-    scrollWheel(event: WheelEvent) {
-        if (event.deltaY > 0) {
-            this.zoomOut();
-        } else {
-            this.zoomIn();
-        }
     }
 
     ngOnInit() {
@@ -122,6 +97,68 @@ export class IntrogressionBrowserComponent implements OnInit {
                 this.selectedAccessions = settings.selected_accessions;
             });
         });
+    }
+
+    isZoomMax(): boolean {
+        return this.plotState.isZoomMax();
+    }
+
+    isZoomMin(): boolean {
+        return this.plotState.isZoomMin();
+    }
+
+    plotClick($event: PlotMouseClickEvent) {
+        if ($event.target.type !== 'background') {
+            this.plotClickMenu.show($event);
+        }
+    }
+
+    removeAccession($event: string) {
+        this.selectedAccessions.splice(
+            this.selectedAccessions.findIndex(acc => acc === $event), 1
+        );
+        this.selectedAccessions = [...this.selectedAccessions];
+        this.updateAccessions();
+    }
+
+    scrollWheel(event: WheelEvent) {
+        if (event.deltaY > 0) {
+            this.zoomOut();
+        } else {
+            this.zoomIn();
+        }
+    }
+
+    setInterval($event: number[]) {
+        this.plotState.interval = $event;
+    }
+
+    setIntervalEnd($event: number) {
+        this.plotState.interval = [this.plotState.interval[0], $event];
+    }
+
+    setIntervalStart($event: number) {
+        this.plotState.interval = [$event, this.plotState.interval[1]];
+    }
+
+    setReference($event: string) {
+        this.plotState.reference = $event;
+    }
+
+    updateAccessions() {
+        this.plotState.accessions = [...this.selectedAccessions];
+        this.plotState.accessionGroups = [...this.accessionGroups];
+        if (!this.selectedAccessions.includes(this.plotState.reference)) {
+            this.plotState.reference = this.selectedAccessions[0];
+        }
+    }
+
+    zoomIn() {
+        this.plotState.zoomIn();
+    }
+
+    zoomOut() {
+        this.plotState.zoomOut();
     }
 
     /**
@@ -170,43 +207,5 @@ export class IntrogressionBrowserComponent implements OnInit {
         if (isNullOrUndefined(settings.plugins)) {
             settings.plugins = [];
         }
-    }
-
-    updateAccessions() {
-        this.plotState.accessions = [...this.selectedAccessions];
-        this.plotState.accessionGroups = [...this.accessionGroups];
-        if (!this.selectedAccessions.includes(this.plotState.reference)) {
-            this.plotState.reference = this.selectedAccessions[0];
-        }
-    }
-
-    plotClick($event: PlotMouseClickEvent) {
-        if ($event.target.type !== 'background') {
-            this.plotClickMenu.show($event);
-        }
-    }
-
-    setReference($event: string) {
-        this.plotState.reference = $event;
-    }
-
-    removeAccession($event: string) {
-        this.selectedAccessions.splice(
-            this.selectedAccessions.findIndex(acc => acc === $event), 1
-        );
-        this.selectedAccessions = [...this.selectedAccessions];
-        this.updateAccessions();
-    }
-
-    setInterval($event: number[]) {
-        this.plotState.interval = $event;
-    }
-
-    setIntervalStart($event: number) {
-        this.plotState.interval = [$event, this.plotState.interval[1]];
-    }
-
-    setIntervalEnd($event: number) {
-        this.plotState.interval = [this.plotState.interval[0], $event];
     }
 }
