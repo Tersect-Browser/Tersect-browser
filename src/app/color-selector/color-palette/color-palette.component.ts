@@ -6,18 +6,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     styleUrls: ['./color-palette.component.css']
 })
 export class ColorPaletteComponent {
-    private _selectedColor: string;
-    @Input()
-    set selectedColor(color: string) {
-        this._selectedColor = color;
-        this.selectedColorChange.emit(color);
-    }
-    get selectedColor(): string {
-        return this._selectedColor;
-    }
-
-    @Output() selectedColorChange = new EventEmitter<string>();
-
     /**
      * Palette based on K. Kelly (1965): Twenty-two colors of maximum contrast.
      * The first color is empty and three of the 22 (white, black, and grey)
@@ -45,6 +33,19 @@ export class ColorPaletteComponent {
         '#e3541c', // reddish orange
         '#273a22'  // olive green
     ];
+
+    @Input()
+    set selectedColor(color: string) {
+        this._selectedColor = color;
+        this.selectedColorChange.emit(color);
+    }
+    get selectedColor(): string {
+        return this._selectedColor;
+    }
+
+    @Output() selectedColorChange = new EventEmitter<string>();
+
+    private _selectedColor: string;
 
     selectColor(color: string) {
         this.selectedColor = color;
