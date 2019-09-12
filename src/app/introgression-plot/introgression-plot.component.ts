@@ -16,7 +16,7 @@ import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent
-} from '../models/PlotPosition';
+} from '../models/Plot';
 import {
     AccessionBarComponent
 } from './accession-bar/accession-bar.component';

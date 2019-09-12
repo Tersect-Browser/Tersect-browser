@@ -9,8 +9,8 @@ import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent,
-    PlotPosition
-} from '../models/PlotPosition';
+    Position
+} from '../models/Plot';
 
 export interface ClickState {
     enableClicking: boolean;
@@ -99,7 +99,7 @@ export abstract class CanvasPlotElement {
     protected abstract dragStartAction(dragState: DragState): void;
     protected abstract dragStopAction(dragState: DragState): void;
     protected abstract dragAction(dragState: DragState): void;
-    protected abstract getPositionTarget(position: PlotPosition): PlotArea;
+    protected abstract getPositionTarget(position: Position): PlotArea;
 
     /**
      * Default - feel free to override.

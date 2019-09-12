@@ -28,8 +28,8 @@ import {
     parseNewick
 } from '../../clustering/newick-parser';
 import {
-    PlotPosition
-} from '../../models/PlotPosition';
+    Position
+} from '../../models/Plot';
 import {
     SequenceInterval
 } from '../../models/SequenceInterval';
@@ -119,7 +119,7 @@ export class IntrogressionPlotService implements OnDestroy {
     /**
      * Horizontal / vertical scroll position (in terms of bins) of the plot.
      */
-    plotPositionSource = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
+    plotPositionSource = new BehaviorSubject<Position>({ x: 0, y: 0 });
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -251,7 +251,7 @@ export class IntrogressionPlotService implements OnDestroy {
         return count;
     }
 
-    updatePosition(pos: PlotPosition) {
+    updatePosition(pos: Position) {
         this.plotPositionSource.next(pos);
     }
 

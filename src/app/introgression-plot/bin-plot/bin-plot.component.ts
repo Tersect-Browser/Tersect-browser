@@ -3,8 +3,8 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import {
     PlotArea,
     PlotBin,
-    PlotPosition
-} from '../../models/PlotPosition';
+    Position
+} from '../../models/Plot';
 import {
     isNullOrUndefined
 } from '../../utils/utils';
@@ -77,7 +77,7 @@ export class BinPlotComponent extends CanvasPlotElement {
 
     protected dragAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
-        const newPos: PlotPosition = {
+        const newPos: Position = {
             x: Math.round(dragState.currentPosition.x
                           / this.plotService.binWidth
                           - this.dragStartIndices.x),
@@ -110,7 +110,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         // No action
     }
 
-    protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
+    protected getPositionTarget(mousePosition: Position): PlotArea {
         if ([this.plotState.sortedAccessions,
              this.plotState.interval,
              this.plotState.binsize].some(isNullOrUndefined)) {

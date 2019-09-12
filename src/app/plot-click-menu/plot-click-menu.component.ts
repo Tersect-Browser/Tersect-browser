@@ -7,7 +7,7 @@ import {
     PlotMouseClickEvent,
     PlotSequenceInterval,
     PlotSequencePosition
-} from '../models/PlotPosition';
+} from '../models/Plot';
 import {
     formatPosition
 } from '../utils/utils';

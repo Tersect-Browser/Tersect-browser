@@ -16,7 +16,7 @@ import {
 } from '../models/Chromosome';
 import {
     PlotMouseClickEvent
-} from '../models/PlotPosition';
+} from '../models/Plot';
 import {
     PlotClickMenuComponent
 } from '../plot-click-menu/plot-click-menu.component';

@@ -13,8 +13,8 @@ import {
 import {
     PlotAccession,
     PlotArea,
-    PlotPosition
-} from '../../models/PlotPosition';
+    Position
+} from '../../models/Plot';
 import {
     TreeQuery
 } from '../../models/TreeQuery';
@@ -134,7 +134,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     protected dragAction(dragState: DragState): void {
         // Only vertical dragging, rounded to accession indices.
-        const newPos: PlotPosition = {
+        const newPos: Position = {
             x: this.plotService.plotPosition.x,
             y: Math.round(dragState.currentPosition.y
                           / this.plotService.binHeight
@@ -159,7 +159,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         // No action
     }
 
-    protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
+    protected getPositionTarget(mousePosition: Position): PlotArea {
         if (isNullOrUndefined(this.plotState.sortedAccessions)) {
             return { plotAreaType: 'background' };
         }
