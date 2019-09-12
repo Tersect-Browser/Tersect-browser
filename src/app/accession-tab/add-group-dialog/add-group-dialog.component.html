@@ -19,7 +19,7 @@
     <div class="group-dialog-small-margin">
         <div class="input-label-small">Group name (<i>required</i>)</div>
         <input pInputText style="width: 100%;"
-               [(ngModel)]="group_name" type="text">
+               [(ngModel)]="groupName" type="text">
     </div>
 
     <div class="group-dialog-small-margin">
@@ -27,7 +27,7 @@
         <p-dropdown [style]="{'width':'100%'}"
                     [options]="categoryOptions"
                     [editable]="true"
-                    [(ngModel)]="category_name">
+                    [(ngModel)]="categoryName">
         </p-dropdown>
     </div>
 
@@ -39,7 +39,7 @@
                 icon="fa fa-plus"
                 label="Save"
                 [disabled]="selectedAccessions.length === 0
-                            || group_name.length === 0
+                            || groupName.length === 0
                             || errorMessage !== ''">
         </button>
     </div>

@@ -13,19 +13,19 @@ export class AddGroupDialogComponent {
     errorMessage = '';
 
     private _categoryName = '';
-    set category_name(name: string) {
+    set categoryName(name: string) {
         this._categoryName = name.trim();
     }
-    get category_name(): string {
+    get categoryName(): string {
         return this._categoryName;
     }
 
     private _groupName = '';
-    set group_name(name: string) {
+    set groupName(name: string) {
         this._groupName = name.trim();
         this.validateGroupName(this._groupName);
     }
-    get group_name(): string {
+    get groupName(): string {
         return this._groupName;
     }
 
@@ -62,20 +62,20 @@ export class AddGroupDialogComponent {
 
     saveGroup() {
         const group: AccessionGroup = {
-            name: this.group_name,
+            name: this.groupName,
             accessions: this.selectedAccessions
         };
-        if (!isNullOrUndefined(this.category_name)
-            && this.category_name.length) {
-            group.category = this.category_name;
+        if (!isNullOrUndefined(this.categoryName)
+            && this.categoryName.length) {
+            group.category = this.categoryName;
         }
         this.groupSave.emit(group);
         this.hideDialog();
     }
 
     private hideDialog() {
-        this.group_name = '';
-        this.category_name = '';
+        this.groupName = '';
+        this.categoryName = '';
         this.visible = false;
     }
 
