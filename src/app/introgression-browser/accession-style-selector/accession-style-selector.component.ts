@@ -16,12 +16,12 @@ import {
     ]
 })
 export class AccessionStyleSelectorComponent {
+    constructor(private readonly plotState: PlotStateService) { }
+
     set accessionStyle(accessionStyle: AccessionDisplayStyle) {
         this.plotState.accessionStyle = accessionStyle;
     }
     get accessionStyle() {
         return this.plotState.accessionStyle;
     }
-
-    constructor(private readonly plotState: PlotStateService) { }
 }
