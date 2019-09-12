@@ -64,8 +64,8 @@ const pluginComponents = {
     encapsulation: ViewEncapsulation.None
 })
 export class AccessionTabComponent implements AfterViewInit {
-    static readonly SORT_ICON_WIDTH = 30;
     static readonly MAX_COLUMN_WIDTH = 200;
+    static readonly SORT_ICON_WIDTH = 30;
 
     @ViewChild('dt', { static: true })
     private readonly dt: Table;
