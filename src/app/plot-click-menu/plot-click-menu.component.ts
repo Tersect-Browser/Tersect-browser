@@ -39,20 +39,20 @@ export class PlotClickMenuComponent {
     }
 
     show($event: PlotMouseClickEvent) {
-        if ($event.target.type === 'accession') {
+        if ($event.target.plotAreaType === 'accession') {
             this.menuItems = [
                 this.getAccessionItem($event.target as PlotAccession)
             ];
-        } else if ($event.target.type === 'bin') {
+        } else if ($event.target.plotAreaType === 'bin') {
             this.menuItems = [
-                this.getAccessionItem($event.target as PlotAccession),
+                this.getAccessionItem($event.target as PlotBin),
                 this.getBinItem($event.target as PlotBin)
             ];
-        } else if ($event.target.type === 'position') {
+        } else if ($event.target.plotAreaType === 'position') {
             this.menuItems = [
                 this.getPositionItem($event.target as PlotSequencePosition)
             ];
-        } else if ($event.target.type === 'interval') {
+        } else if ($event.target.plotAreaType === 'interval') {
             this.menuItems = [
                 this.getIntervalItem($event.target as PlotSequenceInterval)
             ];

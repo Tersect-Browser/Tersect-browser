@@ -112,7 +112,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     plotClick($event: PlotMouseClickEvent) {
-        if ($event.target.type !== 'background') {
+        if ($event.target.plotAreaType !== 'background') {
             this.plotClickMenu.show($event);
         }
     }

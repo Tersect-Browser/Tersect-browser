@@ -114,7 +114,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         if ([this.plotState.sortedAccessions,
              this.plotState.interval,
              this.plotState.binsize].some(isNullOrUndefined)) {
-            return { type: 'background' };
+            return { plotAreaType: 'background' };
         }
         const binIndex = Math.floor(mousePosition.x
                                     / this.plotService.binWidth)
@@ -126,7 +126,7 @@ export class BinPlotComponent extends CanvasPlotElement {
 
         if (binIndex >= this.plotService.colNum
             || accessionIndex >= this.plotService.rowNum) {
-            return { type: 'background' };
+            return { plotAreaType: 'background' };
         }
 
         const interval = this.plotState.interval;
@@ -135,7 +135,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         const accession = this.plotState.sortedAccessions[accessionIndex];
 
         const result: PlotBin = {
-            type: 'bin',
+            plotAreaType: 'bin',
             accessionLabel: this.plotService.getAccessionLabel(accession),
             accession: accession,
             startPosition: interval[0] + binIndex * binsize,

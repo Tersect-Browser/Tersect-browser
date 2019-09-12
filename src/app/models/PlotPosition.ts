@@ -1,17 +1,10 @@
 export interface PlotArea {
-    type: string;
+    plotAreaType: 'background' | 'position' | 'accession' | 'interval' | 'bin';
 }
 
 export interface PlotAccession extends PlotArea {
     accessionLabel: string;
     accession: string;
-}
-
-export interface PlotBin extends PlotArea {
-    accessionLabel: string;
-    accession: string;
-    startPosition: number;
-    endPosition: number;
 }
 
 export interface PlotSequenceInterval extends PlotArea {
@@ -22,6 +15,8 @@ export interface PlotSequenceInterval extends PlotArea {
 export interface PlotSequencePosition extends PlotArea {
     position: number;
 }
+
+export type PlotBin = PlotAccession & PlotSequenceInterval;
 
 export interface PlotMouseClickEvent {
     x: number;

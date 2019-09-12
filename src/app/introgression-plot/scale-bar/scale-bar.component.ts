@@ -145,7 +145,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected dragStartAction(dragState: DragState): void {
-        if (this.getPositionTarget(dragState.startPosition).type
+        if (this.getPositionTarget(dragState.startPosition).plotAreaType
             === 'background') {
             this.stopDrag(dragState.event);
             return;
@@ -177,7 +177,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const interval = this.plotState.interval;
         const binsize = this.plotState.binsize;
         if ([interval, binsize].some(isNullOrUndefined)) {
-            return { type: 'background' };
+            return { plotAreaType: 'background' };
         }
         const bpPerPixel = binsize / this.plotService.zoomFactor;
         const bpPosition = position.x * bpPerPixel + interval[0]
@@ -185,10 +185,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
                               + this.plotService.guiMargins.left)
                              * binsize;
         if (bpPosition < interval[0] || bpPosition > interval[1]) {
-            return { type: 'background' };
+            return { plotAreaType: 'background' };
         }
         const result: PlotSequencePosition = {
-            type: 'position',
+            plotAreaType: 'position',
             position: Math.round(bpPosition)
         };
         return result;
@@ -205,16 +205,16 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const endTarget = this.getPositionTarget(endPos);
 
         this.plotService.highlight = {
-            start: startTarget.type === 'position'
+            start: startTarget.plotAreaType === 'position'
                    ? (startTarget as PlotSequencePosition).position
                    : this.plotState.interval[0],
-            end: endTarget.type === 'position'
+            end: endTarget.plotAreaType === 'position'
                  ? (endTarget as PlotSequencePosition).position
                  : this.plotState.interval[1]
         };
 
         const targetInterval: PlotSequenceInterval = {
-            type: 'interval',
+            plotAreaType: 'interval',
             startPosition: this.plotService.highlight.start,
             endPosition: this.plotService.highlight.end
         };
@@ -229,7 +229,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     private dragStopActionGlobal(dragState: DragState): void {
         if (!isNullOrUndefined(this.plotService.highlight)) {
             const target: PlotSequenceInterval = {
-                type: 'interval',
+                plotAreaType: 'interval',
                 startPosition: this.plotService.highlight.start,
                 endPosition: this.plotService.highlight.end
             };

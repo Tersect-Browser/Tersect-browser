@@ -161,17 +161,17 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
         if (isNullOrUndefined(this.plotState.sortedAccessions)) {
-            return { type: 'background' };
+            return { plotAreaType: 'background' };
         }
         const accessionIndex = Math.floor(mousePosition.y
                                           / this.plotService.binHeight)
                                - this.plotService.plotPosition.y;
         if (accessionIndex >= this.plotService.rowNum) {
-            return { type: 'background' };
+            return { plotAreaType: 'background' };
         }
         const accession = this.plotState.sortedAccessions[accessionIndex];
         const result: PlotAccession = {
-            type: 'accession',
+            plotAreaType: 'accession',
             accessionLabel: this.plotService.getAccessionLabel(accession),
             accession: accession
         };

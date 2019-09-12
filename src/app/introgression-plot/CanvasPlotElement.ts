@@ -118,7 +118,7 @@ export abstract class CanvasPlotElement {
      */
     protected hoverAction(hoverState: HoverState): void {
         const target = this.getPositionTarget(hoverState.hoverPosition);
-        if (target.type !== 'background') {
+        if (target.plotAreaType !== 'background') {
             this.plotMouseHover.emit({
                 x: hoverState.event.clientX,
                 y: hoverState.event.clientY,

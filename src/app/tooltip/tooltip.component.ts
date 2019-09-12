@@ -40,18 +40,22 @@ export class TooltipComponent {
         this.tooltip.nativeElement.innerHTML = this.formatContent($event);
     }
 
+    private formatAccessionTooltip(target: PlotAccession): string {
+        return `${target.accessionLabel}`;
+    }
+
     private formatBinTooltip(target: PlotBin): string {
-        return `${target.accessionLabel}<br>
-${formatPosition(target.startPosition)}
- - ${formatPosition(target.endPosition)}`;
+        const interval = this.formatIntervalTooltip(target);
+        return `${target.accessionLabel}<br>${interval}`;
     }
 
     private formatContent($event: PlotMouseHoverEvent): string {
-        switch ($event.target.type) {
+        switch ($event.target.plotAreaType) {
             case 'bin':
                 return this.formatBinTooltip($event.target as PlotBin);
             case 'accession':
-                return `${($event.target as PlotAccession).accessionLabel}`;
+                return this.formatAccessionTooltip($event.target as
+                                                   PlotAccession);
             case 'position':
                 return this.formatPositionTooltip($event.target as
                                                   PlotSequencePosition);
@@ -64,8 +68,9 @@ ${formatPosition(target.startPosition)}
     }
 
     private formatIntervalTooltip(target: PlotSequenceInterval): string {
-        return `${formatPosition(target.startPosition)}
-- ${formatPosition(target.endPosition)}`;
+        const startPos = formatPosition(target.startPosition);
+        const endPos = formatPosition(target.endPosition);
+        return `${startPos} - ${endPos}`;
     }
 
     private formatPositionTooltip(target: PlotSequencePosition): string {
