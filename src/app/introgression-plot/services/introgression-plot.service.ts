@@ -137,92 +137,12 @@ export class IntrogressionPlotService implements OnDestroy {
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly tersectBackendService: TersectBackendService) {
-        const accessions$ = this.plotState.accessions$.pipe(
-            filter((accessions) => !isNullOrUndefined(accessions)),
-            filter(this.validateInputs),
-            tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME)
-        );
+        const accessions$ = this.getAccessions$();
+        const refDistanceBins$ = this.getRefDistanceBins$(accessions$);
+        const phenTree$ = this.getPhenTree$(accessions$);
+        const gaps$ = this.getGaps$();
 
-        const refDistanceBins$ = combineLatest([
-            this.plotState.datasetId$,
-            this.plotState.reference$,
-            this.plotState.chromosome$,
-            this.plotState.interval$,
-            this.plotState.binsize$,
-            accessions$
-        ]).pipe(
-            filter(([ds, ref, chrom, interval, binsize, accs]) =>
-                ![ds, ref, chrom, interval,
-                  binsize, accs].some(isNullOrUndefined)
-            ),
-            filter(this.validateInputs),
-            tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
-            switchMap(([ds, ref, chrom, interval, binsize, accs]) =>
-                this.tersectBackendService
-                    .getRefDistanceBins(ds, ref, chrom.name,
-                                        interval[0], interval[1], binsize, accs)
-            )
-        );
-
-        const phenTree$ = combineLatest([
-            this.plotState.datasetId$,
-            this.plotState.chromosome$,
-            this.plotState.interval$,
-            accessions$,
-            this.plotState.binsize$
-        ]).pipe(
-            filter(([ds, chrom, interval, accessions, binsize]) => {
-                    return ![ds, chrom, interval,
-                             accessions, binsize].some(isNullOrUndefined);
-                }
-            ),
-            filter(this.validateInputs),
-            filter(this.treeUpdateRequired),
-            tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
-            switchMap(([ds, chrom, interval, accessions]) =>
-                this.tersectBackendService
-                    .getPheneticTree(ds, chrom.name, interval[0], interval[1],
-                                     accessions).pipe(
-                    tap((treeOutput: PheneticTree) => {
-                        if (treeOutput.status !== 'ready') {
-                            this.plotLoadMessage = treeOutput.status;
-                            throw new Error('Tree still loading');
-                        }
-                    }),
-                    retryWhen(errors => {
-                        return errors.pipe(
-                            delay(IntrogressionPlotService.TREE_RETRY_DELAY)
-                        );
-                    })
-                )
-            )
-        );
-
-        const gaps$ = combineLatest([
-            this.plotState.datasetId$,
-            this.plotState.chromosome$
-        ]).pipe(
-            filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
-            tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
-            switchMap(([ds, chrom]) => this.tersectBackendService
-                                           .getGapIndex(ds, chrom.name))
-        );
-
-        this.plotData$ = combineLatest([
-            refDistanceBins$,
-            phenTree$,
-            gaps$
-        ]).pipe(
-            filter((inputs) => !inputs.some(isNullOrUndefined)),
-            tap(this.startLoading),
-            filter(([refDist, treeOutput]) => {
-                return this.binsMatchTree(refDist, treeOutput);
-            })
-        );
+        this.plotData$ = this.getPlotData$(refDistanceBins$, phenTree$, gaps$);
 
         this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
@@ -419,6 +339,28 @@ export class IntrogressionPlotService implements OnDestroy {
         this.plotArraySource.next(plotArray);
     }
 
+    private getAccessions$(): Observable<string[]> {
+        return this.plotState.accessions$.pipe(
+            filter((accessions) => !isNullOrUndefined(accessions)),
+            filter(this.validateInputs),
+            tap(this.startLoading),
+            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME)
+        );
+    }
+
+    private getGaps$(): Observable<SequenceInterval[]> {
+        return combineLatest([
+            this.plotState.datasetId$,
+            this.plotState.chromosome$
+        ]).pipe(
+            filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
+            tap(this.startLoading),
+            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
+            switchMap(([ds, chrom]) => this.tersectBackendService
+                                           .getGapIndex(ds, chrom.name))
+        );
+    }
+
     /**
      * Get an array of maximum distances per bin for a given set of accessions.
      */
@@ -432,6 +374,83 @@ export class IntrogressionPlotService implements OnDestroy {
             });
         });
         return binMaxDistances;
+    }
+
+    private getPhenTree$(accessions$: Observable<string[]>): Observable<PheneticTree> {
+        return combineLatest([
+            this.plotState.datasetId$,
+            this.plotState.chromosome$,
+            this.plotState.interval$,
+            accessions$,
+            this.plotState.binsize$
+        ]).pipe(
+            filter(([ds, chrom, interval, accessions, binsize]) => {
+                    return ![ds, chrom, interval,
+                             accessions, binsize].some(isNullOrUndefined);
+                }
+            ),
+            filter(this.validateInputs),
+            filter(this.treeUpdateRequired),
+            tap(this.startLoading),
+            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
+            switchMap(([ds, chrom, interval, accessions]) =>
+                this.tersectBackendService
+                    .getPheneticTree(ds, chrom.name, interval[0], interval[1],
+                                     accessions).pipe(
+                    tap((treeOutput: PheneticTree) => {
+                        if (treeOutput.status !== 'ready') {
+                            this.plotLoadMessage = treeOutput.status;
+                            throw new Error('Tree still loading');
+                        }
+                    }),
+                    retryWhen(errors => {
+                        return errors.pipe(
+                            delay(IntrogressionPlotService.TREE_RETRY_DELAY)
+                        );
+                    })
+                )
+            )
+        );
+    }
+
+    private getPlotData$(refDistanceBins$: Observable<any>,
+                         phenTree$: Observable<PheneticTree>,
+                         gaps$: Observable<SequenceInterval[]>): Observable<any[]> {
+        return combineLatest([
+            refDistanceBins$,
+            phenTree$,
+            gaps$
+        ]).pipe(
+            filter((inputs) => !inputs.some(isNullOrUndefined)),
+            tap(this.startLoading),
+            filter(([refDist, treeOutput]) => {
+                return this.binsMatchTree(refDist, treeOutput);
+            })
+        );
+    }
+
+    private getRefDistanceBins$(accessions$: Observable<string[]>): Observable<any> {
+        return combineLatest([
+            this.plotState.datasetId$,
+            this.plotState.reference$,
+            this.plotState.chromosome$,
+            this.plotState.interval$,
+            this.plotState.binsize$,
+            accessions$
+        ]).pipe(
+            filter(([ds, ref, chrom, interval, binsize, accs]) =>
+                ![ds, ref, chrom, interval,
+                  binsize, accs].some(isNullOrUndefined)
+            ),
+            filter(this.validateInputs),
+            tap(this.startLoading),
+            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
+            switchMap(([ds, ref, chrom, interval, binsize, accs]) =>
+                this.tersectBackendService
+                    .getRefDistanceBins(ds, ref, chrom.name,
+                                        interval[0], interval[1], binsize, accs)
+            )
+        );
     }
 
     private resetPosition() {
