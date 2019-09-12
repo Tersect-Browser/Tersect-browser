@@ -15,7 +15,14 @@ import {
     styleUrls: ['./binsize-selector.component.css']
 })
 export class BinsizeSelectorComponent {
+    readonly BINSIZE_MIN = 1000;
+    readonly BINSIZE_STEP = 1000;
+    readonly BINSIZE_MAX = 100000;
+
     private _binsize: number;
+
+    constructor(private readonly plotState: PlotStateService) { }
+
     set binsize(binsize: number) {
         this._binsize = this.roundAndClampBinsize(binsize);
     }
@@ -23,11 +30,11 @@ export class BinsizeSelectorComponent {
         return this.plotState.binsize;
     }
 
-    readonly BINSIZE_MIN = 1000;
-    readonly BINSIZE_STEP = 1000;
-    readonly BINSIZE_MAX = 100000;
-
-    constructor(private readonly plotState: PlotStateService) { }
+    binsizeSliderChange($event: { event: Event, value: number }) {
+        if ($event.event.type === 'click') {
+            this.updateBinsize($event.value);
+        }
+    }
 
     updateBinsize(binsize?: number) {
         if (isNullOrUndefined(binsize)) {
@@ -46,11 +53,5 @@ export class BinsizeSelectorComponent {
     private roundAndClampBinsize(binsize: number): number {
         return clamp(ceilTo(binsize, this.BINSIZE_STEP),
                             this.BINSIZE_MIN, this.BINSIZE_MAX);
-    }
-
-    binsizeSliderChange($event: { event: Event, value: number }) {
-        if ($event.event.type === 'click') {
-            this.updateBinsize($event.value);
-        }
     }
 }
