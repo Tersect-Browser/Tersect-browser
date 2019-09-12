@@ -15,9 +15,9 @@ import {
     styleUrls: ['./binsize-selector.component.css']
 })
 export class BinsizeSelectorComponent {
+    readonly BINSIZE_MAX = 100000;
     readonly BINSIZE_MIN = 1000;
     readonly BINSIZE_STEP = 1000;
-    readonly BINSIZE_MAX = 100000;
 
     private _binsize: number;
 
