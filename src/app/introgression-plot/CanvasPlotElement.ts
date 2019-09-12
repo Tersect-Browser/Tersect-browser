@@ -165,7 +165,7 @@ export abstract class CanvasPlotElement {
             return;
         }
         this.dragState.event = $event;
-        const canvas = (event.target as HTMLCanvasElement);
+        const canvas = ($event.target as HTMLCanvasElement);
         if (canvas.style.cursor !== this.dragState.drag_cursor) {
             canvas.style.cursor = this.dragState.drag_cursor;
         }
