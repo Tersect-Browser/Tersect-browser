@@ -23,6 +23,11 @@ import {
 
 @Injectable()
 export class PlotStateService {
+    static readonly MAX_ZOOM_LEVEL = 1000;
+    static readonly MIN_ZOOM_LEVEL = 100;
+    static readonly ZOOM_FACTOR = 1.3;
+    static readonly ZOOM_ROUND_TO = 50;
+
     private readonly settingsSource = new Subject<BrowserSettings>();
     settings$ = this.settingsSource.asObservable();
     set settings(settings: BrowserSettings) {
@@ -232,37 +237,31 @@ export class PlotStateService {
         return this.sortedAccessionsSource.getValue();
     }
 
-    readonly MAX_ZOOM_LEVEL = 1000;
-    readonly MIN_ZOOM_LEVEL = 100;
-    readonly ZOOM_FACTOR = 1.3;
-    readonly ZOOM_ROUND_TO = 50;
+    isZoomMax(): boolean {
+        return this.zoomLevel === PlotStateService.MAX_ZOOM_LEVEL;
+    }
+
+    isZoomMin(): boolean {
+        return this.zoomLevel === PlotStateService.MIN_ZOOM_LEVEL;
+    }
 
     zoomIn() {
         let zoomLevel = this.zoomLevel;
-        zoomLevel *= this.ZOOM_FACTOR;
-        zoomLevel = ceilTo(zoomLevel, this.ZOOM_ROUND_TO);
-        if (zoomLevel > this.MAX_ZOOM_LEVEL) {
-            zoomLevel = this.MAX_ZOOM_LEVEL;
+        zoomLevel *= PlotStateService.ZOOM_FACTOR;
+        zoomLevel = ceilTo(zoomLevel, PlotStateService.ZOOM_ROUND_TO);
+        if (zoomLevel > PlotStateService.MAX_ZOOM_LEVEL) {
+            zoomLevel = PlotStateService.MAX_ZOOM_LEVEL;
         }
         this.zoomLevel = zoomLevel;
     }
 
     zoomOut() {
         let zoomLevel = this.zoomLevel;
-        zoomLevel /= this.ZOOM_FACTOR;
-        zoomLevel = floorTo(zoomLevel, this.ZOOM_ROUND_TO);
-        if (zoomLevel < this.MIN_ZOOM_LEVEL) {
-            zoomLevel = this.MIN_ZOOM_LEVEL;
+        zoomLevel /= PlotStateService.ZOOM_FACTOR;
+        zoomLevel = floorTo(zoomLevel, PlotStateService.ZOOM_ROUND_TO);
+        if (zoomLevel < PlotStateService.MIN_ZOOM_LEVEL) {
+            zoomLevel = PlotStateService.MIN_ZOOM_LEVEL;
         }
         this.zoomLevel = zoomLevel;
     }
-
-    isZoomMax(): boolean {
-        return this.zoomLevel === this.MAX_ZOOM_LEVEL;
-    }
-
-    isZoomMin(): boolean {
-        return this.zoomLevel === this.MIN_ZOOM_LEVEL;
-    }
-
 }
