@@ -1,6 +1,6 @@
-import { FitWindowDirective } from './fit-window.directive';
-
 import { NgModule } from '@angular/core';
+
+import { FitWindowDirective } from './fit-window.directive';
 
 @NgModule({
     declarations: [

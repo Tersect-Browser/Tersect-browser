@@ -1,10 +1,12 @@
-import { Injectable, Inject } from '@angular/core';
-import { AppConfig, APP_CONFIG } from '../app.config';
 import { HttpClient } from '@angular/common/http';
-import { GeneTGRC } from '../../backend/db/genetgrc';
-import { Observable, forkJoin } from 'rxjs';
-import { AccessionTGRC } from '../../backend/db/accessiontgrc';
+import { Inject, Injectable } from '@angular/core';
+
+import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+import { AccessionTGRC } from '../../backend/db/accessiontgrc';
+import { GeneTGRC } from '../../backend/db/genetgrc';
+import { APP_CONFIG, AppConfig } from '../app.config';
 
 export interface AccessionAlleles {
     [tgrcId: string]: {

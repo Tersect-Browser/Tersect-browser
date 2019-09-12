@@ -1,10 +1,13 @@
-import { TGRCBackendService } from '../services/tgrc-backend.service';
-import { NgModule } from '@angular/core';
-import { TGRCGeneImporterComponent } from './tgrc-gene-importer.component';
 import { CommonModule } from '@angular/common';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 import { DropdownModule } from 'primeng/dropdown';
+
+import { TGRCBackendService } from '../services/tgrc-backend.service';
+
+import { TGRCGeneImporterComponent } from './tgrc-gene-importer.component';
 
 @NgModule({
     declarations: [

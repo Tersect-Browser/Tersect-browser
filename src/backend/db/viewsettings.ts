@@ -2,7 +2,7 @@
  * Used for exported browser views.
  */
 
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
 
 const ViewSettingsSchema = new Schema({
     _id: String,

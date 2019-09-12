@@ -1,23 +1,29 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
-import { Router } from 'express';
 import { exec, spawn } from 'child_process';
-
-import { DBMatrix } from './db/dbmatrix';
-import { ChromosomeIndex } from './db/chromosomeindex';
-import { ViewSettings } from './db/viewsettings';
-
+import { Router } from 'express';
+import * as fs from 'fs';
 import { default as Hashids } from 'hashids';
-import { promisify } from 'util';
-import { Dataset, DatasetPublic } from './db/dataset';
-import { PheneticTree } from './db/phenetictree';
-import { TreeQuery, TreeDatabaseQuery } from '../app/models/TreeQuery';
-import { fileSync } from 'tmp';
-import { partitionQuery } from './partitioning';
-import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
+import * as path from 'path';
 import { fromEvent, merge } from 'rxjs';
-import { map, take, takeUntil, reduce, concatMap, throttleTime } from 'rxjs/operators';
+import {
+    concatMap,
+    map,
+    reduce,
+    take,
+    takeUntil,
+    throttleTime
+} from 'rxjs/operators';
+import { fileSync } from 'tmp';
+import { promisify } from 'util';
+
+import { TreeDatabaseQuery, TreeQuery } from '../app/models/TreeQuery';
+import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
+import { ChromosomeIndex } from './db/chromosomeindex';
+import { Dataset, DatasetPublic } from './db/dataset';
+import { DBMatrix } from './db/dbmatrix';
+import { PheneticTree } from './db/phenetictree';
+import { ViewSettings } from './db/viewsettings';
+import { partitionQuery } from './partitioning';
+
 import { RefDistQuery } from '../app/models/RefDistQuery';
 
 export const router = Router();

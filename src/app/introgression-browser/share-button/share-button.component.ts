@@ -1,8 +1,14 @@
-import { Component } from '@angular/core';
-import { join } from 'path';
 import { PlatformLocation } from '@angular/common';
-import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
-import { TersectBackendService } from '../../services/tersect-backend.service';
+import { Component } from '@angular/core';
+
+import { join } from 'path';
+
+import {
+    PlotStateService
+} from '../../introgression-plot/services/plot-state.service';
+import {
+    TersectBackendService
+} from '../../services/tersect-backend.service';
 
 @Component({
     selector: 'app-share-button',

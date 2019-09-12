@@ -1,17 +1,27 @@
-import { IntrogressionBrowserModule } from './introgression-browser/introgression-browser.module';
-import { IntroPageModule } from './intro-page/intro-page.module';
-
-import { IntrogressionBrowserComponent } from './introgression-browser/introgression-browser.component';
-import { IntroPageComponent } from './intro-page/intro-page.component';
-
-import { AppComponent } from './app.component';
-
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
-import { TERSECT_BROWSER_CONFIG, APP_CONFIG } from './app.config';
+
+import {
+    IntroPageModule
+} from './intro-page/intro-page.module';
+import {
+    IntrogressionBrowserModule
+} from './introgression-browser/introgression-browser.module';
+
+import {
+    AppComponent
+} from './app.component';
+import {
+    IntroPageComponent
+} from './intro-page/intro-page.component';
+import {
+    IntrogressionBrowserComponent
+} from './introgression-browser/introgression-browser.component';
+
+import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: IntrogressionBrowserComponent },

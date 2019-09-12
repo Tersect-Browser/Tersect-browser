@@ -1,4 +1,5 @@
-import { Output, EventEmitter, Input } from '@angular/core';
+import { EventEmitter, Input, Output } from '@angular/core';
+
 import { AccessionInfo } from '../../introgression-browser/browser-settings';
 
 export abstract class AccessionInfoImporterComponent {

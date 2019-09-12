@@ -1,14 +1,16 @@
-import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable , of } from 'rxjs';
-import { SequenceInterval } from '../models/SequenceInterval';
+import { Inject, Injectable } from '@angular/core';
+
+import { Observable, of } from 'rxjs';
+
+import { DatasetPublic } from '../../backend/db/dataset';
+import { PheneticTree } from '../../backend/db/phenetictree';
+import { APP_CONFIG, AppConfig } from '../app.config';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { Chromosome } from '../models/Chromosome';
-import { DatasetPublic } from '../../backend/db/dataset';
-import { TreeQuery } from '../models/TreeQuery';
-import { PheneticTree } from '../../backend/db/phenetictree';
 import { RefDistQuery } from '../models/RefDistQuery';
-import { APP_CONFIG, AppConfig } from '../app.config';
+import { SequenceInterval } from '../models/SequenceInterval';
+import { TreeQuery } from '../models/TreeQuery';
 import { isNullOrUndefined } from '../utils/utils';
 
 @Injectable()

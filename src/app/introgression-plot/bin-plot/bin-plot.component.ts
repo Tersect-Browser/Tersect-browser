@@ -1,10 +1,23 @@
-import { IntrogressionPlotService } from '../services/introgression-plot.service';
-import { PlotPosition, PlotArea, PlotBin } from '../../models/PlotPosition';
-import { CanvasPlotElement, DragState } from '../CanvasPlotElement';
-import { PlotStateService } from '../services/plot-state.service';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { isNullOrUndefined } from '../../utils/utils';
+import {
+    PlotArea,
+    PlotBin,
+    PlotPosition
+} from '../../models/PlotPosition';
+import {
+    isNullOrUndefined
+} from '../../utils/utils';
+import {
+    CanvasPlotElement,
+    DragState
+} from '../CanvasPlotElement';
+import {
+    IntrogressionPlotService
+} from '../services/introgression-plot.service';
+import {
+    PlotStateService
+} from '../services/plot-state.service';
 
 @Component({
     selector: 'app-bin-plot',

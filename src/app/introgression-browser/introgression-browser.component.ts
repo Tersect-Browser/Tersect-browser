@@ -1,16 +1,36 @@
-import { PlotClickMenuComponent } from '../plot-click-menu/plot-click-menu.component';
-import { TooltipComponent } from '../tooltip/tooltip.component';
-import { Chromosome } from '../models/Chromosome';
-import { PlotMouseClickEvent } from '../models/PlotPosition';
-import { BrowserSettings, AccessionDisplayStyle, AccessionGroup } from './browser-settings';
-import { TersectBackendService } from '../services/tersect-backend.service';
-import { PlotStateService } from '../introgression-plot/services/plot-state.service';
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { isNullOrUndefined } from '../utils/utils';
+
+import {
+    PlotStateService
+} from '../introgression-plot/services/plot-state.service';
+import {
+    Chromosome
+} from '../models/Chromosome';
+import {
+    PlotMouseClickEvent
+} from '../models/PlotPosition';
+import {
+    PlotClickMenuComponent
+} from '../plot-click-menu/plot-click-menu.component';
+import {
+    TersectBackendService
+} from '../services/tersect-backend.service';
+import {
+    TooltipComponent
+} from '../tooltip/tooltip.component';
+import {
+    isNullOrUndefined
+} from '../utils/utils';
+import {
+    AccessionDisplayStyle,
+    AccessionGroup,
+    BrowserSettings
+} from './browser-settings';
 
 @Component({
     selector: 'app-introgression-browser',

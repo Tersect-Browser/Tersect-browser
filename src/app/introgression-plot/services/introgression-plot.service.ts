@@ -1,18 +1,57 @@
-import { TreeNode, treeToSortedList } from '../../clustering/clustering';
-import { parseNewick } from '../../clustering/newick-parser';
-import { ceilTo, floorTo, formatRegion, sameElements, isNullOrUndefined } from '../../utils/utils';
-import { GreyscalePalette } from '../DistancePalette';
-import { SequenceInterval } from '../../models/SequenceInterval';
-import { PlotPosition } from '../../models/PlotPosition';
-import { TreeQuery } from '../../models/TreeQuery';
-import { PheneticTree } from '../../../backend/db/phenetictree';
-import { PlotStateService } from './plot-state.service';
-import { TersectBackendService } from '../../services/tersect-backend.service';
-
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject ,  combineLatest ,  Observable ,  Subscription } from 'rxjs';
-import { filter, tap, debounceTime, switchMap, delay, retryWhen, first } from 'rxjs/operators';
+
 import * as deepEqual from 'fast-deep-equal';
+import {
+    BehaviorSubject,
+    combineLatest,
+    Observable,
+    Subscription
+} from 'rxjs';
+import {
+    debounceTime,
+    delay,
+    filter,
+    first,
+    retryWhen,
+    switchMap,
+    tap
+} from 'rxjs/operators';
+
+import {
+    PheneticTree
+} from '../../../backend/db/phenetictree';
+import {
+    TreeNode,
+    treeToSortedList
+} from '../../clustering/clustering';
+import {
+    parseNewick
+} from '../../clustering/newick-parser';
+import {
+    PlotPosition
+} from '../../models/PlotPosition';
+import {
+    SequenceInterval
+} from '../../models/SequenceInterval';
+import {
+    TreeQuery
+} from '../../models/TreeQuery';
+import {
+    TersectBackendService
+} from '../../services/tersect-backend.service';
+import {
+    ceilTo,
+    floorTo,
+    formatRegion,
+    isNullOrUndefined,
+    sameElements
+} from '../../utils/utils';
+import {
+    GreyscalePalette
+} from '../DistancePalette';
+import {
+    PlotStateService
+} from './plot-state.service';
 
 export interface GUIMargins {
     top: number;

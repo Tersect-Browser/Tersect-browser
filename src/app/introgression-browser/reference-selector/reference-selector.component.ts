@@ -1,8 +1,14 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+
 import { SelectItem } from 'primeng/components/common/selectitem';
-import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
 import { Subscription } from 'rxjs';
-import { isNullOrUndefined } from '../../utils/utils';
+
+import {
+    PlotStateService
+} from '../../introgression-plot/services/plot-state.service';
+import {
+    isNullOrUndefined
+} from '../../utils/utils';
 
 @Component({
     selector: 'app-reference-selector',

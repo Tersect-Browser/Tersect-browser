@@ -1,10 +1,17 @@
-import {
-    PlotPosition, PlotBin, PlotAccession, PlotSequencePosition,
-    PlotMouseHoverEvent, PlotSequenceInterval
-} from '../models/PlotPosition';
-import { formatPosition } from '../utils/utils';
 
 import { Component, ElementRef, ViewChild } from '@angular/core';
+
+import {
+    PlotAccession,
+    PlotBin,
+    PlotMouseHoverEvent,
+    PlotPosition,
+    PlotSequenceInterval,
+    PlotSequencePosition
+} from '../models/PlotPosition';
+import {
+    formatPosition
+} from '../utils/utils';
 
 @Component({
     selector: 'app-tooltip',

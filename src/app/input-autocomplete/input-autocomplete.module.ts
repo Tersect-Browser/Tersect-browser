@@ -1,10 +1,11 @@
-import { InputAutocompleteComponent } from './input-autocomplete.component';
-
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 import { AutoCompleteModule } from 'primeng/autocomplete';
+
+import { InputAutocompleteComponent } from './input-autocomplete.component';
 
 @NgModule({
     declarations: [

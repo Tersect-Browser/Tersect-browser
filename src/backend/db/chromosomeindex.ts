@@ -2,7 +2,7 @@
  * Used for accessing chromosome data (particularly gap index information).
  */
 
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
 
 const ChromosomeSchema = new Schema({
     reference: String,

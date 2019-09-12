@@ -2,7 +2,7 @@
  * Used for accessing Tersect Browser datasets.
  */
 
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
 
 const DatasetSchema = new Schema({
     _id: String,

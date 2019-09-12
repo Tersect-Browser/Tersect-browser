@@ -1,9 +1,25 @@
-import { AccessionGroup } from '../../introgression-browser/browser-settings';
-import { RemoveGroupDialogComponent } from '../remove-group-dialog/remove-group-dialog.component';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 
-import { Component, ViewEncapsulation, Input, Output, EventEmitter, ViewChild } from '@angular/core';
-import { ColorSelectorComponent, ColorChangeEvent } from '../../color-selector/color-selector.component';
-import { isNullOrUndefined } from '../../utils/utils';
+import {
+    ColorChangeEvent,
+    ColorSelectorComponent
+} from '../../color-selector/color-selector.component';
+import {
+    AccessionGroup
+} from '../../introgression-browser/browser-settings';
+import {
+    isNullOrUndefined
+} from '../../utils/utils';
+import {
+    RemoveGroupDialogComponent
+} from '../remove-group-dialog/remove-group-dialog.component';
 
 @Component({
     selector: 'app-group-box',

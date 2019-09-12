@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
+
 import { AutoComplete } from 'primeng/autocomplete';
 
 @Component({

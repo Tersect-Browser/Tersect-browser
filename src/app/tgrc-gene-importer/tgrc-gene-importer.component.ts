@@ -1,8 +1,17 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { AccessionInfoImporterComponent } from '../accession-tab/plugins/accession-info-importer.component';
+
 import { SelectItem } from 'primeng/components/common/selectitem';
-import { GeneTGRC } from '../../backend/db/genetgrc';
-import { TGRCBackendService, AccessionAlleles } from '../services/tgrc-backend.service';
+
+import {
+    GeneTGRC
+} from '../../backend/db/genetgrc';
+import {
+    AccessionInfoImporterComponent
+} from '../accession-tab/plugins/accession-info-importer.component';
+import {
+    AccessionAlleles,
+    TGRCBackendService
+} from '../services/tgrc-backend.service';
 
 @Component({
     selector: 'app-tgrc-gene-importer',
@@ -10,7 +19,6 @@ import { TGRCBackendService, AccessionAlleles } from '../services/tgrc-backend.s
     styleUrls: ['./tgrc-gene-importer.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-
 export class TGRCGeneImporterComponent extends AccessionInfoImporterComponent
                                        implements OnInit {
     tgrcGenes: SelectItem[];

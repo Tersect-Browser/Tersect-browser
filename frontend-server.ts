@@ -1,6 +1,6 @@
+import cors = require('cors');
 import express = require('express');
 import path = require('path');
-import cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 4500;

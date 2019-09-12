@@ -1,8 +1,9 @@
-import { TooltipComponent } from './tooltip.component';
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+
 import { FitWindowModule } from '../directives/fit-window/fit-window.module';
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { TooltipComponent } from './tooltip.component';
 
 @NgModule({
     declarations: [

@@ -1,6 +1,5 @@
+import { isNullOrUndefined, syncSort } from '../utils/utils';
 import { TreeNode } from './clustering';
-
-import { syncSort, isNullOrUndefined } from '../utils/utils';
 
 /**
  * Returns number of taxons in subtree (if weighted is false - the default)

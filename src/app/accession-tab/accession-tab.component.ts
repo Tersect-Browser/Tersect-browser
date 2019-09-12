@@ -1,16 +1,38 @@
+import {
+    AfterViewInit,
+    Component,
+    ComponentFactoryResolver,
+    EventEmitter,
+    Input,
+    Output,
+    ViewChild,
+    ViewContainerRef,
+    ViewEncapsulation
+} from '@angular/core';
+
+import * as deepEqual from 'fast-deep-equal';
+import { FilterMetadata } from 'primeng/components/common/filtermetadata';
 import { TableState } from 'primeng/components/common/tablestate';
+import { Table } from 'primeng/table';
 
 import {
-    Component, Output, EventEmitter, Input, ViewEncapsulation, ViewChild,
-    ViewContainerRef, ComponentFactoryResolver, AfterViewInit
-} from '@angular/core';
-import { FilterMetadata } from 'primeng/components/common/filtermetadata';
-import * as deepEqual from 'fast-deep-equal';
-import { deepCopy, isSubset, arrayUnion, arraySubtract, uniqueArray, isNullOrUndefined } from '../utils/utils';
-import { Table } from 'primeng/table';
-import { AccessionGroup, AccessionInfo } from '../introgression-browser/browser-settings';
-import { TGRCGeneImporterComponent } from '../tgrc-gene-importer/tgrc-gene-importer.component';
-import { AccessionInfoImporterComponent } from './plugins/accession-info-importer.component';
+    AccessionGroup,
+    AccessionInfo
+} from '../introgression-browser/browser-settings';
+import {
+    TGRCGeneImporterComponent
+} from '../tgrc-gene-importer/tgrc-gene-importer.component';
+import {
+    arraySubtract,
+    arrayUnion,
+    deepCopy,
+    isNullOrUndefined,
+    isSubset,
+    uniqueArray
+} from '../utils/utils';
+import {
+    AccessionInfoImporterComponent
+} from './plugins/accession-info-importer.component';
 
 interface FilterSet {
     [s: string]: FilterMetadata;

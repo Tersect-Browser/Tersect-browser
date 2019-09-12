@@ -2,7 +2,7 @@
  * Used for accessing stored distance matrices
  */
 
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
 
 const MatrixSchema = new Schema({
     dataset_id: String,

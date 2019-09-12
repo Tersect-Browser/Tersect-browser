@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
-import { AccessionDisplayStyle } from '../browser-settings';
-import { PlotStateService } from '../../introgression-plot/services/plot-state.service';
+
+import {
+    PlotStateService
+} from '../../introgression-plot/services/plot-state.service';
+import {
+    AccessionDisplayStyle
+} from '../browser-settings';
 
 @Component({
     selector: 'app-accession-style-selector',

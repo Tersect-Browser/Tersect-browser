@@ -2,7 +2,8 @@
  * Used for accessing phenetic trees
  */
 
-import { Schema, model, Document } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
+
 import { TreeQuery } from '../../app/models/TreeQuery';
 
 export interface PheneticTree extends Document {

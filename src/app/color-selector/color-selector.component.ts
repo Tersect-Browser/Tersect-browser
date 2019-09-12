@@ -1,4 +1,11 @@
-import { Component, ElementRef, Output, EventEmitter, Input } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output
+} from '@angular/core';
+
 import { fixedElementPosition } from '../utils/utils';
 
 export interface ColorChangeEvent {

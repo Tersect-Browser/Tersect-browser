@@ -1,12 +1,37 @@
-import { ScaleBarComponent } from './scale-bar/scale-bar.component';
-import { AccessionBarComponent } from './accession-bar/accession-bar.component';
-import { BinPlotComponent } from './bin-plot/bin-plot.component';
-import { PlotMouseClickEvent, PlotMouseHoverEvent, PlotMouseMoveEvent } from '../models/PlotPosition';
-import { IntrogressionPlotService } from './services/introgression-plot.service';
-import { PlotStateService } from './services/plot-state.service';
+import {
+    Component,
+    EventEmitter,
+    HostListener,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
+import {
+    combineLatest,
+    Subscription
+} from 'rxjs';
 
-import { Component, OnInit, ViewChild, HostListener, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { Subscription ,  combineLatest } from 'rxjs';
+import {
+    PlotMouseClickEvent,
+    PlotMouseHoverEvent,
+    PlotMouseMoveEvent
+} from '../models/PlotPosition';
+import {
+    AccessionBarComponent
+} from './accession-bar/accession-bar.component';
+import {
+    BinPlotComponent
+} from './bin-plot/bin-plot.component';
+import {
+    ScaleBarComponent
+} from './scale-bar/scale-bar.component';
+import {
+    IntrogressionPlotService
+} from './services/introgression-plot.service';
+import {
+    PlotStateService
+} from './services/plot-state.service';
 
 @Component({
     selector: 'app-introgression-plot',

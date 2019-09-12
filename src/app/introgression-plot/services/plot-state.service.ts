@@ -1,12 +1,25 @@
-import {
-    BrowserSettings, AccessionDictionary, AccessionDisplayStyle, AccessionGroup,
-    AccessionInfo, extractAccessionLabels, extractAccessionColors
-} from '../../introgression-browser/browser-settings';
-import { sameElements, ceilTo, floorTo, deepCopy, isNullOrUndefined } from '../../utils/utils';
-import { Chromosome } from '../../models/Chromosome';
-
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
+
+import {
+    AccessionDictionary,
+    AccessionDisplayStyle,
+    AccessionGroup,
+    AccessionInfo,
+    BrowserSettings,
+    extractAccessionColors,
+    extractAccessionLabels
+} from '../../introgression-browser/browser-settings';
+import {
+    Chromosome
+} from '../../models/Chromosome';
+import {
+    ceilTo,
+    deepCopy,
+    floorTo,
+    isNullOrUndefined,
+    sameElements
+} from '../../utils/utils';
 
 @Injectable()
 export class PlotStateService {

@@ -1,6 +1,6 @@
-import { AccessionGroup } from '../../introgression-browser/browser-settings';
+import { Component, EventEmitter, Output } from '@angular/core';
 
-import { Component, Output, EventEmitter } from '@angular/core';
+import { AccessionGroup } from '../../introgression-browser/browser-settings';
 
 @Component({
     selector: 'app-remove-group-dialog',

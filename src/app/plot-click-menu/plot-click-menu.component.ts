@@ -1,8 +1,16 @@
-import { PlotAccession, PlotBin, PlotMouseClickEvent, PlotSequencePosition, PlotSequenceInterval } from '../models/PlotPosition';
-import { formatPosition } from '../utils/utils';
-
-import { Component, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Output } from '@angular/core';
 import { MenuItem } from 'primeng/components/common/menuitem';
+
+import {
+    PlotAccession,
+    PlotBin,
+    PlotMouseClickEvent,
+    PlotSequenceInterval,
+    PlotSequencePosition
+} from '../models/PlotPosition';
+import {
+    formatPosition
+} from '../utils/utils';
 
 @Component({
     selector: 'app-plot-click-menu',
