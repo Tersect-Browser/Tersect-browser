@@ -21,8 +21,8 @@ import {
 })
 export class TGRCGeneImporterComponent extends AccessionInfoImporterComponent
                                        implements OnInit {
-    tgrcGenes: SelectItem[];
     selectedTgrcGene: string;
+    tgrcGenes: SelectItem[];
 
     constructor(private readonly tgrcBackendService: TGRCBackendService) {
         super();
