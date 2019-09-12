@@ -10,6 +10,13 @@ export interface AccessionDictionary {
     };
 }
 
+export interface AccessionGroup {
+    name: string;
+    category?: string;
+    color?: string;
+    accessions: string[];
+}
+
 export interface AccessionInfo {
     id: string;
     Label: string;
@@ -17,16 +24,20 @@ export interface AccessionInfo {
 }
 
 /**
- * Extract accession label dictionary for quick lookup from accession info array.
+ * Records the current state of the browser interface
  */
-export function extractAccessionLabels(infos: AccessionInfo[]): AccessionDictionary {
-    const dict: AccessionDictionary = {};
-    infos.forEach((info: AccessionInfo) => {
-        dict[info.id] = {
-            label: info.Label
-        };
-    });
-    return dict;
+export interface BrowserSettings {
+    dataset_id: string;
+    accession_style?: AccessionDisplayStyle;
+    accession_infos?: AccessionInfo[];
+    accession_groups?: AccessionGroup[];
+    selected_accessions?: string[];
+    selected_reference?: string;
+    selected_chromosome?: Chromosome;
+    selected_interval?: number[];
+    selected_binsize?: number;
+    zoom_level?: number;
+    plugins?: string[];
 }
 
 export function extractAccessionColors(groups: AccessionGroup[]): AccessionDictionary {
@@ -46,26 +57,15 @@ export function extractAccessionColors(groups: AccessionGroup[]): AccessionDicti
     return dict;
 }
 
-export interface AccessionGroup {
-    name: string;
-    category?: string;
-    color?: string;
-    accessions: string[];
-}
-
 /**
- * Records the current state of the browser interface
+ * Extract accession label dictionary for quick lookup from accession info array.
  */
-export interface BrowserSettings {
-    dataset_id: string;
-    accession_style?: AccessionDisplayStyle;
-    accession_infos?: AccessionInfo[];
-    accession_groups?: AccessionGroup[];
-    selected_accessions?: string[];
-    selected_reference?: string;
-    selected_chromosome?: Chromosome;
-    selected_interval?: number[];
-    selected_binsize?: number;
-    zoom_level?: number;
-    plugins?: string[];
+export function extractAccessionLabels(infos: AccessionInfo[]): AccessionDictionary {
+    const dict: AccessionDictionary = {};
+    infos.forEach((info: AccessionInfo) => {
+        dict[info.id] = {
+            label: info.Label
+        };
+    });
+    return dict;
 }
