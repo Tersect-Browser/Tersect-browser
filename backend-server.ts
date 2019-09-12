@@ -3,9 +3,9 @@ import express = require('express');
 import * as fs from 'fs';
 import mongoose = require('mongoose');
 
-import { cleanDatabase } from './src/backend/utils/dbutils';
 import { router as tbRouter } from './src/backend/tersect-router';
 import { router as tgrcRouter } from './src/backend/tgrc-router';
+import { cleanDatabase } from './src/backend/utils/dbutils';
 
 const app = express();
 const port = process.env.PORT || 8060;
