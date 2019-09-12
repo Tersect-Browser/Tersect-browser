@@ -19,15 +19,22 @@ export interface ColorChangeEvent {
     styleUrls: ['./color-selector.component.css']
 })
 export class ColorSelectorComponent {
-    constructor(private readonly el: ElementRef) { }
-
     static readonly DEFAULT_HEADER = 'Select color';
+
     @Input()
     header = ColorSelectorComponent.DEFAULT_HEADER;
+
+    @Output()
+    colorChange = new EventEmitter<ColorChangeEvent>();
 
     target: any;
 
     private _color: string;
+
+    private originalColor: string;
+
+    constructor(private readonly el: ElementRef) { }
+
     get color(): string {
         return this._color;
     }
@@ -35,18 +42,23 @@ export class ColorSelectorComponent {
         this._color = color;
         this.colorChange.emit({ color: this.color, target: this.target });
     }
-    @Output()
-    colorChange = new EventEmitter<ColorChangeEvent>();
-
-    private originalColor: string;
 
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
         this.el.nativeElement.style.top = `${pos.y}px`;
     }
-
     private get position(): { x: number, y: number } {
         return fixedElementPosition(this.el);
+    }
+
+    cancel() {
+        this.color = this.originalColor;
+        this.hide();
+    }
+
+    hide() {
+        this.target = undefined;
+        this.el.nativeElement.style.visibility = 'hidden';
     }
 
     show($event: MouseEvent, color?: string, target?: any) {
@@ -55,15 +67,5 @@ export class ColorSelectorComponent {
         this.originalColor = color;
         this.position = { x: $event.clientX, y: $event.clientY };
         this.el.nativeElement.style.visibility = 'visible';
-    }
-
-    hide() {
-        this.target = undefined;
-        this.el.nativeElement.style.visibility = 'hidden';
-    }
-
-    cancel() {
-        this.color = this.originalColor;
-        this.hide();
     }
 }
