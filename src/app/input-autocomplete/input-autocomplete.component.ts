@@ -28,7 +28,10 @@ export class InputAutocompleteComponent {
     @Output()
     valueChange = new EventEmitter<string>();
 
+    suggestions: string[];
+
     private _value: string;
+
     set value(value: string) {
         this.valueChange.emit(value);
         this._value = value;
@@ -36,8 +39,6 @@ export class InputAutocompleteComponent {
     get value(): string {
         return this._value;
     }
-
-    suggestions: string[];
 
     updateSuggestions($event: { originalEvent: Event, query: string }) {
         const query = $event.query.toUpperCase();
