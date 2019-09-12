@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 
+import {
+    Subscription
+} from 'rxjs';
 import {
     PlotStateService
 } from '../../introgression-plot/services/plot-state.service';
@@ -14,10 +17,12 @@ import {
     templateUrl: './binsize-selector.component.html',
     styleUrls: ['./binsize-selector.component.css']
 })
-export class BinsizeSelectorComponent {
+export class BinsizeSelectorComponent implements OnInit, OnDestroy {
     readonly BINSIZE_MAX = 100000;
     readonly BINSIZE_MIN = 1000;
     readonly BINSIZE_STEP = 1000;
+
+    binsizeUpdate: Subscription;
 
     private _binsize: number;
 
@@ -27,7 +32,18 @@ export class BinsizeSelectorComponent {
         this._binsize = this.roundAndClampBinsize(binsize);
     }
     get binsize(): number {
-        return this.plotState.binsize;
+        return this._binsize;
+    }
+
+    ngOnInit() {
+        this.binsizeUpdate = this.plotState.binsize$.subscribe(binsize => {
+            // Update directly as the source might not be rounded or clamped
+            this._binsize = binsize;
+        });
+    }
+
+    ngOnDestroy() {
+        this.binsizeUpdate.unsubscribe();
     }
 
     binsizeSliderChange($event: { event: Event, value: number }) {
