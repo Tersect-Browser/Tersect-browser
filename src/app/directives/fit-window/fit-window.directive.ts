@@ -16,17 +16,16 @@ export class FitWindowDirective {
         this.adjustPosition();
     });
 
+    constructor(private readonly el: ElementRef) {
+        this.observer.observe(this.el.nativeElement, { attributes: true });
+    }
+
     private get position(): { x: number, y: number } {
         return fixedElementPosition(this.el);
     }
-
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
         this.el.nativeElement.style.top = `${pos.y}px`;
-    }
-
-    constructor(private readonly el: ElementRef) {
-        this.observer.observe(this.el.nativeElement, { attributes: true });
     }
 
     /**
