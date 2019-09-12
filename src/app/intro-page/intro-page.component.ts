@@ -9,10 +9,10 @@ import { TersectBackendService } from '../services/tersect-backend.service';
     styleUrls: ['./intro-page.component.css']
 })
 export class IntroPageComponent implements OnInit {
+    datasets: DatasetPublic[];
+
     constructor(private readonly tersectBackendService: TersectBackendService) {
     }
-
-    datasets: DatasetPublic[];
 
     ngOnInit() {
         this.tersectBackendService.getDatasets().subscribe(ds => {
