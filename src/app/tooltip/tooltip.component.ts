@@ -12,7 +12,8 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
     styleUrls: ['./tooltip.component.css']
 })
 export class TooltipComponent {
-    @ViewChild('tooltip', { static: true }) tooltip: ElementRef;
+    @ViewChild('tooltip', { static: true })
+    readonly tooltip: ElementRef;
 
     /**
      * Tooltip position relative to mouse.

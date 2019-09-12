@@ -12,9 +12,9 @@ import { TersectBackendService } from '../../services/tersect-backend.service';
 export class ShareButtonComponent {
     shareLink: string;
 
-    constructor(private plotState: PlotStateService,
-                private tersectBackendService: TersectBackendService,
-                private platformLocation: PlatformLocation) { }
+    constructor(private readonly plotState: PlotStateService,
+                private readonly tersectBackendService: TersectBackendService,
+                private readonly platformLocation: PlatformLocation) { }
 
     clearLink() {
         this.shareLink = '';

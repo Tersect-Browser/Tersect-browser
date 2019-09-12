@@ -10,7 +10,7 @@ import { MenuItem } from 'primeng/components/common/menuitem';
     styleUrls: ['./plot-click-menu.component.css']
 })
 export class PlotClickMenuComponent {
-    constructor(private el: ElementRef) { }
+    constructor(private readonly el: ElementRef) { }
 
     @Output() setReference = new EventEmitter<string>();
     @Output() removeAccession = new EventEmitter<string>();

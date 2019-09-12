@@ -15,9 +15,9 @@ export interface AccessionAlleles {
 
 @Injectable()
 export class TGRCBackendService {
-    private apiUrl: string;
+    private readonly apiUrl: string;
 
-    constructor(private http: HttpClient,
+    constructor(private readonly http: HttpClient,
                 @Inject(APP_CONFIG) config: AppConfig) {
         this.apiUrl = config.tgrcApiUrl;
     }

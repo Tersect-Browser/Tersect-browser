@@ -13,9 +13,9 @@ import { isNullOrUndefined } from '../../utils/utils';
 })
 export class BinPlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
-    private canvas: ElementRef;
+    private readonly canvas: ElementRef;
     @ViewChild('highlight', { static: true })
-    private highlight: ElementRef;
+    private readonly highlight: ElementRef;
 
     /**
      * Drag start position in terms of the accession / bin index.
@@ -26,8 +26,10 @@ export class BinPlotComponent extends CanvasPlotElement {
         return this.plotService.guiMargins;
     }
 
-    constructor(private plotState: PlotStateService,
-                private plotService: IntrogressionPlotService) { super(); }
+    constructor(private readonly plotState: PlotStateService,
+                private readonly plotService: IntrogressionPlotService) {
+        super();
+    }
 
     private extractVisibleImage(): ImageData {
         const fullArray = this.plotService.plotArray;

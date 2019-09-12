@@ -27,7 +27,7 @@ interface StoredAccessionBarState {
 })
 export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     @ViewChild('canvas', { static: true })
-    private canvas: ElementRef;
+    private readonly canvas: ElementRef;
 
     readonly GUI_TREE_BG_COLOR = '#FFFFFF';
     readonly GUI_TREE_FONT = 'Courier New';
@@ -66,7 +66,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     readonly STORED_CANVAS_OFFSET_STEP = ceilTo(this.STORED_CANVAS_HEIGHT / 2,
                                                 this.plotService.binHeight);
 
-    private storedState: StoredAccessionBarState = {
+    private readonly storedState: StoredAccessionBarState = {
         canvas: undefined,
         canvas_yoffset: 0,
         accession_style: undefined,
@@ -80,8 +80,10 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         return this.plotService.guiMargins;
     }
 
-    constructor(private plotState: PlotStateService,
-                private plotService: IntrogressionPlotService) { super(); }
+    constructor(private readonly plotState: PlotStateService,
+                private readonly plotService: IntrogressionPlotService) {
+        super();
+    }
 
     ngOnInit() {
         this.storedState.canvas = document.createElement('canvas');

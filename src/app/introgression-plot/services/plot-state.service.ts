@@ -10,7 +10,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable()
 export class PlotStateService {
-    private settingsSource = new Subject<BrowserSettings>();
+    private readonly settingsSource = new Subject<BrowserSettings>();
     settings$ = this.settingsSource.asObservable();
     set settings(settings: BrowserSettings) {
         this.datasetId = settings.dataset_id;
@@ -45,7 +45,7 @@ export class PlotStateService {
     /**
      * Identifier of the dataset open in the introgression plot.
      */
-    private datasetIdSource = new BehaviorSubject<string>(undefined);
+    private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
     datasetId$ = this.datasetIdSource.asObservable();
     set datasetId(datasetId) {
         this.datasetIdSource.next(datasetId);
@@ -57,7 +57,7 @@ export class PlotStateService {
     /**
      * Type of labels to draw - simple labels or phenetic tree.
      */
-    private accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');
+    private readonly accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');
     accessionStyle$ = this.accessionStyleSource.asObservable();
     set accessionStyle(style: AccessionDisplayStyle) {
         if (style !== this.accessionStyle) {
@@ -68,7 +68,7 @@ export class PlotStateService {
         return this.accessionStyleSource.getValue();
     }
 
-    private accessionInfosSource = new BehaviorSubject<AccessionInfo[]>(undefined);
+    private readonly accessionInfosSource = new BehaviorSubject<AccessionInfo[]>(undefined);
     accessionInfos$ = this.accessionInfosSource.asObservable();
     set accessionInfos(accessionInfos: AccessionInfo[]) {
         this.accessionInfosSource.next(accessionInfos);
@@ -92,7 +92,7 @@ export class PlotStateService {
     /**
      * Dictionary of names to be used for accessions.
      */
-    private accessionDictionarySource = new BehaviorSubject<AccessionDictionary>(undefined);
+    private readonly accessionDictionarySource = new BehaviorSubject<AccessionDictionary>(undefined);
     accessionDictionary$ = this.accessionDictionarySource.asObservable();
     set accessionDictionary(dict: AccessionDictionary) {
         this.accessionDictionarySource.next(dict);
@@ -104,7 +104,7 @@ export class PlotStateService {
     /**
      * Accession groups and their associated colours.
      */
-    private accessionGroupsSource = new BehaviorSubject<AccessionGroup[]>(undefined);
+    private readonly accessionGroupsSource = new BehaviorSubject<AccessionGroup[]>(undefined);
     accessionGroups$ = this.accessionGroupsSource.asObservable();
     set accessionGroups(accessionGroups: AccessionGroup[]) {
         this.accessionGroupsSource.next(accessionGroups);
@@ -130,7 +130,7 @@ export class PlotStateService {
     /**
      * Accessions displayed in the plot.
      */
-    private accessionsSource = new BehaviorSubject<string[]>(undefined);
+    private readonly accessionsSource = new BehaviorSubject<string[]>(undefined);
     accessions$ = this.accessionsSource.asObservable();
     set accessions(accessions: string[]) {
         if (!sameElements(accessions, this.sortedAccessions)) {
@@ -144,7 +144,7 @@ export class PlotStateService {
     /**
      * Reference accession used by the plot.
      */
-    private referenceSource = new BehaviorSubject<string>(undefined);
+    private readonly referenceSource = new BehaviorSubject<string>(undefined);
     reference$ = this.referenceSource.asObservable();
     set reference(reference: string) {
         this.referenceSource.next(reference);
@@ -156,7 +156,7 @@ export class PlotStateService {
     /**
      * Chromosome displayed by the plot.
      */
-    private chromosomeSource = new BehaviorSubject<Chromosome>(undefined);
+    private readonly chromosomeSource = new BehaviorSubject<Chromosome>(undefined);
     chromosome$ = this.chromosomeSource.asObservable();
     set chromosome(chromosome: Chromosome) {
         this.chromosomeSource.next(chromosome);
@@ -168,7 +168,7 @@ export class PlotStateService {
     /**
      * Chromosomal interval displayed by the plot.
      */
-    private intervalSource = new BehaviorSubject<number[]>(undefined);
+    private readonly intervalSource = new BehaviorSubject<number[]>(undefined);
     interval$ = this.intervalSource.asObservable();
     set interval(interval: number[]) {
         this.intervalSource.next(interval);
@@ -180,7 +180,7 @@ export class PlotStateService {
     /**
      * Bin size used by the plot.
      */
-    private binsizeSource = new BehaviorSubject<number>(undefined);
+    private readonly binsizeSource = new BehaviorSubject<number>(undefined);
     binsize$ = this.binsizeSource.asObservable();
     set binsize(binsize: number) {
         this.binsizeSource.next(binsize);
@@ -192,7 +192,7 @@ export class PlotStateService {
     /**
      * Zoom level in percentages.
      */
-    private zoomLevelSource = new BehaviorSubject<number>(100);
+    private readonly zoomLevelSource = new BehaviorSubject<number>(100);
     zoomLevel$ = this.zoomLevelSource.asObservable();
     set zoomLevel(zoomLevel: number) {
         if (zoomLevel !== this.zoomLevel) {

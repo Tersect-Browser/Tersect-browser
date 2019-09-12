@@ -43,10 +43,10 @@ const pluginComponents = {
 })
 export class AccessionTabComponent implements AfterViewInit {
     @ViewChild('dt', { static: true })
-    private dt: Table;
+    private readonly dt: Table;
 
     @ViewChild('pluginContainer', { read: ViewContainerRef, static: false })
-    private pluginContainer: ViewContainerRef;
+    private readonly pluginContainer: ViewContainerRef;
 
     readonly SORT_ICON_WIDTH = 30;
     readonly MAX_COLUMN_WIDTH = 200;
@@ -125,7 +125,7 @@ export class AccessionTabComponent implements AfterViewInit {
 
     private infoDictionary: InfoDictionary;
 
-    constructor(private resolver: ComponentFactoryResolver) {}
+    constructor(private readonly resolver: ComponentFactoryResolver) {}
 
     ngAfterViewInit() {
         if (!isNullOrUndefined(this.importPlugins)) {

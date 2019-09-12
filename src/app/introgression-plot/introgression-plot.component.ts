@@ -17,13 +17,13 @@ import { Subscription ,  combineLatest } from 'rxjs';
 
 export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @ViewChild(BinPlotComponent, { static: true })
-    binPlot: BinPlotComponent;
+    readonly binPlot: BinPlotComponent;
 
     @ViewChild(ScaleBarComponent, { static: true })
-    scaleBar: ScaleBarComponent;
+    readonly scaleBar: ScaleBarComponent;
 
     @ViewChild(AccessionBarComponent, { static: true })
-    accessionBar: AccessionBarComponent;
+    readonly accessionBar: AccessionBarComponent;
 
     @Output() plotMouseClick = new EventEmitter<PlotMouseClickEvent>();
     @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
@@ -79,8 +79,8 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         this.plotMouseMove.emit($event);
     }
 
-    constructor(private plotState: PlotStateService,
-                private plotService: IntrogressionPlotService) { }
+    constructor(private readonly plotState: PlotStateService,
+                private readonly plotService: IntrogressionPlotService) { }
 
     @HostListener('window:orientationchange', ['$event'])
     @HostListener('window:resize', ['$event'])

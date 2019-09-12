@@ -33,5 +33,5 @@ export class ChromosomeSelectorComponent {
         }));
     }
 
-    constructor(private plotState: PlotStateService) { }
+    constructor(private readonly plotState: PlotStateService) { }
 }

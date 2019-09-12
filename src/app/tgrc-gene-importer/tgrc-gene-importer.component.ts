@@ -16,7 +16,7 @@ export class TGRCGeneImporterComponent extends AccessionInfoImporterComponent
     tgrcGenes: SelectItem[];
     selectedTgrcGene: string;
 
-    constructor(private tgrcBackendService: TGRCBackendService) {
+    constructor(private readonly tgrcBackendService: TGRCBackendService) {
         super();
     }
 

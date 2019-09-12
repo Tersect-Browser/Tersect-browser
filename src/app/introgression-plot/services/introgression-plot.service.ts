@@ -114,7 +114,7 @@ export class IntrogressionPlotService implements OnDestroy {
         tree: TreeNode
     } = { query: null, tree: null };
 
-    private plotData$: Observable<any[]>;
+    private readonly plotData$: Observable<any[]>;
     private plotDataSub: Subscription;
 
     /**
@@ -189,8 +189,8 @@ export class IntrogressionPlotService implements OnDestroy {
         return count;
     }
 
-    constructor(private plotState: PlotStateService,
-                private tersectBackendService: TersectBackendService) {
+    constructor(private readonly plotState: PlotStateService,
+                private readonly tersectBackendService: TersectBackendService) {
         const accessions$ = this.plotState.accessions$.pipe(
             filter((accessions) => !isNullOrUndefined(accessions)),
             filter(this.validateInputs),
@@ -308,7 +308,7 @@ export class IntrogressionPlotService implements OnDestroy {
         }
     }
 
-    private generatePlot = ([refDist, treeOutput, gaps]) => {
+    private readonly generatePlot = ([refDist, treeOutput, gaps]) => {
         this.distanceBins = refDist['bins'];
         if (!deepEqual(this.phenTree.query, treeOutput.query)) {
             // Tree updated
@@ -328,17 +328,17 @@ export class IntrogressionPlotService implements OnDestroy {
         this.stopLoading();
     }
 
-    private startLoading = () => {
+    private readonly startLoading = () => {
         if (this.plotLoadMessage === '') {
             this.plotLoadMessage = this.DEFAULT_LOAD_MESSAGE;
         }
     }
 
-    private stopLoading = () => {
+    private readonly stopLoading = () => {
         this.plotLoadMessage = '';
     }
 
-    private validateInputs = () => {
+    private readonly validateInputs = () => {
         if (!isNullOrUndefined(this.plotState.accessions)
             && this.plotState.accessions.length < 2) {
             this.errorMessage = 'At least two accessions must be selected';
@@ -360,7 +360,7 @@ export class IntrogressionPlotService implements OnDestroy {
      * Check if a new phenetic tree needs to be retrieved due to either no
      * tree being stored or the query changing.
      */
-    private treeUpdateRequired = () => {
+    private readonly treeUpdateRequired = () => {
         if (isNullOrUndefined(this.phenTree.tree)
             || isNullOrUndefined(this.phenTree.query)) {
             return true;

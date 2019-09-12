@@ -13,10 +13,10 @@ import { isNullOrUndefined } from '../../utils/utils';
 })
 export class GroupBoxComponent {
     @ViewChild(RemoveGroupDialogComponent, { static: true })
-    removeGroupDialog: RemoveGroupDialogComponent;
+    readonly removeGroupDialog: RemoveGroupDialogComponent;
 
     @ViewChild(ColorSelectorComponent, { static: true })
-    colorSelector: ColorSelectorComponent;
+    readonly colorSelector: ColorSelectorComponent;
 
     private _groups: AccessionGroup[];
     @Input()

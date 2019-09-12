@@ -8,7 +8,8 @@ import { AutoComplete } from 'primeng/autocomplete';
     encapsulation: ViewEncapsulation.None
 })
 export class InputAutocompleteComponent {
-    @ViewChild(AutoComplete, { static: true }) ac: AutoComplete;
+    @ViewChild(AutoComplete, { static: true })
+    readonly ac: AutoComplete;
 
     @Input()
     appendTo = null;

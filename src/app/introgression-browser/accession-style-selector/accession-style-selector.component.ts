@@ -18,5 +18,5 @@ export class AccessionStyleSelectorComponent {
         return this.plotState.accessionStyle;
     }
 
-    constructor(private plotState: PlotStateService) { }
+    constructor(private readonly plotState: PlotStateService) { }
 }

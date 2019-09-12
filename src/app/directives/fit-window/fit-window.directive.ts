@@ -12,7 +12,9 @@ export class FitWindowDirective {
     @Input()
     cursorOffsetY = 0;
 
-    private observer = new MutationObserver(() => { this.adjustPosition(); });
+    private readonly observer = new MutationObserver(() => {
+        this.adjustPosition();
+    });
 
     private get position(): { x: number, y: number } {
         return fixedElementPosition(this.el);
@@ -23,7 +25,7 @@ export class FitWindowDirective {
         this.el.nativeElement.style.top = `${pos.y}px`;
     }
 
-    constructor(private el: ElementRef) {
+    constructor(private readonly el: ElementRef) {
         this.observer.observe(this.el.nativeElement, { attributes: true });
     }
 

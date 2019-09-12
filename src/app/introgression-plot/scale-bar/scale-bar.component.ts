@@ -20,7 +20,7 @@ interface ScaleTick {
 })
 export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
-    private canvas: ElementRef;
+    private readonly canvas: ElementRef;
 
     get guiMargins() {
         return this.plotService.guiMargins;
@@ -43,9 +43,9 @@ export class ScaleBarComponent extends CanvasPlotElement {
      */
     readonly GUI_TICK_DISTANCE = 120;
 
-    constructor(private plotState: PlotStateService,
-                private plotService: IntrogressionPlotService,
-                private renderer: Renderer2) {
+    constructor(private readonly plotState: PlotStateService,
+                private readonly plotService: IntrogressionPlotService,
+                private readonly renderer: Renderer2) {
         super();
         this.hoverState.hover_delay = 0;
         this.dragState.drag_cursor = 'col-resize';

@@ -12,7 +12,7 @@ export interface ColorChangeEvent {
     styleUrls: ['./color-selector.component.css']
 })
 export class ColorSelectorComponent {
-    constructor(private el: ElementRef) { }
+    constructor(private readonly el: ElementRef) { }
 
     readonly DEFAULT_HEADER = 'Select color';
     @Input()

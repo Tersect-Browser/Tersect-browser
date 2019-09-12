@@ -48,7 +48,7 @@ export class IntervalSelectorComponent {
         return this.plotState.chromosome;
     }
 
-    constructor(private plotState: PlotStateService) { }
+    constructor(private readonly plotState: PlotStateService) { }
 
     private processInputPosition(pos: number): number {
         // used as a workaround due to possible PrimeNG bug

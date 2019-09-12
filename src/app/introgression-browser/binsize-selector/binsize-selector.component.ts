@@ -20,7 +20,7 @@ export class BinsizeSelectorComponent {
     readonly BINSIZE_STEP = 1000;
     readonly BINSIZE_MAX = 100000;
 
-    constructor(private plotState: PlotStateService) { }
+    constructor(private readonly plotState: PlotStateService) { }
 
     updateBinsize(binsize?: number) {
         if (isNullOrUndefined(binsize)) {

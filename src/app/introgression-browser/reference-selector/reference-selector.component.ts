@@ -22,7 +22,7 @@ export class ReferenceSelectorComponent implements OnInit, OnDestroy {
 
     private infoUpdate: Subscription;
 
-    constructor(private plotState: PlotStateService) { }
+    constructor(private readonly plotState: PlotStateService) { }
 
     ngOnInit() {
         this.infoUpdate = this.plotState.accessionInfos$.subscribe(infos => {

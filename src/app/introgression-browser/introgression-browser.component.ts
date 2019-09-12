@@ -23,10 +23,10 @@ import { isNullOrUndefined } from '../utils/utils';
 })
 export class IntrogressionBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
-    private plotClickMenu: PlotClickMenuComponent;
+    private readonly plotClickMenu: PlotClickMenuComponent;
 
     @ViewChild(TooltipComponent, { static: true })
-    tooltip: TooltipComponent;
+    readonly tooltip: TooltipComponent;
 
     readonly DEFAULT_BINSIZE = 50000;
     readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
@@ -34,10 +34,10 @@ export class IntrogressionBrowserComponent implements OnInit {
 
     chromosomes: Chromosome[];
 
-    constructor(private plotState: PlotStateService,
-                private tersectBackendService: TersectBackendService,
-                private router: Router,
-                private route: ActivatedRoute) { }
+    constructor(private readonly plotState: PlotStateService,
+                private readonly tersectBackendService: TersectBackendService,
+                private readonly router: Router,
+                private readonly route: ActivatedRoute) { }
 
     get settings(): BrowserSettings {
         return this.plotState.settings;

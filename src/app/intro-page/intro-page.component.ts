@@ -9,7 +9,8 @@ import { Component, OnInit } from '@angular/core';
     styleUrls: ['./intro-page.component.css']
 })
 export class IntroPageComponent implements OnInit {
-    constructor(private tersectBackendService: TersectBackendService) {}
+    constructor(private readonly tersectBackendService: TersectBackendService) {
+    }
 
     datasets: DatasetPublic[];
 
