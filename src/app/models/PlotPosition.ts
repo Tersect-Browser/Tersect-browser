@@ -1,10 +1,10 @@
-export interface PlotPosition {
-    x: number;
-    y: number;
-}
-
 export interface PlotArea {
     type: string;
+}
+
+export interface PlotAccession extends PlotArea {
+    accession_label: string;
+    accession: string;
 }
 
 export interface PlotBin extends PlotArea {
@@ -14,18 +14,13 @@ export interface PlotBin extends PlotArea {
     end_position: number;
 }
 
-export interface PlotAccession extends PlotArea {
-    accession_label: string;
-    accession: string;
+export interface PlotSequenceInterval extends PlotArea {
+    start_position: number;
+    end_position: number;
 }
 
 export interface PlotSequencePosition extends PlotArea {
     position: number;
-}
-
-export interface PlotSequenceInterval extends PlotArea {
-    start_position: number;
-    end_position: number;
 }
 
 export interface PlotMouseClickEvent {
@@ -43,4 +38,9 @@ export interface PlotMouseHoverEvent {
 export interface PlotMouseMoveEvent {
     element: string;
     buttons?: number;
+}
+
+export interface PlotPosition {
+    x: number;
+    y: number;
 }
