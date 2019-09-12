@@ -27,19 +27,23 @@ export class TooltipComponent {
      */
     readonly tooltipOffset: PlotPosition = { x: 0, y: 20 };
 
+    hide() {
+        this.tooltip.nativeElement.style.visibility = 'hidden';
+    }
+
+    show($event: PlotMouseHoverEvent) {
+        this.tooltip.nativeElement.style.left = `${$event.x
+                                                   + this.tooltipOffset.x}px`;
+        this.tooltip.nativeElement.style.top = `${$event.y
+                                                  + this.tooltipOffset.y}px`;
+        this.tooltip.nativeElement.style.visibility = 'visible';
+        this.tooltip.nativeElement.innerHTML = this.formatContent($event);
+    }
+
     private formatBinTooltip(target: PlotBin): string {
         return `${target.accession_label}<br>
 ${formatPosition(target.start_position)}
  - ${formatPosition(target.end_position)}`;
-    }
-
-    private formatPositionTooltip(target: PlotSequencePosition): string {
-        return `${formatPosition(target.position)}`;
-    }
-
-    private formatIntervalTooltip(target: PlotSequenceInterval): string {
-        return `${formatPosition(target.start_position)}
-- ${formatPosition(target.end_position)}`;
     }
 
     private formatContent($event: PlotMouseHoverEvent): string {
@@ -59,16 +63,12 @@ ${formatPosition(target.start_position)}
         }
     }
 
-    show($event: PlotMouseHoverEvent) {
-        this.tooltip.nativeElement.style.left = `${$event.x
-                                                   + this.tooltipOffset.x}px`;
-        this.tooltip.nativeElement.style.top = `${$event.y
-                                                  + this.tooltipOffset.y}px`;
-        this.tooltip.nativeElement.style.visibility = 'visible';
-        this.tooltip.nativeElement.innerHTML = this.formatContent($event);
+    private formatIntervalTooltip(target: PlotSequenceInterval): string {
+        return `${formatPosition(target.start_position)}
+- ${formatPosition(target.end_position)}`;
     }
 
-    hide() {
-        this.tooltip.nativeElement.style.visibility = 'hidden';
+    private formatPositionTooltip(target: PlotSequencePosition): string {
+        return `${formatPosition(target.position)}`;
     }
 }
