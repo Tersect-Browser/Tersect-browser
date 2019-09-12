@@ -13,25 +13,25 @@ import {
 } from '../models/PlotPosition';
 
 export interface ClickState {
-    enable_clicking: boolean;
-    click_position: { x: number, y: number };
+    enableClicking: boolean;
+    clickPosition: { x: number, y: number };
     event: MouseEvent;
 }
 
 export interface DragState {
-    enable_dragging: boolean;
+    enableDragging: boolean;
     dragged: boolean;
-    drag_cursor: string;
-    start_position: { x: number, y: number };
-    current_position: { x: number, y: number };
+    dragCursor: string;
+    startPosition: { x: number, y: number };
+    currentPosition: { x: number, y: number };
     event: MouseEvent;
 }
 
 export interface HoverState {
-    enable_hovering: boolean;
-    hover_delay: number;
-    hover_timer: NodeJS.Timer;
-    hover_position: { x: number, y: number };
+    enableHovering: boolean;
+    hoverDelay: number;
+    hoverTimer: NodeJS.Timer;
+    hoverPosition: { x: number, y: number };
     event: MouseEvent;
 }
 
@@ -52,25 +52,25 @@ export abstract class CanvasPlotElement {
     @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
     clickState: ClickState = {
-        enable_clicking: true,
-        click_position: { x: 0, y: 0 },
+        enableClicking: true,
+        clickPosition: { x: 0, y: 0 },
         event: null
     };
 
     dragState: DragState = {
-        enable_dragging: true,
+        enableDragging: true,
         dragged: false,
-        drag_cursor: 'move',
-        start_position: { x: 0, y: 0 },
-        current_position: { x: 0, y: 0 },
+        dragCursor: 'move',
+        startPosition: { x: 0, y: 0 },
+        currentPosition: { x: 0, y: 0 },
         event: null
     };
 
     hoverState: HoverState = {
-        enable_hovering: true,
-        hover_delay: 200,
-        hover_timer: null,
-        hover_position: { x: 0, y: 0},
+        enableHovering: true,
+        hoverDelay: 200,
+        hoverTimer: null,
+        hoverPosition: { x: 0, y: 0},
         event: null
     };
 
@@ -81,10 +81,10 @@ export abstract class CanvasPlotElement {
         }
         this.dragState.event = $event;
         const canvas = ($event.target as HTMLCanvasElement);
-        if (canvas.style.cursor !== this.dragState.drag_cursor) {
-            canvas.style.cursor = this.dragState.drag_cursor;
+        if (canvas.style.cursor !== this.dragState.dragCursor) {
+            canvas.style.cursor = this.dragState.dragCursor;
         }
-        this.dragState.current_position = {
+        this.dragState.currentPosition = {
             x: $event.clientX,
             y: $event.clientY
         };
@@ -105,7 +105,7 @@ export abstract class CanvasPlotElement {
      * Default - feel free to override.
      */
     protected clickAction(clickState: ClickState): void {
-        const target = this.getPositionTarget(clickState.click_position);
+        const target = this.getPositionTarget(clickState.clickPosition);
         this.plotMouseClick.emit({
             x: clickState.event.clientX,
             y: clickState.event.clientY,
@@ -117,7 +117,7 @@ export abstract class CanvasPlotElement {
      * Default - feel free to override.
      */
     protected hoverAction(hoverState: HoverState): void {
-        const target = this.getPositionTarget(hoverState.hover_position);
+        const target = this.getPositionTarget(hoverState.hoverPosition);
         if (target.type !== 'background') {
             this.plotMouseHover.emit({
                 x: hoverState.event.clientX,
@@ -132,7 +132,7 @@ export abstract class CanvasPlotElement {
         if ($event.buttons === 1) {
             this.dragState.event = $event;
             this.dragState.dragged = true;
-            this.dragState.start_position = {
+            this.dragState.startPosition = {
                 x: $event.clientX,
                 y: $event.clientY
             };
@@ -150,19 +150,19 @@ export abstract class CanvasPlotElement {
 
     @HostListener('mousedown', ['$event'])
     mouseDown($event: MouseEvent) {
-        this.clickState.click_position = {
+        this.clickState.clickPosition = {
             x: $event.offsetX,
             y: $event.offsetY
         };
-        if (this.dragState.enable_dragging) {
+        if (this.dragState.enableDragging) {
             this.startDrag($event);
         }
     }
 
     @HostListener('mouseleave', ['$event'])
     mouseLeave($event: MouseEvent) {
-        if (this.hoverState.enable_hovering) {
-            clearTimeout(this.hoverState.hover_timer);
+        if (this.hoverState.enableHovering) {
+            clearTimeout(this.hoverState.hoverTimer);
             this.plotMouseMove.emit({
                 element: this.constructor.name,
                 buttons: $event.buttons
@@ -176,17 +176,17 @@ export abstract class CanvasPlotElement {
             element: this.constructor.name,
             buttons: $event.buttons
         });
-        if (this.hoverState.enable_hovering && !this.dragState.dragged) {
-            this.hoverState.hover_position = {
+        if (this.hoverState.enableHovering && !this.dragState.dragged) {
+            this.hoverState.hoverPosition = {
                 x: $event.offsetX,
                 y: $event.offsetY
             };
             this.hoverState.event = $event;
-            if (this.hoverState.hover_delay > 0) {
-                clearTimeout(this.hoverState.hover_timer);
-                this.hoverState.hover_timer = setTimeout(() => {
+            if (this.hoverState.hoverDelay > 0) {
+                clearTimeout(this.hoverState.hoverTimer);
+                this.hoverState.hoverTimer = setTimeout(() => {
                     this.hoverAction(this.hoverState);
-                }, this.hoverState.hover_delay);
+                }, this.hoverState.hoverDelay);
             } else {
                 // No delay
                 this.hoverAction(this.hoverState);
@@ -199,9 +199,9 @@ export abstract class CanvasPlotElement {
 
     @HostListener('mouseup', ['$event'])
     mouseUp($event: MouseEvent) {
-        if (this.clickState.enable_clicking
-            && this.clickState.click_position.x === $event.offsetX
-            && this.clickState.click_position.y === $event.offsetY) {
+        if (this.clickState.enableClicking
+            && this.clickState.clickPosition.x === $event.offsetX
+            && this.clickState.clickPosition.y === $event.offsetY) {
             this.mouseClick($event);
         }
         this.stopDrag($event);

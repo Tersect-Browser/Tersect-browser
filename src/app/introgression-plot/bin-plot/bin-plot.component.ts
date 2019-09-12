@@ -78,10 +78,10 @@ export class BinPlotComponent extends CanvasPlotElement {
     protected dragAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         const newPos: PlotPosition = {
-            x: Math.round(dragState.current_position.x
+            x: Math.round(dragState.currentPosition.x
                           / this.plotService.binWidth
                           - this.dragStartIndices.x),
-            y: Math.round(dragState.current_position.y
+            y: Math.round(dragState.currentPosition.y
                           / this.plotService.binHeight
                           - this.dragStartIndices.y)
         };
@@ -99,10 +99,10 @@ export class BinPlotComponent extends CanvasPlotElement {
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.dragStartIndices = {
-            x: dragState.start_position.x / this.plotService.binWidth
-                - this.plotService.plotPosition.x,
-            y: dragState.start_position.y / this.plotService.binHeight
-                - this.plotService.plotPosition.y
+            x: dragState.startPosition.x / this.plotService.binWidth
+               - this.plotService.plotPosition.x,
+            y: dragState.startPosition.y / this.plotService.binHeight
+               - this.plotService.plotPosition.y
         };
     }
 

@@ -62,8 +62,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 private readonly plotService: IntrogressionPlotService,
                 private readonly renderer: Renderer2) {
         super();
-        this.hoverState.hover_delay = 0;
-        this.dragState.drag_cursor = 'col-resize';
+        this.hoverState.hoverDelay = 0;
+        this.dragState.dragCursor = 'col-resize';
     }
 
     get guiMargins() {
@@ -145,7 +145,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     protected dragStartAction(dragState: DragState): void {
-        if (this.getPositionTarget(dragState.start_position).type
+        if (this.getPositionTarget(dragState.startPosition).type
             === 'background') {
             this.stopDrag(dragState.event);
             return;
@@ -154,7 +154,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const unlistenDragMove = this.renderer.listen('window', 'mousemove',
                                                       event => {
             this.dragState.event = event;
-            this.dragState.current_position = {
+            this.dragState.currentPosition = {
                 x: event.clientX,
                 y: event.clientX
             };
@@ -195,11 +195,11 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     private dragActionGlobal(dragState: DragState): void {
-        let startPos = dragState.start_position;
-        let endPos = dragState.current_position;
-        if (dragState.start_position.x > dragState.current_position.x) {
-            startPos = dragState.current_position;
-            endPos = dragState.start_position;
+        let startPos = dragState.startPosition;
+        let endPos = dragState.currentPosition;
+        if (dragState.startPosition.x > dragState.currentPosition.x) {
+            startPos = dragState.currentPosition;
+            endPos = dragState.startPosition;
         }
         const startTarget = this.getPositionTarget(startPos);
         const endTarget = this.getPositionTarget(endPos);

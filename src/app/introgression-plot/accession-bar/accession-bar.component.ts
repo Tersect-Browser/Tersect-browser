@@ -136,7 +136,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         // Only vertical dragging, rounded to accession indices.
         const newPos: PlotPosition = {
             x: this.plotService.plotPosition.x,
-            y: Math.round(dragState.current_position.y
+            y: Math.round(dragState.currentPosition.y
                           / this.plotService.binHeight
                           - this.dragStartIndex)
         };
@@ -150,7 +150,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession index.
-        this.dragStartIndex = dragState.start_position.y
+        this.dragStartIndex = dragState.startPosition.y
                               / this.plotService.binHeight
                               - this.plotService.plotPosition.y;
     }
