@@ -9,6 +9,9 @@ import {
     PlotStateService
 } from '../introgression-plot/services/plot-state.service';
 import {
+    PlotZoomService
+} from '../introgression-plot/services/plot-zoom.service';
+import {
     Chromosome
 } from '../models/Chromosome';
 import {
@@ -39,7 +42,7 @@ import {
         './introgression-browser.component.css',
         './introgression-browser.widgets.css'
     ],
-    providers: [ PlotStateService ]
+    providers: [ PlotStateService, PlotZoomService ]
 })
 export class IntrogressionBrowserComponent implements OnInit {
     static readonly DEFAULT_BINSIZE = 50000;
@@ -64,6 +67,7 @@ export class IntrogressionBrowserComponent implements OnInit {
     selectedAccessions: string[];
 
     constructor(private readonly plotState: PlotStateService,
+                private readonly plotZoom: PlotZoomService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
@@ -100,11 +104,11 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     isZoomMax(): boolean {
-        return this.plotState.isZoomMax();
+        return this.plotZoom.isZoomMax();
     }
 
     isZoomMin(): boolean {
-        return this.plotState.isZoomMin();
+        return this.plotZoom.isZoomMin();
     }
 
     plotClick($event: PlotMouseClickEvent) {
@@ -154,11 +158,11 @@ export class IntrogressionBrowserComponent implements OnInit {
     }
 
     zoomIn() {
-        this.plotState.zoomIn();
+        this.plotZoom.zoomIn();
     }
 
     zoomOut() {
-        this.plotState.zoomOut();
+        this.plotZoom.zoomOut();
     }
 
     /**

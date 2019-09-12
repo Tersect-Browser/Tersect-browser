@@ -14,20 +14,13 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    ceilTo,
     deepCopy,
-    floorTo,
     isNullOrUndefined,
     sameElements
 } from '../../utils/utils';
 
 @Injectable()
 export class PlotStateService {
-    static readonly MAX_ZOOM_LEVEL = 1000;
-    static readonly MIN_ZOOM_LEVEL = 100;
-    static readonly ZOOM_FACTOR = 1.3;
-    static readonly ZOOM_ROUND_TO = 50;
-
     settings$: Observable<BrowserSettings>;
 
     /**
@@ -264,33 +257,5 @@ export class PlotStateService {
     }
     get sortedAccessions(): string[] {
         return this.sortedAccessionsSource.getValue();
-    }
-
-    isZoomMax(): boolean {
-        return this.zoomLevel === PlotStateService.MAX_ZOOM_LEVEL;
-    }
-
-    isZoomMin(): boolean {
-        return this.zoomLevel === PlotStateService.MIN_ZOOM_LEVEL;
-    }
-
-    zoomIn() {
-        let zoomLevel = this.zoomLevel;
-        zoomLevel *= PlotStateService.ZOOM_FACTOR;
-        zoomLevel = ceilTo(zoomLevel, PlotStateService.ZOOM_ROUND_TO);
-        if (zoomLevel > PlotStateService.MAX_ZOOM_LEVEL) {
-            zoomLevel = PlotStateService.MAX_ZOOM_LEVEL;
-        }
-        this.zoomLevel = zoomLevel;
-    }
-
-    zoomOut() {
-        let zoomLevel = this.zoomLevel;
-        zoomLevel /= PlotStateService.ZOOM_FACTOR;
-        zoomLevel = floorTo(zoomLevel, PlotStateService.ZOOM_ROUND_TO);
-        if (zoomLevel < PlotStateService.MIN_ZOOM_LEVEL) {
-            zoomLevel = PlotStateService.MIN_ZOOM_LEVEL;
-        }
-        this.zoomLevel = zoomLevel;
     }
 }
