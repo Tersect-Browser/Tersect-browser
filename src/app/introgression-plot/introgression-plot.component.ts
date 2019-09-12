@@ -109,7 +109,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
 
     @HostListener('window:orientationchange', ['$event'])
     @HostListener('window:resize', ['$event'])
-    onResize(event) {
+    onResize($event: Event) {
         this.redrawPlot();
     }
 }
