@@ -17,6 +17,10 @@ import {
 export class ReferenceSelectorComponent implements OnInit, OnDestroy {
     accessionOptions: SelectItem[];
 
+    private infoUpdate: Subscription;
+
+    constructor(private readonly plotState: PlotStateService) { }
+
     set referenceAccession(accession: string) {
         if (!isNullOrUndefined(accession)) {
             this.plotState.reference = accession;
@@ -25,10 +29,6 @@ export class ReferenceSelectorComponent implements OnInit, OnDestroy {
     get referenceAccession(): string {
         return this.plotState.reference;
     }
-
-    private infoUpdate: Subscription;
-
-    constructor(private readonly plotState: PlotStateService) { }
 
     ngOnInit() {
         this.infoUpdate = this.plotState.accessionInfos$.subscribe(infos => {
