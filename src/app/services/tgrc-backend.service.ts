@@ -24,14 +24,6 @@ export class TGRCBackendService {
         this.apiUrl = config.tgrcApiUrl;
     }
 
-    getTGRCGenes(): Observable<GeneTGRC[]> {
-        return this.http.get<GeneTGRC[]>(`${this.apiUrl}/genes`);
-    }
-
-    getTGRCAccessions(): Observable<AccessionTGRC[]> {
-        return this.http.get<AccessionTGRC[]>(`${this.apiUrl}/accessions`);
-    }
-
     getTGRCAccessionGenes(accessions: string[]): Observable<GeneTGRC[]> {
         // TODO: implement this more efficiently on the back end
         return forkJoin([this.getTGRCGenes(), this.getTGRCAccessions()]).pipe(
@@ -44,6 +36,10 @@ export class TGRCBackendService {
                 return allGenes.filter(gene => geneIds.has(gene.gene));
             })
         );
+    }
+
+    getTGRCAccessions(): Observable<AccessionTGRC[]> {
+        return this.http.get<AccessionTGRC[]>(`${this.apiUrl}/accessions`);
     }
 
     getTGRCGeneAccessions(gene: string): Observable<AccessionAlleles> {
@@ -60,5 +56,9 @@ export class TGRCBackendService {
                 return output;
             })
         );
+    }
+
+    getTGRCGenes(): Observable<GeneTGRC[]> {
+        return this.http.get<GeneTGRC[]>(`${this.apiUrl}/genes`);
     }
 }
