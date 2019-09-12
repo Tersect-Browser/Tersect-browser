@@ -57,6 +57,9 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     private fullRedraw: Subscription;
     private binRedraw: Subscription;
 
+    constructor(private readonly plotState: PlotStateService,
+                private readonly plotService: IntrogressionPlotService) { }
+
     get errorMessage() {
         return this.plotService.errorMessage;
     }
@@ -86,12 +89,6 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         this.binRedraw.unsubscribe();
     }
 
-    private redrawPlot() {
-        this.accessionBar.draw();
-        this.scaleBar.draw();
-        this.binPlot.draw();
-    }
-
     onClick($event: PlotMouseClickEvent) {
         this.plotMouseClick.emit($event);
     }
@@ -104,13 +101,15 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         this.plotMouseMove.emit($event);
     }
 
-    constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService) { }
+    private redrawPlot() {
+        this.accessionBar.draw();
+        this.scaleBar.draw();
+        this.binPlot.draw();
+    }
 
     @HostListener('window:orientationchange', ['$event'])
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.redrawPlot();
     }
-
 }
