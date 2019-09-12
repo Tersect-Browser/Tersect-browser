@@ -8,6 +8,10 @@ import { execSync } from 'child_process';
 
 import { TreeQuery } from '../app/models/TreeQuery';
 
+interface ChromosomePartitions {
+    [chromosomeNames: string]: number[];
+}
+
 interface Interval {
     start: number;
     end: number;
@@ -23,8 +27,26 @@ interface IntervalPartitions {
     nonindexed: Interval[];
 }
 
-interface ChromosomePartitions {
-    [chromosomeNames: string]: number[];
+export function partitionQuery(tsiLocation: string,
+                               indexPartitions: number[],
+                               query: TreeQuery): IntervalPartitions {
+    // TODO: check if calling this each time affects performance
+    const chromosomePartitions = loadChromosomePartitions(tsiLocation,
+                                                           indexPartitions);
+
+    const partitions = partitionInterval({
+        start: query.interval[0], end: query.interval[1]
+    }, chromosomePartitions[query.chromosome_name]);
+
+    // Skip partitions which lie entirely outiside the chromosome
+    partitions.indexed = partitions.indexed.filter(
+        p => p.start <= chromosomePartitions[query.chromosome_name][0]
+    );
+    partitions.nonindexed = partitions.nonindexed.filter(
+        p => p.start <= chromosomePartitions[query.chromosome_name][0]
+    );
+
+    return partitions;
 }
 
 function loadChromosomePartitions(tsiLocation: string,
@@ -43,6 +65,27 @@ function loadChromosomePartitions(tsiLocation: string,
     });
 
     return output;
+}
+
+function partitionInterval(input: Interval,
+                           partitionSizes: number[]): IntervalPartitions {
+    partitionSizes = [...partitionSizes]; // cloning
+    partitionSizes.sort((a, b) => a - b); // Ascending order
+    let partSize = partitionSizes.pop();
+    const intervals = _partitionInterval(input, partSize);
+    while (partitionSizes.length) {
+        partSize = partitionSizes.pop();
+        const newIndexed: Interval[] = [];
+        const newNonindexed: Interval[] = [];
+        intervals.nonindexed.forEach(inter => {
+            const newInter = _partitionInterval(inter, partSize);
+            newIndexed.push(...newInter.indexed);
+            newNonindexed.push(...newInter.nonindexed);
+        });
+        intervals.indexed.push(...newIndexed);
+        intervals.nonindexed = newNonindexed;
+    }
+    return intervals;
 }
 
 function _partitionInterval(input: Interval,
@@ -94,47 +137,4 @@ function _partitionInterval(input: Interval,
         });
     }
     return intervals;
-}
-
-function partitionInterval(input: Interval,
-                           partitionSizes: number[]): IntervalPartitions {
-    partitionSizes = [...partitionSizes]; // cloning
-    partitionSizes.sort((a, b) => a - b); // Ascending order
-    let partSize = partitionSizes.pop();
-    const intervals = _partitionInterval(input, partSize);
-    while (partitionSizes.length) {
-        partSize = partitionSizes.pop();
-        const newIndexed: Interval[] = [];
-        const newNonindexed: Interval[] = [];
-        intervals.nonindexed.forEach(inter => {
-            const newInter = _partitionInterval(inter, partSize);
-            newIndexed.push(...newInter.indexed);
-            newNonindexed.push(...newInter.nonindexed);
-        });
-        intervals.indexed.push(...newIndexed);
-        intervals.nonindexed = newNonindexed;
-    }
-    return intervals;
-}
-
-export function partitionQuery(tsiLocation: string,
-                               indexPartitions: number[],
-                               query: TreeQuery): IntervalPartitions {
-    // TODO: check if calling this each time affects performance
-    const chromosomePartitions = loadChromosomePartitions(tsiLocation,
-                                                           indexPartitions);
-
-    const partitions = partitionInterval({
-        start: query.interval[0], end: query.interval[1]
-    }, chromosomePartitions[query.chromosome_name]);
-
-    // Skip partitions which lie entirely outiside the chromosome
-    partitions.indexed = partitions.indexed.filter(
-        p => p.start <= chromosomePartitions[query.chromosome_name][0]
-    );
-    partitions.nonindexed = partitions.nonindexed.filter(
-        p => p.start <= chromosomePartitions[query.chromosome_name][0]
-    );
-
-    return partitions;
 }
