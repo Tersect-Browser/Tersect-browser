@@ -341,7 +341,7 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private getAccessions$(): Observable<string[]> {
         return this.plotState.accessions$.pipe(
-            filter((accessions) => !isNullOrUndefined(accessions)),
+            filter(accessions => !isNullOrUndefined(accessions)),
             filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME)
@@ -421,7 +421,7 @@ export class IntrogressionPlotService implements OnDestroy {
             phenTree$,
             gaps$
         ]).pipe(
-            filter((inputs) => !inputs.some(isNullOrUndefined)),
+            filter(inputs => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
             filter(([refDist, treeOutput]) => {
                 return this.binsMatchTree(refDist, treeOutput);
