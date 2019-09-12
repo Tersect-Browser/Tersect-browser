@@ -27,6 +27,7 @@ import {
 export class BinPlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
+
     @ViewChild('highlight', { static: true })
     private readonly highlight: ElementRef;
 
@@ -35,44 +36,13 @@ export class BinPlotComponent extends CanvasPlotElement {
      */
     private dragStartIndices = { x: 0, y: 0 };
 
-    get guiMargins() {
-        return this.plotService.guiMargins;
-    }
-
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotService: IntrogressionPlotService) {
         super();
     }
 
-    private extractVisibleImage(): ImageData {
-        const fullArray = this.plotService.plotArray;
-        const pos = this.plotService.plotPosition;
-        const colNum = this.plotService.colNum;
-
-        let visibleCols = Math.ceil(this.canvas.nativeElement.width
-                                    / this.plotService.binWidth)
-                          - this.plotService.guiMargins.left;
-        if (visibleCols > colNum + pos.x) {
-            // More visible area than available columns
-            visibleCols = colNum + pos.x;
-            if (visibleCols < 1) {
-                visibleCols = 1;
-            }
-        }
-
-        const visibleRows = Math.ceil(this.canvas.nativeElement.height
-                                      / this.plotService.binHeight);
-
-        const visibleArray = new Uint8ClampedArray(4 * visibleRows
-                                                   * visibleCols);
-
-        for (let i = 0; i < visibleRows; i++) {
-            const rowStart = 4 * (colNum * (i - pos.y) - pos.x);
-            visibleArray.set(fullArray.slice(rowStart,
-                                             rowStart + 4 * visibleCols),
-                             4 * i * visibleCols);
-        }
-        return new ImageData(visibleArray, visibleCols, visibleRows);
+    get guiMargins() {
+        return this.plotService.guiMargins;
     }
 
     draw() {
@@ -105,27 +75,39 @@ export class BinPlotComponent extends CanvasPlotElement {
         this.updateHighlight();
     }
 
-    private updateHighlight() {
-        if (isNullOrUndefined(this.plotService.highlight)) {
-            this.highlight.nativeElement.style.visibility = 'hidden';
-        } else {
-            const bpPerPixel = this.plotState.binsize
-                               / this.plotService.zoomFactor;
-            const plotOffset = this.plotService.guiMargins.left
-                               + this.plotService.plotPosition.x;
+    protected dragAction(dragState: DragState): void {
+        // Dragging 'rounded' to accession / bin indices.
+        const newPos: PlotPosition = {
+            x: Math.round(dragState.current_position.x
+                          / this.plotService.binWidth
+                          - this.dragStartIndices.x),
+            y: Math.round(dragState.current_position.y
+                          / this.plotService.binHeight
+                          - this.dragStartIndices.y)
+        };
 
-            const leftPos = (this.plotService.highlight.start
-                             - this.plotState.interval[0]) / bpPerPixel
-                            + plotOffset * this.plotService.binWidth;
-
-            const width = (this.plotService.highlight.end
-                           - this.plotService.highlight.start + 1)
-                          / bpPerPixel;
-
-            this.highlight.nativeElement.style.left = `${leftPos}px`;
-            this.highlight.nativeElement.style.width = `${width}px`;
-            this.highlight.nativeElement.style.visibility = 'visible';
+        if (newPos.x > 0) {
+            newPos.x = 0;
         }
+        if (newPos.y > 0) {
+            newPos.y = 0;
+        }
+
+        this.plotService.updatePosition(newPos);
+    }
+
+    protected dragStartAction(dragState: DragState): void {
+        // Dragging 'rounded' to accession / bin indices.
+        this.dragStartIndices = {
+            x: dragState.start_position.x / this.plotService.binWidth
+                - this.plotService.plotPosition.x,
+            y: dragState.start_position.y / this.plotService.binHeight
+                - this.plotService.plotPosition.y
+        };
+    }
+
+    protected dragStopAction(dragState: DragState): void {
+        // No action
     }
 
     protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
@@ -162,38 +144,57 @@ export class BinPlotComponent extends CanvasPlotElement {
         return result;
     }
 
-    protected dragStartAction(dragState: DragState): void {
-        // Dragging 'rounded' to accession / bin indices.
-        this.dragStartIndices = {
-            x: dragState.start_position.x / this.plotService.binWidth
-                - this.plotService.plotPosition.x,
-            y: dragState.start_position.y / this.plotService.binHeight
-                - this.plotService.plotPosition.y
-        };
-    }
+    private extractVisibleImage(): ImageData {
+        const fullArray = this.plotService.plotArray;
+        const pos = this.plotService.plotPosition;
+        const colNum = this.plotService.colNum;
 
-    protected dragStopAction(dragState: DragState): void {
-        // No action
-    }
-
-    protected dragAction(dragState: DragState): void {
-        // Dragging 'rounded' to accession / bin indices.
-        const newPos: PlotPosition = {
-            x: Math.round(dragState.current_position.x
-                          / this.plotService.binWidth
-                          - this.dragStartIndices.x),
-            y: Math.round(dragState.current_position.y
-                          / this.plotService.binHeight
-                          - this.dragStartIndices.y)
-        };
-
-        if (newPos.x > 0) {
-            newPos.x = 0;
-        }
-        if (newPos.y > 0) {
-            newPos.y = 0;
+        let visibleCols = Math.ceil(this.canvas.nativeElement.width
+                                    / this.plotService.binWidth)
+                          - this.plotService.guiMargins.left;
+        if (visibleCols > colNum + pos.x) {
+            // More visible area than available columns
+            visibleCols = colNum + pos.x;
+            if (visibleCols < 1) {
+                visibleCols = 1;
+            }
         }
 
-        this.plotService.updatePosition(newPos);
+        const visibleRows = Math.ceil(this.canvas.nativeElement.height
+                                      / this.plotService.binHeight);
+
+        const visibleArray = new Uint8ClampedArray(4 * visibleRows
+                                                   * visibleCols);
+
+        for (let i = 0; i < visibleRows; i++) {
+            const rowStart = 4 * (colNum * (i - pos.y) - pos.x);
+            visibleArray.set(fullArray.slice(rowStart,
+                                             rowStart + 4 * visibleCols),
+                             4 * i * visibleCols);
+        }
+        return new ImageData(visibleArray, visibleCols, visibleRows);
+    }
+
+    private updateHighlight() {
+        if (isNullOrUndefined(this.plotService.highlight)) {
+            this.highlight.nativeElement.style.visibility = 'hidden';
+        } else {
+            const bpPerPixel = this.plotState.binsize
+                               / this.plotService.zoomFactor;
+            const plotOffset = this.plotService.guiMargins.left
+                               + this.plotService.plotPosition.x;
+
+            const leftPos = (this.plotService.highlight.start
+                             - this.plotState.interval[0]) / bpPerPixel
+                            + plotOffset * this.plotService.binWidth;
+
+            const width = (this.plotService.highlight.end
+                           - this.plotService.highlight.start + 1)
+                          / bpPerPixel;
+
+            this.highlight.nativeElement.style.left = `${leftPos}px`;
+            this.highlight.nativeElement.style.width = `${width}px`;
+            this.highlight.nativeElement.style.visibility = 'visible';
+        }
     }
 }
