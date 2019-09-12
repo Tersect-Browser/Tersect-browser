@@ -18,19 +18,51 @@ import {
     styleUrls: ['./plot-click-menu.component.css']
 })
 export class PlotClickMenuComponent {
-    constructor(private readonly el: ElementRef) { }
-
-    @Output() setReference = new EventEmitter<string>();
     @Output() removeAccession = new EventEmitter<string>();
     @Output() setInterval = new EventEmitter<number[]>();
     @Output() setIntervalStart = new EventEmitter<number>();
     @Output() setIntervalEnd = new EventEmitter<number>();
+    @Output() setReference = new EventEmitter<string>();
 
     menuItems: MenuItem[] = [];
+
+    constructor(private readonly el: ElementRef) { }
 
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
         this.el.nativeElement.style.top = `${pos.y}px`;
+    }
+
+    hide() {
+        this.position = { x: 0, y: 0 };
+        this.el.nativeElement.style.visibility = 'hidden';
+    }
+
+    show($event: PlotMouseClickEvent) {
+        if ($event.target.type === 'accession') {
+            this.menuItems = [
+                this.getAccessionItem($event.target as PlotAccession)
+            ];
+        } else if ($event.target.type === 'bin') {
+            this.menuItems = [
+                this.getAccessionItem($event.target as PlotAccession),
+                this.getBinItem($event.target as PlotBin)
+            ];
+        } else if ($event.target.type === 'position') {
+            this.menuItems = [
+                this.getPositionItem($event.target as PlotSequencePosition)
+            ];
+        } else if ($event.target.type === 'interval') {
+            this.menuItems = [
+                this.getIntervalItem($event.target as PlotSequenceInterval)
+            ];
+        } else {
+            // Menu not visible for other types
+            return;
+        }
+
+        this.position = { x: $event.x, y: $event.y };
+        this.el.nativeElement.style.visibility = 'visible';
     }
 
     private getAccessionItem(targetAccession: PlotAccession): MenuItem {
@@ -82,6 +114,24 @@ export class PlotClickMenuComponent {
         };
     }
 
+    private getIntervalItem(int: PlotSequenceInterval): MenuItem {
+        return {
+            label: `${formatPosition(int.start_position)}
+- ${formatPosition(int.end_position)}`,
+            items: [
+                {
+                    label: 'Set as interval',
+                    icon: 'fa fa-arrows-h',
+                    command: () => {
+                        this.setInterval.emit([int.start_position,
+                                               int.end_position]);
+                        this.hide();
+                    }
+                }
+            ]
+        };
+    }
+
     private getPositionItem(pos: PlotSequencePosition): MenuItem {
         return {
             label: `${formatPosition(pos.position)}`,
@@ -104,55 +154,5 @@ export class PlotClickMenuComponent {
                 }
             ]
         };
-    }
-
-    private getIntervalItem(int: PlotSequenceInterval): MenuItem {
-        return {
-            label: `${formatPosition(int.start_position)}
-- ${formatPosition(int.end_position)}`,
-            items: [
-                {
-                    label: 'Set as interval',
-                    icon: 'fa fa-arrows-h',
-                    command: () => {
-                        this.setInterval.emit([int.start_position,
-                                               int.end_position]);
-                        this.hide();
-                    }
-                }
-            ]
-        };
-    }
-
-    show($event: PlotMouseClickEvent) {
-        if ($event.target.type === 'accession') {
-            this.menuItems = [
-                this.getAccessionItem($event.target as PlotAccession)
-            ];
-        } else if ($event.target.type === 'bin') {
-            this.menuItems = [
-                this.getAccessionItem($event.target as PlotAccession),
-                this.getBinItem($event.target as PlotBin)
-            ];
-        } else if ($event.target.type === 'position') {
-            this.menuItems = [
-                this.getPositionItem($event.target as PlotSequencePosition)
-            ];
-        } else if ($event.target.type === 'interval') {
-            this.menuItems = [
-                this.getIntervalItem($event.target as PlotSequenceInterval)
-            ];
-        } else {
-            // Menu not visible for other types
-            return;
-        }
-
-        this.position = { x: $event.x, y: $event.y };
-        this.el.nativeElement.style.visibility = 'visible';
-    }
-
-    hide() {
-        this.position = { x: 0, y: 0 };
-        this.el.nativeElement.style.visibility = 'hidden';
     }
 }
