@@ -64,14 +64,14 @@ const pluginComponents = {
     encapsulation: ViewEncapsulation.None
 })
 export class AccessionTabComponent implements AfterViewInit {
+    static readonly SORT_ICON_WIDTH = 30;
+    static readonly MAX_COLUMN_WIDTH = 200;
+
     @ViewChild('dt', { static: true })
     private readonly dt: Table;
 
     @ViewChild('pluginContainer', { read: ViewContainerRef, static: false })
     private readonly pluginContainer: ViewContainerRef;
-
-    readonly SORT_ICON_WIDTH = 30;
-    readonly MAX_COLUMN_WIDTH = 200;
 
     private _selectedAccessions: string[];
     @Input()
@@ -193,15 +193,17 @@ export class AccessionTabComponent implements AfterViewInit {
         return Object.keys(infos[0]).filter(col => col !== 'id' )
                                     .map(col => {
             const columnWidth = Math.max(
-                ctx.measureText(col).width + this.SORT_ICON_WIDTH,
+                ctx.measureText(col).width
+                + AccessionTabComponent.SORT_ICON_WIDTH,
                 ...infos.map(info => ctx.measureText(info[col]).width)
             );
 
             return {
                 field: col,
                 header: col,
-                width: columnWidth > this.MAX_COLUMN_WIDTH ? this.MAX_COLUMN_WIDTH
-                                                           : columnWidth
+                width: columnWidth > AccessionTabComponent.MAX_COLUMN_WIDTH
+                                     ? AccessionTabComponent.MAX_COLUMN_WIDTH
+                                     : columnWidth
             };
         });
     }
