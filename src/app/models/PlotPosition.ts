@@ -3,20 +3,20 @@ export interface PlotArea {
 }
 
 export interface PlotAccession extends PlotArea {
-    accession_label: string;
+    accessionLabel: string;
     accession: string;
 }
 
 export interface PlotBin extends PlotArea {
-    accession_label: string;
+    accessionLabel: string;
     accession: string;
-    start_position: number;
-    end_position: number;
+    startPosition: number;
+    endPosition: number;
 }
 
 export interface PlotSequenceInterval extends PlotArea {
-    start_position: number;
-    end_position: number;
+    startPosition: number;
+    endPosition: number;
 }
 
 export interface PlotSequencePosition extends PlotArea {

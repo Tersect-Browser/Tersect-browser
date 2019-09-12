@@ -215,8 +215,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         const targetInterval: PlotSequenceInterval = {
             type: 'interval',
-            start_position: this.plotService.highlight.start,
-            end_position: this.plotService.highlight.end
+            startPosition: this.plotService.highlight.start,
+            endPosition: this.plotService.highlight.end
         };
 
         this.plotMouseHover.emit({
@@ -230,8 +230,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
         if (!isNullOrUndefined(this.plotService.highlight)) {
             const target: PlotSequenceInterval = {
                 type: 'interval',
-                start_position: this.plotService.highlight.start,
-                end_position: this.plotService.highlight.end
+                startPosition: this.plotService.highlight.start,
+                endPosition: this.plotService.highlight.end
             };
 
             this.plotMouseClick.emit({

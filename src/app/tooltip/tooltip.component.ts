@@ -41,9 +41,9 @@ export class TooltipComponent {
     }
 
     private formatBinTooltip(target: PlotBin): string {
-        return `${target.accession_label}<br>
-${formatPosition(target.start_position)}
- - ${formatPosition(target.end_position)}`;
+        return `${target.accessionLabel}<br>
+${formatPosition(target.startPosition)}
+ - ${formatPosition(target.endPosition)}`;
     }
 
     private formatContent($event: PlotMouseHoverEvent): string {
@@ -51,7 +51,7 @@ ${formatPosition(target.start_position)}
             case 'bin':
                 return this.formatBinTooltip($event.target as PlotBin);
             case 'accession':
-                return `${($event.target as PlotAccession).accession_label}`;
+                return `${($event.target as PlotAccession).accessionLabel}`;
             case 'position':
                 return this.formatPositionTooltip($event.target as
                                                   PlotSequencePosition);
@@ -64,8 +64,8 @@ ${formatPosition(target.start_position)}
     }
 
     private formatIntervalTooltip(target: PlotSequenceInterval): string {
-        return `${formatPosition(target.start_position)}
-- ${formatPosition(target.end_position)}`;
+        return `${formatPosition(target.startPosition)}
+- ${formatPosition(target.endPosition)}`;
     }
 
     private formatPositionTooltip(target: PlotSequencePosition): string {

@@ -172,7 +172,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const accession = this.plotState.sortedAccessions[accessionIndex];
         const result: PlotAccession = {
             type: 'accession',
-            accession_label: this.plotService.getAccessionLabel(accession),
+            accessionLabel: this.plotService.getAccessionLabel(accession),
             accession: accession
         };
         return result;

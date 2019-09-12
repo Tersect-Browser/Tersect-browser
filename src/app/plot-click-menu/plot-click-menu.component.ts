@@ -67,7 +67,7 @@ export class PlotClickMenuComponent {
 
     private getAccessionItem(targetAccession: PlotAccession): MenuItem {
         return {
-            label: targetAccession.accession_label,
+            label: targetAccession.accessionLabel,
             items: [
                 {
                     label: 'Set as reference',
@@ -91,14 +91,14 @@ export class PlotClickMenuComponent {
 
     private getBinItem(bin: PlotBin): MenuItem {
         return {
-            label: `${formatPosition(bin.start_position)}
-- ${formatPosition(bin.end_position)}`,
+            label: `${formatPosition(bin.startPosition)}
+- ${formatPosition(bin.endPosition)}`,
             items: [
                 {
                     label: 'Set as interval start',
                     icon: 'fa fa-chevron-left',
                     command: () => {
-                        this.setIntervalStart.emit(bin.start_position);
+                        this.setIntervalStart.emit(bin.startPosition);
                         this.hide();
                     }
                 },
@@ -106,7 +106,7 @@ export class PlotClickMenuComponent {
                     label: 'Set as interval end',
                     icon: 'fa fa-chevron-right',
                     command: () => {
-                        this.setIntervalEnd.emit(bin.end_position);
+                        this.setIntervalEnd.emit(bin.endPosition);
                         this.hide();
                     }
                 }
@@ -116,15 +116,15 @@ export class PlotClickMenuComponent {
 
     private getIntervalItem(int: PlotSequenceInterval): MenuItem {
         return {
-            label: `${formatPosition(int.start_position)}
-- ${formatPosition(int.end_position)}`,
+            label: `${formatPosition(int.startPosition)}
+- ${formatPosition(int.endPosition)}`,
             items: [
                 {
                     label: 'Set as interval',
                     icon: 'fa fa-arrows-h',
                     command: () => {
-                        this.setInterval.emit([int.start_position,
-                                               int.end_position]);
+                        this.setInterval.emit([int.startPosition,
+                                               int.endPosition]);
                         this.hide();
                     }
                 }
