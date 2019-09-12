@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import {
     AccessionDictionary,
@@ -28,8 +28,95 @@ export class PlotStateService {
     static readonly ZOOM_FACTOR = 1.3;
     static readonly ZOOM_ROUND_TO = 50;
 
+    settings$: Observable<BrowserSettings>;
+
+    /**
+     * Identifier of the dataset open in the introgression plot.
+     */
+    datasetId$: Observable<string>;
+
+    /**
+     * Type of labels to draw - simple labels or phenetic tree.
+     */
+    accessionStyle$: Observable<AccessionDisplayStyle>;
+
+    accessionInfos$: Observable<AccessionInfo[]>;
+
+    /**
+     * Dictionary of names to be used for accessions.
+     */
+    accessionDictionary$: Observable<AccessionDictionary>;
+
+    accessionGroups$: Observable<AccessionGroup[]>;
+
+    /**
+     * Accessions displayed in the plot.
+     */
+    accessions$: Observable<string[]>;
+
+    /**
+     * Reference accession used by the plot.
+     */
+    reference$: Observable<string>;
+
+    /**
+     * Chromosome displayed by the plot.
+     */
+    chromosome$: Observable<Chromosome>;
+
+    /**
+     * Chromosomal interval displayed by the plot.
+     */
+    interval$: Observable<number[]>;
+
+    /**
+     * Bin size used by the plot.
+     */
+    binsize$: Observable<number>;
+
+    /**
+     * Zoom level in percentages.
+     */
+    zoomLevel$: Observable<number>;
+
+    plugins: string[] = [];
+
+    /**
+     * Accession names sorted in the order to be displayed on the drawn plot.
+     * Generally this is the order based on clustering.
+     */
+    sortedAccessions$: Observable<string[]>;
+
     private readonly settingsSource = new Subject<BrowserSettings>();
-    settings$ = this.settingsSource.asObservable();
+    private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
+    private readonly accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');
+    private readonly accessionInfosSource = new BehaviorSubject<AccessionInfo[]>(undefined);
+    private readonly accessionDictionarySource = new BehaviorSubject<AccessionDictionary>(undefined);
+    private readonly accessionGroupsSource = new BehaviorSubject<AccessionGroup[]>(undefined);
+    private readonly accessionsSource = new BehaviorSubject<string[]>(undefined);
+    private readonly referenceSource = new BehaviorSubject<string>(undefined);
+    private readonly chromosomeSource = new BehaviorSubject<Chromosome>(undefined);
+    private readonly intervalSource = new BehaviorSubject<number[]>(undefined);
+    private readonly binsizeSource = new BehaviorSubject<number>(undefined);
+    private readonly zoomLevelSource = new BehaviorSubject<number>(100);
+    private readonly sortedAccessionsSource = new BehaviorSubject<string[]>(null);
+
+    constructor() {
+        this.settings$ = this.settingsSource.asObservable();
+        this.datasetId$ = this.datasetIdSource.asObservable();
+        this.accessionStyle$ = this.accessionStyleSource.asObservable();
+        this.accessionInfos$ = this.accessionInfosSource.asObservable();
+        this.accessionDictionary$ = this.accessionDictionarySource.asObservable();
+        this.accessionGroups$ = this.accessionGroupsSource.asObservable();
+        this.accessions$ = this.accessionsSource.asObservable();
+        this.reference$ = this.referenceSource.asObservable();
+        this.chromosome$ = this.chromosomeSource.asObservable();
+        this.interval$ = this.intervalSource.asObservable();
+        this.binsize$ = this.binsizeSource.asObservable();
+        this.zoomLevel$ = this.zoomLevelSource.asObservable();
+        this.sortedAccessions$ = this.sortedAccessionsSource.asObservable();
+    }
+
     set settings(settings: BrowserSettings) {
         this.datasetId = settings.dataset_id;
         this.accessionStyle = settings.accession_style;
@@ -60,11 +147,6 @@ export class PlotStateService {
         };
     }
 
-    /**
-     * Identifier of the dataset open in the introgression plot.
-     */
-    private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
-    datasetId$ = this.datasetIdSource.asObservable();
     set datasetId(datasetId) {
         this.datasetIdSource.next(datasetId);
     }
@@ -72,11 +154,6 @@ export class PlotStateService {
         return this.datasetIdSource.getValue();
     }
 
-    /**
-     * Type of labels to draw - simple labels or phenetic tree.
-     */
-    private readonly accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');
-    accessionStyle$ = this.accessionStyleSource.asObservable();
     set accessionStyle(style: AccessionDisplayStyle) {
         if (style !== this.accessionStyle) {
             this.accessionStyleSource.next(style);
@@ -86,8 +163,6 @@ export class PlotStateService {
         return this.accessionStyleSource.getValue();
     }
 
-    private readonly accessionInfosSource = new BehaviorSubject<AccessionInfo[]>(undefined);
-    accessionInfos$ = this.accessionInfosSource.asObservable();
     set accessionInfos(accessionInfos: AccessionInfo[]) {
         this.accessionInfosSource.next(accessionInfos);
         const labelDict = extractAccessionLabels(accessionInfos);
@@ -107,11 +182,6 @@ export class PlotStateService {
         return this.accessionInfosSource.getValue();
     }
 
-    /**
-     * Dictionary of names to be used for accessions.
-     */
-    private readonly accessionDictionarySource = new BehaviorSubject<AccessionDictionary>(undefined);
-    accessionDictionary$ = this.accessionDictionarySource.asObservable();
     set accessionDictionary(dict: AccessionDictionary) {
         this.accessionDictionarySource.next(dict);
     }
@@ -122,8 +192,6 @@ export class PlotStateService {
     /**
      * Accession groups and their associated colours.
      */
-    private readonly accessionGroupsSource = new BehaviorSubject<AccessionGroup[]>(undefined);
-    accessionGroups$ = this.accessionGroupsSource.asObservable();
     set accessionGroups(accessionGroups: AccessionGroup[]) {
         this.accessionGroupsSource.next(accessionGroups);
         const colorDict = extractAccessionColors(accessionGroups);
@@ -145,11 +213,6 @@ export class PlotStateService {
         return this.accessionGroupsSource.getValue();
     }
 
-    /**
-     * Accessions displayed in the plot.
-     */
-    private readonly accessionsSource = new BehaviorSubject<string[]>(undefined);
-    accessions$ = this.accessionsSource.asObservable();
     set accessions(accessions: string[]) {
         if (!sameElements(accessions, this.sortedAccessions)) {
             this.accessionsSource.next(accessions);
@@ -159,11 +222,6 @@ export class PlotStateService {
         return this.accessionsSource.getValue();
     }
 
-    /**
-     * Reference accession used by the plot.
-     */
-    private readonly referenceSource = new BehaviorSubject<string>(undefined);
-    reference$ = this.referenceSource.asObservable();
     set reference(reference: string) {
         this.referenceSource.next(reference);
     }
@@ -171,11 +229,6 @@ export class PlotStateService {
         return this.referenceSource.getValue();
     }
 
-    /**
-     * Chromosome displayed by the plot.
-     */
-    private readonly chromosomeSource = new BehaviorSubject<Chromosome>(undefined);
-    chromosome$ = this.chromosomeSource.asObservable();
     set chromosome(chromosome: Chromosome) {
         this.chromosomeSource.next(chromosome);
     }
@@ -183,11 +236,6 @@ export class PlotStateService {
         return this.chromosomeSource.getValue();
     }
 
-    /**
-     * Chromosomal interval displayed by the plot.
-     */
-    private readonly intervalSource = new BehaviorSubject<number[]>(undefined);
-    interval$ = this.intervalSource.asObservable();
     set interval(interval: number[]) {
         this.intervalSource.next(interval);
     }
@@ -195,11 +243,6 @@ export class PlotStateService {
         return this.intervalSource.getValue();
     }
 
-    /**
-     * Bin size used by the plot.
-     */
-    private readonly binsizeSource = new BehaviorSubject<number>(undefined);
-    binsize$ = this.binsizeSource.asObservable();
     set binsize(binsize: number) {
         this.binsizeSource.next(binsize);
     }
@@ -207,11 +250,6 @@ export class PlotStateService {
         return this.binsizeSource.getValue();
     }
 
-    /**
-     * Zoom level in percentages.
-     */
-    private readonly zoomLevelSource = new BehaviorSubject<number>(100);
-    zoomLevel$ = this.zoomLevelSource.asObservable();
     set zoomLevel(zoomLevel: number) {
         if (zoomLevel !== this.zoomLevel) {
             this.zoomLevelSource.next(zoomLevel);
@@ -221,15 +259,6 @@ export class PlotStateService {
         return this.zoomLevelSource.getValue();
     }
 
-    plugins: string[] = [];
-
-    /**
-     * Accession names (as used by tersect) sorted in the order to
-     * be displayed on the drawn plot. Generally this is the order based on
-     * the neighbor joining tree clustering.
-     */
-    sortedAccessionsSource = new BehaviorSubject<string[]>(null);
-    sortedAccessions$ = this.sortedAccessionsSource.asObservable();
     set sortedAccessions(accessions: string[]) {
         this.sortedAccessionsSource.next(accessions);
     }
