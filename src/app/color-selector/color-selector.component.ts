@@ -21,9 +21,9 @@ export interface ColorChangeEvent {
 export class ColorSelectorComponent {
     constructor(private readonly el: ElementRef) { }
 
-    readonly DEFAULT_HEADER = 'Select color';
+    static readonly DEFAULT_HEADER = 'Select color';
     @Input()
-    header = this.DEFAULT_HEADER;
+    header = ColorSelectorComponent.DEFAULT_HEADER;
 
     target: any;
 
