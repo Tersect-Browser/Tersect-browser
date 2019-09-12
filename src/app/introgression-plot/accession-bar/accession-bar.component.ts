@@ -36,12 +36,12 @@ import {
 
 interface StoredAccessionBarState {
     canvas: HTMLCanvasElement;
-    canvas_yoffset: number;
-    accession_style: AccessionDisplayStyle;
-    zoom_level: number;
-    tree_query: TreeQuery;
-    container_width: number;
-    accession_dictionary: AccessionDictionary;
+    canvasOffsetY: number;
+    accessionStyle: AccessionDisplayStyle;
+    zoomLevel: number;
+    treeQuery: TreeQuery;
+    containerWidth: number;
+    accessionDictionary: AccessionDictionary;
 }
 
 @Component({
@@ -92,12 +92,12 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
     private readonly storedState: StoredAccessionBarState = {
         canvas: undefined,
-        canvas_yoffset: 0,
-        accession_style: undefined,
-        container_width: undefined,
-        tree_query: undefined,
-        zoom_level: undefined,
-        accession_dictionary: undefined
+        canvasOffsetY: 0,
+        accessionStyle: undefined,
+        containerWidth: undefined,
+        treeQuery: undefined,
+        zoomLevel: undefined,
+        accessionDictionary: undefined
     };
 
     constructor(private readonly plotState: PlotStateService,
@@ -129,7 +129,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
 
         ctx.drawImage(this.storedState.canvas, 0,
                       this.plotService.offsetY
-                      - this.storedState.canvas_yoffset);
+                      - this.storedState.canvasOffsetY);
     }
 
     protected dragAction(dragState: DragState): void {
@@ -223,7 +223,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const yoffset = this.plotService.offsetY;
         return AccessionBarComponent.STORED_CANVAS_HEIGHT
                - this.getAccessionBarHeight()
-               + yoffset - this.storedState.canvas_yoffset;
+               + yoffset - this.storedState.canvasOffsetY;
     }
 
     private drawLabelTree(ctx: CanvasRenderingContext2D) {
@@ -237,7 +237,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const initialPosX = AccessionBarComponent.GUI_TREE_LEFT_MARGIN;
         this._drawLabelTree(this.plotService.phenTree.tree, initialPosX, ctx,
                             this.plotService.accessionBarWidth,
-                            textHeight, this.storedState.canvas_yoffset,
+                            textHeight, this.storedState.canvasOffsetY,
                             scale, drawState);
     }
 
@@ -305,7 +305,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         ctx.textBaseline = 'top';
         this.plotState.sortedAccessions.forEach((acc, index) => {
             ctx.fillText(this.plotService.getAccessionLabel(acc), 0,
-                         index * textHeight + this.storedState.canvas_yoffset);
+                         index * textHeight + this.storedState.canvasOffsetY);
         });
     }
 
@@ -367,7 +367,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         if (overflow <= 0) {
             while (overflow <= 0) {
                 this.storedState
-                    .canvas_yoffset -= this.STORED_CANVAS_OFFSET_STEP;
+                    .canvasOffsetY -= this.STORED_CANVAS_OFFSET_STEP;
                 overflow = this.getStoredOverflowHeight();
             }
             return true;
@@ -377,7 +377,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
             while (overflow > AccessionBarComponent.STORED_CANVAS_HEIGHT
                               - this.getAccessionBarHeight()) {
                 this.storedState
-                    .canvas_yoffset += this.STORED_CANVAS_OFFSET_STEP;
+                    .canvasOffsetY += this.STORED_CANVAS_OFFSET_STEP;
                 overflow = this.getStoredOverflowHeight();
             }
             return true;
@@ -393,13 +393,12 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         const containerWidth = this.getContainerWidth();
         if (isNullOrUndefined(this.storedState)
             || isNullOrUndefined(this.storedState.canvas)
-            || this.storedState.zoom_level !== this.plotState.zoomLevel
-            || this.storedState.accession_style
-               !== this.plotState.accessionStyle
-            || this.storedState.container_width !== containerWidth
-            || !deepEqual(this.storedState.tree_query,
+            || this.storedState.zoomLevel !== this.plotState.zoomLevel
+            || this.storedState.accessionStyle !== this.plotState.accessionStyle
+            || this.storedState.containerWidth !== containerWidth
+            || !deepEqual(this.storedState.treeQuery,
                           this.plotService.phenTree.query)
-            || !deepEqual(this.storedState.accession_dictionary,
+            || !deepEqual(this.storedState.accessionDictionary,
                           this.plotState.accessionDictionary)) {
             return true;
         }
@@ -445,12 +444,11 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.drawColorTracks(ctx);
 
         // Save current state
-        this.storedState.accession_style = this.plotState.accessionStyle;
-        this.storedState.container_width = this.getContainerWidth();
-        this.storedState.tree_query = this.plotService.phenTree.query;
-        this.storedState.zoom_level = this.plotState.zoomLevel;
+        this.storedState.accessionStyle = this.plotState.accessionStyle;
+        this.storedState.containerWidth = this.getContainerWidth();
+        this.storedState.treeQuery = this.plotService.phenTree.query;
+        this.storedState.zoomLevel = this.plotState.zoomLevel;
         this.storedState
-            .accession_dictionary = deepCopy(this.plotState
-                                                 .accessionDictionary);
+            .accessionDictionary = deepCopy(this.plotState.accessionDictionary);
     }
 }
