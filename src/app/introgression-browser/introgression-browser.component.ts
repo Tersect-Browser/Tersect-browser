@@ -42,15 +42,15 @@ import {
     providers: [ PlotStateService ]
 })
 export class IntrogressionBrowserComponent implements OnInit {
+    static readonly DEFAULT_BINSIZE = 50000;
+    static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
+    static readonly DEFAULT_ZOOM_LEVEL = 100;
+
     @ViewChild(PlotClickMenuComponent, { static: true })
     private readonly plotClickMenu: PlotClickMenuComponent;
 
     @ViewChild(TooltipComponent, { static: true })
     readonly tooltip: TooltipComponent;
-
-    readonly DEFAULT_BINSIZE = 50000;
-    readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
-    readonly DEFAULT_ZOOM_LEVEL = 100;
 
     chromosomes: Chromosome[];
 
@@ -131,7 +131,7 @@ export class IntrogressionBrowserComponent implements OnInit {
                                     accessions: string[],
                                     chromosomes: Chromosome[]) {
         if (isNullOrUndefined(settings.accession_style)) {
-            settings.accession_style = this.DEFAULT_DISPLAY_STYLE;
+            settings.accession_style = IntrogressionBrowserComponent.DEFAULT_DISPLAY_STYLE;
         }
         if (isNullOrUndefined(settings.accession_groups)) {
             settings.accession_groups = [];
@@ -143,7 +143,7 @@ export class IntrogressionBrowserComponent implements OnInit {
             settings.selected_reference = settings.selected_accessions[0];
         }
         if (isNullOrUndefined(settings.selected_binsize)) {
-            settings.selected_binsize = this.DEFAULT_BINSIZE;
+            settings.selected_binsize = IntrogressionBrowserComponent.DEFAULT_BINSIZE;
         }
         if (isNullOrUndefined(settings.selected_chromosome)) {
             // Selecting the largest chromosome
@@ -153,7 +153,7 @@ export class IntrogressionBrowserComponent implements OnInit {
             settings.selected_chromosome = largestChrom;
         }
         if (isNullOrUndefined(settings.zoom_level)) {
-            settings.zoom_level = this.DEFAULT_ZOOM_LEVEL;
+            settings.zoom_level = IntrogressionBrowserComponent.DEFAULT_ZOOM_LEVEL;
         }
         if (isNullOrUndefined(settings.selected_interval)) {
             settings.selected_interval = [
