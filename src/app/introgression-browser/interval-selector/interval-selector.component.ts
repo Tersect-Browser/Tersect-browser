@@ -16,7 +16,7 @@ import {
     styleUrls: ['./interval-selector.component.css']
 })
 export class IntervalSelectorComponent {
-    readonly TYPING_DELAY = 750;
+    static readonly TYPING_DELAY = 750;
     private intervalInputTimeout: NodeJS.Timer;
 
     private _intervalStart = 0;
@@ -70,8 +70,9 @@ export class IntervalSelectorComponent {
 
     typeInterval() {
         clearTimeout(this.intervalInputTimeout);
-        this.intervalInputTimeout = setTimeout(() => this.updateInterval(),
-                                                 this.TYPING_DELAY);
+        this.intervalInputTimeout = setTimeout(
+            () => this.updateInterval(), IntervalSelectorComponent.TYPING_DELAY
+        );
     }
 
     updateInterval() {
