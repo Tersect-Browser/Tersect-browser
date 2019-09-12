@@ -135,11 +135,11 @@ export class AccessionTabComponent implements AfterViewInit {
     categories: string[] = [];
 
     private _selectedGroups: AccessionGroup[] = [];
-    set selected_groups(groups: AccessionGroup[]) {
+    set selectedGroups(groups: AccessionGroup[]) {
         this.dt.filter(groups, '__groups', 'groups_union');
         this._selectedGroups = groups;
     }
-    get selected_groups(): AccessionGroup[] {
+    get selectedGroups(): AccessionGroup[] {
         return this._selectedGroups;
     }
 
