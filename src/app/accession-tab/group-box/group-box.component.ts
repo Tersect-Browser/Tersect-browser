@@ -28,24 +28,21 @@ import {
     encapsulation: ViewEncapsulation.None
 })
 export class GroupBoxComponent {
-    @ViewChild(RemoveGroupDialogComponent, { static: true })
-    readonly removeGroupDialog: RemoveGroupDialogComponent;
-
     @ViewChild(ColorSelectorComponent, { static: true })
     readonly colorSelector: ColorSelectorComponent;
 
-    private _groups: AccessionGroup[];
+    @ViewChild(RemoveGroupDialogComponent, { static: true })
+    readonly removeGroupDialog: RemoveGroupDialogComponent;
+
+    @Input()
+    categories: string[] = [];
+
     @Input()
     set groups(groups: AccessionGroup[]) {
         this._groups = groups;
         this.groupsChange.emit(this._groups);
     }
-    @Output() groupsChange = new EventEmitter<AccessionGroup[]>();
-    get groups(): AccessionGroup[] {
-        return this._groups;
-    }
 
-    private _selectedGroups: AccessionGroup[];
     @Input()
     set selectedGroups(groups: AccessionGroup[]) {
         this._selectedGroups = groups;
@@ -54,10 +51,22 @@ export class GroupBoxComponent {
     get selectedGroups(): AccessionGroup[] {
         return this._selectedGroups;
     }
+
+    @Output() groupsChange = new EventEmitter<AccessionGroup[]>();
+    get groups(): AccessionGroup[] {
+        return this._groups;
+    }
+
     @Output() selectedGroupsChange = new EventEmitter<AccessionGroup[]>();
 
-    @Input()
-    categories: string[] = [];
+    private _groups: AccessionGroup[];
+    private _selectedGroups: AccessionGroup[];
+
+    changeGroupColor($event: ColorChangeEvent) {
+        if (!isNullOrUndefined($event.target)) {
+            $event.target.value.color = $event.color;
+        }
+    }
 
     extractCategoryGroups(category: string): AccessionGroup[] {
         return this.groups.filter(grp => grp.category === category);
@@ -66,11 +75,5 @@ export class GroupBoxComponent {
     removeGroup(group: AccessionGroup) {
         this.groups.splice(this.groups.indexOf(group), 1);
         this.groups = [...this.groups];
-    }
-
-    changeGroupColor($event: ColorChangeEvent) {
-        if (!isNullOrUndefined($event.target)) {
-            $event.target.value.color = $event.color;
-        }
     }
 }
