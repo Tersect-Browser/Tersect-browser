@@ -117,7 +117,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
     draw() {
         if (isNullOrUndefined(this.plotState.sortedAccessions)) { return; }
 
-        if (this.updateRequired()) {
+        if (this.isUpdateRequired()) {
             this.updateImage();
         }
 
@@ -361,7 +361,7 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
      * Note: this method applies the required vertical offset to the stored
      * canvas as a side-effect.
      */
-    private scrollUpdate(): boolean {
+    private isScrollUpdateRequired(): boolean {
         // Update yoffset and redraw stored canvas when out of scrolling area.
         let overflow = this.getStoredOverflowHeight();
         if (overflow <= 0) {
@@ -380,6 +380,27 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
                     .canvas_yoffset += this.STORED_CANVAS_OFFSET_STEP;
                 overflow = this.getStoredOverflowHeight();
             }
+            return true;
+        }
+        return false;
+    }
+
+    private isUpdateRequired(): boolean {
+        if (this.isScrollUpdateRequired()) {
+            return true;
+        }
+
+        const containerWidth = this.getContainerWidth();
+        if (isNullOrUndefined(this.storedState)
+            || isNullOrUndefined(this.storedState.canvas)
+            || this.storedState.zoom_level !== this.plotState.zoomLevel
+            || this.storedState.accession_style
+               !== this.plotState.accessionStyle
+            || this.storedState.container_width !== containerWidth
+            || !deepEqual(this.storedState.tree_query,
+                          this.plotService.phenTree.query)
+            || !deepEqual(this.storedState.accession_dictionary,
+                          this.plotState.accessionDictionary)) {
             return true;
         }
         return false;
@@ -431,26 +452,5 @@ export class AccessionBarComponent extends CanvasPlotElement implements OnInit {
         this.storedState
             .accession_dictionary = deepCopy(this.plotState
                                                  .accessionDictionary);
-    }
-
-    private updateRequired(): boolean {
-        if (this.scrollUpdate()) {
-            return true;
-        }
-
-        const containerWidth = this.getContainerWidth();
-        if (isNullOrUndefined(this.storedState)
-            || isNullOrUndefined(this.storedState.canvas)
-            || this.storedState.zoom_level !== this.plotState.zoomLevel
-            || this.storedState.accession_style
-               !== this.plotState.accessionStyle
-            || this.storedState.container_width !== containerWidth
-            || !deepEqual(this.storedState.tree_query,
-                          this.plotService.phenTree.query)
-            || !deepEqual(this.storedState.accession_dictionary,
-                          this.plotState.accessionDictionary)) {
-            return true;
-        }
-        return false;
     }
 }
