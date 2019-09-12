@@ -10,28 +10,6 @@ import { isNullOrUndefined } from '../../utils/utils';
     templateUrl: './add-group-dialog.component.html'
 })
 export class AddGroupDialogComponent {
-    errorMessage = '';
-
-    private _categoryName = '';
-    set categoryName(name: string) {
-        this._categoryName = name.trim();
-    }
-    get categoryName(): string {
-        return this._categoryName;
-    }
-
-    private _groupName = '';
-    set groupName(name: string) {
-        this._groupName = name.trim();
-        this.validateGroupName(this._groupName);
-    }
-    get groupName(): string {
-        return this._groupName;
-    }
-
-    @Input()
-    selectedAccessions: string[];
-
     @Input()
     accessionGroups: AccessionGroup[];
 
@@ -41,9 +19,10 @@ export class AddGroupDialogComponent {
         this.categoryOptions = cats.filter(c => !isNullOrUndefined(c))
                                    .map(c => ({ label: c, value: c }));
     }
-    categoryOptions: SelectItem[];
 
-    private _visible = false;
+    @Input()
+    selectedAccessions: string[];
+
     @Input()
     set visible(v: boolean) {
         if (this._visible !== v) {
@@ -54,11 +33,34 @@ export class AddGroupDialogComponent {
     get visible(): boolean {
         return this._visible;
     }
-    @Output()
-    visibleChange = new EventEmitter<boolean>();
 
     @Output()
     groupSave = new EventEmitter<AccessionGroup>();
+
+    @Output()
+    visibleChange = new EventEmitter<boolean>();
+
+    categoryOptions: SelectItem[];
+    errorMessage = '';
+
+    private _categoryName = '';
+    private _groupName = '';
+    private _visible = false;
+
+    set categoryName(name: string) {
+        this._categoryName = name.trim();
+    }
+    get categoryName(): string {
+        return this._categoryName;
+    }
+
+    set groupName(name: string) {
+        this._groupName = name.trim();
+        this.validateGroupName(this._groupName);
+    }
+    get groupName(): string {
+        return this._groupName;
+    }
 
     saveGroup() {
         const group: AccessionGroup = {
