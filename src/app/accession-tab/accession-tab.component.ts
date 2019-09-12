@@ -92,8 +92,7 @@ export class AccessionTabComponent implements AfterViewInit {
         this.filteredAccessions = this.accessionOptions;
         this.virtualAccessionRows = this.filteredAccessions.slice(0, 100);
         this.cols = this.extractColumns(this.accessionOptions);
-        this.allSelected = this.accessionOptions.length
-                            === this.selectedAccessions.length;
+        this.updateAllSelected();
     }
     get accessionOptions(): AccessionInfo[] {
         return this._accessionOptions;
@@ -327,7 +326,8 @@ export class AccessionTabComponent implements AfterViewInit {
     }
 
     updateAllSelected() {
-        if (!isNullOrUndefined(this.filteredAccessions)) {
+        if (!isNullOrUndefined(this.filteredAccessions)
+            && !isNullOrUndefined(this.selectedAccessions)) {
             this.allSelected = isSubset(this.filteredAccessions
                                              .map(acc => acc.id),
                                         this.selectedAccessions);
