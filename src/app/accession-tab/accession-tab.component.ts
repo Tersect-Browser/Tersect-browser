@@ -38,6 +38,10 @@ interface FilterSet {
     [s: string]: FilterMetadata;
 }
 
+interface InfoDictionary {
+    [key: string]: AccessionInfo;
+}
+
 interface SortSettings {
     sortField: string;
     sortOrder: number;
@@ -47,10 +51,6 @@ interface TableColumn {
     field: string;
     header: string;
     width: number;
-}
-
-interface InfoDictionary {
-    [key: string]: AccessionInfo;
 }
 
 const pluginComponents = {
@@ -73,19 +73,18 @@ export class AccessionTabComponent implements AfterViewInit {
     @ViewChild('pluginContainer', { read: ViewContainerRef, static: false })
     private readonly pluginContainer: ViewContainerRef;
 
-    private _selectedAccessions: string[];
     @Input()
-    set selectedAccessions(accessions: string[]) {
-        this._selectedAccessions = accessions;
-        this.updateAllSelected();
-        this.selectedAccessionsChange.emit(this._selectedAccessions);
+    set accessionGroups(groups: AccessionGroup[]) {
+        if (groups !== this._accessionGroups) {
+            this._accessionGroups = groups;
+            this.categories = this.extractCategories(groups);
+            this.accessionGroupsChange.emit(this._accessionGroups);
+        }
     }
-    get selectedAccessions(): string[] {
-        return this._selectedAccessions;
+    get accessionGroups(): AccessionGroup[] {
+        return this._accessionGroups;
     }
-    @Output() selectedAccessionsChange = new EventEmitter<string[]>();
 
-    private _accessionOptions: AccessionInfo[];
     @Input()
     set accessionOptions(accInfos: AccessionInfo[]) {
         this._accessionOptions = accInfos;
@@ -100,41 +99,46 @@ export class AccessionTabComponent implements AfterViewInit {
         return this._accessionOptions;
     }
 
-    private _accessionGroups: AccessionGroup[];
-    @Input()
-    set accessionGroups(groups: AccessionGroup[]) {
-        if (groups !== this._accessionGroups) {
-            this._accessionGroups = groups;
-            this.categories = this.extractCategories(groups);
-            this.accessionGroupsChange.emit(this._accessionGroups);
-        }
-    }
-    get accessionGroups(): AccessionGroup[] {
-        return this._accessionGroups;
-    }
-    @Output()
-    accessionGroupsChange = new EventEmitter<AccessionGroup[]>();
-
     @Input()
     importPlugins: string[] = [];
 
-    displayAddGroupDialog = false;
+    @Input()
+    set selectedAccessions(accessions: string[]) {
+        this._selectedAccessions = accessions;
+        this.updateAllSelected();
+        this.selectedAccessionsChange.emit(this._selectedAccessions);
+    }
+    get selectedAccessions(): string[] {
+        return this._selectedAccessions;
+    }
 
-    filteredAccessions: AccessionInfo[];
-    virtualAccessionRows: AccessionInfo[];
+    @Output()
+    accessionGroupsChange = new EventEmitter<AccessionGroup[]>();
 
-    cols: TableColumn[];
+    @Output() selectedAccessionsChange = new EventEmitter<string[]>();
 
     allSelected: boolean;
+    categories: string[] = [];
+    cols: TableColumn[];
+    displayAddGroupDialog = false;
+    filteredAccessions: AccessionInfo[];
+    suggestions: string[];
+    virtualAccessionRows: AccessionInfo[];
 
+    private _accessionGroups: AccessionGroup[];
+    private _accessionOptions: AccessionInfo[];
+    private _selectedAccessions: string[];
+    private _selectedGroups: AccessionGroup[] = [];
+
+    private infoDictionary: InfoDictionary;
     private previousFilters: FilterSet = {};
     private previousSortSettings: SortSettings = {
-        sortField: undefined, sortOrder: 1
+        sortField: undefined,
+        sortOrder: 1
     };
 
-    categories: string[] = [];
+    constructor(private readonly resolver: ComponentFactoryResolver) {}
 
-    private _selectedGroups: AccessionGroup[] = [];
     set selectedGroups(groups: AccessionGroup[]) {
         this.dt.filter(groups, '__groups', 'groups_union');
         this._selectedGroups = groups;
@@ -143,17 +147,15 @@ export class AccessionTabComponent implements AfterViewInit {
         return this._selectedGroups;
     }
 
-    suggestions: string[];
-
-    private infoDictionary: InfoDictionary;
-
-    constructor(private readonly resolver: ComponentFactoryResolver) {}
-
     ngAfterViewInit() {
         if (!isNullOrUndefined(this.importPlugins)) {
             // Queued to avoid plugin ExpressionChangedAfterItHasBeenCheckedError
             Promise.resolve().then(() => this.createPlugins());
         }
+    }
+
+    addGroup($event: AccessionGroup) {
+        this.accessionGroups = [...this.accessionGroups, $event];
     }
 
     createPlugins() {
@@ -171,14 +173,11 @@ export class AccessionTabComponent implements AfterViewInit {
         });
     }
 
-    extractOptionDictionary(accInfos: AccessionInfo[]): InfoDictionary {
-        const infoDict = {};
-        accInfos.forEach(info => {
-            if ('id' in info) {
-                infoDict[info.id] = info;
-            }
-        });
-        return infoDict;
+    /**
+     * Extract category names from array of accession groups.
+     */
+    extractCategories(groups: AccessionGroup[]): string[] {
+        return uniqueArray(groups.map(grp => grp.category)).sort();
     }
 
     extractColumnOptions(column: string): string[] {
@@ -208,30 +207,14 @@ export class AccessionTabComponent implements AfterViewInit {
         });
     }
 
-    headerCheckboxChange($event: boolean) {
-        const filteredAccIds = this.filteredAccessions.map(acc => acc.id);
-        if ($event) {
-            // Checking all matching accessions
-            this.selectedAccessions = arrayUnion(this.selectedAccessions,
-                                                 filteredAccIds);
-        } else {
-            // Unchecking all matching accessions
-            this.selectedAccessions = arraySubtract(this.selectedAccessions,
-                                                    filteredAccIds);
-        }
-    }
-
-    updateAllSelected() {
-        if (!isNullOrUndefined(this.filteredAccessions)) {
-            this.allSelected = isSubset(this.filteredAccessions
-                                             .map(acc => acc.id),
-                                         this.selectedAccessions);
-        }
-    }
-
-    filtersUsed(): boolean {
-        return this.filteredAccessions.length
-               !== this.accessionOptions.length;
+    extractOptionDictionary(accInfos: AccessionInfo[]): InfoDictionary {
+        const infoDict = {};
+        accInfos.forEach(info => {
+            if ('id' in info) {
+                infoDict[info.id] = info;
+            }
+        });
+        return infoDict;
     }
 
     filterAccessions(accessions: AccessionInfo[],
@@ -250,33 +233,25 @@ export class AccessionTabComponent implements AfterViewInit {
         return filteredAccessions;
     }
 
-    /**
-     * Sorts accession row array in place according to the provided settings.
-     */
-    sortAccessions(accessions: AccessionInfo[],
-                   sortSettings: SortSettings): void {
-        if (!isNullOrUndefined(sortSettings.sortField)) {
-            if (sortSettings.sortField === 'selected') {
-                const selected: AccessionInfo[] = [];
-                const unselected: AccessionInfo[] = [];
-                accessions.forEach(acc => {
-                    if (this.selectedAccessions.includes(acc.id)) {
-                        selected.push(acc);
-                    } else {
-                        unselected.push(acc);
-                    }
-                });
-                Object.assign(accessions, [...selected, ...unselected]);
-            } else {
-                accessions.sort((a, b) =>
-                    a[sortSettings.sortField].localeCompare(
-                        b[sortSettings.sortField]
-                    )
-                );
-            }
-            if (sortSettings.sortOrder === -1) {
-                accessions.reverse();
-            }
+    filterField($event: string, column: string) {
+        this.dt.filter($event, column, 'contains');
+    }
+
+    filtersUsed(): boolean {
+        return this.filteredAccessions.length
+               !== this.accessionOptions.length;
+    }
+
+    headerCheckboxChange($event: boolean) {
+        const filteredAccIds = this.filteredAccessions.map(acc => acc.id);
+        if ($event) {
+            // Checking all matching accessions
+            this.selectedAccessions = arrayUnion(this.selectedAccessions,
+                                                 filteredAccIds);
+        } else {
+            // Unchecking all matching accessions
+            this.selectedAccessions = arraySubtract(this.selectedAccessions,
+                                                    filteredAccIds);
         }
     }
 
@@ -315,24 +290,47 @@ export class AccessionTabComponent implements AfterViewInit {
                                                  $event.first + $event.rows);
     }
 
-    filterField($event: string, column: string) {
-        this.dt.filter($event, column, 'contains');
-    }
-
     showAddGroupDialog() {
         if (this.selectedAccessions.length !== 0) {
             this.displayAddGroupDialog = true;
         }
     }
 
-    addGroup($event: AccessionGroup) {
-        this.accessionGroups = [...this.accessionGroups, $event];
+    /**
+     * Sorts accession row array in place according to the provided settings.
+     */
+    sortAccessions(accessions: AccessionInfo[],
+                   sortSettings: SortSettings): void {
+        if (!isNullOrUndefined(sortSettings.sortField)) {
+            if (sortSettings.sortField === 'selected') {
+                const selected: AccessionInfo[] = [];
+                const unselected: AccessionInfo[] = [];
+                accessions.forEach(acc => {
+                    if (this.selectedAccessions.includes(acc.id)) {
+                        selected.push(acc);
+                    } else {
+                        unselected.push(acc);
+                    }
+                });
+                Object.assign(accessions, [...selected, ...unselected]);
+            } else {
+                accessions.sort((a, b) =>
+                    a[sortSettings.sortField].localeCompare(
+                        b[sortSettings.sortField]
+                    )
+                );
+            }
+            if (sortSettings.sortOrder === -1) {
+                accessions.reverse();
+            }
+        }
     }
 
-    /**
-     * Extract category names from array of accession groups.
-     */
-    extractCategories(groups: AccessionGroup[]): string[] {
-        return uniqueArray(groups.map(grp => grp.category)).sort();
+    updateAllSelected() {
+        if (!isNullOrUndefined(this.filteredAccessions)) {
+            this.allSelected = isSubset(this.filteredAccessions
+                                             .map(acc => acc.id),
+                                        this.selectedAccessions);
+        }
     }
 }
