@@ -11,12 +11,18 @@ import {
     combineLatest,
     Subscription
 } from 'rxjs';
+import {
+    filter
+} from 'rxjs/operators';
 
 import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent
 } from '../models/Plot';
+import {
+    isNullOrUndefined
+} from '../utils/utils';
 import {
     AccessionBarComponent
 } from './accession-bar/accession-bar.component';
@@ -75,7 +81,9 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
             this.plotState.accessionDictionary$,
             this.plotService.plotPositionSource,
             this.plotService.plotArraySource
-        ]).subscribe(() => {
+        ]).pipe(
+            filter(triggerVars => !triggerVars.some(isNullOrUndefined))
+        ).subscribe(() => {
             this.redrawPlot();
         });
 
