@@ -29,7 +29,8 @@ import {
 @Component({
     selector: 'app-accession-bar',
     templateUrl: './accession-bar.component.html',
-    styleUrls: ['./accession-bar.component.css']
+    styleUrls: ['./accession-bar.component.css'],
+    providers: [ TreeDrawService ]
 })
 export class AccessionBarComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
