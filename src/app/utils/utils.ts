@@ -38,7 +38,8 @@ export function clamp(x: number, min: number, max: number): number {
 }
 
 export function deepCopy(object: any): any {
-    return JSON.parse(JSON.stringify(object));
+    return isNullOrUndefined(object) ? object
+                                     : JSON.parse(JSON.stringify(object));
 }
 
 /**
