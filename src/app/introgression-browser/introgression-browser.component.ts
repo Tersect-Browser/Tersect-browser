@@ -42,7 +42,7 @@ import {
         './introgression-browser.component.css',
         './introgression-browser.widgets.css'
     ],
-    providers: [ PlotStateService, PlotZoomService ]
+    providers: [ PlotZoomService ]
 })
 export class IntrogressionBrowserComponent implements OnInit {
     static readonly DEFAULT_BINSIZE = 50000;
