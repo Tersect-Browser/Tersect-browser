@@ -421,9 +421,8 @@ export class IntrogressionPlotService implements OnDestroy {
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
-            filter(([refDist, treeOutput]) => {
-                return this.binsMatchTree(refDist, treeOutput);
-            })
+            filter(([refDist, treeOutput]) => this.binsMatchTree(refDist,
+                                                                 treeOutput))
         );
     }
 
