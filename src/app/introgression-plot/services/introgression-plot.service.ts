@@ -353,7 +353,7 @@ export class IntrogressionPlotService implements OnDestroy {
             this.plotState.datasetId$,
             this.plotState.chromosome$
         ]).pipe(
-            filter(([datasetId, chrom]) => ![datasetId, chrom].some(isNullOrUndefined)),
+            filter(inputs => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom]) => this.tersectBackendService
