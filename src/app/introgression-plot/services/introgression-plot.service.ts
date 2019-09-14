@@ -390,7 +390,7 @@ export class IntrogressionPlotService implements OnDestroy {
                 }
             ),
             filter(this.validateInputs),
-            filter(this.treeUpdateRequired),
+            filter(this.isTreeUpdateRequired),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([ds, chrom, interval, accessions]) =>
@@ -477,21 +477,11 @@ export class IntrogressionPlotService implements OnDestroy {
         this.stopLoading();
     }
 
-    private readonly startLoading = () => {
-        if (this.plotLoadMessage === '') {
-            this.plotLoadMessage = IntrogressionPlotService.DEFAULT_LOAD_MESSAGE;
-        }
-    }
-
-    private readonly stopLoading = () => {
-        this.plotLoadMessage = '';
-    }
-
     /**
      * Check if a new phenetic tree needs to be retrieved due to either no
      * tree being stored or the query changing.
      */
-    private readonly treeUpdateRequired = () => {
+    private readonly isTreeUpdateRequired = () => {
         if (isNullOrUndefined(this.phenTree.tree)
             || isNullOrUndefined(this.phenTree.query)) {
             return true;
@@ -502,6 +492,16 @@ export class IntrogressionPlotService implements OnDestroy {
             accessions: this.plotState.accessions
         };
         return !deepEqual(this.phenTree.query, currentQuery);
+    }
+
+    private readonly startLoading = () => {
+        if (this.plotLoadMessage === '') {
+            this.plotLoadMessage = IntrogressionPlotService.DEFAULT_LOAD_MESSAGE;
+        }
+    }
+
+    private readonly stopLoading = () => {
+        this.plotLoadMessage = '';
     }
 
     private readonly validateInputs = () => {
