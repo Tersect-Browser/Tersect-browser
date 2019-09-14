@@ -353,11 +353,12 @@ export class IntrogressionPlotService implements OnDestroy {
             this.plotState.datasetId$,
             this.plotState.chromosome$
         ]).pipe(
-            filter(([ds, chrom]) => ![ds, chrom].some(isNullOrUndefined)),
+            filter(([datasetId, chrom]) => ![datasetId, chrom].some(isNullOrUndefined)),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
-            switchMap(([ds, chrom]) => this.tersectBackendService
-                                           .getGapIndex(ds, chrom.name))
+            switchMap(([datasetId, chrom]) => this.tersectBackendService
+                                                  .getGapIndex(datasetId,
+                                                               chrom.name))
         );
     }
 
@@ -389,9 +390,10 @@ export class IntrogressionPlotService implements OnDestroy {
             filter(this.isTreeUpdateRequired),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
-            switchMap(([ds, chrom, interval, accessions]) =>
+            switchMap(([datasetId, chrom, interval, accessions]) =>
                 this.tersectBackendService
-                    .getPheneticTree(ds, chrom.name, interval[0], interval[1],
+                    .getPheneticTree(datasetId, chrom.name,
+                                     interval[0], interval[1],
                                      accessions).pipe(
                     tap((treeOutput: PheneticTree) => {
                         if (treeOutput.status !== 'ready') {
@@ -438,9 +440,9 @@ export class IntrogressionPlotService implements OnDestroy {
             filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
-            switchMap(([ds, ref, chrom, interval, binsize, accs]) =>
+            switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
                 this.tersectBackendService
-                    .getRefDistanceBins(ds, ref, chrom.name,
+                    .getRefDistanceBins(datasetId, ref, chrom.name,
                                         interval[0], interval[1], binsize, accs)
             )
         );
