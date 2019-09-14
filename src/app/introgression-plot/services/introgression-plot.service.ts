@@ -384,11 +384,7 @@ export class IntrogressionPlotService implements OnDestroy {
             accessions$,
             this.plotState.binsize$
         ]).pipe(
-            filter(([ds, chrom, interval, accessions, binsize]) => {
-                    return ![ds, chrom, interval,
-                             accessions, binsize].some(isNullOrUndefined);
-                }
-            ),
+            filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(this.validateInputs),
             filter(this.isTreeUpdateRequired),
             tap(this.startLoading),
@@ -438,10 +434,7 @@ export class IntrogressionPlotService implements OnDestroy {
             this.plotState.binsize$,
             accessions$
         ]).pipe(
-            filter(([ds, ref, chrom, interval, binsize, accs]) =>
-                ![ds, ref, chrom, interval,
-                  binsize, accs].some(isNullOrUndefined)
-            ),
+            filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(this.validateInputs),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
