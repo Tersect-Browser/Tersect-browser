@@ -264,10 +264,10 @@ export class IntrogressionPlotService implements OnDestroy {
         const binStart = ceilTo(startPos - interval[0],
                                 this.plotState.binsize)
                          / this.plotState.binsize;
-        // NOTE: bin_end index is exclusive while gap.end position is inclusive
+        // NOTE: binEnd index is exclusive while gap.end position is inclusive
         const binEnd = floorTo(endPos - interval[0] + 1,
                                 this.plotState.binsize)
-                        / this.plotState.binsize;
+                       / this.plotState.binsize;
         for (let accessionIndex = 0;
                  accessionIndex < rowNum;
                  accessionIndex++) {
