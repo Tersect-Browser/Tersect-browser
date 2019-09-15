@@ -13,6 +13,7 @@ import {
     filter,
     first,
     retryWhen,
+    shareReplay,
     switchMap,
     tap
 } from 'rxjs/operators';
@@ -349,7 +350,8 @@ export class IntrogressionPlotService implements OnDestroy {
                 } else {
                     return true;
                 }
-            })
+            }),
+            shareReplay(1)
         );
     }
 
