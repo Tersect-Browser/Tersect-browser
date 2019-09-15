@@ -342,9 +342,14 @@ export class IntrogressionPlotService implements OnDestroy {
     private getAccessions$(): Observable<string[]> {
         return this.plotState.accessions$.pipe(
             filter(accessions => !isNullOrUndefined(accessions)),
-            filter(this.validateInputs),
-            tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME)
+            filter(accessions => {
+                if (accessions.length < 2) {
+                    this.errorMessage = 'At least two accessions must be selected';
+                    return false;
+                } else {
+                    return true;
+                }
+            })
         );
     }
 
@@ -499,11 +504,6 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     private readonly validateInputs = () => {
-        if (!isNullOrUndefined(this.plotState.accessions)
-            && this.plotState.accessions.length < 2) {
-            this.errorMessage = 'At least two accessions must be selected';
-            return false;
-        }
         const interval = this.plotState.interval;
         if (isNullOrUndefined(interval)
             || isNaN(parseInt(interval[0].toString(), 10))
