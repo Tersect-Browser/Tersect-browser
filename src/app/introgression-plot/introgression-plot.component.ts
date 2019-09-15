@@ -65,10 +65,6 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotService: IntrogressionPlotService) { }
 
-    get errorMessage() {
-        return this.plotService.errorMessage;
-    }
-
     get plotLoadMessage() {
         return this.plotService.plotLoadMessage;
     }
@@ -89,6 +85,14 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         this.binRedraw = this.plotService.highlightSource.subscribe(() => {
             this.binPlot.draw();
         });
+    }
+
+    getErrors(): string {
+        return Array.from(this.plotService.errorMessages).join('\n');
+    }
+
+    hasErrors(): boolean {
+        return this.plotService.errorMessages.size > 0;
     }
 
     ngOnDestroy() {

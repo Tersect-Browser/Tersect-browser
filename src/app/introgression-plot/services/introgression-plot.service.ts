@@ -13,7 +13,6 @@ import {
     filter,
     first,
     retryWhen,
-    shareReplay,
     switchMap,
     tap
 } from 'rxjs/operators';
@@ -28,6 +27,9 @@ import {
 import {
     parseNewick
 } from '../../clustering/newick-parser';
+import {
+    Chromosome
+} from '../../models/Chromosome';
 import {
     Position
 } from '../../models/Plot';
@@ -54,6 +56,7 @@ import {
     PlotStateService
 } from './plot-state.service';
 
+
 export interface GUIMargins {
     top: number;
     right: number;
@@ -65,6 +68,9 @@ export interface GUIMargins {
 export class IntrogressionPlotService implements OnDestroy {
     static readonly DEBOUNCE_TIME = 700;
     static readonly DEFAULT_LOAD_MESSAGE = 'Loading...';
+
+    static readonly ERROR_MESSAGE_ACCESSIONS = 'At least two accessions must be selected';
+    static readonly ERROR_MESSAGE_BINSIZE = 'Bin size must be smaller than the selected interval';
 
     // R, G, B, A color
     static readonly GAP_COLOR = [240, 180, 180, 255];
@@ -87,7 +93,7 @@ export class IntrogressionPlotService implements OnDestroy {
      * Error message string. When not an empty string, error message overlay is
      * displayed.
      */
-    errorMessage = '';
+    errorMessages: Set<string> = new Set();
 
     guiMargins: GUIMargins = {
         top: IntrogressionPlotService.GUI_SCALE_BAR_SIZE,
@@ -138,9 +144,8 @@ export class IntrogressionPlotService implements OnDestroy {
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly tersectBackendService: TersectBackendService) {
-        const accessions$ = this.getAccessions$();
-        const refDistanceBins$ = this.getRefDistanceBins$(accessions$);
-        const phenTree$ = this.getPhenTree$(accessions$);
+        const refDistanceBins$ = this.getRefDistanceBins$();
+        const phenTree$ = this.getPhenTree$();
         const gaps$ = this.getGaps$();
 
         this.plotData$ = this.getPlotData$(refDistanceBins$, phenTree$, gaps$);
@@ -340,21 +345,6 @@ export class IntrogressionPlotService implements OnDestroy {
         this.plotArraySource.next(plotArray);
     }
 
-    private getAccessions$(): Observable<string[]> {
-        return this.plotState.accessions$.pipe(
-            filter(accessions => !isNullOrUndefined(accessions)),
-            filter(accessions => {
-                if (accessions.length < 2) {
-                    this.errorMessage = 'At least two accessions must be selected';
-                    return false;
-                } else {
-                    return true;
-                }
-            }),
-            shareReplay(1)
-        );
-    }
-
     private getGaps$(): Observable<SequenceInterval[]> {
         return combineLatest([
             this.plotState.datasetId$,
@@ -384,16 +374,15 @@ export class IntrogressionPlotService implements OnDestroy {
         return binMaxDistances;
     }
 
-    private getPhenTree$(accessions$: Observable<string[]>): Observable<PheneticTree> {
+    private getPhenTree$(): Observable<PheneticTree> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.chromosome$,
             this.plotState.interval$,
-            accessions$,
-            this.plotState.binsize$
+            this.plotState.accessions$
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
-            filter(this.validateInputs),
+            filter(inputs => this.validateTreeInputs(...inputs)),
             filter(this.isTreeUpdateRequired),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
@@ -433,17 +422,17 @@ export class IntrogressionPlotService implements OnDestroy {
         );
     }
 
-    private getRefDistanceBins$(accessions$: Observable<string[]>): Observable<any> {
+    private getRefDistanceBins$(): Observable<any> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.reference$,
             this.plotState.chromosome$,
             this.plotState.interval$,
             this.plotState.binsize$,
-            accessions$
+            this.plotState.accessions$
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
-            filter(this.validateInputs),
+            filter(inputs => this.validateBinInputs(...inputs)),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
@@ -456,6 +445,51 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private resetPosition() {
         this.plotPositionSource.next({ x: 0, y: 0 });
+    }
+
+    private validateAccessions(accessions: string[]): boolean {
+        if (accessions.length < 2) {
+            this.errorMessages
+                .add(IntrogressionPlotService.ERROR_MESSAGE_ACCESSIONS);
+            return false;
+        } else {
+            this.errorMessages
+                .delete(IntrogressionPlotService.ERROR_MESSAGE_ACCESSIONS);
+            return true;
+        }
+    }
+
+    private validateBinInputs(datasetId: string,
+                              reference: string,
+                              chromosome: Chromosome,
+                              interval: number[],
+                              binsize: number,
+                              accessions: string[]): boolean {
+        const valAccessions = this.validateAccessions(accessions);
+        const valBinsize = this.validateBinsize(binsize, interval);
+        return valAccessions && valBinsize;
+    }
+
+    private validateBinsize(binsize: number, interval: number[]) {
+        if (isNullOrUndefined(interval)
+            || isNaN(parseInt(interval[0].toString(), 10))
+            || isNaN(parseInt(interval[1].toString(), 10))
+            || interval[1] - interval[0] < binsize) {
+            this.errorMessages
+                .add(IntrogressionPlotService.ERROR_MESSAGE_BINSIZE);
+            return false;
+        } else {
+            this.errorMessages
+                .delete(IntrogressionPlotService.ERROR_MESSAGE_BINSIZE);
+            return true;
+        }
+    }
+
+    private validateTreeInputs(datasetId: string,
+                               chromosome: Chromosome,
+                               interval: number[],
+                               accessions: string[]): boolean {
+        return this.validateAccessions(accessions);
     }
 
     private readonly generatePlot = ([refDist, treeOutput, gaps]) => {
@@ -503,18 +537,5 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private readonly stopLoading = () => {
         this.plotLoadMessage = '';
-    }
-
-    private readonly validateInputs = () => {
-        const interval = this.plotState.interval;
-        if (isNullOrUndefined(interval)
-            || isNaN(parseInt(interval[0].toString(), 10))
-            || isNaN(parseInt(interval[1].toString(), 10))
-            || interval[1] - interval[0] < this.plotState.binsize) {
-            this.errorMessage = 'Invalid interval';
-            return false;
-        }
-        this.errorMessage = '';
-        return true;
     }
 }
