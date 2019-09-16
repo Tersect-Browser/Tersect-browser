@@ -21,9 +21,6 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
-    ContainerSize
-} from '../introgression-plot.component';
-import {
     BinDrawService
 } from '../services/bin-draw.service';
 import {
@@ -32,6 +29,9 @@ import {
 import {
     PlotStateService
 } from '../services/plot-state.service';
+import {
+    ContainerSize
+} from '../tersect-distance-plot.component';
 
 @Component({
     selector: 'app-bin-plot',

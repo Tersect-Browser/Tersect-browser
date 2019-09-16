@@ -13,9 +13,6 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
-    ContainerSize
-} from '../introgression-plot.component';
-import {
     AccessionTreeView
 } from '../services/accession-tree-view';
 import {
@@ -27,6 +24,9 @@ import {
 import {
     TreeDrawService
 } from '../services/tree-draw.service';
+import {
+    ContainerSize
+} from '../tersect-distance-plot.component';
 
 @Component({
     selector: 'app-tree-plot',

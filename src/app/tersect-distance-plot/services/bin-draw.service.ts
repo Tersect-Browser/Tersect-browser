@@ -6,7 +6,7 @@ import { DistanceBinQuery } from '../../models/DistanceBins';
 import { SequenceInterval } from '../../models/SequenceInterval';
 import { ceilTo, deepCopy, floorTo } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
-import { ContainerSize } from '../introgression-plot.component';
+import { ContainerSize } from '../tersect-distance-plot.component';
 import { PlotCreatorService } from './plot-creator.service';
 import { PlotStateService } from './plot-state.service';
 

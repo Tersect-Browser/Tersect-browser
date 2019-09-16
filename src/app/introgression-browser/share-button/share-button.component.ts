@@ -4,11 +4,11 @@ import { Component } from '@angular/core';
 import { join } from 'path';
 
 import {
-    PlotStateService
-} from '../../introgression-plot/services/plot-state.service';
-import {
     TersectBackendService
 } from '../../services/tersect-backend.service';
+import {
+    PlotStateService
+} from '../../tersect-distance-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-share-button',

@@ -12,7 +12,7 @@ import {
 } from '../../utils/utils';
 import {
     ContainerSize
-} from '../introgression-plot.component';
+} from '../tersect-distance-plot.component';
 import {
     AccessionTreeView
 } from './accession-tree-view';

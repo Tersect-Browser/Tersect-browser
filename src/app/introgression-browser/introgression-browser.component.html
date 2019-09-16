@@ -57,13 +57,13 @@
 </p-sidebar>
 
 <div #plotContainer class="plot-container">
-    <app-introgression-plot
+    <app-tersect-distance-plot
         (plotMouseClick)="plotClick($event)"
         (plotMouseHover)="tooltip.show($event)"
         (plotMouseMove)="tooltip.hide()"
         (wheel)="scrollWheel($event)"
         (mouseleave)="tooltip.hide()">
-    </app-introgression-plot>
+    </app-tersect-distance-plot>
 </div>
 
 <app-plot-click-menu appFitWindow

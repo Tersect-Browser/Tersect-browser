@@ -6,12 +6,6 @@ import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import {
-    PlotStateService
-} from '../introgression-plot/services/plot-state.service';
-import {
-    PlotZoomService
-} from '../introgression-plot/services/plot-zoom.service';
-import {
     Chromosome
 } from '../models/Chromosome';
 import {
@@ -23,6 +17,12 @@ import {
 import {
     TersectBackendService
 } from '../services/tersect-backend.service';
+import {
+    PlotStateService
+} from '../tersect-distance-plot/services/plot-state.service';
+import {
+    PlotZoomService
+} from '../tersect-distance-plot/services/plot-zoom.service';
 import {
     TooltipComponent
 } from '../tooltip/tooltip.component';

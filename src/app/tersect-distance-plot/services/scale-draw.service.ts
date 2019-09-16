@@ -8,7 +8,7 @@ import {
 } from '../../utils/utils';
 import {
     ContainerSize
-} from '../introgression-plot.component';
+} from '../tersect-distance-plot.component';
 import {
     PlotCreatorService
 } from './plot-creator.service';

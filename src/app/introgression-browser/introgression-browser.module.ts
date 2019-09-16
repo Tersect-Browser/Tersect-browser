@@ -20,11 +20,11 @@ import {
     FitWindowModule
 } from '../directives/fit-window/fit-window.module';
 import {
-    IntrogressionPlotModule
-} from '../introgression-plot/introgression-plot.module';
-import {
     PlotClickMenuModule
 } from '../plot-click-menu/plot-click-menu.module';
+import {
+    IntrogressionPlotModule
+} from '../tersect-distance-plot/tersect-distance-plot.module';
 import {
     TooltipModule
 } from '../tooltip/tooltip.module';

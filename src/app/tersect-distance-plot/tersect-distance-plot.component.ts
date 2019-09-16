@@ -41,12 +41,12 @@ export interface ContainerSize {
 }
 
 @Component({
-    selector: 'app-introgression-plot',
-    templateUrl: './introgression-plot.component.html',
-    styleUrls: ['./introgression-plot.component.css'],
+    selector: 'app-tersect-distance-plot',
+    templateUrl: './tersect-distance-plot.component.html',
+    styleUrls: ['./tersect-distance-plot.component.css'],
     providers: [ PlotCreatorService ]
 })
-export class IntrogressionPlotComponent implements OnInit, OnDestroy {
+export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     @ViewChild(BinPlotComponent, { static: true })
     readonly binPlot: BinPlotComponent;
 

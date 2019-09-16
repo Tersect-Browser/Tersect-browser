@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 
 import {
     PlotStateService
-} from '../../introgression-plot/services/plot-state.service';
+} from '../../tersect-distance-plot/services/plot-state.service';
 import {
     clamp, isNullOrUndefined
 } from '../../utils/utils';

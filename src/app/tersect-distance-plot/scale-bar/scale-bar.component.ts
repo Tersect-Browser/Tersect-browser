@@ -15,9 +15,6 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
-    ContainerSize
-} from '../introgression-plot.component';
-import {
     PlotCreatorService
 } from '../services/plot-creator.service';
 import {
@@ -26,6 +23,9 @@ import {
 import {
     ScaleDrawService
 } from '../services/scale-draw.service';
+import {
+    ContainerSize
+} from '../tersect-distance-plot.component';
 
 @Component({
     selector: 'app-scale-bar',

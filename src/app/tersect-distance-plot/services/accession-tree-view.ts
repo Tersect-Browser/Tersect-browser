@@ -14,7 +14,7 @@ import {
 } from '../../utils/utils';
 import {
     ContainerSize
-} from '../introgression-plot.component';
+} from '../tersect-distance-plot.component';
 
 export interface TreeViewSettings {
     accessionDictionary: AccessionDictionary;

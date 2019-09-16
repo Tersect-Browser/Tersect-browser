@@ -3,11 +3,11 @@ import { Component, Input } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
-    PlotStateService
-} from '../../introgression-plot/services/plot-state.service';
-import {
     Chromosome
 } from '../../models/Chromosome';
+import {
+    PlotStateService
+} from '../../tersect-distance-plot/services/plot-state.service';
 import {
     formatPosition,
     isNullOrUndefined
