@@ -354,8 +354,8 @@ export class IntrogressionPlotService implements OnDestroy {
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom]) => this.tersectBackendService
-                                                  .getGapIndex(datasetId,
-                                                               chrom.name))
+                                                  .getChromosomeGaps(datasetId,
+                                                                     chrom.name))
         );
     }
 

@@ -95,8 +95,8 @@ export class TersectBackendService {
      * @param datasetId dataset being used
      * @param chromosome chromosome of interest
      */
-    getGapIndex(datasetId: string,
-                chromosome: string): Observable<SequenceInterval[]> {
+    getChromosomeGaps(datasetId: string,
+                      chromosome: string): Observable<SequenceInterval[]> {
         const query = `${this.apiUrl}/query/${datasetId}/gaps/${chromosome}`;
         return this.http.get<SequenceInterval[]>(query);
     }
