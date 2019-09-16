@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+
+import { Subscription } from 'rxjs';
 
 import {
     PlotStateService
@@ -7,7 +9,7 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    isNullOrUndefined
+    clamp, isNullOrUndefined
 } from '../../utils/utils';
 
 @Component({
@@ -15,13 +17,13 @@ import {
     templateUrl: './interval-selector.component.html',
     styleUrls: ['./interval-selector.component.css']
 })
-export class IntervalSelectorComponent {
+export class IntervalSelectorComponent implements OnInit, OnDestroy {
     static readonly TYPING_DELAY = 750;
 
-    private _intervalEnd = 0;
-    private _intervalStart = 0;
+    interval = [1, 1];
 
     private intervalInputTimeout: NodeJS.Timer;
+    private intervalUpdate: Subscription;
 
     constructor(private readonly plotState: PlotStateService) { }
 
@@ -29,34 +31,39 @@ export class IntervalSelectorComponent {
         return this.plotState.chromosome;
     }
 
-    set interval(interval: number[]) {
-        this.intervalStart = interval[0];
-        this.intervalEnd = interval[1];
-    }
-    get interval(): number[] {
-        return this.plotState.interval;
-    }
-
     set intervalEnd(pos: number) {
-        this._intervalEnd = this.processInputPosition(pos);
+        const endPos = this.processInputPosition(pos);
+        this.interval = [
+            this.interval[0],
+            clamp(endPos, this.interval[0], this.chromosome.size)
+        ];
     }
     get intervalEnd(): number {
-        if (!isNullOrUndefined(this.plotState.interval)) {
-            return this.plotState.interval[1];
-        } else {
-            return undefined;
-        }
+        return this.interval[1];
     }
 
     set intervalStart(pos: number) {
-        this._intervalStart = this.processInputPosition(pos);
+        const startPos = this.processInputPosition(pos);
+        this.interval = [
+            clamp(startPos, 1, this.interval[1]),
+            this.interval[1]
+        ];
     }
     get intervalStart(): number {
-        if (!isNullOrUndefined(this.plotState.interval)) {
-            return this.plotState.interval[0];
-        } else {
-            return undefined;
-        }
+        return this.interval[0];
+    }
+
+    ngOnInit() {
+        this.intervalUpdate = this.plotState.interval$.subscribe(interval => {
+            if (!isNullOrUndefined(interval)) {
+                this.intervalStart = interval[0];
+                this.intervalEnd = interval[1];
+            }
+        });
+    }
+
+    ngOnDestroy() {
+        this.intervalUpdate.unsubscribe();
     }
 
     intervalSliderChange($event: { event: Event, values: number[] }) {
@@ -76,7 +83,7 @@ export class IntervalSelectorComponent {
     }
 
     updateInterval() {
-        this.plotState.interval = [this._intervalStart, this._intervalEnd];
+        this.plotState.interval = [...this.interval];
     }
 
     private processInputPosition(pos: number): number {
