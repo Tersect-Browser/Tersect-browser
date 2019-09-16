@@ -44,7 +44,6 @@ import {
     templateUrl: './introgression-plot.component.html',
     styleUrls: ['./introgression-plot.component.css']
 })
-
 export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @ViewChild(BinPlotComponent, { static: true })
     readonly binPlot: BinPlotComponent;

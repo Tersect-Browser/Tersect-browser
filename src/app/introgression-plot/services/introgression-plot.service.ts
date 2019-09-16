@@ -435,7 +435,8 @@ export class IntrogressionPlotService implements OnDestroy {
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
                 this.tersectBackendService
                     .getDistanceBins(datasetId, ref, chrom.name,
-                                        interval[0], interval[1], binsize, accs)
+                                     interval[0], interval[1],
+                                     binsize, accs)
             )
         );
     }
