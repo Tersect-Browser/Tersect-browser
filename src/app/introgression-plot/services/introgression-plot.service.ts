@@ -49,7 +49,6 @@ import {
 import {
     ceilTo,
     floorTo,
-    formatRegion,
     isNullOrUndefined,
     sameElements
 } from '../../utils/utils';
