@@ -146,7 +146,7 @@ export class TreeDrawService {
             ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
 
-            // Vertical line (from center of first to center of second subtrees)
+            // Vertical line (from center of first to center of second subtree)
             ctx.moveTo(basePosX, subtreePosY[0]);
             ctx.lineTo(basePosX, subtreePosY[subtreePosY.length - 1]);
 
