@@ -7,13 +7,9 @@ import {
     Output,
     ViewChild
 } from '@angular/core';
-import {
-    combineLatest,
-    Subscription
-} from 'rxjs';
-import {
-    filter
-} from 'rxjs/operators';
+
+import { combineLatest, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import {
     PlotMouseClickEvent,
@@ -65,7 +61,6 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @Output() plotMouseMove = new EventEmitter<PlotMouseMoveEvent>();
 
     private fullRedraw: Subscription;
-    private binRedraw: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotService: IntrogressionPlotService) { }
@@ -86,15 +81,10 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         ).subscribe(() => {
             this.redrawPlot();
         });
-
-        this.binRedraw = this.plotService.highlightSource.subscribe(() => {
-            this.binPlot.updateHighlight();
-        });
     }
 
     ngOnDestroy() {
         this.fullRedraw.unsubscribe();
-        this.binRedraw.unsubscribe();
     }
 
     getErrors(): string {

@@ -1,4 +1,12 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from '@angular/core';
+
+import { Subscription } from 'rxjs';
 
 import {
     PlotArea,
@@ -31,7 +39,8 @@ import {
     styleUrls: ['./bin-plot.component.css'],
     providers: [ BinDrawService ]
 })
-export class BinPlotComponent extends CanvasPlotElement {
+export class BinPlotComponent extends CanvasPlotElement
+                              implements OnInit, OnDestroy  {
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
@@ -42,6 +51,7 @@ export class BinPlotComponent extends CanvasPlotElement {
      * Drag start position in terms of the accession / bin index.
      */
     private dragStartIndices = { x: 0, y: 0 };
+    private highlightUpdate: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotService: IntrogressionPlotService,
@@ -53,33 +63,21 @@ export class BinPlotComponent extends CanvasPlotElement {
         return this.plotService.guiMargins;
     }
 
+    ngOnInit() {
+        this.highlightUpdate = this.plotService
+                                   .highlightSource.subscribe(() => {
+            this.updateHighlight();
+        });
+    }
+
+    ngOnDestroy() {
+        this.highlightUpdate.unsubscribe();
+    }
+
     draw() {
         this.binDrawService.drawBins(this.canvas.nativeElement,
                                      this.getContainerSize());
         this.updateHighlight();
-    }
-
-    updateHighlight() {
-        if (isNullOrUndefined(this.plotService.highlight)) {
-            this.highlight.nativeElement.style.visibility = 'hidden';
-        } else {
-            const bpPerPixel = this.plotState.binsize
-                               / this.plotService.zoomFactor;
-            const plotOffset = this.plotService.guiMargins.left
-                               + this.plotService.plotPosition.x;
-
-            const leftPos = (this.plotService.highlight.start
-                             - this.plotState.interval[0]) / bpPerPixel
-                            + plotOffset * this.plotService.binWidth;
-
-            const width = (this.plotService.highlight.end
-                           - this.plotService.highlight.start + 1)
-                          / bpPerPixel;
-
-            this.highlight.nativeElement.style.left = `${leftPos}px`;
-            this.highlight.nativeElement.style.width = `${width}px`;
-            this.highlight.nativeElement.style.visibility = 'visible';
-        }
     }
 
     protected dragAction(dragState: DragState): void {
@@ -164,5 +162,28 @@ export class BinPlotComponent extends CanvasPlotElement {
                               .parentElement
                               .offsetWidth
         };
+    }
+
+    private updateHighlight() {
+        if (isNullOrUndefined(this.plotService.highlight)) {
+            this.highlight.nativeElement.style.visibility = 'hidden';
+        } else {
+            const bpPerPixel = this.plotState.binsize
+                               / this.plotService.zoomFactor;
+            const plotOffset = this.plotService.guiMargins.left
+                               + this.plotService.plotPosition.x;
+
+            const leftPos = (this.plotService.highlight.start
+                             - this.plotState.interval[0]) / bpPerPixel
+                            + plotOffset * this.plotService.binWidth;
+
+            const width = (this.plotService.highlight.end
+                           - this.plotService.highlight.start + 1)
+                          / bpPerPixel;
+
+            this.highlight.nativeElement.style.left = `${leftPos}px`;
+            this.highlight.nativeElement.style.width = `${width}px`;
+            this.highlight.nativeElement.style.visibility = 'visible';
+        }
     }
 }
