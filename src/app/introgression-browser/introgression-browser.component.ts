@@ -5,14 +5,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { IntrogressionPlotService } from '../introgression-plot/services/introgression-plot.service';
 import {
     PlotStateService
 } from '../introgression-plot/services/plot-state.service';
 import {
     PlotZoomService
 } from '../introgression-plot/services/plot-zoom.service';
-import { TreeDrawService } from '../introgression-plot/services/tree-draw.service';
 import {
     Chromosome
 } from '../models/Chromosome';
