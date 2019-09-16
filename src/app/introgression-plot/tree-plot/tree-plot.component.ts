@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 
 import {
     PlotAccession,
@@ -111,26 +111,18 @@ export class TreePlotComponent extends CanvasPlotElement {
         return result;
     }
 
-    private getContainerHeight(): number {
-        return this.canvas.nativeElement
-                          .parentElement
-                          .parentElement
-                          .parentElement
-                          .offsetHeight - this.guiMargins.top;
-    }
-
     private getContainerSize(): ContainerSize {
         return {
-            height: this.getContainerHeight(),
-            width: this.getContainerWidth()
+            height: this.canvas.nativeElement
+                               .parentElement
+                               .parentElement
+                               .parentElement
+                               .offsetHeight - this.guiMargins.top,
+            width: this.canvas.nativeElement
+                              .parentElement
+                              .parentElement
+                              .parentElement
+                              .offsetWidth
         };
-    }
-
-    private getContainerWidth(): number {
-        return this.canvas.nativeElement
-                          .parentElement
-                          .parentElement
-                          .parentElement
-                          .offsetWidth;
     }
 }
