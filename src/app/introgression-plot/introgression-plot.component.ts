@@ -88,7 +88,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         });
 
         this.binRedraw = this.plotService.highlightSource.subscribe(() => {
-            this.binPlot.draw();
+            this.binPlot.updateHighlight();
         });
     }
 

@@ -60,6 +60,29 @@ export class BinPlotComponent extends CanvasPlotElement {
         this.updateHighlight();
     }
 
+    updateHighlight() {
+        if (isNullOrUndefined(this.plotService.highlight)) {
+            this.highlight.nativeElement.style.visibility = 'hidden';
+        } else {
+            const bpPerPixel = this.plotState.binsize
+                               / this.plotService.zoomFactor;
+            const plotOffset = this.plotService.guiMargins.left
+                               + this.plotService.plotPosition.x;
+
+            const leftPos = (this.plotService.highlight.start
+                             - this.plotState.interval[0]) / bpPerPixel
+                            + plotOffset * this.plotService.binWidth;
+
+            const width = (this.plotService.highlight.end
+                           - this.plotService.highlight.start + 1)
+                          / bpPerPixel;
+
+            this.highlight.nativeElement.style.left = `${leftPos}px`;
+            this.highlight.nativeElement.style.width = `${width}px`;
+            this.highlight.nativeElement.style.visibility = 'visible';
+        }
+    }
+
     protected dragAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         const newPos: Position = {
@@ -142,28 +165,5 @@ export class BinPlotComponent extends CanvasPlotElement {
                               .parentElement
                               .offsetWidth
         };
-    }
-
-    private updateHighlight() {
-        if (isNullOrUndefined(this.plotService.highlight)) {
-            this.highlight.nativeElement.style.visibility = 'hidden';
-        } else {
-            const bpPerPixel = this.plotState.binsize
-                               / this.plotService.zoomFactor;
-            const plotOffset = this.plotService.guiMargins.left
-                               + this.plotService.plotPosition.x;
-
-            const leftPos = (this.plotService.highlight.start
-                             - this.plotState.interval[0]) / bpPerPixel
-                            + plotOffset * this.plotService.binWidth;
-
-            const width = (this.plotService.highlight.end
-                           - this.plotService.highlight.start + 1)
-                          / bpPerPixel;
-
-            this.highlight.nativeElement.style.left = `${leftPos}px`;
-            this.highlight.nativeElement.style.width = `${width}px`;
-            this.highlight.nativeElement.style.visibility = 'visible';
-        }
     }
 }
