@@ -7,10 +7,7 @@ import {
     Position
 } from '../../models/Plot';
 import {
-    ceilTo,
     extractTags,
-    findClosest,
-    formatPosition,
     isNullOrUndefined
 } from '../../utils/utils';
 import {
@@ -18,48 +15,31 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
+    ContainerSize
+} from '../introgression-plot.component';
+import {
     PlotCreatorService
 } from '../services/plot-creator.service';
 import {
     PlotStateService
 } from '../services/plot-state.service';
-
-interface ScaleTick {
-    position: number;
-    type: 'major' | 'minor';
-    useLabel: boolean;
-    unit?: 'Mbp' | 'kbp';
-}
+import {
+    ScaleDrawService
+} from '../services/scale-draw.service';
 
 @Component({
     selector: 'app-scale-bar',
     templateUrl: './scale-bar.component.html',
-    styleUrls: ['./scale-bar.component.css']
+    styleUrls: ['./scale-bar.component.css'],
+    providers: [ ScaleDrawService ]
 })
 export class ScaleBarComponent extends CanvasPlotElement {
-    static readonly GUI_SCALE_COLOR = '#327e04';
-    static readonly GUI_SCALE_FONT = 'Arial';
-    static readonly GUI_SCALE_FONT_SIZE = 13;
-    static readonly GUI_SCALE_TICK_BP_DISTANCES = [
-        2500, 5000, 10000,
-        25000, 50000, 100000,
-        250000, 500000, 1000000,
-        2500000, 5000000, 10000000
-    ];
-
-    /**
-     * Optimal large tick distance in pixels. Ticks will be drawn as close to
-     * this distance as possible using one of the GUI_SCALE_TICK_BP_DISTANCES.
-     */
-    static readonly GUI_TICK_DISTANCE = 120;
-
-    static readonly GUI_TICK_LENGTH = 6;
-
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService,
+                private readonly scaleDrawService: ScaleDrawService,
                 private readonly renderer: Renderer2) {
         super();
         this.hoverState.hoverDelay = 0;
@@ -71,69 +51,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        const canvasWidth = this.canvas.nativeElement
-                                        .parentElement
-                                        .parentElement
-                                        .parentElement
-                                        .offsetWidth;
-        const canvasHeight = this.canvas.nativeElement.offsetHeight;
-        this.canvas.nativeElement.width = canvasWidth;
-        this.canvas.nativeElement.height = canvasHeight;
-        const ctx: CanvasRenderingContext2D = this.canvas
-                                                  .nativeElement
-                                                  .getContext('2d');
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-        // Correct for canvas positioning (no scale over label column)
-        // and canvas pixel positioning (offset by 0.5 by default)
-        const effectiveWidth = canvasWidth - this.plotCreator.accessionBarWidth;
-        ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
-
-        ctx.strokeStyle = ScaleBarComponent.GUI_SCALE_COLOR;
-        ctx.lineWidth = 1;
-
-        ctx.textBaseline = 'top';
-        ctx.textAlign = 'center';
-        ctx.font = `${ScaleBarComponent.GUI_SCALE_FONT_SIZE}px ${ScaleBarComponent.GUI_SCALE_FONT}`;
-
-        const interval = this.plotState.interval;
-        const bpPerPixel = this.plotState.binsize
-                           / this.plotCreator.zoomFactor;
-        const tickBpDistance = findClosest(ScaleBarComponent.GUI_TICK_DISTANCE
-                                           * bpPerPixel,
-                                           ScaleBarComponent.GUI_SCALE_TICK_BP_DISTANCES);
-        const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
-
-        const startX = (this.plotState.plotPosition.x * this.plotState.binsize)
-                       / bpPerPixel;
-        const endX = (this.plotState.plotPosition.x * this.plotState.binsize
-                      + interval[1] - interval[0]) / bpPerPixel;
-
-        // Baseline
-        ctx.beginPath();
-        ctx.moveTo(startX, canvasHeight - 1);
-        ctx.lineTo(endX, canvasHeight - 1);
-        ctx.stroke();
-
-        // Start / end ticks
-        this.drawScaleTick(ctx, {
-            position: interval[0],
-            type: 'major',
-            useLabel: false
-        });
-        this.drawScaleTick(ctx, {
-            position: interval[1],
-            type: 'major',
-            useLabel: false
-        });
-
-        this.drawMajorTicks(ctx, tickBpDistance, unit);
-        this.drawMinorTicks(ctx, tickBpDistance / 5);
-
-        // Hide scale over labels
-        ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
-                      this.plotCreator.accessionBarWidth,
-                      canvasHeight);
+        this.scaleDrawService.drawScale(this.canvas.nativeElement,
+                                        this.getContainerSize());
     }
 
     protected dragAction(dragState: DragState): void {
@@ -253,68 +172,14 @@ export class ScaleBarComponent extends CanvasPlotElement {
         }
     }
 
-    private drawMajorTicks(ctx: CanvasRenderingContext2D,
-                           tickBpDistance: number,
-                           unit: 'Mbp' | 'kbp') {
-        const tick: ScaleTick = {
-            position: undefined,
-            type: 'major',
-            useLabel: true,
-            unit: unit
+    private getContainerSize(): ContainerSize {
+        return {
+            height: this.canvas.nativeElement
+                               .parentElement
+                               .parentElement
+                               .parentElement
+                               .offsetWidth,
+            width: this.canvas.nativeElement.offsetHeight
         };
-        this.drawTicks(ctx, tickBpDistance, tick);
-    }
-
-    private drawMinorTicks(ctx: CanvasRenderingContext2D,
-                           tickBpDistance: number) {
-        const tick: ScaleTick = {
-            position: undefined,
-            type: 'minor',
-            useLabel: false
-        };
-        this.drawTicks(ctx, tickBpDistance, tick);
-    }
-
-    private drawScaleTick(ctx: CanvasRenderingContext2D,
-                          tick: ScaleTick) {
-        const canvasHeight = this.canvas.nativeElement.offsetHeight;
-        const bpPerPixel = this.plotState.binsize / this.plotCreator.zoomFactor;
-        const tickX = (this.plotState.plotPosition.x * this.plotState.binsize
-                       + tick.position - this.plotState.interval[0])
-                      / bpPerPixel;
-        const tickSize = tick.type === 'major' ? ScaleBarComponent.GUI_TICK_LENGTH
-                                               : ScaleBarComponent.GUI_TICK_LENGTH / 2;
-        ctx.beginPath();
-        ctx.moveTo(tickX, canvasHeight - 1);
-        ctx.lineTo(tickX, canvasHeight - tickSize - 1);
-        ctx.stroke();
-        if (tick.useLabel) {
-            const label = formatPosition(tick.position, tick.unit);
-            let labelX = tickX;
-
-            // Shifting first label if it does not fit in the viewing area
-            const halfLabelWidth = ctx.measureText(label).width / 2;
-            const labelOverflow = tickX - halfLabelWidth;
-            if (labelOverflow < 0) {
-                if (-labelOverflow > halfLabelWidth) {
-                    labelX += halfLabelWidth;
-                } else {
-                    labelX -= labelOverflow;
-                }
-            }
-            ctx.fillText(label, labelX, 2);
-        }
-    }
-
-    private drawTicks(ctx: CanvasRenderingContext2D,
-                      tickBpDistance: number,
-                      genericTick: ScaleTick) {
-        for (let pos = ceilTo(this.plotState.interval[0] - 1,
-                              tickBpDistance);
-                 pos < this.plotState.interval[1];
-                 pos += tickBpDistance) {
-            genericTick.position = pos;
-            this.drawScaleTick(ctx, genericTick);
-        }
     }
 }
