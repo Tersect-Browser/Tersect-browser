@@ -115,11 +115,11 @@ export class TersectBackendService {
         return this.http.get<DatasetPublic[]>(query);
     }
 
-    exportSettings(settings: BrowserSettings): Observable<number> {
+    exportSettings(settings: BrowserSettings): Observable<string> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
         const query = `${this.apiUrl}/views/export`;
-        return this.http.post<number>(query, settings, httpOptions);
+        return this.http.post<string>(query, settings, httpOptions);
     }
 }

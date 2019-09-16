@@ -42,8 +42,7 @@ export class ShareButtonComponent {
         this.tersectBackendService.exportSettings(this.plotState.settings)
                                   .subscribe(id => {
             const host = this.platformLocation['location'].origin;
-            this.shareLink = join(host, 'TersectBrowser', 'share',
-                                  id.toString());
+            this.shareLink = join(host, 'TersectBrowser', 'share', id);
         });
     }
 }
