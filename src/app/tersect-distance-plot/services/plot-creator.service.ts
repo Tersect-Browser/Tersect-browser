@@ -35,14 +35,11 @@ import {
     DistanceBins
 } from '../../models/DistanceBins';
 import {
-    Position
-} from '../../models/Plot';
+    PheneticTree
+} from '../../models/PheneticTree';
 import {
     SequenceInterval
 } from '../../models/SequenceInterval';
-import {
-    TreeQuery
-} from '../../models/TreeQuery';
 import {
     TersectBackendService
 } from '../../services/tersect-backend.service';
@@ -115,10 +112,7 @@ export class PlotCreatorService implements OnDestroy {
     /**
      * Phenetic tree built for the selected accessions (specified in query).
      */
-    pheneticTree: {
-        query: TreeQuery
-        tree: TreeNode
-    } = { query: null, tree: null };
+    pheneticTree: PheneticTree = { query: null, root: null };
 
     /**
      * Plot load status. When not an empty string, spinner overlay is displayed
@@ -397,10 +391,10 @@ export class PlotCreatorService implements OnDestroy {
             // Tree updated
             this.pheneticTree = {
                 query: tree.query,
-                tree: parseNewick(tree.tree, true)
+                root: parseNewick(tree.tree, true)
             };
             this.plotState
-                .orderedAccessions = treeToOrderedList(this.pheneticTree.tree);
+                .orderedAccessions = treeToOrderedList(this.pheneticTree.root);
             // Technically the gaps are not expected to change
             this.sequenceGaps = gaps;
             this.plotState.resetPosition();

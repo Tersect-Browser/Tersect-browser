@@ -2,7 +2,7 @@ import * as deepEqual from 'fast-deep-equal';
 
 import {
     TreeQuery
-} from '../../models/TreeQuery';
+} from '../../models/PheneticTree';
 import {
     AccessionDictionary,
     AccessionDisplayStyle

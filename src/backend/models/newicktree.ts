@@ -4,7 +4,7 @@
 
 import { Document, model, Schema } from 'mongoose';
 
-import { TreeQuery } from '../../app/models/TreeQuery';
+import { TreeQuery } from '../../app/models/PheneticTree';
 
 export interface NewickTree extends Document {
     datasetId: string;

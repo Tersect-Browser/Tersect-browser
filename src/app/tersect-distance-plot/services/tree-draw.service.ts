@@ -112,7 +112,7 @@ export class TreeDrawService {
         const scale = this.getTreeScale(ctx, treeView);
 
         const initialPosX = TreeDrawService.TREE_LEFT_MARGIN;
-        this._drawLabelTree(this.plotCreator.pheneticTree.tree, initialPosX,
+        this._drawLabelTree(this.plotCreator.pheneticTree.root, initialPosX,
                             ctx, textHeight, treeView.canvasOffsetY,
                             scale, drawState);
     }
@@ -257,10 +257,10 @@ export class TreeDrawService {
                                - TreeDrawService.TREE_LEFT_MARGIN;
         if (this.plotState.accessionStyle === 'tree_simple') {
             return availableWidth / getTreeDepth(this.plotCreator
-                                                     .pheneticTree.tree);
+                                                     .pheneticTree.root);
         } else if (this.plotState.accessionStyle === 'tree_linear') {
             return availableWidth / getTreeDepthLinear(this.plotCreator
-                                                           .pheneticTree.tree);
+                                                           .pheneticTree.root);
         } else {
             // Should not happen
             return 0;

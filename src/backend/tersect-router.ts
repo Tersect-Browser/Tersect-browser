@@ -16,7 +16,7 @@ import { fileSync } from 'tmp';
 import { promisify } from 'util';
 
 import { DistanceBinQuery, DistanceBins } from '../app/models/DistanceBins';
-import { TreeDatabaseQuery, TreeQuery } from '../app/models/TreeQuery';
+import { TreeDatabaseQuery, TreeQuery } from '../app/models/PheneticTree';
 import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
 
 import { ChromosomeIndex } from './models/chromosomeindex';

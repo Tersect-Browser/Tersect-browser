@@ -8,8 +8,8 @@ import { NewickTree } from '../../backend/models/newicktree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { Chromosome } from '../models/Chromosome';
 import { DistanceBinQuery, DistanceBins } from '../models/DistanceBins';
+import { TreeQuery } from '../models/PheneticTree';
 import { SequenceInterval } from '../models/SequenceInterval';
-import { TreeQuery } from '../models/TreeQuery';
 import { BrowserSettings } from '../tersect-browser/browser-settings';
 import { isNullOrUndefined } from '../utils/utils';
 

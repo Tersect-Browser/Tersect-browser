@@ -1,3 +1,5 @@
+import { TreeNode } from '../clustering/clustering';
+
 export interface TreeQuery {
     chromosomeName: string;
     interval: number[];
@@ -12,4 +14,9 @@ export interface TreeDatabaseQuery {
     'query.chromosomeName': string;
     'query.interval': number[];
     'query.accessions': string[];
+}
+
+export interface PheneticTree {
+    query: TreeQuery;
+    root: TreeNode;
 }
