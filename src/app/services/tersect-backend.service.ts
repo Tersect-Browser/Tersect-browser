@@ -8,7 +8,7 @@ import { PheneticTree } from '../../backend/models/phenetictree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { Chromosome } from '../models/Chromosome';
-import { DistanceBinQuery } from '../models/DistanceBinQuery';
+import { DistanceBins, DistanceBinQuery } from '../models/DistanceBins';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { TreeQuery } from '../models/TreeQuery';
 import { isNullOrUndefined } from '../utils/utils';
@@ -37,7 +37,7 @@ export class TersectBackendService {
      */
     getDistanceBins(datasetId: string, reference: string,
                     chromosome: string, start: number, end: number,
-                    binsize: number, accessions: string[]): Observable<any[]> {
+                    binsize: number, accessions: string[]): Observable<DistanceBins> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -49,7 +49,7 @@ export class TersectBackendService {
             binsize: binsize,
             accessions: accessions
         };
-        return this.http.post<any>(query, distBinQuery, httpOptions);
+        return this.http.post<DistanceBins>(query, distBinQuery, httpOptions);
     }
 
     /**

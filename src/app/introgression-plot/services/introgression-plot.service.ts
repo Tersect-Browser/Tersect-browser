@@ -32,6 +32,9 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
+    DistanceBins
+} from '../../models/DistanceBins';
+import {
     Position
 } from '../../models/Plot';
 import {
@@ -63,6 +66,8 @@ export interface GUIMargins {
     bottom: number;
     left: number;
 }
+
+type PlotData = [DistanceBins, PheneticTree, SequenceInterval[]];
 
 @Injectable()
 export class IntrogressionPlotService implements OnDestroy {
@@ -134,7 +139,7 @@ export class IntrogressionPlotService implements OnDestroy {
      */
     private distanceBins = {};
 
-    private readonly plotData$: Observable<any[]>;
+    private readonly plotData$: Observable<PlotData>;
     private plotDataSub: Subscription;
 
     /**
@@ -300,20 +305,18 @@ export class IntrogressionPlotService implements OnDestroy {
      * Verify if reference distance bins match the tree in terms of chromosome
      * region and included accessions used.
      */
-    private binsMatchTree(distBins: any, tree: PheneticTree): boolean {
+    private binsMatchTree(distBins: DistanceBins, tree: PheneticTree): boolean {
         const treeRegion = formatRegion(tree.query.chromosome_name,
                                         tree.query.interval[0],
                                         tree.query.interval[1]);
-        const regionMatch = distBins['region'] === treeRegion
-                            && (distBins['region'].split(':')[0]
+        const regionMatch = distBins.region === treeRegion
+                            && (distBins.region.split(':')[0]
                                 === this.plotState.chromosome.name)
-                            && distBins['reference']
-                               === this.plotState.reference;
+                            && distBins.reference === this.plotState.reference;
         if (!regionMatch) {
             return false;
         }
-        return sameElements(Object.keys(distBins['bins']),
-                            tree.query.accessions);
+        return sameElements(Object.keys(distBins.bins), tree.query.accessions);
     }
 
     private generatePlotArray() {
@@ -405,9 +408,9 @@ export class IntrogressionPlotService implements OnDestroy {
         );
     }
 
-    private getPlotData$(distanceBins$: Observable<any>,
+    private getPlotData$(distanceBins$: Observable<DistanceBins>,
                          pheneticTree$: Observable<PheneticTree>,
-                         gaps$: Observable<SequenceInterval[]>): Observable<any[]> {
+                         gaps$: Observable<SequenceInterval[]>): Observable<PlotData> {
         return combineLatest([
             distanceBins$,
             pheneticTree$,
@@ -419,7 +422,7 @@ export class IntrogressionPlotService implements OnDestroy {
         );
     }
 
-    private getDistanceBins$(): Observable<any> {
+    private getDistanceBins$(): Observable<DistanceBins> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.reference$,
@@ -490,8 +493,8 @@ export class IntrogressionPlotService implements OnDestroy {
         return this.validateAccessions(accessions);
     }
 
-    private readonly generatePlot = ([distBins, tree, gaps]) => {
-        this.distanceBins = distBins['bins'];
+    private readonly generatePlot = ([distBins, tree, gaps]: PlotData) => {
+        this.distanceBins = distBins.bins;
         if (!deepEqual(this.pheneticTree.query, tree.query)) {
             // Tree updated
             this.pheneticTree = {

@@ -15,7 +15,7 @@ import {
 import { fileSync } from 'tmp';
 import { promisify } from 'util';
 
-import { DistanceBinQuery } from '../app/models/DistanceBinQuery';
+import { DistanceBins, DistanceBinQuery } from '../app/models/DistanceBins';
 import { TreeDatabaseQuery, TreeQuery } from '../app/models/TreeQuery';
 import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
 
@@ -145,7 +145,7 @@ router.route('/query/:dataset_id/dist')
         const tersectCommand = `tersect dist -j ${tsi_location} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
-        const output = {
+        const output: DistanceBins = {
             reference: reference,
             region: region,
             bins: {}
@@ -159,10 +159,10 @@ router.route('/query/:dataset_id/dist')
             } else {
                 const tersectOutput = JSON.parse(stdout);
                 const accessions = tersectOutput['columns'];
-                accessions.forEach(accessionName => {
+                accessions.forEach((accessionName: string) => {
                     output.bins[accessionName] = [];
                 });
-                tersectOutput['matrix'].forEach(binMatrix => {
+                tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
                     binMatrix[0].forEach((dist: number, i: number) => {
                         output.bins[accessions[i]].push(dist);
                     });
