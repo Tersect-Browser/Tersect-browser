@@ -267,12 +267,10 @@ export class IntrogressionPlotService implements OnDestroy {
         const interval = this.plotState.interval;
         const startPos = gap.start > interval[0] ? gap.start : interval[0];
         const endPos = gap.end < interval[1] ? gap.end : interval[1];
-        const binStart = ceilTo(startPos - interval[0],
-                                this.plotState.binsize)
+        const binStart = ceilTo(startPos - interval[0], this.plotState.binsize)
                          / this.plotState.binsize;
         // NOTE: binEnd index is exclusive while gap.end position is inclusive
-        const binEnd = floorTo(endPos - interval[0] + 1,
-                                this.plotState.binsize)
+        const binEnd = floorTo(endPos - interval[0] + 1, this.plotState.binsize)
                        / this.plotState.binsize;
         for (let accessionIndex = 0;
                  accessionIndex < rowNum;
@@ -308,7 +306,7 @@ export class IntrogressionPlotService implements OnDestroy {
                                         tree.query.interval[1]);
         const regionMatch = distBins['region'] === treeRegion
                             && (distBins['region'].split(':')[0]
-                               === this.plotState.chromosome.name)
+                                === this.plotState.chromosome.name)
                             && distBins['reference']
                                === this.plotState.reference;
         if (!regionMatch) {
