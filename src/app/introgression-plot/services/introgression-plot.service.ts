@@ -94,8 +94,7 @@ export class IntrogressionPlotService implements OnDestroy {
     aspectRatio = 1 / 2;
 
     /**
-     * Error message string. When not an empty string, error message overlay is
-     * displayed.
+     * Set of currently active error messages.
      */
     errorMessages: Set<string> = new Set();
 
