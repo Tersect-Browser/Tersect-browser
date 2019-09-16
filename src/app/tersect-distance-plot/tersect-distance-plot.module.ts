@@ -27,4 +27,4 @@ import { TreePlotComponent } from './tree-plot/tree-plot.component';
         TersectBackendService
     ]
 })
-export class IntrogressionPlotModule { }
+export class TersectBrowser { }

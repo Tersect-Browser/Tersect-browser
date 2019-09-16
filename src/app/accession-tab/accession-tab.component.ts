@@ -18,7 +18,7 @@ import { Table } from 'primeng/table';
 import {
     AccessionGroup,
     AccessionInfo
-} from '../introgression-browser/browser-settings';
+} from '../tersect-browser/browser-settings';
 import {
     TGRCGeneImporterComponent
 } from '../tgrc-gene-importer/tgrc-gene-importer.component';

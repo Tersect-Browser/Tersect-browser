@@ -2,6 +2,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import {
+    Chromosome
+} from '../../models/Chromosome';
+import {
+    Position
+} from '../../models/Plot';
+import {
     AccessionDictionary,
     AccessionDisplayStyle,
     AccessionGroup,
@@ -9,13 +15,7 @@ import {
     BrowserSettings,
     extractAccessionColors,
     extractAccessionLabels
-} from '../../introgression-browser/browser-settings';
-import {
-    Chromosome
-} from '../../models/Chromosome';
-import {
-    Position
-} from '../../models/Plot';
+} from '../../tersect-browser/browser-settings';
 import {
     deepCopy,
     isNullOrUndefined,
@@ -27,7 +27,7 @@ export class PlotStateService {
     settings$: Observable<BrowserSettings>;
 
     /**
-     * Identifier of the dataset open in the introgression plot.
+     * Identifier of the dataset open in the distance plot.
      */
     datasetId$: Observable<string>;
 

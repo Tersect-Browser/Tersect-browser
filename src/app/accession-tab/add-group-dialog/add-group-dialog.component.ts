@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
 
-import { AccessionGroup } from '../../introgression-browser/browser-settings';
+import { AccessionGroup } from '../../tersect-browser/browser-settings';
 import { isNullOrUndefined } from '../../utils/utils';
 
 @Component({

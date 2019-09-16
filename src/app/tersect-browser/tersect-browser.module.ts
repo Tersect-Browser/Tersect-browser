@@ -23,7 +23,7 @@ import {
     PlotClickMenuModule
 } from '../plot-click-menu/plot-click-menu.module';
 import {
-    IntrogressionPlotModule
+    TersectBrowser
 } from '../tersect-distance-plot/tersect-distance-plot.module';
 import {
     TooltipModule
@@ -36,24 +36,24 @@ import {
     BinsizeSelectorComponent
 } from './binsize-selector/binsize-selector.component';
 import {
-ChromosomeSelectorComponent
+    ChromosomeSelectorComponent
 } from './chromosome-selector/chromosome-selector.component';
 import {
     IntervalSelectorComponent
 } from './interval-selector/interval-selector.component';
-import {
-    IntrogressionBrowserComponent
-} from './introgression-browser.component';
 import {
     ReferenceSelectorComponent
 } from './reference-selector/reference-selector.component';
 import {
     ShareButtonComponent
 } from './share-button/share-button.component';
+import {
+    TersectBrowserComponent
+} from './tersect-browser.component';
 
 @NgModule({
     declarations: [
-        IntrogressionBrowserComponent,
+        TersectBrowserComponent,
         AccessionStyleSelectorComponent,
         ReferenceSelectorComponent,
         ChromosomeSelectorComponent,
@@ -62,7 +62,7 @@ import {
         ShareButtonComponent
     ],
     exports: [
-        IntrogressionBrowserComponent
+        TersectBrowserComponent
     ],
     imports: [
         CommonModule,
@@ -77,11 +77,11 @@ import {
         ToggleButtonModule,
         OverlayPanelModule,
         RadioButtonModule,
-        IntrogressionPlotModule,
+        TersectBrowser,
         PlotClickMenuModule,
         TooltipModule,
         AccessionTabModule,
         FitWindowModule
     ]
 })
-export class IntrogressionBrowserModule { }
+export class TersectBrowserModule { }

@@ -8,8 +8,8 @@ import {
     IntroPageModule
 } from './intro-page/intro-page.module';
 import {
-    IntrogressionBrowserModule
-} from './introgression-browser/introgression-browser.module';
+    TersectBrowserModule
+} from './tersect-browser/tersect-browser.module';
 
 import {
     AppComponent
@@ -18,13 +18,13 @@ import {
     IntroPageComponent
 } from './intro-page/intro-page.component';
 import {
-    IntrogressionBrowserComponent
-} from './introgression-browser/introgression-browser.component';
+    TersectBrowserComponent
+} from './tersect-browser/tersect-browser.component';
 
 import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
 
 const appRoutes: Routes = [
-    { path: 'share/:exportid', component: IntrogressionBrowserComponent },
+    { path: 'share/:exportid', component: TersectBrowserComponent },
     { path: '', component: IntroPageComponent, pathMatch: 'full' },
     { path: '**', redirectTo: '' }
 ];
@@ -38,7 +38,7 @@ const appRoutes: Routes = [
         HttpClientModule,
         BrowserModule,
         IntroPageModule,
-        IntrogressionBrowserModule,
+        TersectBrowserModule,
         RouterModule.forRoot(appRoutes)
     ],
     providers: [

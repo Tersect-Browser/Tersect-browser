@@ -1,12 +1,12 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
-    AccessionDictionary,
-    AccessionDisplayStyle
-} from '../../introgression-browser/browser-settings';
-import {
     TreeQuery
 } from '../../models/TreeQuery';
+import {
+    AccessionDictionary,
+    AccessionDisplayStyle
+} from '../../tersect-browser/browser-settings';
 import {
     ceilTo,
     deepCopy,

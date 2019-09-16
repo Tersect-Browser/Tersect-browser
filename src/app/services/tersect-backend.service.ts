@@ -6,11 +6,11 @@ import { Observable, of } from 'rxjs';
 import { DatasetPublic } from '../../backend/models/dataset';
 import { PheneticTree } from '../../backend/models/phenetictree';
 import { APP_CONFIG, AppConfig } from '../app.config';
-import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { Chromosome } from '../models/Chromosome';
 import { DistanceBinQuery, DistanceBins } from '../models/DistanceBins';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { TreeQuery } from '../models/TreeQuery';
+import { BrowserSettings } from '../tersect-browser/browser-settings';
 import { isNullOrUndefined } from '../utils/utils';
 
 @Injectable()

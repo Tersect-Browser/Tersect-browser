@@ -13,7 +13,7 @@ import {
 } from '../../color-selector/color-selector.component';
 import {
     AccessionGroup
-} from '../../introgression-browser/browser-settings';
+} from '../../tersect-browser/browser-settings';
 import {
     isNullOrUndefined
 } from '../../utils/utils';
