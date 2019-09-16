@@ -10,8 +10,10 @@ import {
     isNullOrUndefined
 } from '../../utils/utils';
 import {
-    AccessionTreeView,
     ContainerSize
+} from '../introgression-plot.component';
+import {
+    AccessionTreeView
 } from './accession-tree-view';
 import {
     IntrogressionPlotService

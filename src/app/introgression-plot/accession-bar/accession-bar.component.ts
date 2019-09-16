@@ -13,8 +13,10 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
-    AccessionTreeView,
     ContainerSize
+} from '../introgression-plot.component';
+import {
+    AccessionTreeView
 } from '../services/accession-tree-view';
 import {
     IntrogressionPlotService

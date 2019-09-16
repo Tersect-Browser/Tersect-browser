@@ -39,6 +39,11 @@ import {
     PlotStateService
 } from './services/plot-state.service';
 
+export interface ContainerSize {
+    height: number;
+    width: number;
+}
+
 @Component({
     selector: 'app-introgression-plot',
     templateUrl: './introgression-plot.component.html',

@@ -13,6 +13,12 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
+    ContainerSize
+} from '../introgression-plot.component';
+import {
+    BinDrawService
+} from '../services/bin-draw.service';
+import {
     IntrogressionPlotService
 } from '../services/introgression-plot.service';
 import {
@@ -22,7 +28,8 @@ import {
 @Component({
     selector: 'app-bin-plot',
     templateUrl: './bin-plot.component.html',
-    styleUrls: ['./bin-plot.component.css']
+    styleUrls: ['./bin-plot.component.css'],
+    providers: [ BinDrawService ]
 })
 export class BinPlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
@@ -37,7 +44,8 @@ export class BinPlotComponent extends CanvasPlotElement {
     private dragStartIndices = { x: 0, y: 0 };
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService) {
+                private readonly plotService: IntrogressionPlotService,
+                private readonly binDrawService: BinDrawService) {
         super();
     }
 
@@ -46,32 +54,9 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotService.plotImageArray)) { return; }
-
-        this.canvas.nativeElement
-                   .style.width = `${this.plotState.zoomLevel}%`;
-        this.canvas.nativeElement
-                   .style.height = `${this.plotState.zoomLevel
-                                      / this.plotService.aspectRatio}%`;
-
-        this.canvas.nativeElement.width = this.canvas.nativeElement
-                                                     .parentElement
-                                                     .parentElement
-                                                     .parentElement
-                                                     .offsetWidth;
-        this.canvas.nativeElement.height = this.canvas.nativeElement
-                                                      .parentElement
-                                                      .parentElement
-                                                      .parentElement
-                                                      .offsetHeight;
-
-        const ctx: CanvasRenderingContext2D = this.canvas.nativeElement
-                                                         .getContext('2d');
-        ctx.clearRect(0, 0, this.canvas.nativeElement.width,
-                      this.canvas.nativeElement.height);
-        ctx.putImageData(this.extractVisibleImage(),
-                         this.plotService.guiMargins.left,
-                         0);
+        if (isNullOrUndefined(this.plotState.orderedAccessions)) { return; }
+        this.binDrawService.drawBins(this.canvas.nativeElement,
+                                     this.getContainerSize());
         this.updateHighlight();
     }
 
@@ -144,35 +129,19 @@ export class BinPlotComponent extends CanvasPlotElement {
         return result;
     }
 
-    private extractVisibleImage(): ImageData {
-        const fullArray = this.plotService.plotImageArray;
-        const pos = this.plotService.plotPosition;
-        const colNum = this.plotService.colNum;
-
-        let visibleCols = Math.ceil(this.canvas.nativeElement.width
-                                    / this.plotService.binWidth)
-                          - this.plotService.guiMargins.left;
-        if (visibleCols > colNum + pos.x) {
-            // More visible area than available columns
-            visibleCols = colNum + pos.x;
-            if (visibleCols < 1) {
-                visibleCols = 1;
-            }
-        }
-
-        const visibleRows = Math.ceil(this.canvas.nativeElement.height
-                                      / this.plotService.binHeight);
-
-        const visibleArray = new Uint8ClampedArray(4 * visibleRows
-                                                   * visibleCols);
-
-        for (let i = 0; i < visibleRows; i++) {
-            const rowStart = 4 * (colNum * (i - pos.y) - pos.x);
-            visibleArray.set(fullArray.slice(rowStart,
-                                             rowStart + 4 * visibleCols),
-                             4 * i * visibleCols);
-        }
-        return new ImageData(visibleArray, visibleCols, visibleRows);
+    private getContainerSize(): ContainerSize {
+        return {
+            height: this.canvas.nativeElement
+                               .parentElement
+                               .parentElement
+                               .parentElement
+                               .offsetHeight,
+            width: this.canvas.nativeElement
+                              .parentElement
+                              .parentElement
+                              .parentElement
+                              .offsetWidth
+        };
     }
 
     private updateHighlight() {

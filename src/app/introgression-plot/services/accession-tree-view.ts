@@ -12,16 +12,14 @@ import {
     deepCopy,
     isNullOrUndefined
 } from '../../utils/utils';
+import {
+    ContainerSize
+} from '../introgression-plot.component';
 
 export interface TreeViewSettings {
     accessionDictionary: AccessionDictionary;
     accessionStyle: AccessionDisplayStyle;
     treeQuery: TreeQuery;
-}
-
-export interface ContainerSize {
-    height: number;
-    width: number;
 }
 
 export class AccessionTreeView {
