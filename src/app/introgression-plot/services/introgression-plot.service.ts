@@ -10,6 +10,7 @@ import {
 import {
     debounceTime,
     delay,
+    distinctUntilChanged,
     filter,
     first,
     retryWhen,
@@ -55,7 +56,6 @@ import {
 import {
     PlotStateService
 } from './plot-state.service';
-
 
 export interface GUIMargins {
     top: number;
@@ -383,7 +383,7 @@ export class IntrogressionPlotService implements OnDestroy {
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(inputs => this.validateTreeInputs(...inputs)),
-            filter(this.isTreeUpdateRequired),
+            distinctUntilChanged(deepEqual),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom, interval, accessions]) =>
@@ -433,6 +433,7 @@ export class IntrogressionPlotService implements OnDestroy {
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(inputs => this.validateBinInputs(...inputs)),
+            distinctUntilChanged(deepEqual),
             tap(this.startLoading),
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
@@ -510,23 +511,6 @@ export class IntrogressionPlotService implements OnDestroy {
             this.generatePlotArray();
         }
         this.stopLoading();
-    }
-
-    /**
-     * Check if a new phenetic tree needs to be retrieved due to either no
-     * tree being stored or the query changing.
-     */
-    private readonly isTreeUpdateRequired = () => {
-        if (isNullOrUndefined(this.phenTree.tree)
-            || isNullOrUndefined(this.phenTree.query)) {
-            return true;
-        }
-        const currentQuery: TreeQuery = {
-            chromosome_name: this.plotState.chromosome.name,
-            interval: this.plotState.interval,
-            accessions: this.plotState.accessions
-        };
-        return !deepEqual(this.phenTree.query, currentQuery);
     }
 
     private readonly startLoading = () => {
