@@ -110,7 +110,7 @@ export class IntrogressionPlotService implements OnDestroy {
     /**
      * Phenetic tree built for the selected accessions (specified in query).
      */
-    phenTree: {
+    pheneticTree: {
         query: TreeQuery
         tree: TreeNode
     } = { query: null, tree: null };
@@ -145,10 +145,10 @@ export class IntrogressionPlotService implements OnDestroy {
     constructor(private readonly plotState: PlotStateService,
                 private readonly tersectBackendService: TersectBackendService) {
         const distanceBins$ = this.getDistanceBins$();
-        const phenTree$ = this.getPhenTree$();
+        const pheneticTree$ = this.getPheneticTree$();
         const gaps$ = this.getGaps$();
 
-        this.plotData$ = this.getPlotData$(distanceBins$, phenTree$, gaps$);
+        this.plotData$ = this.getPlotData$(distanceBins$, pheneticTree$, gaps$);
 
         this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
@@ -374,7 +374,7 @@ export class IntrogressionPlotService implements OnDestroy {
         return binMaxDistances;
     }
 
-    private getPhenTree$(): Observable<PheneticTree> {
+    private getPheneticTree$(): Observable<PheneticTree> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.chromosome$,
@@ -408,11 +408,11 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     private getPlotData$(distanceBins$: Observable<any>,
-                         phenTree$: Observable<PheneticTree>,
+                         pheneticTree$: Observable<PheneticTree>,
                          gaps$: Observable<SequenceInterval[]>): Observable<any[]> {
         return combineLatest([
             distanceBins$,
-            phenTree$,
+            pheneticTree$,
             gaps$
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
@@ -494,14 +494,14 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private readonly generatePlot = ([distBins, tree, gaps]) => {
         this.distanceBins = distBins['bins'];
-        if (!deepEqual(this.phenTree.query, tree.query)) {
+        if (!deepEqual(this.pheneticTree.query, tree.query)) {
             // Tree updated
-            this.phenTree = {
+            this.pheneticTree = {
                 query: tree.query,
                 tree: parseNewick(tree.tree_newick, true)
             };
             this.plotState
-                .sortedAccessions = treeToSortedList(this.phenTree.tree);
+                .sortedAccessions = treeToSortedList(this.pheneticTree.tree);
             this.sequenceGaps = gaps;
             this.generatePlotArray();
             this.resetPosition();

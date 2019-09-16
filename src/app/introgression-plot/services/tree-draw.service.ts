@@ -53,7 +53,7 @@ export class TreeDrawService {
                                                   : zoomLevel;
         return new AccessionTreeView(this.plotState.accessionDictionary,
                                      this.plotState.accessionStyle,
-                                     this.plotService.phenTree.query,
+                                     this.plotService.pheneticTree.query,
                                      this.plotService.offsetY,
                                      containerSize, zoom,
                                      this.plotService.binHeight);
@@ -65,7 +65,7 @@ export class TreeDrawService {
                                                   : zoomLevel;
         treeView.update(this.plotState.accessionDictionary,
                         this.plotState.accessionStyle,
-                        this.plotService.phenTree.query,
+                        this.plotService.pheneticTree.query,
                         this.plotService.offsetY,
                         containerSize,
                         zoom);
@@ -109,7 +109,7 @@ export class TreeDrawService {
         const scale = this.getTreeScale(ctx, treeView);
 
         const initialPosX = TreeDrawService.TREE_LEFT_MARGIN;
-        this._drawLabelTree(this.plotService.phenTree.tree, initialPosX, ctx,
+        this._drawLabelTree(this.plotService.pheneticTree.tree, initialPosX, ctx,
                             this.plotService.accessionBarWidth,
                             textHeight, treeView.canvasOffsetY,
                             scale, drawState);
@@ -241,10 +241,10 @@ export class TreeDrawService {
                                - TreeDrawService.TREE_LEFT_MARGIN;
         if (this.plotState.accessionStyle === 'tree_simple') {
             return availableWidth / getTreeDepth(this.plotService
-                                                     .phenTree.tree);
+                                                     .pheneticTree.tree);
         } else if (this.plotState.accessionStyle === 'tree_linear') {
             return availableWidth / getTreeDepthLinear(this.plotService
-                                                           .phenTree.tree);
+                                                           .pheneticTree.tree);
         } else {
             // Should not happen
             return 0;
