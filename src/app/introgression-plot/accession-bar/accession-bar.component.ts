@@ -56,7 +56,6 @@ export class AccessionBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotState.orderedAccessions)) { return; }
         if (isNullOrUndefined(this.storedTreeView)) {
             this.storedTreeView = this.treeDrawService
                                       .createTreeView(this.getContainerSize());
