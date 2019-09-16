@@ -48,13 +48,9 @@ import {
 } from '../../services/tersect-backend.service';
 import {
     ceilTo,
-    floorTo,
     isNullOrUndefined,
     sameElements
 } from '../../utils/utils';
-import {
-    GreyscalePalette
-} from '../DistancePalette';
 import {
     PlotStateService
 } from './plot-state.service';
@@ -94,6 +90,12 @@ export class PlotCreatorService implements OnDestroy {
     aspectRatio = 1 / 2;
 
     /**
+     * Genetic distance bins between reference and other accessions for
+     * currently viewed interval.
+     */
+    distanceBinsSource = new BehaviorSubject<DistanceBins>(undefined);
+
+    /**
      * Set of currently active error messages.
      */
     errorMessages: Set<string> = new Set();
@@ -118,8 +120,6 @@ export class PlotCreatorService implements OnDestroy {
         tree: TreeNode
     } = { query: null, tree: null };
 
-    plotImageArraySource = new BehaviorSubject<Uint8ClampedArray>(null);
-
     /**
      * Plot load status. When not an empty string, spinner overlay is displayed
      * (unless an error message is displayed, as those take priority).
@@ -132,18 +132,12 @@ export class PlotCreatorService implements OnDestroy {
     plotPositionSource = new BehaviorSubject<Position>({ x: 0, y: 0 });
 
     /**
-     * Genetic distance bins between reference and other accessions for
-     * currently viewed interval, fetched from tersect.
+     * List of sequence gaps in the current chromosome.
      */
-    private distanceBins = {};
+    sequenceGaps: SequenceInterval[];
 
     private readonly plotData$: Observable<PlotData>;
     private plotDataSub: Subscription;
-
-    /**
-     * List of sequence gaps in the current chromosome.
-     */
-    private sequenceGaps: SequenceInterval[];
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly tersectBackendService: TersectBackendService) {
@@ -175,7 +169,16 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     get colNum(): number {
-        return this.distanceBins[this.plotState.orderedAccessions[0]].length;
+        // The number of bins is the same for all accessions
+        const acc = this.plotState.orderedAccessions[0];
+        return this.distanceBins.bins[acc].length;
+    }
+
+    set distanceBins(distanceBins: DistanceBins) {
+        this.distanceBinsSource.next(distanceBins);
+    }
+    get distanceBins(): DistanceBins {
+        return this.distanceBinsSource.getValue();
     }
 
     set highlight(highlightInterval: SequenceInterval) {
@@ -197,10 +200,6 @@ export class PlotCreatorService implements OnDestroy {
      */
     get offsetY() {
         return ceilTo(this.plotPosition.y * this.binHeight, this.binHeight);
-    }
-
-    get plotImageArray() {
-        return this.plotImageArraySource.getValue();
     }
 
     get plotPosition() {
@@ -260,43 +259,18 @@ export class PlotCreatorService implements OnDestroy {
         return count;
     }
 
-    updatePosition(pos: Position) {
-        this.plotPositionSource.next(pos);
-    }
-
-    private addPlotGap(plotArray: Uint8ClampedArray, gap: SequenceInterval) {
-        const rowNum = this.rowNum;
-        const colNum = this.colNum;
-        const interval = this.plotState.interval;
-        const startPos = gap.start > interval[0] ? gap.start : interval[0];
-        const endPos = gap.end < interval[1] ? gap.end : interval[1];
-        const binStart = ceilTo(startPos - interval[0], this.plotState.binsize)
-                         / this.plotState.binsize;
-        // NOTE: binEnd index is exclusive while gap.end position is inclusive
-        const binEnd = floorTo(endPos - interval[0] + 1, this.plotState.binsize)
-                       / this.plotState.binsize;
-        for (let accessionIndex = 0;
-                 accessionIndex < rowNum;
-                 accessionIndex++) {
-            for (let binIndex = binStart; binIndex < binEnd; binIndex++) {
-                const pos = 4 * (binIndex + colNum * accessionIndex);
-                plotArray[pos] = PlotCreatorService.GAP_COLOR[0];
-                plotArray[pos + 1] = PlotCreatorService.GAP_COLOR[1];
-                plotArray[pos + 2] = PlotCreatorService.GAP_COLOR[2];
-                plotArray[pos + 3] = PlotCreatorService.GAP_COLOR[3];
-            }
+    startLoading() {
+        if (this.plotLoadMessage === '') {
+            this.plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;
         }
     }
 
-    /**
-     * Add gaps to existing plot array.
-     */
-    private addPlotGaps(plotArray: Uint8ClampedArray) {
-        this.sequenceGaps.forEach(gap => {
-            if (gap.size >= this.plotState.binsize) {
-                this.addPlotGap(plotArray, gap);
-            }
-        });
+    stopLoading() {
+        this.plotLoadMessage = '';
+    }
+
+    updatePosition(pos: Position) {
+        this.plotPositionSource.next(pos);
     }
 
     /**
@@ -313,60 +287,18 @@ export class PlotCreatorService implements OnDestroy {
                                tree.query.accessions);
     }
 
-    private generatePlotArray() {
-        const palette = new GreyscalePalette();
-        const accessionBins = this.plotState.orderedAccessions.map(
-            accession => this.distanceBins[accession]
-        );
-
-        const binMaxDistances = this.getMaxDistances(accessionBins);
-
-        const rowNum = this.rowNum;
-        const colNum = this.colNum;
-        const plotArray = new Uint8ClampedArray(4 * rowNum * colNum);
-
-        accessionBins.forEach((accessionBin, accessionIndex) => {
-            palette.distanceToColors(accessionBin, binMaxDistances)
-                   .forEach((color, binIndex) => {
-                const pos = 4 * (binIndex + colNum * accessionIndex);
-                plotArray[pos] = color.data[0];
-                plotArray[pos + 1] = color.data[1];
-                plotArray[pos + 2] = color.data[2];
-                plotArray[pos + 3] = color.data[3];
-            });
-        });
-
-        this.addPlotGaps(plotArray);
-        this.plotImageArraySource.next(plotArray);
-    }
-
     private getGaps$(): Observable<SequenceInterval[]> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.chromosome$
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
-            tap(this.startLoading),
+            tap(() => this.startLoading()),
             debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom]) => this.tersectBackendService
                                                   .getChromosomeGaps(datasetId,
                                                                      chrom.name))
         );
-    }
-
-    /**
-     * Get an array of maximum distances per bin for a given set of accessions.
-     */
-    private getMaxDistances(accessionBins: number[][]): number[] {
-        const binMaxDistances = new Array(accessionBins[0].length).fill(0);
-        accessionBins.forEach(accBin => {
-            accBin.forEach((dist, i) => {
-                if (dist > binMaxDistances[i]) {
-                    binMaxDistances[i] = dist;
-                }
-            });
-        });
-        return binMaxDistances;
     }
 
     private getPheneticTree$(): Observable<PheneticTree> {
@@ -379,7 +311,7 @@ export class PlotCreatorService implements OnDestroy {
             filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(inputs => this.validateTreeInputs(...inputs)),
             distinctUntilChanged(deepEqual),
-            tap(this.startLoading),
+            tap(() => this.startLoading()),
             debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom, interval, accessions]) =>
                 this.tersectBackendService
@@ -411,7 +343,7 @@ export class PlotCreatorService implements OnDestroy {
             gaps$
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
-            tap(this.startLoading),
+            tap(() => this.startLoading()),
             filter(([distBins, tree]) => this.binsMatchTree(distBins, tree))
         );
     }
@@ -428,7 +360,7 @@ export class PlotCreatorService implements OnDestroy {
             filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(inputs => this.validateBinInputs(...inputs)),
             distinctUntilChanged(deepEqual),
-            tap(this.startLoading),
+            tap(() => this.startLoading()),
             debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
                 this.tersectBackendService
@@ -489,7 +421,6 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     private readonly generatePlot = ([distBins, tree, gaps]: PlotData) => {
-        this.distanceBins = distBins.bins;
         if (!deepEqual(this.pheneticTree.query, tree.query)) {
             // Tree updated
             this.pheneticTree = {
@@ -498,23 +429,10 @@ export class PlotCreatorService implements OnDestroy {
             };
             this.plotState
                 .orderedAccessions = treeToOrderedList(this.pheneticTree.tree);
+            // Technically the gaps are not expected to change
             this.sequenceGaps = gaps;
-            this.generatePlotArray();
             this.resetPosition();
-        } else {
-            // Only distances to reference updated
-            this.generatePlotArray();
         }
-        this.stopLoading();
-    }
-
-    private readonly startLoading = () => {
-        if (this.plotLoadMessage === '') {
-            this.plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;
-        }
-    }
-
-    private readonly stopLoading = () => {
-        this.plotLoadMessage = '';
+        this.distanceBins = distBins;
     }
 }
