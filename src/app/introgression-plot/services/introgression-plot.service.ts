@@ -23,7 +23,7 @@ import {
 } from '../../../backend/models/phenetictree';
 import {
     TreeNode,
-    treeToSortedList
+    treeToOrderedList
 } from '../../clustering/clustering';
 import {
     parseNewick
@@ -172,7 +172,7 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     get colNum(): number {
-        return this.distanceBins[this.plotState.sortedAccessions[0]].length;
+        return this.distanceBins[this.plotState.orderedAccessions[0]].length;
     }
 
     set highlight(highlightInterval: SequenceInterval) {
@@ -205,7 +205,7 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     get rowNum(): number {
-        return this.plotState.sortedAccessions.length;
+        return this.plotState.orderedAccessions.length;
     }
 
     get zoomFactor(): number {
@@ -320,7 +320,7 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private generatePlotArray() {
         const palette = new GreyscalePalette();
-        const accessionBins = this.plotState.sortedAccessions.map(
+        const accessionBins = this.plotState.orderedAccessions.map(
             accession => this.distanceBins[accession]
         );
 
@@ -501,7 +501,7 @@ export class IntrogressionPlotService implements OnDestroy {
                 tree: parseNewick(tree.tree_newick, true)
             };
             this.plotState
-                .sortedAccessions = treeToSortedList(this.pheneticTree.tree);
+                .orderedAccessions = treeToOrderedList(this.pheneticTree.tree);
             this.sequenceGaps = gaps;
             this.generatePlotArray();
             this.resetPosition();

@@ -111,7 +111,7 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     protected getPositionTarget(mousePosition: Position): PlotArea {
-        if ([this.plotState.sortedAccessions,
+        if ([this.plotState.orderedAccessions,
              this.plotState.interval,
              this.plotState.binsize].some(isNullOrUndefined)) {
             return { plotAreaType: 'background' };
@@ -132,7 +132,7 @@ export class BinPlotComponent extends CanvasPlotElement {
         const interval = this.plotState.interval;
         const binsize = this.plotState.binsize;
 
-        const accession = this.plotState.sortedAccessions[accessionIndex];
+        const accession = this.plotState.orderedAccessions[accessionIndex];
 
         const result: PlotBin = {
             plotAreaType: 'bin',

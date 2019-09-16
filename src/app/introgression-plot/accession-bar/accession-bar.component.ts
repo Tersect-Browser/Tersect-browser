@@ -54,7 +54,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotState.sortedAccessions)) { return; }
+        if (isNullOrUndefined(this.plotState.orderedAccessions)) { return; }
         if (isNullOrUndefined(this.storedTreeView)) {
             this.storedTreeView = this.treeDrawService
                                       .createTreeView(this.getContainerSize());
@@ -92,7 +92,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
     }
 
     protected getPositionTarget(mousePosition: Position): PlotArea {
-        if (isNullOrUndefined(this.plotState.sortedAccessions)) {
+        if (isNullOrUndefined(this.plotState.orderedAccessions)) {
             return { plotAreaType: 'background' };
         }
         const accessionIndex = Math.floor(mousePosition.y
@@ -101,7 +101,7 @@ export class AccessionBarComponent extends CanvasPlotElement {
         if (accessionIndex >= this.plotService.rowNum) {
             return { plotAreaType: 'background' };
         }
-        const accession = this.plotState.sortedAccessions[accessionIndex];
+        const accession = this.plotState.orderedAccessions[accessionIndex];
         const result: PlotAccession = {
             plotAreaType: 'accession',
             accessionLabel: this.plotService.getAccessionLabel(accession),

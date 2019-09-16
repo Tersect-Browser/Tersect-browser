@@ -9,16 +9,16 @@ export type TreeNode = {
  * represents the vertical position (top to bottom) of the accession in a drawn
  * tree.
  */
-export function treeToSortedList(tree: TreeNode): string[] {
+export function treeToOrderedList(tree: TreeNode): string[] {
     const output: string[] = [];
-    _treeToSortedList(tree, output);
+    _treeToOrderedList(tree, output);
     return output;
 }
 
-function _treeToSortedList(subtree: TreeNode, output: string[]) {
+function _treeToOrderedList(subtree: TreeNode, output: string[]) {
     if (subtree.children.length) {
         for (const child of subtree.children) {
-            _treeToSortedList(child, output);
+            _treeToOrderedList(child, output);
         }
     } else {
         output.push(subtree.taxon.name);

@@ -75,10 +75,10 @@ export class PlotStateService {
     plugins: string[] = [];
 
     /**
-     * Accession names sorted in the order to be displayed on the drawn plot.
+     * Accession names in the order to be displayed on the drawn plot.
      * Generally this is the order based on clustering.
      */
-    sortedAccessions$: Observable<string[]>;
+    orderedAccessions$: Observable<string[]>;
 
     private readonly settingsSource = new Subject<BrowserSettings>();
     private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
@@ -92,7 +92,7 @@ export class PlotStateService {
     private readonly intervalSource = new BehaviorSubject<number[]>(undefined);
     private readonly binsizeSource = new BehaviorSubject<number>(undefined);
     private readonly zoomLevelSource = new BehaviorSubject<number>(100);
-    private readonly sortedAccessionsSource = new BehaviorSubject<string[]>(null);
+    private readonly orderedAccessionsSource = new BehaviorSubject<string[]>(null);
 
     constructor() {
         this.settings$ = this.settingsSource.asObservable();
@@ -107,7 +107,7 @@ export class PlotStateService {
         this.interval$ = this.intervalSource.asObservable();
         this.binsize$ = this.binsizeSource.asObservable();
         this.zoomLevel$ = this.zoomLevelSource.asObservable();
-        this.sortedAccessions$ = this.sortedAccessionsSource.asObservable();
+        this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
     }
 
     set settings(settings: BrowserSettings) {
@@ -207,7 +207,7 @@ export class PlotStateService {
     }
 
     set accessions(accessions: string[]) {
-        if (!sameElements(accessions, this.sortedAccessions)) {
+        if (!sameElements(accessions, this.orderedAccessions)) {
             this.accessionsSource.next(accessions);
         }
     }
@@ -252,10 +252,10 @@ export class PlotStateService {
         return this.zoomLevelSource.getValue();
     }
 
-    set sortedAccessions(accessions: string[]) {
-        this.sortedAccessionsSource.next(accessions);
+    set orderedAccessions(accessions: string[]) {
+        this.orderedAccessionsSource.next(accessions);
     }
-    get sortedAccessions(): string[] {
-        return this.sortedAccessionsSource.getValue();
+    get orderedAccessions(): string[] {
+        return this.orderedAccessionsSource.getValue();
     }
 }

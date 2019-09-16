@@ -85,7 +85,7 @@ export class TreeDrawService {
 
     private drawColorTracks(ctx: CanvasRenderingContext2D,
                             treeView: AccessionTreeView) {
-        this.plotState.sortedAccessions.forEach((accId, rowIndex) => {
+        this.plotState.orderedAccessions.forEach((accId, rowIndex) => {
             const trackWidth = TreeDrawService.TREE_COLOR_TRACK_WIDTH
                                * this.plotService.binWidth;
             const colors = this.plotService.getAccessionColors(accId);
@@ -177,7 +177,7 @@ export class TreeDrawService {
         const textHeight = this.plotService.binHeight;
         ctx.fillStyle = TreeDrawService.TREE_FONT_COLOR;
         ctx.textBaseline = 'top';
-        this.plotState.sortedAccessions.forEach((acc, index) => {
+        this.plotState.orderedAccessions.forEach((acc, index) => {
             ctx.fillText(this.plotService.getAccessionLabel(acc), 0,
                          index * textHeight + treeView.canvasOffsetY);
         });
@@ -226,7 +226,7 @@ export class TreeDrawService {
         const fontSize = this.plotService.binHeight;
         ctx.font = `${fontSize}px ${TreeDrawService.TREE_FONT}`;
         return Math.max(
-            ...this.plotState.sortedAccessions.map(acc =>
+            ...this.plotState.orderedAccessions.map(acc =>
                 ctx.measureText(this.plotService.getAccessionLabel(acc)).width
             )
         );
