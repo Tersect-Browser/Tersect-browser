@@ -46,8 +46,7 @@ import {
     ],
     providers: [
         PlotZoomService,
-        PlotStateService,
-        IntrogressionPlotService
+        PlotStateService
     ]
 })
 export class IntrogressionBrowserComponent implements OnInit {

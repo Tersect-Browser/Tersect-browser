@@ -42,7 +42,8 @@ import {
 @Component({
     selector: 'app-introgression-plot',
     templateUrl: './introgression-plot.component.html',
-    styleUrls: ['./introgression-plot.component.css']
+    styleUrls: ['./introgression-plot.component.css'],
+    providers: [ IntrogressionPlotService ]
 })
 export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @ViewChild(BinPlotComponent, { static: true })
