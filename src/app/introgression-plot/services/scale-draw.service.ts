@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { ceilTo, findClosest, formatPosition } from '../../utils/utils';
+import { ceilTo, findClosest, formatCanvasFont, formatPosition } from '../../utils/utils';
 import { ContainerSize } from '../introgression-plot.component';
 import { PlotCreatorService } from './plot-creator.service';
 import { PlotStateService } from './plot-state.service';
@@ -121,7 +121,8 @@ export class ScaleDrawService {
 
         ctx.textBaseline = 'top';
         ctx.textAlign = 'center';
-        ctx.font = `${ScaleDrawService.GUI_SCALE_FONT_SIZE}px ${ScaleDrawService.GUI_SCALE_FONT}`;
+        ctx.font = formatCanvasFont(ScaleDrawService.GUI_SCALE_FONT_SIZE,
+                                    ScaleDrawService.GUI_SCALE_FONT);
 
         const interval = this.plotState.interval;
         const bpPerPixel = this.plotState.binsize / this.plotCreator.zoomFactor;

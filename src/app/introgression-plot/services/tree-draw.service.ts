@@ -7,6 +7,7 @@ import {
 } from '../../clustering/clustering';
 import {
     ceilTo,
+    formatCanvasFont,
     isNullOrUndefined
 } from '../../utils/utils';
 import {
@@ -194,7 +195,7 @@ export class TreeDrawService {
 
         // Draw labels
         const fontSize = this.plotCreator.binHeight;
-        ctx.font = `${fontSize}px ${TreeDrawService.TREE_FONT}`;
+        ctx.font = formatCanvasFont(fontSize, TreeDrawService.TREE_FONT);
         if (this.plotState.accessionStyle === 'labels') {
             this.drawSimpleLabels(ctx, treeView);
         } else {
@@ -238,7 +239,7 @@ export class TreeDrawService {
 
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
         const fontSize = this.plotCreator.binHeight;
-        ctx.font = `${fontSize}px ${TreeDrawService.TREE_FONT}`;
+        ctx.font = formatCanvasFont(fontSize, TreeDrawService.TREE_FONT);
         return Math.max(
             ...this.plotState.orderedAccessions.map(acc =>
                 ctx.measureText(this.plotCreator.getAccessionLabel(acc)).width

@@ -96,6 +96,13 @@ export function floorTo(x: number, a: number): number {
 }
 
 /**
+ * Generates a font value for HTML canvas.
+ */
+export function formatCanvasFont(size: number, font: string): string {
+    return `${size}px ${font}`;
+}
+
+/**
  * Format genomic position in terms of base pairs into a string with comma
  * separators for thousands.
  */
