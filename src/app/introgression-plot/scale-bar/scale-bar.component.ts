@@ -174,12 +174,12 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
     private getContainerSize(): ContainerSize {
         return {
-            height: this.canvas.nativeElement
-                               .parentElement
-                               .parentElement
-                               .parentElement
-                               .offsetWidth,
-            width: this.canvas.nativeElement.offsetHeight
+            height: this.canvas.nativeElement.offsetHeight,
+            width: this.canvas.nativeElement
+                              .parentElement
+                              .parentElement
+                              .parentElement
+                              .offsetWidth
         };
     }
 }
