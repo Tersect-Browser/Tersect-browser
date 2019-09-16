@@ -20,9 +20,6 @@ import {
     isNullOrUndefined
 } from '../utils/utils';
 import {
-    AccessionBarComponent
-} from './accession-bar/accession-bar.component';
-import {
     BinPlotComponent
 } from './bin-plot/bin-plot.component';
 import {
@@ -34,6 +31,9 @@ import {
 import {
     PlotStateService
 } from './services/plot-state.service';
+import {
+    TreePlotComponent
+} from './tree-plot/tree-plot.component';
 
 export interface ContainerSize {
     height: number;
@@ -53,8 +53,8 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @ViewChild(ScaleBarComponent, { static: true })
     readonly scaleBar: ScaleBarComponent;
 
-    @ViewChild(AccessionBarComponent, { static: true })
-    readonly accessionBar: AccessionBarComponent;
+    @ViewChild(TreePlotComponent, { static: true })
+    readonly treePlot: TreePlotComponent;
 
     @Output() plotMouseClick = new EventEmitter<PlotMouseClickEvent>();
     @Output() plotMouseHover = new EventEmitter<PlotMouseHoverEvent>();
@@ -108,7 +108,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     }
 
     private redrawPlot() {
-        this.accessionBar.draw();
+        this.treePlot.draw();
         this.scaleBar.draw();
         this.binPlot.draw();
     }

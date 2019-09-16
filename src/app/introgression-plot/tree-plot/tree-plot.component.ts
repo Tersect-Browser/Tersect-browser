@@ -29,12 +29,12 @@ import {
 } from '../services/tree-draw.service';
 
 @Component({
-    selector: 'app-accession-bar',
-    templateUrl: './accession-bar.component.html',
-    styleUrls: ['./accession-bar.component.css'],
+    selector: 'app-tree-plot',
+    templateUrl: './tree-plot.component.html',
+    styleUrls: ['./tree-plot.component.css'],
     providers: [ TreeDrawService ]
 })
-export class AccessionBarComponent extends CanvasPlotElement {
+export class TreePlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
