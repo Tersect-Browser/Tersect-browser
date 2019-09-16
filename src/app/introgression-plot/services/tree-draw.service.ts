@@ -208,7 +208,7 @@ export class TreeDrawService {
      */
     private getColorTracksWidth() {
         return TreeDrawService.TREE_COLOR_TRACK_WIDTH
-               * this.plotCreator.getMaxColorCount()
+               * this.getMaxColorCount()
                * this.plotCreator.binWidth;
     }
 
@@ -221,6 +221,19 @@ export class TreeDrawService {
             // Should not happen
             return 0;
         }
+    }
+
+    /**
+     * Return highest number of colors assigned to an accession.
+     */
+    getMaxColorCount(): number {
+        let count = 0;
+        Object.values(this.plotState.accessionDictionary).forEach(acc => {
+            if ('colors' in acc && acc.colors.length > count) {
+                count = acc.colors.length;
+            }
+        });
+        return count;
     }
 
     private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {

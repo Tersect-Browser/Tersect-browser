@@ -246,19 +246,6 @@ export class PlotCreatorService implements OnDestroy {
         }
     }
 
-    /**
-     * Return highest number of colors assigned to an accession.
-     */
-    getMaxColorCount(): number {
-        let count = 0;
-        Object.values(this.plotState.accessionDictionary).forEach(acc => {
-            if ('colors' in acc && acc.colors.length > count) {
-                count = acc.colors.length;
-            }
-        });
-        return count;
-    }
-
     startLoading() {
         if (this.plotLoadMessage === '') {
             this.plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;
