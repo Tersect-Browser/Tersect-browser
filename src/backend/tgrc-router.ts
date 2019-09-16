@@ -25,7 +25,6 @@ router.route('/genes')
     });
 });
 
-
 router.route('/accessions/:gene?/:filter?')
       .get((req, res) => {
     const gene = req.params.gene;
