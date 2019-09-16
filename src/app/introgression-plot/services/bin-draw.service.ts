@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 
 import { ContainerSize } from '../introgression-plot.component';
-import { IntrogressionPlotService } from './introgression-plot.service';
+import { PlotCreatorService } from './plot-creator.service';
 import { PlotStateService } from './plot-state.service';
 
 @Injectable()
 export class BinDrawService {
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService) { }
+                private readonly plotCreator: PlotCreatorService) { }
 
     drawBins(targetCanvas: HTMLCanvasElement,
              containerSize: ContainerSize) {
@@ -16,17 +16,17 @@ export class BinDrawService {
         const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
         ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
         ctx.putImageData(this.extractVisibleImage(targetCanvas),
-                         this.plotService.guiMargins.left, 0);
+                         this.plotCreator.guiMargins.left, 0);
     }
 
     private extractVisibleImage(targetCanvas: HTMLCanvasElement): ImageData {
-        const fullArray = this.plotService.plotImageArray;
-        const pos = this.plotService.plotPosition;
-        const colNum = this.plotService.colNum;
+        const fullArray = this.plotCreator.plotImageArray;
+        const pos = this.plotCreator.plotPosition;
+        const colNum = this.plotCreator.colNum;
 
         let visibleCols = Math.ceil(targetCanvas.width
-                                    / this.plotService.binWidth)
-                          - this.plotService.guiMargins.left;
+                                    / this.plotCreator.binWidth)
+                          - this.plotCreator.guiMargins.left;
         if (visibleCols > colNum + pos.x) {
             // More visible area than available columns
             visibleCols = colNum + pos.x;
@@ -36,7 +36,7 @@ export class BinDrawService {
         }
 
         const visibleRows = Math.ceil(targetCanvas.height
-                                      / this.plotService.binHeight);
+                                      / this.plotCreator.binHeight);
 
         const visibleArray = new Uint8ClampedArray(4 * visibleRows
                                                    * visibleCols);
@@ -54,7 +54,7 @@ export class BinDrawService {
                          containerSize: ContainerSize) {
         targetCanvas.style.width = `${this.plotState.zoomLevel}%`;
         targetCanvas.style.height = `${this.plotState.zoomLevel
-                                       / this.plotService.aspectRatio}%`;
+                                       / this.plotCreator.aspectRatio}%`;
         targetCanvas.width = containerSize.width;
         targetCanvas.height = containerSize.height;
     }

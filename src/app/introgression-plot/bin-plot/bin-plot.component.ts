@@ -27,8 +27,8 @@ import {
     BinDrawService
 } from '../services/bin-draw.service';
 import {
-    IntrogressionPlotService
-} from '../services/introgression-plot.service';
+    PlotCreatorService
+} from '../services/plot-creator.service';
 import {
     PlotStateService
 } from '../services/plot-state.service';
@@ -54,17 +54,17 @@ export class BinPlotComponent extends CanvasPlotElement
     private highlightUpdate: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService,
+                private readonly plotCreator: PlotCreatorService,
                 private readonly binDrawService: BinDrawService) {
         super();
     }
 
     get guiMargins() {
-        return this.plotService.guiMargins;
+        return this.plotCreator.guiMargins;
     }
 
     ngOnInit() {
-        this.highlightUpdate = this.plotService
+        this.highlightUpdate = this.plotCreator
                                    .highlightSource.subscribe(() => {
             this.updateHighlight();
         });
@@ -84,10 +84,10 @@ export class BinPlotComponent extends CanvasPlotElement
         // Dragging 'rounded' to accession / bin indices.
         const newPos: Position = {
             x: Math.round(dragState.currentPosition.x
-                          / this.plotService.binWidth
+                          / this.plotCreator.binWidth
                           - this.dragStartIndices.x),
             y: Math.round(dragState.currentPosition.y
-                          / this.plotService.binHeight
+                          / this.plotCreator.binHeight
                           - this.dragStartIndices.y)
         };
 
@@ -98,16 +98,16 @@ export class BinPlotComponent extends CanvasPlotElement
             newPos.y = 0;
         }
 
-        this.plotService.updatePosition(newPos);
+        this.plotCreator.updatePosition(newPos);
     }
 
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.dragStartIndices = {
-            x: dragState.startPosition.x / this.plotService.binWidth
-               - this.plotService.plotPosition.x,
-            y: dragState.startPosition.y / this.plotService.binHeight
-               - this.plotService.plotPosition.y
+            x: dragState.startPosition.x / this.plotCreator.binWidth
+               - this.plotCreator.plotPosition.x,
+            y: dragState.startPosition.y / this.plotCreator.binHeight
+               - this.plotCreator.plotPosition.y
         };
     }
 
@@ -122,15 +122,15 @@ export class BinPlotComponent extends CanvasPlotElement
             return { plotAreaType: 'background' };
         }
         const binIndex = Math.floor(mousePosition.x
-                                    / this.plotService.binWidth)
-                         - this.plotService.guiMargins.left
-                         - this.plotService.plotPosition.x;
+                                    / this.plotCreator.binWidth)
+                         - this.plotCreator.guiMargins.left
+                         - this.plotCreator.plotPosition.x;
         const accessionIndex = Math.floor(mousePosition.y
-                                          / this.plotService.binHeight)
-                               - this.plotService.plotPosition.y;
+                                          / this.plotCreator.binHeight)
+                               - this.plotCreator.plotPosition.y;
 
-        if (binIndex >= this.plotService.colNum
-            || accessionIndex >= this.plotService.rowNum) {
+        if (binIndex >= this.plotCreator.colNum
+            || accessionIndex >= this.plotCreator.rowNum) {
             return { plotAreaType: 'background' };
         }
 
@@ -141,7 +141,7 @@ export class BinPlotComponent extends CanvasPlotElement
 
         const result: PlotBin = {
             plotAreaType: 'bin',
-            accessionLabel: this.plotService.getAccessionLabel(accession),
+            accessionLabel: this.plotCreator.getAccessionLabel(accession),
             accession: accession,
             startPosition: interval[0] + binIndex * binsize,
             endPosition: interval[0] + (binIndex + 1) * binsize - 1
@@ -165,20 +165,20 @@ export class BinPlotComponent extends CanvasPlotElement
     }
 
     private updateHighlight() {
-        if (isNullOrUndefined(this.plotService.highlight)) {
+        if (isNullOrUndefined(this.plotCreator.highlight)) {
             this.highlight.nativeElement.style.visibility = 'hidden';
         } else {
             const bpPerPixel = this.plotState.binsize
-                               / this.plotService.zoomFactor;
-            const plotOffset = this.plotService.guiMargins.left
-                               + this.plotService.plotPosition.x;
+                               / this.plotCreator.zoomFactor;
+            const plotOffset = this.plotCreator.guiMargins.left
+                               + this.plotCreator.plotPosition.x;
 
-            const leftPos = (this.plotService.highlight.start
+            const leftPos = (this.plotCreator.highlight.start
                              - this.plotState.interval[0]) / bpPerPixel
-                            + plotOffset * this.plotService.binWidth;
+                            + plotOffset * this.plotCreator.binWidth;
 
-            const width = (this.plotService.highlight.end
-                           - this.plotService.highlight.start + 1)
+            const width = (this.plotCreator.highlight.end
+                           - this.plotCreator.highlight.start + 1)
                           / bpPerPixel;
 
             this.highlight.nativeElement.style.left = `${leftPos}px`;

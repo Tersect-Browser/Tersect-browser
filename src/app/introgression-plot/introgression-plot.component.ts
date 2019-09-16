@@ -26,8 +26,8 @@ import {
     ScaleBarComponent
 } from './scale-bar/scale-bar.component';
 import {
-    IntrogressionPlotService
-} from './services/introgression-plot.service';
+    PlotCreatorService
+} from './services/plot-creator.service';
 import {
     PlotStateService
 } from './services/plot-state.service';
@@ -44,7 +44,7 @@ export interface ContainerSize {
     selector: 'app-introgression-plot',
     templateUrl: './introgression-plot.component.html',
     styleUrls: ['./introgression-plot.component.css'],
-    providers: [ IntrogressionPlotService ]
+    providers: [ PlotCreatorService ]
 })
 export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     @ViewChild(BinPlotComponent, { static: true })
@@ -63,10 +63,10 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     private fullRedraw: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService) { }
+                private readonly plotCreator: PlotCreatorService) { }
 
     get plotLoadMessage() {
-        return this.plotService.plotLoadMessage;
+        return this.plotCreator.plotLoadMessage;
     }
 
     ngOnInit() {
@@ -74,8 +74,8 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
             this.plotState.accessionStyle$,
             this.plotState.zoomLevel$,
             this.plotState.accessionDictionary$,
-            this.plotService.plotPositionSource,
-            this.plotService.plotImageArraySource
+            this.plotCreator.plotPositionSource,
+            this.plotCreator.plotImageArraySource
         ]).pipe(
             filter(triggerVars => !triggerVars.some(isNullOrUndefined))
         ).subscribe(() => {
@@ -88,11 +88,11 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
     }
 
     getErrors(): string {
-        return Array.from(this.plotService.errorMessages).join('\n');
+        return Array.from(this.plotCreator.errorMessages).join('\n');
     }
 
     hasErrors(): boolean {
-        return this.plotService.errorMessages.size > 0;
+        return this.plotCreator.errorMessages.size > 0;
     }
 
     onClick($event: PlotMouseClickEvent) {

@@ -18,8 +18,8 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
-    IntrogressionPlotService
-} from '../services/introgression-plot.service';
+    PlotCreatorService
+} from '../services/plot-creator.service';
 import {
     PlotStateService
 } from '../services/plot-state.service';
@@ -59,7 +59,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     private readonly canvas: ElementRef;
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService,
+                private readonly plotCreator: PlotCreatorService,
                 private readonly renderer: Renderer2) {
         super();
         this.hoverState.hoverDelay = 0;
@@ -67,7 +67,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     get guiMargins() {
-        return this.plotService.guiMargins;
+        return this.plotCreator.guiMargins;
     }
 
     draw() {
@@ -86,7 +86,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         // Correct for canvas positioning (no scale over label column)
         // and canvas pixel positioning (offset by 0.5 by default)
-        const effectiveWidth = canvasWidth - this.plotService.accessionBarWidth;
+        const effectiveWidth = canvasWidth - this.plotCreator.accessionBarWidth;
         ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
 
         ctx.strokeStyle = ScaleBarComponent.GUI_SCALE_COLOR;
@@ -98,16 +98,16 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         const interval = this.plotState.interval;
         const bpPerPixel = this.plotState.binsize
-                           / this.plotService.zoomFactor;
+                           / this.plotCreator.zoomFactor;
         const tickBpDistance = findClosest(ScaleBarComponent.GUI_TICK_DISTANCE
                                            * bpPerPixel,
                                            ScaleBarComponent.GUI_SCALE_TICK_BP_DISTANCES);
         const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
 
-        const startX = (this.plotService.plotPosition.x
+        const startX = (this.plotCreator.plotPosition.x
                         * this.plotState.binsize)
                        / bpPerPixel;
-        const endX = (this.plotService.plotPosition.x
+        const endX = (this.plotCreator.plotPosition.x
                       * this.plotState.binsize + interval[1] - interval[0])
                      / bpPerPixel;
 
@@ -134,7 +134,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         // Hide scale over labels
         ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
-                      this.plotService.accessionBarWidth,
+                      this.plotCreator.accessionBarWidth,
                       canvasHeight);
     }
 
@@ -177,10 +177,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
         if ([interval, binsize].some(isNullOrUndefined)) {
             return { plotAreaType: 'background' };
         }
-        const bpPerPixel = binsize / this.plotService.zoomFactor;
+        const bpPerPixel = binsize / this.plotCreator.zoomFactor;
         const bpPosition = position.x * bpPerPixel + interval[0]
-                           - (this.plotService.plotPosition.x
-                              + this.plotService.guiMargins.left)
+                           - (this.plotCreator.plotPosition.x
+                              + this.plotCreator.guiMargins.left)
                              * binsize;
         if (bpPosition < interval[0] || bpPosition > interval[1]) {
             return { plotAreaType: 'background' };
@@ -202,7 +202,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         const startTarget = this.getPositionTarget(startPos);
         const endTarget = this.getPositionTarget(endPos);
 
-        this.plotService.highlight = {
+        this.plotCreator.highlight = {
             start: startTarget.plotAreaType === 'position'
                    ? (startTarget as PlotSequencePosition).position
                    : this.plotState.interval[0],
@@ -213,8 +213,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
 
         const targetInterval: PlotSequenceInterval = {
             plotAreaType: 'interval',
-            startPosition: this.plotService.highlight.start,
-            endPosition: this.plotService.highlight.end
+            startPosition: this.plotCreator.highlight.start,
+            endPosition: this.plotCreator.highlight.end
         };
 
         this.plotMouseHover.emit({
@@ -225,11 +225,11 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     private dragStopActionGlobal(dragState: DragState): void {
-        if (!isNullOrUndefined(this.plotService.highlight)) {
+        if (!isNullOrUndefined(this.plotCreator.highlight)) {
             const target: PlotSequenceInterval = {
                 plotAreaType: 'interval',
-                startPosition: this.plotService.highlight.start,
-                endPosition: this.plotService.highlight.end
+                startPosition: this.plotCreator.highlight.start,
+                endPosition: this.plotCreator.highlight.end
             };
 
             this.plotMouseClick.emit({
@@ -247,7 +247,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
                 // or outside the menu (modal overlay mask); bit of a hack
                 if (tags.includes('APP-PLOT-CLICK-MENU')) {
                     if (tags.includes('A') || !tags.includes('P-MENU')) {
-                        this.plotService.highlight = undefined;
+                        this.plotCreator.highlight = undefined;
                         unlistenHighlightClear();
                     }
                 }
@@ -280,9 +280,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
     private drawScaleTick(ctx: CanvasRenderingContext2D,
                           tick: ScaleTick) {
         const canvasHeight = this.canvas.nativeElement.offsetHeight;
-        const bpPerPixel = this.plotState.binsize
-                             / this.plotService.zoomFactor;
-        const tickX = (this.plotService.plotPosition.x
+        const bpPerPixel = this.plotState.binsize / this.plotCreator.zoomFactor;
+        const tickX = (this.plotCreator.plotPosition.x
                        * this.plotState.binsize
                        + tick.position - this.plotState.interval[0])
                       / bpPerPixel;

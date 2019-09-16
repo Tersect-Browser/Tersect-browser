@@ -19,8 +19,8 @@ import {
     AccessionTreeView
 } from '../services/accession-tree-view';
 import {
-    IntrogressionPlotService
-} from '../services/introgression-plot.service';
+    PlotCreatorService
+} from '../services/plot-creator.service';
 import {
     PlotStateService
 } from '../services/plot-state.service';
@@ -46,13 +46,13 @@ export class TreePlotComponent extends CanvasPlotElement {
     private dragStartIndex = 0;
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotService: IntrogressionPlotService,
+                private readonly plotCreator: PlotCreatorService,
                 private readonly treeDrawService: TreeDrawService) {
         super();
     }
 
     get guiMargins() {
-        return this.plotService.guiMargins;
+        return this.plotCreator.guiMargins;
     }
 
     draw() {
@@ -68,9 +68,9 @@ export class TreePlotComponent extends CanvasPlotElement {
     protected dragAction(dragState: DragState): void {
         // Only vertical dragging, rounded to accession indices.
         const newPos: Position = {
-            x: this.plotService.plotPosition.x,
+            x: this.plotCreator.plotPosition.x,
             y: Math.round(dragState.currentPosition.y
-                          / this.plotService.binHeight
+                          / this.plotCreator.binHeight
                           - this.dragStartIndex)
         };
 
@@ -78,14 +78,14 @@ export class TreePlotComponent extends CanvasPlotElement {
             newPos.y = 0;
         }
 
-        this.plotService.updatePosition(newPos);
+        this.plotCreator.updatePosition(newPos);
     }
 
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession index.
         this.dragStartIndex = dragState.startPosition.y
-                              / this.plotService.binHeight
-                              - this.plotService.plotPosition.y;
+                              / this.plotCreator.binHeight
+                              - this.plotCreator.plotPosition.y;
     }
 
     protected dragStopAction(dragState: DragState): void {
@@ -97,15 +97,15 @@ export class TreePlotComponent extends CanvasPlotElement {
             return { plotAreaType: 'background' };
         }
         const accessionIndex = Math.floor(mousePosition.y
-                                          / this.plotService.binHeight)
-                               - this.plotService.plotPosition.y;
-        if (accessionIndex >= this.plotService.rowNum) {
+                                          / this.plotCreator.binHeight)
+                               - this.plotCreator.plotPosition.y;
+        if (accessionIndex >= this.plotCreator.rowNum) {
             return { plotAreaType: 'background' };
         }
         const accession = this.plotState.orderedAccessions[accessionIndex];
         const result: PlotAccession = {
             plotAreaType: 'accession',
-            accessionLabel: this.plotService.getAccessionLabel(accession),
+            accessionLabel: this.plotCreator.getAccessionLabel(accession),
             accession: accession
         };
         return result;

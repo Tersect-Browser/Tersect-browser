@@ -69,7 +69,7 @@ export interface GUIMargins {
 type PlotData = [DistanceBins, PheneticTree, SequenceInterval[]];
 
 @Injectable()
-export class IntrogressionPlotService implements OnDestroy {
+export class PlotCreatorService implements OnDestroy {
     static readonly DEBOUNCE_TIME = 700;
     static readonly DEFAULT_LOAD_MESSAGE = 'Loading...';
 
@@ -99,7 +99,7 @@ export class IntrogressionPlotService implements OnDestroy {
     errorMessages: Set<string> = new Set();
 
     guiMargins: GUIMargins = {
-        top: IntrogressionPlotService.GUI_SCALE_BAR_SIZE,
+        top: PlotCreatorService.GUI_SCALE_BAR_SIZE,
         right: 0,
         bottom: 0,
         left: 0
@@ -280,10 +280,10 @@ export class IntrogressionPlotService implements OnDestroy {
                  accessionIndex++) {
             for (let binIndex = binStart; binIndex < binEnd; binIndex++) {
                 const pos = 4 * (binIndex + colNum * accessionIndex);
-                plotArray[pos] = IntrogressionPlotService.GAP_COLOR[0];
-                plotArray[pos + 1] = IntrogressionPlotService.GAP_COLOR[1];
-                plotArray[pos + 2] = IntrogressionPlotService.GAP_COLOR[2];
-                plotArray[pos + 3] = IntrogressionPlotService.GAP_COLOR[3];
+                plotArray[pos] = PlotCreatorService.GAP_COLOR[0];
+                plotArray[pos + 1] = PlotCreatorService.GAP_COLOR[1];
+                plotArray[pos + 2] = PlotCreatorService.GAP_COLOR[2];
+                plotArray[pos + 3] = PlotCreatorService.GAP_COLOR[3];
             }
         }
     }
@@ -347,7 +347,7 @@ export class IntrogressionPlotService implements OnDestroy {
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
+            debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom]) => this.tersectBackendService
                                                   .getChromosomeGaps(datasetId,
                                                                      chrom.name))
@@ -380,7 +380,7 @@ export class IntrogressionPlotService implements OnDestroy {
             filter(inputs => this.validateTreeInputs(...inputs)),
             distinctUntilChanged(deepEqual),
             tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
+            debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom, interval, accessions]) =>
                 this.tersectBackendService
                     .getPheneticTree(datasetId, chrom.name,
@@ -394,7 +394,7 @@ export class IntrogressionPlotService implements OnDestroy {
                     }),
                     retryWhen(errors => {
                         return errors.pipe(
-                            delay(IntrogressionPlotService.TREE_RETRY_DELAY)
+                            delay(PlotCreatorService.TREE_RETRY_DELAY)
                         );
                     })
                 )
@@ -429,7 +429,7 @@ export class IntrogressionPlotService implements OnDestroy {
             filter(inputs => this.validateBinInputs(...inputs)),
             distinctUntilChanged(deepEqual),
             tap(this.startLoading),
-            debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
+            debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
                 this.tersectBackendService
                     .getDistanceBins(datasetId, ref, chrom.name,
@@ -446,11 +446,11 @@ export class IntrogressionPlotService implements OnDestroy {
     private validateAccessions(accessions: string[]): boolean {
         if (accessions.length < 2) {
             this.errorMessages
-                .add(IntrogressionPlotService.ERROR_MESSAGE_ACCESSIONS);
+                .add(PlotCreatorService.ERROR_MESSAGE_ACCESSIONS);
             return false;
         } else {
             this.errorMessages
-                .delete(IntrogressionPlotService.ERROR_MESSAGE_ACCESSIONS);
+                .delete(PlotCreatorService.ERROR_MESSAGE_ACCESSIONS);
             return true;
         }
     }
@@ -472,11 +472,11 @@ export class IntrogressionPlotService implements OnDestroy {
             || isNaN(parseInt(interval[1].toString(), 10))
             || interval[1] - interval[0] < binsize) {
             this.errorMessages
-                .add(IntrogressionPlotService.ERROR_MESSAGE_BINSIZE);
+                .add(PlotCreatorService.ERROR_MESSAGE_BINSIZE);
             return false;
         } else {
             this.errorMessages
-                .delete(IntrogressionPlotService.ERROR_MESSAGE_BINSIZE);
+                .delete(PlotCreatorService.ERROR_MESSAGE_BINSIZE);
             return true;
         }
     }
@@ -510,7 +510,7 @@ export class IntrogressionPlotService implements OnDestroy {
 
     private readonly startLoading = () => {
         if (this.plotLoadMessage === '') {
-            this.plotLoadMessage = IntrogressionPlotService.DEFAULT_LOAD_MESSAGE;
+            this.plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;
         }
     }
 
