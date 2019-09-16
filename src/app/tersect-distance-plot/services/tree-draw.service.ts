@@ -112,15 +112,13 @@ export class TreeDrawService {
         const scale = this.getTreeScale(ctx, treeView);
 
         const initialPosX = TreeDrawService.TREE_LEFT_MARGIN;
-        this._drawLabelTree(this.plotCreator.pheneticTree.tree, initialPosX, ctx,
-                            this.plotCreator.accessionBarWidth,
-                            textHeight, treeView.canvasOffsetY,
+        this._drawLabelTree(this.plotCreator.pheneticTree.tree, initialPosX,
+                            ctx, textHeight, treeView.canvasOffsetY,
                             scale, drawState);
     }
 
     private _drawLabelTree(subtree: TreeNode, basePosX: number,
-                           ctx: CanvasRenderingContext2D,
-                           backgroundWidth: number, textHeight: number,
+                           ctx: CanvasRenderingContext2D, textHeight: number,
                            yoffset: number, scale: number,
                            drawState: { current_row: number }) {
         let prevPosY = yoffset + drawState.current_row * textHeight;
@@ -130,10 +128,8 @@ export class TreeDrawService {
         if (subtree.children.length) {
             subtree.children.forEach(child => {
                 const childPosX = basePosX + this.getEdgeLength(child) * scale;
-                this._drawLabelTree(child, childPosX, ctx,
-                                    backgroundWidth, textHeight,
-                                    yoffset, scale,
-                                    drawState);
+                this._drawLabelTree(child, childPosX, ctx, textHeight, yoffset,
+                                    scale, drawState);
                 subtreePosX.push(childPosX);
                 const curPosY = yoffset + drawState.current_row * textHeight;
                 subtreePosY.push((prevPosY + curPosY) / 2);
@@ -159,17 +155,9 @@ export class TreeDrawService {
         } else {
             const label = this.plotCreator.getAccessionLabel(subtree.taxon.name);
             ctx.fillText(label, basePosX, prevPosY);
-            ctx.beginPath();
-            ctx.lineWidth = TreeDrawService.TREE_LINE_DASH_WIDTH
-                            * this.plotCreator.zoomFactor;
-            ctx.strokeStyle = TreeDrawService.TREE_LINE_DASH_STYLE;
-            ctx.setLineDash(TreeDrawService.TREE_LINE_DASH.map(
-                x => x * this.plotCreator.zoomFactor
-            ));
-            ctx.moveTo(basePosX + ctx.measureText(label).width + 5,
-                       prevPosY + textHeight / 2 - 0.5);
-            ctx.lineTo(backgroundWidth, prevPosY + textHeight / 2 - 0.5);
-            ctx.stroke();
+            const textEndPos = basePosX + ctx.measureText(label).width + 5;
+            this.drawTrailingLine(ctx, textEndPos,
+                                  prevPosY + textHeight / 2 - 0.5);
             drawState.current_row++;
         }
     }
@@ -185,13 +173,26 @@ export class TreeDrawService {
         });
     }
 
+    private drawTrailingLine(ctx: CanvasRenderingContext2D,
+                             xStart: number, yPos: number) {
+        ctx.beginPath();
+        ctx.lineWidth = TreeDrawService.TREE_LINE_DASH_WIDTH
+                        * this.plotCreator.zoomFactor;
+        ctx.strokeStyle = TreeDrawService.TREE_LINE_DASH_STYLE;
+        ctx.setLineDash(TreeDrawService.TREE_LINE_DASH.map(
+            x => x * this.plotCreator.zoomFactor
+        ));
+        ctx.moveTo(xStart, yPos);
+        ctx.lineTo(ctx.canvas.width, yPos);
+        ctx.stroke();
+    }
+
     private generateTree(treeView: AccessionTreeView) {
         const ctx: CanvasRenderingContext2D = treeView.viewCanvas
                                                       .getContext('2d');
         // Draw background
         ctx.fillStyle = TreeDrawService.TREE_BG_COLOR;
-        ctx.fillRect(0, 0, this.plotCreator.accessionBarWidth,
-                     treeView.viewCanvas.height);
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         // Draw labels
         const fontSize = this.plotCreator.binHeight;
