@@ -54,7 +54,6 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotState.orderedAccessions)) { return; }
         this.binDrawService.drawBins(this.canvas.nativeElement,
                                      this.getContainerSize());
         this.updateHighlight();
