@@ -8,7 +8,7 @@ import { PheneticTree } from '../../backend/models/phenetictree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { Chromosome } from '../models/Chromosome';
-import { DistanceBins, DistanceBinQuery } from '../models/DistanceBins';
+import { DistanceBinQuery, DistanceBins } from '../models/DistanceBins';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { TreeQuery } from '../models/TreeQuery';
 import { isNullOrUndefined } from '../utils/utils';

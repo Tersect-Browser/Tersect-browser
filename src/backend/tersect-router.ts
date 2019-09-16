@@ -15,7 +15,7 @@ import {
 import { fileSync } from 'tmp';
 import { promisify } from 'util';
 
-import { DistanceBins, DistanceBinQuery } from '../app/models/DistanceBins';
+import { DistanceBinQuery, DistanceBins } from '../app/models/DistanceBins';
 import { TreeDatabaseQuery, TreeQuery } from '../app/models/TreeQuery';
 import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
 
