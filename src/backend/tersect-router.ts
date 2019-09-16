@@ -245,14 +245,12 @@ router.route('/query/:datasetId/tree')
         'query.interval': treeQuery.interval,
         'query.accessions': treeQuery.accessions
     };
-    console.log(dbQuery);
     NewickTree.findOne(dbQuery)
                 .exec((err, result: NewickTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {
             // Generating new tree
-            console.log('GENERATING');
             const phyloTree = new NewickTree({
                 datasetId: req.params.datasetId,
                 'query.chromosomeName': treeQuery.chromosomeName,
