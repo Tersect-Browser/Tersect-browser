@@ -23,7 +23,7 @@ import {
     PlotClickMenuModule
 } from '../plot-click-menu/plot-click-menu.module';
 import {
-    TersectBrowser
+    TersectDistancePlotModule
 } from '../tersect-distance-plot/tersect-distance-plot.module';
 import {
     TooltipModule
@@ -77,7 +77,7 @@ import {
         ToggleButtonModule,
         OverlayPanelModule,
         RadioButtonModule,
-        TersectBrowser,
+        TersectDistancePlotModule,
         PlotClickMenuModule,
         TooltipModule,
         AccessionTabModule,
