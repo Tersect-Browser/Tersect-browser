@@ -8,7 +8,7 @@ import { PheneticTree } from '../../backend/models/phenetictree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { BrowserSettings } from '../introgression-browser/browser-settings';
 import { Chromosome } from '../models/Chromosome';
-import { RefDistQuery } from '../models/RefDistQuery';
+import { DistanceBinQuery } from '../models/DistanceBinQuery';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { TreeQuery } from '../models/TreeQuery';
 import { isNullOrUndefined } from '../utils/utils';
@@ -35,22 +35,21 @@ export class TersectBackendService {
      * @param binsize size of the bin (in base pairs)
      * @param accessions accessions included
      */
-    getRefDistanceBins(datasetId: string, reference: string,
-                       chromosome: string, start: number, stop: number,
-                       binsize: number,
-                       accessions: string[]): Observable<any[]> {
+    getDistanceBins(datasetId: string, reference: string,
+                    chromosome: string, start: number, stop: number,
+                    binsize: number, accessions: string[]): Observable<any[]> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
         const query = `${this.apiUrl}/query/${datasetId}/dist`;
-        const refDistQuery: RefDistQuery = {
+        const distBinQuery: DistanceBinQuery = {
             reference: reference,
             chromosome_name: chromosome,
             interval: [start, stop],
             binsize: binsize,
             accessions: accessions
         };
-        return this.http.post<any>(query, refDistQuery, httpOptions);
+        return this.http.post<any>(query, distBinQuery, httpOptions);
     }
 
     /**

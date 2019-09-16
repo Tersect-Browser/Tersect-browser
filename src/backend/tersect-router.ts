@@ -15,16 +15,16 @@ import {
 import { fileSync } from 'tmp';
 import { promisify } from 'util';
 
+import { DistanceBinQuery } from '../app/models/DistanceBinQuery';
 import { TreeDatabaseQuery, TreeQuery } from '../app/models/TreeQuery';
 import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
+
 import { ChromosomeIndex } from './models/chromosomeindex';
 import { Dataset, DatasetPublic } from './models/dataset';
 import { DBMatrix } from './models/dbmatrix';
 import { PheneticTree } from './models/phenetictree';
 import { ViewSettings } from './models/viewsettings';
 import { partitionQuery } from './partitioning';
-
-import { RefDistQuery } from '../app/models/RefDistQuery';
 
 export const router = Router();
 
@@ -132,16 +132,16 @@ router.route('/query/:dataset_id/dist')
     };
 
     const tsi_location = res.locals.dataset.tsi_location;
-    const refDistQuery: RefDistQuery = req.body;
+    const distBinQuery: DistanceBinQuery = req.body;
 
-    const region = formatRegion(refDistQuery.chromosome_name,
-                                refDistQuery.interval[0],
-                                refDistQuery.interval[1]);
+    const region = formatRegion(distBinQuery.chromosome_name,
+                                distBinQuery.interval[0],
+                                distBinQuery.interval[1]);
 
-    const reference = refDistQuery.reference;
-    const binsize = refDistQuery.binsize;
+    const reference = distBinQuery.reference;
+    const binsize = distBinQuery.binsize;
 
-    write_accessions(refDistQuery.accessions).then((accFile) => {
+    write_accessions(distBinQuery.accessions).then((accFile) => {
         const tersectCommand = `tersect dist -j ${tsi_location} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 

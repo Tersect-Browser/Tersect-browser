@@ -144,11 +144,11 @@ export class IntrogressionPlotService implements OnDestroy {
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly tersectBackendService: TersectBackendService) {
-        const refDistanceBins$ = this.getRefDistanceBins$();
+        const distanceBins$ = this.getDistanceBins$();
         const phenTree$ = this.getPhenTree$();
         const gaps$ = this.getGaps$();
 
-        this.plotData$ = this.getPlotData$(refDistanceBins$, phenTree$, gaps$);
+        this.plotData$ = this.getPlotData$(distanceBins$, phenTree$, gaps$);
 
         this.plotState.settings$.pipe(first()).subscribe(() => {
             // Subscribe to plot data updates once settings are loaded
@@ -302,20 +302,20 @@ export class IntrogressionPlotService implements OnDestroy {
      * Verify if reference distance bins match the tree in terms of chromosome
      * region and included accessions used.
      */
-    private binsMatchTree(refDist: any, treeOutput: PheneticTree): boolean {
-        const treeRegion = formatRegion(treeOutput.query.chromosome_name,
-                                        treeOutput.query.interval[0],
-                                        treeOutput.query.interval[1]);
-        const regionMatch = refDist['region'] === treeRegion
-                            && (refDist['region'].split(':')[0]
+    private binsMatchTree(distBins: any, tree: PheneticTree): boolean {
+        const treeRegion = formatRegion(tree.query.chromosome_name,
+                                        tree.query.interval[0],
+                                        tree.query.interval[1]);
+        const regionMatch = distBins['region'] === treeRegion
+                            && (distBins['region'].split(':')[0]
                                === this.plotState.chromosome.name)
-                            && refDist['reference']
+                            && distBins['reference']
                                === this.plotState.reference;
         if (!regionMatch) {
             return false;
         }
-        return sameElements(Object.keys(refDist['bins']),
-                            treeOutput.query.accessions);
+        return sameElements(Object.keys(distBins['bins']),
+                            tree.query.accessions);
     }
 
     private generatePlotArray() {
@@ -391,9 +391,9 @@ export class IntrogressionPlotService implements OnDestroy {
                     .getPheneticTree(datasetId, chrom.name,
                                      interval[0], interval[1],
                                      accessions).pipe(
-                    tap((treeOutput: PheneticTree) => {
-                        if (treeOutput.status !== 'ready') {
-                            this.plotLoadMessage = treeOutput.status;
+                    tap((tree: PheneticTree) => {
+                        if (tree.status !== 'ready') {
+                            this.plotLoadMessage = tree.status;
                             throw new Error('Tree still loading');
                         }
                     }),
@@ -407,22 +407,21 @@ export class IntrogressionPlotService implements OnDestroy {
         );
     }
 
-    private getPlotData$(refDistanceBins$: Observable<any>,
+    private getPlotData$(distanceBins$: Observable<any>,
                          phenTree$: Observable<PheneticTree>,
                          gaps$: Observable<SequenceInterval[]>): Observable<any[]> {
         return combineLatest([
-            refDistanceBins$,
+            distanceBins$,
             phenTree$,
             gaps$
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             tap(this.startLoading),
-            filter(([refDist, treeOutput]) => this.binsMatchTree(refDist,
-                                                                 treeOutput))
+            filter(([distBins, tree]) => this.binsMatchTree(distBins, tree))
         );
     }
 
-    private getRefDistanceBins$(): Observable<any> {
+    private getDistanceBins$(): Observable<any> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.reference$,
@@ -438,7 +437,7 @@ export class IntrogressionPlotService implements OnDestroy {
             debounceTime(IntrogressionPlotService.DEBOUNCE_TIME),
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
                 this.tersectBackendService
-                    .getRefDistanceBins(datasetId, ref, chrom.name,
+                    .getDistanceBins(datasetId, ref, chrom.name,
                                         interval[0], interval[1], binsize, accs)
             )
         );
@@ -493,13 +492,13 @@ export class IntrogressionPlotService implements OnDestroy {
         return this.validateAccessions(accessions);
     }
 
-    private readonly generatePlot = ([refDist, treeOutput, gaps]) => {
-        this.distanceBins = refDist['bins'];
-        if (!deepEqual(this.phenTree.query, treeOutput.query)) {
+    private readonly generatePlot = ([distBins, tree, gaps]) => {
+        this.distanceBins = distBins['bins'];
+        if (!deepEqual(this.phenTree.query, tree.query)) {
             // Tree updated
             this.phenTree = {
-                query: treeOutput.query,
-                tree: parseNewick(treeOutput.tree_newick, true)
+                query: tree.query,
+                tree: parseNewick(tree.tree_newick, true)
             };
             this.plotState
                 .sortedAccessions = treeToSortedList(this.phenTree.tree);

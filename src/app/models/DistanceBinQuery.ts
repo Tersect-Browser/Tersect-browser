@@ -1,4 +1,4 @@
-export interface RefDistQuery {
+export interface DistanceBinQuery {
     reference: string;
     chromosome_name: string;
     interval: number[];
