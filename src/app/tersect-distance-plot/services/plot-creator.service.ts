@@ -148,13 +148,6 @@ export class PlotCreatorService implements OnDestroy {
         });
     }
 
-    /**
-     * Width of accession label / tree area in pixels.
-     */
-    get accessionBarWidth() {
-        return this.guiMargins.left * this.zoomFactor;
-    }
-
     get binHeight() {
         return this.zoomFactor / this.aspectRatio;
     }
@@ -201,6 +194,13 @@ export class PlotCreatorService implements OnDestroy {
 
     get rowNum(): number {
         return this.plotState.orderedAccessions.length;
+    }
+
+    /**
+     * Width of tree plot area in pixels.
+     */
+    get treePlotWidth() {
+        return this.guiMargins.left * this.zoomFactor;
     }
 
     get zoomFactor(): number {

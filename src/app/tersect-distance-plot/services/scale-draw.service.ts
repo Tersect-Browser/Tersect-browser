@@ -168,7 +168,7 @@ export class ScaleDrawService {
 
         // Correct for canvas positioning (no scale over label column)
         // and canvas pixel positioning (offset by 0.5 by default)
-        const effectiveWidth = canvasWidth - this.plotCreator.accessionBarWidth;
+        const effectiveWidth = canvasWidth - this.plotCreator.treePlotWidth;
         ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
 
         ctx.strokeStyle = ScaleDrawService.GUI_SCALE_COLOR;
@@ -183,7 +183,7 @@ export class ScaleDrawService {
 
         // Hide scale over labels
         ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
-                      this.plotCreator.accessionBarWidth,
+                      this.plotCreator.treePlotWidth,
                       canvasHeight);
     }
 
