@@ -71,8 +71,6 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotState.interval)) { return; }
-
         const canvasWidth = this.canvas.nativeElement
                                         .parentElement
                                         .parentElement
