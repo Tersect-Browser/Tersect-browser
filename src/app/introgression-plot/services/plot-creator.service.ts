@@ -127,11 +127,6 @@ export class PlotCreatorService implements OnDestroy {
     plotLoadMessage = '';
 
     /**
-     * Horizontal / vertical scroll position (in terms of bins) of the plot.
-     */
-    plotPositionSource = new BehaviorSubject<Position>({ x: 0, y: 0 });
-
-    /**
      * List of sequence gaps in the current chromosome.
      */
     sequenceGaps: SequenceInterval[];
@@ -192,18 +187,16 @@ export class PlotCreatorService implements OnDestroy {
      * Horizontal offset / position of the plot in terms of pixels
      */
     get offsetX() {
-        return ceilTo(this.plotPosition.x * this.binWidth, this.binWidth);
+        return ceilTo(this.plotState.plotPosition.x * this.binWidth,
+                      this.binWidth);
     }
 
     /**
      * Vertical offset / position of the plot in terms of pixels
      */
     get offsetY() {
-        return ceilTo(this.plotPosition.y * this.binHeight, this.binHeight);
-    }
-
-    get plotPosition() {
-        return this.plotPositionSource.getValue();
+        return ceilTo(this.plotState.plotPosition.y * this.binHeight,
+                      this.binHeight);
     }
 
     get rowNum(): number {
@@ -254,10 +247,6 @@ export class PlotCreatorService implements OnDestroy {
 
     stopLoading() {
         this.plotLoadMessage = '';
-    }
-
-    updatePosition(pos: Position) {
-        this.plotPositionSource.next(pos);
     }
 
     /**
@@ -358,10 +347,6 @@ export class PlotCreatorService implements OnDestroy {
         );
     }
 
-    private resetPosition() {
-        this.plotPositionSource.next({ x: 0, y: 0 });
-    }
-
     private validateAccessions(accessions: string[]): boolean {
         if (accessions.length < 2) {
             this.errorMessages
@@ -418,7 +403,7 @@ export class PlotCreatorService implements OnDestroy {
                 .orderedAccessions = treeToOrderedList(this.pheneticTree.tree);
             // Technically the gaps are not expected to change
             this.sequenceGaps = gaps;
-            this.resetPosition();
+            this.plotState.resetPosition();
         }
         this.distanceBins = distBins;
     }

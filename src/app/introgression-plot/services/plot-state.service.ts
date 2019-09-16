@@ -14,6 +14,9 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
+    Position
+} from '../../models/Plot';
+import {
     deepCopy,
     isNullOrUndefined,
     sameElements
@@ -75,6 +78,12 @@ export class PlotStateService {
     plugins: string[] = [];
 
     /**
+     * Horizontal / vertical scroll position (in terms of bins and accessions,
+     * respectively) of the plot.
+     */
+    plotPositionSource = new BehaviorSubject<Position>({ x: 0, y: 0 });
+
+    /**
      * Accession names in the order to be displayed on the drawn plot.
      * Generally this is the order based on clustering.
      */
@@ -108,6 +117,10 @@ export class PlotStateService {
         this.binsize$ = this.binsizeSource.asObservable();
         this.zoomLevel$ = this.zoomLevelSource.asObservable();
         this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
+    }
+
+    get plotPosition() {
+        return this.plotPositionSource.getValue();
     }
 
     set settings(settings: BrowserSettings) {
@@ -257,5 +270,13 @@ export class PlotStateService {
     }
     get orderedAccessions(): string[] {
         return this.orderedAccessionsSource.getValue();
+    }
+
+    resetPosition() {
+        this.plotPositionSource.next({ x: 0, y: 0 });
+    }
+
+    updatePosition(pos: Position) {
+        this.plotPositionSource.next(pos);
     }
 }

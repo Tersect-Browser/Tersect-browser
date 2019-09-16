@@ -98,16 +98,16 @@ export class BinPlotComponent extends CanvasPlotElement
             newPos.y = 0;
         }
 
-        this.plotCreator.updatePosition(newPos);
+        this.plotState.updatePosition(newPos);
     }
 
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.dragStartIndices = {
             x: dragState.startPosition.x / this.plotCreator.binWidth
-               - this.plotCreator.plotPosition.x,
+               - this.plotState.plotPosition.x,
             y: dragState.startPosition.y / this.plotCreator.binHeight
-               - this.plotCreator.plotPosition.y
+               - this.plotState.plotPosition.y
         };
     }
 
@@ -124,10 +124,10 @@ export class BinPlotComponent extends CanvasPlotElement
         const binIndex = Math.floor(mousePosition.x
                                     / this.plotCreator.binWidth)
                          - this.plotCreator.guiMargins.left
-                         - this.plotCreator.plotPosition.x;
+                         - this.plotState.plotPosition.x;
         const accessionIndex = Math.floor(mousePosition.y
                                           / this.plotCreator.binHeight)
-                               - this.plotCreator.plotPosition.y;
+                               - this.plotState.plotPosition.y;
 
         if (binIndex >= this.plotCreator.colNum
             || accessionIndex >= this.plotCreator.rowNum) {
@@ -171,7 +171,7 @@ export class BinPlotComponent extends CanvasPlotElement
             const bpPerPixel = this.plotState.binsize
                                / this.plotCreator.zoomFactor;
             const plotOffset = this.plotCreator.guiMargins.left
-                               + this.plotCreator.plotPosition.x;
+                               + this.plotState.plotPosition.x;
 
             const leftPos = (this.plotCreator.highlight.start
                              - this.plotState.interval[0]) / bpPerPixel

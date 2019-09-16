@@ -104,12 +104,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
                                            ScaleBarComponent.GUI_SCALE_TICK_BP_DISTANCES);
         const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
 
-        const startX = (this.plotCreator.plotPosition.x
-                        * this.plotState.binsize)
+        const startX = (this.plotState.plotPosition.x * this.plotState.binsize)
                        / bpPerPixel;
-        const endX = (this.plotCreator.plotPosition.x
-                      * this.plotState.binsize + interval[1] - interval[0])
-                     / bpPerPixel;
+        const endX = (this.plotState.plotPosition.x * this.plotState.binsize
+                      + interval[1] - interval[0]) / bpPerPixel;
 
         // Baseline
         ctx.beginPath();
@@ -179,7 +177,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         }
         const bpPerPixel = binsize / this.plotCreator.zoomFactor;
         const bpPosition = position.x * bpPerPixel + interval[0]
-                           - (this.plotCreator.plotPosition.x
+                           - (this.plotState.plotPosition.x
                               + this.plotCreator.guiMargins.left)
                              * binsize;
         if (bpPosition < interval[0] || bpPosition > interval[1]) {
@@ -281,8 +279,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
                           tick: ScaleTick) {
         const canvasHeight = this.canvas.nativeElement.offsetHeight;
         const bpPerPixel = this.plotState.binsize / this.plotCreator.zoomFactor;
-        const tickX = (this.plotCreator.plotPosition.x
-                       * this.plotState.binsize
+        const tickX = (this.plotState.plotPosition.x * this.plotState.binsize
                        + tick.position - this.plotState.interval[0])
                       / bpPerPixel;
         const tickSize = tick.type === 'major' ? ScaleBarComponent.GUI_TICK_LENGTH

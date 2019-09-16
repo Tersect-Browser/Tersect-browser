@@ -74,7 +74,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
             this.plotState.accessionStyle$,
             this.plotState.zoomLevel$,
             this.plotState.accessionDictionary$,
-            this.plotCreator.plotPositionSource,
+            this.plotState.plotPositionSource,
             this.plotCreator.distanceBinsSource
         ]).pipe(
             filter(triggerVars => !triggerVars.some(isNullOrUndefined))

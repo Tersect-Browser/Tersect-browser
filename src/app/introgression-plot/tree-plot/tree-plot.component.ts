@@ -68,7 +68,7 @@ export class TreePlotComponent extends CanvasPlotElement {
     protected dragAction(dragState: DragState): void {
         // Only vertical dragging, rounded to accession indices.
         const newPos: Position = {
-            x: this.plotCreator.plotPosition.x,
+            x: this.plotState.plotPosition.x,
             y: Math.round(dragState.currentPosition.y
                           / this.plotCreator.binHeight
                           - this.dragStartIndex)
@@ -78,14 +78,14 @@ export class TreePlotComponent extends CanvasPlotElement {
             newPos.y = 0;
         }
 
-        this.plotCreator.updatePosition(newPos);
+        this.plotState.updatePosition(newPos);
     }
 
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession index.
         this.dragStartIndex = dragState.startPosition.y
                               / this.plotCreator.binHeight
-                              - this.plotCreator.plotPosition.y;
+                              - this.plotState.plotPosition.y;
     }
 
     protected dragStopAction(dragState: DragState): void {
@@ -98,7 +98,7 @@ export class TreePlotComponent extends CanvasPlotElement {
         }
         const accessionIndex = Math.floor(mousePosition.y
                                           / this.plotCreator.binHeight)
-                               - this.plotCreator.plotPosition.y;
+                               - this.plotState.plotPosition.y;
         if (accessionIndex >= this.plotCreator.rowNum) {
             return { plotAreaType: 'background' };
         }

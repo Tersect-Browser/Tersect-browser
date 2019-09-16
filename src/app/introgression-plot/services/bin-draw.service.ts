@@ -73,7 +73,7 @@ export class BinDrawService {
 
     private extractVisibleImage(targetCanvas: HTMLCanvasElement,
                                 imageArray: Uint8ClampedArray): ImageData {
-        const pos = this.plotCreator.plotPosition;
+        const pos = this.plotState.plotPosition;
         const colNum = this.plotCreator.colNum;
 
         let visibleCols = Math.ceil(targetCanvas.width
