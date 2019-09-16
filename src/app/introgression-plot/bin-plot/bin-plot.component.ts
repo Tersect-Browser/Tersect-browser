@@ -46,7 +46,7 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.plotService.plotArray)) { return; }
+        if (isNullOrUndefined(this.plotService.plotImageArray)) { return; }
 
         this.canvas.nativeElement
                    .style.width = `${this.plotState.zoomLevel}%`;
@@ -145,7 +145,7 @@ export class BinPlotComponent extends CanvasPlotElement {
     }
 
     private extractVisibleImage(): ImageData {
-        const fullArray = this.plotService.plotArray;
+        const fullArray = this.plotService.plotImageArray;
         const pos = this.plotService.plotPosition;
         const colNum = this.plotService.colNum;
 

@@ -118,7 +118,7 @@ export class IntrogressionPlotService implements OnDestroy {
         tree: TreeNode
     } = { query: null, tree: null };
 
-    plotArraySource = new BehaviorSubject<Uint8ClampedArray>(null);
+    plotImageArraySource = new BehaviorSubject<Uint8ClampedArray>(null);
 
     /**
      * Plot load status. When not an empty string, spinner overlay is displayed
@@ -199,8 +199,8 @@ export class IntrogressionPlotService implements OnDestroy {
         return ceilTo(this.plotPosition.y * this.binHeight, this.binHeight);
     }
 
-    get plotArray() {
-        return this.plotArraySource.getValue();
+    get plotImageArray() {
+        return this.plotImageArraySource.getValue();
     }
 
     get plotPosition() {
@@ -337,7 +337,7 @@ export class IntrogressionPlotService implements OnDestroy {
         });
 
         this.addPlotGaps(plotArray);
-        this.plotArraySource.next(plotArray);
+        this.plotImageArraySource.next(plotArray);
     }
 
     private getGaps$(): Observable<SequenceInterval[]> {

@@ -75,7 +75,7 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
             this.plotState.zoomLevel$,
             this.plotState.accessionDictionary$,
             this.plotService.plotPositionSource,
-            this.plotService.plotArraySource
+            this.plotService.plotImageArraySource
         ]).pipe(
             filter(triggerVars => !triggerVars.some(isNullOrUndefined))
         ).subscribe(() => {
