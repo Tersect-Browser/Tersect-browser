@@ -92,17 +92,17 @@ export class IntrogressionPlotComponent implements OnInit, OnDestroy {
         });
     }
 
+    ngOnDestroy() {
+        this.fullRedraw.unsubscribe();
+        this.binRedraw.unsubscribe();
+    }
+
     getErrors(): string {
         return Array.from(this.plotService.errorMessages).join('\n');
     }
 
     hasErrors(): boolean {
         return this.plotService.errorMessages.size > 0;
-    }
-
-    ngOnDestroy() {
-        this.fullRedraw.unsubscribe();
-        this.binRedraw.unsubscribe();
     }
 
     onClick($event: PlotMouseClickEvent) {
