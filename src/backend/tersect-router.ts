@@ -141,7 +141,7 @@ router.route('/query/:datasetId/dist')
     const reference = distBinQuery.reference;
     const binsize = distBinQuery.binsize;
 
-    write_accessions(distBinQuery.accessions).then((accFile) => {
+    writeAccessions(distBinQuery.accessions).then((accFile) => {
         const tersectCommand = `tersect dist -j ${tsi_location} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
@@ -263,7 +263,7 @@ router.route('/query/:datasetId/tree')
                 if (saveErr) {
                     return res.status(500).send('Tree creation failed');
                 }
-                generate_tree(tsi_location, treeQuery, dbQuery);
+                generateTree(tsi_location, treeQuery, dbQuery);
             });
             res.json(phyloTree);
         } else {
@@ -273,7 +273,7 @@ router.route('/query/:datasetId/tree')
     });
 });
 
-function create_rapidnj_tree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
+function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
     const rapidnj = spawn('rapidnj', ['-i', 'pd', phylipFile]);
 
     const stdoutClose$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
@@ -308,14 +308,14 @@ function create_rapidnj_tree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
 /**
  * Save list of accessions into a temporary file and return the file name.
  */
-async function write_accessions(accessions: string[]): Promise<string> {
+async function writeAccessions(accessions: string[]): Promise<string> {
     const outputFile = fileSync();
     await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
     return outputFile.name;
 }
 
-function generate_tree(tsiLocation: string, treeQuery: TreeQuery,
-                       dbQuery: TreeDatabaseQuery) {
+function generateTree(tsiLocation: string, treeQuery: TreeQuery,
+                      dbQuery: TreeDatabaseQuery) {
     const partitions = partitionQuery(tsiLocation, config['index_partitions'],
                                       treeQuery);
 
@@ -358,7 +358,7 @@ function generate_tree(tsiLocation: string, treeQuery: TreeQuery,
     });
 
     const inputFiles = [
-        write_accessions(treeQuery.accessions),
+        writeAccessions(treeQuery.accessions),
         ...positiveMatrixFiles,
         ...negativeMatrixFiles
     ];
@@ -377,6 +377,6 @@ function generate_tree(tsiLocation: string, treeQuery: TreeQuery,
         }
         return execPromise(mergeCommand);
     }).then((outputFilename: string) => {
-        create_rapidnj_tree(dbQuery, outputFilename.trim());
+        createRapidnjTree(dbQuery, outputFilename.trim());
     });
 }
