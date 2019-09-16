@@ -302,8 +302,8 @@ export class IntrogressionPlotService implements OnDestroy {
     }
 
     /**
-     * Verify if reference distance bins match the tree in terms of chromosome
-     * region and included accessions used.
+     * Verify if reference distance bins match the tree and the plot state
+     * in terms of chromosome region and included accessions used.
      */
     private binsMatchTree(distBins: DistanceBins, tree: PheneticTree): boolean {
         const treeRegion = formatRegion(tree.query.chromosome_name,
