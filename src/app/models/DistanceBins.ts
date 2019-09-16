@@ -1,6 +1,5 @@
 export interface DistanceBins {
-    reference: string;
-    region: string;
+    query: DistanceBinQuery;
     bins: { [accId: string]: number[] };
 }
 

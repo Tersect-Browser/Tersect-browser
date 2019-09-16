@@ -146,8 +146,7 @@ router.route('/query/:dataset_id/dist')
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
         const output: DistanceBins = {
-            reference: reference,
-            region: region,
+            query: distBinQuery,
             bins: {}
         };
 

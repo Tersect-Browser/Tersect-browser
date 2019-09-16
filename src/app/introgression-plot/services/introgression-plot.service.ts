@@ -306,17 +306,13 @@ export class IntrogressionPlotService implements OnDestroy {
      * in terms of chromosome region and included accessions used.
      */
     private binsMatchTree(distBins: DistanceBins, tree: PheneticTree): boolean {
-        const treeRegion = formatRegion(tree.query.chromosome_name,
-                                        tree.query.interval[0],
-                                        tree.query.interval[1]);
-        const regionMatch = distBins.region === treeRegion
-                            && (distBins.region.split(':')[0]
-                                === this.plotState.chromosome.name)
-                            && distBins.reference === this.plotState.reference;
-        if (!regionMatch) {
-            return false;
-        }
-        return sameElements(Object.keys(distBins.bins), tree.query.accessions);
+        return distBins.query.chromosome_name === tree.query.chromosome_name
+               && distBins.query.chromosome_name === this.plotState.chromosome.name
+               && distBins.query.interval[0] === tree.query.interval[0]
+               && distBins.query.interval[1] === tree.query.interval[1]
+               && distBins.query.reference === this.plotState.reference
+               && sameElements(distBins.query.accessions,
+                               tree.query.accessions);
     }
 
     private generatePlotArray() {
