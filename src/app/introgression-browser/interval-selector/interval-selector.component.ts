@@ -6,9 +6,6 @@ import {
     PlotStateService
 } from '../../introgression-plot/services/plot-state.service';
 import {
-    Chromosome
-} from '../../models/Chromosome';
-import {
     clamp, isNullOrUndefined
 } from '../../utils/utils';
 
@@ -27,15 +24,19 @@ export class IntervalSelectorComponent implements OnInit, OnDestroy {
 
     constructor(private readonly plotState: PlotStateService) { }
 
-    get chromosome(): Chromosome {
-        return this.plotState.chromosome;
+    get chromosomeSize(): number {
+        if (!isNullOrUndefined(this.plotState.chromosome)) {
+            return this.plotState.chromosome.size;
+        } else {
+            return 1;
+        }
     }
 
     set intervalEnd(pos: number) {
         const endPos = this.processInputPosition(pos);
         this.interval = [
             this.interval[0],
-            clamp(endPos, this.interval[0], this.chromosome.size)
+            clamp(endPos, this.interval[0], this.chromosomeSize)
         ];
     }
     get intervalEnd(): number {
@@ -70,7 +71,7 @@ export class IntervalSelectorComponent implements OnInit, OnDestroy {
         // Selecting full chromosome on click
         if ($event.event.type === 'click') {
             this.intervalStart = 1;
-            this.intervalEnd = this.chromosome.size;
+            this.intervalEnd = this.chromosomeSize;
             this.updateInterval();
         }
     }
