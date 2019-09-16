@@ -1,9 +1,20 @@
 import { Injectable } from '@angular/core';
 
-import { ceilTo, findClosest, formatCanvasFont, formatPosition } from '../../utils/utils';
-import { ContainerSize } from '../introgression-plot.component';
-import { PlotCreatorService } from './plot-creator.service';
-import { PlotStateService } from './plot-state.service';
+import {
+    ceilTo,
+    findClosest,
+    formatCanvasFont,
+    formatPosition
+} from '../../utils/utils';
+import {
+    ContainerSize
+} from '../introgression-plot.component';
+import {
+    PlotCreatorService
+} from './plot-creator.service';
+import {
+    PlotStateService
+} from './plot-state.service';
 
 interface ScaleTick {
     position: number;
@@ -35,9 +46,53 @@ export class ScaleDrawService {
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService) { }
 
+    private get bpPerPixel(): number {
+        return this.plotState.binsize / this.plotCreator.zoomFactor;
+    }
+
     drawScale(targetCanvas: HTMLCanvasElement, containerSize: ContainerSize) {
         this.updateCanvas(targetCanvas, containerSize);
         this.drawPositionScale(targetCanvas);
+    }
+
+    private drawAllTicks(ctx: CanvasRenderingContext2D) {
+        const tickBpDistance = findClosest(ScaleDrawService.GUI_TICK_DISTANCE
+                                           * this.bpPerPixel,
+                                           ScaleDrawService.GUI_SCALE_TICK_BP_DISTANCES);
+        const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
+
+        this.drawBaseline(ctx);
+
+        // Start tick
+        this.drawScaleTick(ctx, {
+            position: this.plotState.interval[0],
+            type: 'major',
+            useLabel: false
+        });
+
+        // End tick
+        this.drawScaleTick(ctx, {
+            position: this.plotState.interval[1],
+            type: 'major',
+            useLabel: false
+        });
+
+        this.drawMajorTicks(ctx, tickBpDistance, unit);
+        this.drawMinorTicks(ctx, tickBpDistance / 5);
+    }
+
+    private drawBaseline(ctx: CanvasRenderingContext2D) {
+        const interval = this.plotState.interval;
+        const startX = (this.plotState.plotPosition.x * this.plotState.binsize)
+                       / this.bpPerPixel;
+        const endX = (this.plotState.plotPosition.x * this.plotState.binsize
+                      + interval[1] - interval[0]) / this.bpPerPixel;
+
+        const baselinePos = ctx.canvas.height - 1;
+        ctx.beginPath();
+        ctx.moveTo(startX, baselinePos);
+        ctx.lineTo(endX, baselinePos);
+        ctx.stroke();
     }
 
     private drawMajorTicks(ctx: CanvasRenderingContext2D,
@@ -124,38 +179,7 @@ export class ScaleDrawService {
         ctx.font = formatCanvasFont(ScaleDrawService.GUI_SCALE_FONT_SIZE,
                                     ScaleDrawService.GUI_SCALE_FONT);
 
-        const interval = this.plotState.interval;
-        const bpPerPixel = this.plotState.binsize / this.plotCreator.zoomFactor;
-        const tickBpDistance = findClosest(ScaleDrawService.GUI_TICK_DISTANCE
-                                           * bpPerPixel,
-                                           ScaleDrawService.GUI_SCALE_TICK_BP_DISTANCES);
-        const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
-
-        const startX = (this.plotState.plotPosition.x * this.plotState.binsize)
-                       / bpPerPixel;
-        const endX = (this.plotState.plotPosition.x * this.plotState.binsize
-                      + interval[1] - interval[0]) / bpPerPixel;
-
-        // Baseline
-        ctx.beginPath();
-        ctx.moveTo(startX, canvasHeight - 1);
-        ctx.lineTo(endX, canvasHeight - 1);
-        ctx.stroke();
-
-        // Start / end ticks
-        this.drawScaleTick(ctx, {
-            position: interval[0],
-            type: 'major',
-            useLabel: false
-        });
-        this.drawScaleTick(ctx, {
-            position: interval[1],
-            type: 'major',
-            useLabel: false
-        });
-
-        this.drawMajorTicks(ctx, tickBpDistance, unit);
-        this.drawMinorTicks(ctx, tickBpDistance / 5);
+        this.drawAllTicks(ctx);
 
         // Hide scale over labels
         ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
