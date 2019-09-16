@@ -19,8 +19,8 @@ import {
 } from 'rxjs/operators';
 
 import {
-    PheneticTree
-} from '../../../backend/models/phenetictree';
+    NewickTree
+} from '../../../backend/models/newicktree';
 import {
     TreeNode,
     treeToOrderedList
@@ -62,7 +62,7 @@ export interface GUIMargins {
     left: number;
 }
 
-type PlotData = [DistanceBins, PheneticTree, SequenceInterval[]];
+type PlotData = [DistanceBins, NewickTree, SequenceInterval[]];
 
 @Injectable()
 export class PlotCreatorService implements OnDestroy {
@@ -253,8 +253,8 @@ export class PlotCreatorService implements OnDestroy {
      * Verify if reference distance bins match the tree and the plot state
      * in terms of chromosome region and included accessions used.
      */
-    private binsMatchTree(distBins: DistanceBins, tree: PheneticTree): boolean {
-        return distBins.query.chromosome_name === tree.query.chromosome_name
+    private binsMatchTree(distBins: DistanceBins, tree: NewickTree): boolean {
+        return distBins.query.chromosome_name === tree.query.chromosomeName
                && distBins.query.chromosome_name === this.plotState.chromosome.name
                && distBins.query.interval[0] === tree.query.interval[0]
                && distBins.query.interval[1] === tree.query.interval[1]
@@ -277,7 +277,7 @@ export class PlotCreatorService implements OnDestroy {
         );
     }
 
-    private getPheneticTree$(): Observable<PheneticTree> {
+    private getPheneticTree$(): Observable<NewickTree> {
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.chromosome$,
@@ -291,10 +291,10 @@ export class PlotCreatorService implements OnDestroy {
             debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom, interval, accessions]) =>
                 this.tersectBackendService
-                    .getPheneticTree(datasetId, chrom.name,
+                    .getNewickTree(datasetId, chrom.name,
                                      interval[0], interval[1],
                                      accessions).pipe(
-                    tap((tree: PheneticTree) => {
+                    tap((tree: NewickTree) => {
                         if (tree.status !== 'ready') {
                             this.plotLoadMessage = tree.status;
                             throw new Error('Tree still loading');
@@ -311,7 +311,7 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     private getPlotData$(distanceBins$: Observable<DistanceBins>,
-                         pheneticTree$: Observable<PheneticTree>,
+                         pheneticTree$: Observable<NewickTree>,
                          gaps$: Observable<SequenceInterval[]>): Observable<PlotData> {
         return combineLatest([
             distanceBins$,
@@ -397,7 +397,7 @@ export class PlotCreatorService implements OnDestroy {
             // Tree updated
             this.pheneticTree = {
                 query: tree.query,
-                tree: parseNewick(tree.tree_newick, true)
+                tree: parseNewick(tree.tree, true)
             };
             this.plotState
                 .orderedAccessions = treeToOrderedList(this.pheneticTree.tree);

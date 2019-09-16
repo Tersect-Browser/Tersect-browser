@@ -36,14 +36,14 @@ export function partitionQuery(tsiLocation: string,
 
     const partitions = partitionInterval({
         start: query.interval[0], end: query.interval[1]
-    }, chromosomePartitions[query.chromosome_name]);
+    }, chromosomePartitions[query.chromosomeName]);
 
     // Skip partitions which lie entirely outiside the chromosome
     partitions.indexed = partitions.indexed.filter(
-        p => p.start <= chromosomePartitions[query.chromosome_name][0]
+        p => p.start <= chromosomePartitions[query.chromosomeName][0]
     );
     partitions.nonindexed = partitions.nonindexed.filter(
-        p => p.start <= chromosomePartitions[query.chromosome_name][0]
+        p => p.start <= chromosomePartitions[query.chromosomeName][0]
     );
 
     return partitions;

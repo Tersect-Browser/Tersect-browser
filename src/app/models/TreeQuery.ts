@@ -1,5 +1,5 @@
 export interface TreeQuery {
-    chromosome_name: string;
+    chromosomeName: string;
     interval: number[];
     accessions: string[];
 }
@@ -8,8 +8,8 @@ export interface TreeQuery {
  * Required for a nested MongoDB query.
  */
 export interface TreeDatabaseQuery {
-    dataset_id: string;
-    'query.chromosome_name': string;
+    datasetId: string;
+    'query.chromosomeName': string;
     'query.interval': number[];
     'query.accessions': string[];
 }

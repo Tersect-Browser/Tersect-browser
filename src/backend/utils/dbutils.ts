@@ -1,8 +1,8 @@
-import { PheneticTree } from '../models/phenetictree';
+import { NewickTree } from '../models/newicktree';
 
 export async function cleanDatabase() {
     // Clean up unfinished trees.
-    await PheneticTree.deleteMany({ 'status': { $ne: 'ready' }}, err => {
+    await NewickTree.deleteMany({ 'status': { $ne: 'ready' }}, err => {
         if (err) {
             console.log(err);
             process.exit(0);

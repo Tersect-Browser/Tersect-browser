@@ -22,7 +22,7 @@ import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
 import { ChromosomeIndex } from './models/chromosomeindex';
 import { Dataset, DatasetPublic } from './models/dataset';
 import { DBMatrix } from './models/dbmatrix';
-import { PheneticTree } from './models/phenetictree';
+import { NewickTree } from './models/newicktree';
 import { ViewSettings } from './models/viewsettings';
 import { partitionQuery } from './partitioning';
 
@@ -58,8 +58,8 @@ router.use((req, res, next) => {
     next();
 });
 
-router.use('/query/:dataset_id', (req, res, next) => {
-    Dataset.findOne({ _id: req.params.dataset_id })
+router.use('/query/:datasetId', (req, res, next) => {
+    Dataset.findOne({ _id: req.params.datasetId })
            .exec((err, dataset: Dataset) => {
         if (err) {
             res.send(err);
@@ -74,7 +74,7 @@ router.use('/query/:dataset_id', (req, res, next) => {
     });
 });
 
-router.route('/query/:dataset_id/samples')
+router.route('/query/:datasetId/samples')
       .get((req, res) => {
     const options = {
         maxBuffer: 5 * 1024 * 1024 // 5 megabytes
@@ -94,7 +94,7 @@ router.route('/query/:dataset_id/samples')
     });
 });
 
-router.route('/query/:dataset_id/chromosomes')
+router.route('/query/:datasetId/chromosomes')
       .get((req, res) => {
     ChromosomeIndex.find({
         reference: res.locals.dataset.reference
@@ -109,7 +109,7 @@ router.route('/query/:dataset_id/chromosomes')
     });
 });
 
-router.route('/query/:dataset_id/gaps/:chromosome')
+router.route('/query/:datasetId/gaps/:chromosome')
       .get((req, res) => {
     ChromosomeIndex.findOne({
         reference: res.locals.dataset.reference,
@@ -125,7 +125,7 @@ router.route('/query/:dataset_id/gaps/:chromosome')
     });
 });
 
-router.route('/query/:dataset_id/dist')
+router.route('/query/:datasetId/dist')
       .post((req, res) => {
     const options = {
         maxBuffer: 200 * 1024 * 1024 // 200 megabytes
@@ -235,25 +235,27 @@ function exportView(req, res) {
 router.route('/views/export')
       .post(exportView);
 
-router.route('/query/:dataset_id/tree')
+router.route('/query/:datasetId/tree')
       .post((req, res) => {
     const tsi_location = res.locals.dataset.tsi_location;
     const treeQuery: TreeQuery = req.body;
     const dbQuery: TreeDatabaseQuery = {
-        dataset_id: req.params.dataset_id,
-        'query.chromosome_name': treeQuery.chromosome_name,
+        datasetId: req.params.datasetId,
+        'query.chromosomeName': treeQuery.chromosomeName,
         'query.interval': treeQuery.interval,
         'query.accessions': treeQuery.accessions
     };
-    PheneticTree.findOne(dbQuery)
-                .exec((err, result: PheneticTree) => {
+    console.log(dbQuery);
+    NewickTree.findOne(dbQuery)
+                .exec((err, result: NewickTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {
             // Generating new tree
-            const phyloTree = new PheneticTree({
-                dataset_id: req.params.dataset_id,
-                'query.chromosome_name': treeQuery.chromosome_name,
+            console.log('GENERATING');
+            const phyloTree = new NewickTree({
+                datasetId: req.params.datasetId,
+                'query.chromosomeName': treeQuery.chromosomeName,
                 'query.interval': treeQuery.interval,
                 'query.accessions': treeQuery.accessions,
                 status: 'Collating data...'
@@ -294,12 +296,12 @@ function create_rapidnj_tree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
         reduce((newickOutput, chunk) => newickOutput + chunk, ''),
         map(newickOutput => ({
             status: 'ready',
-            tree_newick: newickOutput
+            tree: newickOutput
         }))
     );
 
     merge(progress$, result$).pipe(
-        concatMap(update => PheneticTree.updateOne(dbQuery, update))
+        concatMap(update => NewickTree.updateOne(dbQuery, update))
     ).subscribe(() => {});
 }
 
@@ -318,10 +320,10 @@ function generate_tree(tsiLocation: string, treeQuery: TreeQuery,
                                       treeQuery);
 
     const dbFiles = partitions.indexed.map(async interval => {
-        const region = formatRegion(treeQuery.chromosome_name, interval.start,
+        const region = formatRegion(treeQuery.chromosomeName, interval.start,
                                     interval.end);
         const result = await DBMatrix.findOne(
-            { dataset_id: dbQuery.dataset_id, region: region },
+            { dataset_id: dbQuery.datasetId, region: region },
             { _id: 0, matrix_file: 1 }
         );
         return result['matrix_file'];
@@ -329,8 +331,8 @@ function generate_tree(tsiLocation: string, treeQuery: TreeQuery,
 
     const tersectOutputFiles = partitions.nonindexed.map(async interval => {
         const outputFile = fileSync();
-        const region = formatRegion(treeQuery.chromosome_name, interval.start,
-                                    interval.end);
+        const region = formatRegion(treeQuery.chromosomeName,
+                                    interval.start, interval.end);
         const command = `tersect dist ${tsiLocation} ${region} > ${outputFile.name}`;
         const result = await execPromise(command);
         // TODO: error handling on tersect result / promise rejection

@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
 import { DatasetPublic } from '../../backend/models/dataset';
-import { PheneticTree } from '../../backend/models/phenetictree';
+import { NewickTree } from '../../backend/models/newicktree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { Chromosome } from '../models/Chromosome';
 import { DistanceBinQuery, DistanceBins } from '../models/DistanceBins';
@@ -53,8 +53,8 @@ export class TersectBackendService {
     }
 
     /**
-     * Retrieve a phenetic tree for a given list of accessions in a specific
-     * dataset and chromosomal interval.
+     * Retrieve a Newick-formatted phenetic tree for a given list of accessions
+     * in a specific dataset and chromosomal interval.
      *
      * @param datasetId dataset being used
      * @param chromosome chromosome of interest
@@ -62,19 +62,19 @@ export class TersectBackendService {
      * @param end end position of the interval of interest
      * @param accessions array of accessions to use
      */
-    getPheneticTree(datasetId: string, chromosome: string,
+    getNewickTree(datasetId: string, chromosome: string,
                     start: number, end: number,
-                    accessions: string[]): Observable<PheneticTree> {
+                    accessions: string[]): Observable<NewickTree> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
         const query = `${this.apiUrl}/query/${datasetId}/tree`;
         const treeQuery: TreeQuery = {
-            chromosome_name: chromosome,
+            chromosomeName: chromosome,
             interval: [start, end],
             accessions: accessions
         };
-        return this.http.post<PheneticTree>(query, treeQuery, httpOptions);
+        return this.http.post<NewickTree>(query, treeQuery, httpOptions);
     }
 
     /**
