@@ -45,8 +45,8 @@ import {
     ReferenceSelectorComponent
 } from './reference-selector/reference-selector.component';
 import {
-    ShareButtonComponent
-} from './share-button/share-button.component';
+    ShareMenuComponent
+} from './share-menu/share-menu.component';
 import {
     TersectBrowserComponent
 } from './tersect-browser.component';
@@ -59,7 +59,7 @@ import {
         ChromosomeSelectorComponent,
         IntervalSelectorComponent,
         BinsizeSelectorComponent,
-        ShareButtonComponent
+        ShareMenuComponent
     ],
     exports: [
         TersectBrowserComponent

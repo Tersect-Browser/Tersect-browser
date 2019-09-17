@@ -1,9 +1,5 @@
-<button pButton label="Share" icon="fa fa-external-link"
-    (click)="sharepanel.toggle($event)">
-</button>
-
-<p-overlayPanel #sharepanel (onShow)="exportView()"
-                            (onHide)="clearLink()">
+<p-overlayPanel (onShow)="exportView()"
+                (onHide)="clearLink()">
     <b>Link to current view:</b>
     <div class="ui-inputgroup share-button">
         <input pInputText [value]="shareLink" [size]="45" readonly="readonly">

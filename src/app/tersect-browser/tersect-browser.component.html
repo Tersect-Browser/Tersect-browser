@@ -41,7 +41,10 @@
         <button pButton label="Download" icon="fa fa-download"
             disabled="true">
         </button>
-        <app-share-button></app-share-button>
+        <button pButton label="Share" icon="fa fa-external-link"
+            (click)="sharemenu.toggle($event)">
+        </button>
+        <app-share-menu #sharemenu></app-share-menu>
     </div>
 </div>
 

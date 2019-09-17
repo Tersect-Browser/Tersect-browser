@@ -1,7 +1,8 @@
 import { PlatformLocation } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 
 import { join } from 'path';
+import { OverlayPanel } from 'primeng/overlaypanel';
 
 import {
     TersectBackendService
@@ -11,11 +12,14 @@ import {
 } from '../../tersect-distance-plot/services/plot-state.service';
 
 @Component({
-    selector: 'app-share-button',
-    templateUrl: 'share-button.component.html',
-    styleUrls: ['share-button.component.css']
+    selector: 'app-share-menu',
+    templateUrl: 'share-menu.component.html',
+    styleUrls: ['share-menu.component.css']
 })
-export class ShareButtonComponent {
+export class ShareMenuComponent {
+    @ViewChild(OverlayPanel, { static: true })
+    private readonly panel: OverlayPanel;
+
     shareLink: string;
 
     constructor(private readonly plotState: PlotStateService,
@@ -44,5 +48,9 @@ export class ShareButtonComponent {
             const host = this.platformLocation['location'].origin;
             this.shareLink = join(host, 'TersectBrowser', 'share', id);
         });
+    }
+
+    toggle($event: Event) {
+        this.panel.toggle($event);
     }
 }
