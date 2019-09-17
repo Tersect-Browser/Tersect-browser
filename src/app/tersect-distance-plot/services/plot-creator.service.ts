@@ -22,7 +22,6 @@ import {
     NewickTree
 } from '../../../backend/models/newicktree';
 import {
-    TreeNode,
     treeToOrderedList
 } from '../../clustering/clustering';
 import {
