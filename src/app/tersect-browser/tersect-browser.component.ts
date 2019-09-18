@@ -24,6 +24,9 @@ import {
     PlotZoomService
 } from '../tersect-distance-plot/services/plot-zoom.service';
 import {
+    TersectDistancePlotComponent
+} from '../tersect-distance-plot/tersect-distance-plot.component';
+import {
     TooltipComponent
 } from '../tooltip/tooltip.component';
 import {
@@ -52,11 +55,14 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     static readonly DEFAULT_ZOOM_LEVEL = 100;
 
-    @ViewChild(PlotClickMenuComponent, { static: true })
-    private readonly plotClickMenu: PlotClickMenuComponent;
+    @ViewChild(TersectDistancePlotComponent, { static: true })
+    readonly distancePlot: TersectDistancePlotComponent;
 
     @ViewChild(TooltipComponent, { static: true })
     readonly tooltip: TooltipComponent;
+
+    @ViewChild(PlotClickMenuComponent, { static: true })
+    private readonly plotClickMenu: PlotClickMenuComponent;
 
     accessionGroups: AccessionGroup[];
     chromosomes: Chromosome[];

@@ -30,8 +30,7 @@ import {
 @Component({
     selector: 'app-scale-bar',
     templateUrl: './scale-bar.component.html',
-    styleUrls: ['./scale-bar.component.css'],
-    providers: [ ScaleDrawService ]
+    styleUrls: ['./scale-bar.component.css']
 })
 export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })

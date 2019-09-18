@@ -31,8 +31,7 @@ import {
 @Component({
     selector: 'app-tree-plot',
     templateUrl: './tree-plot.component.html',
-    styleUrls: ['./tree-plot.component.css'],
-    providers: [ TreeDrawService ]
+    styleUrls: ['./tree-plot.component.css']
 })
 export class TreePlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })

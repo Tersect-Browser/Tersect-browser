@@ -53,3 +53,7 @@ html, body {
     background-image: url("assets/nofill.png");
     background-size: cover;
 }
+
+.dialog-small-margin {
+    margin: 5px;
+}

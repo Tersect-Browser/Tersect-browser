@@ -36,6 +36,11 @@ export class BinDrawService {
                          this.plotCreator.guiMargins.left, 0);
     }
 
+    getImageData(): ImageData {
+        return new ImageData(this.imageArray, this.plotCreator.colNum,
+                             this.plotCreator.rowNum);
+    }
+
     private addPlotGap(plotArray: Uint8ClampedArray, gap: SequenceInterval) {
         const rowNum = this.plotCreator.rowNum;
         const colNum = this.plotCreator.colNum;

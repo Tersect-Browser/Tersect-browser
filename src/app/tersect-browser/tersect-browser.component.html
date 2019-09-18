@@ -39,12 +39,13 @@
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
         <button pButton label="Download" icon="fa fa-download"
-            disabled="true">
+            (click)="downloadDialog.showDialog(distancePlot.getPlotImage())">
         </button>
-        <button pButton label="Share" icon="fa fa-external-link"
-            (click)="sharemenu.toggle($event)">
+        <app-download-dialog #downloadDialog></app-download-dialog>
+        <button pButton label="Share" icon="fa fa-share-square-o"
+            (click)="shareMenu.toggle($event)">
         </button>
-        <app-share-menu #sharemenu></app-share-menu>
+        <app-share-menu #shareMenu></app-share-menu>
     </div>
 </div>
 
@@ -59,7 +60,7 @@
     </app-accession-tab>
 </p-sidebar>
 
-<div #plotContainer class="plot-container">
+<div class="plot-container">
     <app-tersect-distance-plot
         (plotMouseClick)="plotClick($event)"
         (plotMouseHover)="tooltip.show($event)"

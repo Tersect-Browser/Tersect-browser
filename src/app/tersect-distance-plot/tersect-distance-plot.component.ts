@@ -25,12 +25,22 @@ import {
 import {
     ScaleBarComponent
 } from './scale-bar/scale-bar.component';
+import { BinDrawService } from './services/bin-draw.service';
+import {
+    ExportPlotService
+} from './services/export-plot.service';
 import {
     PlotCreatorService
 } from './services/plot-creator.service';
 import {
     PlotStateService
 } from './services/plot-state.service';
+import {
+    ScaleDrawService
+} from './services/scale-draw.service';
+import {
+    TreeDrawService
+} from './services/tree-draw.service';
 import {
     TreePlotComponent
 } from './tree-plot/tree-plot.component';
@@ -44,7 +54,13 @@ export interface ContainerSize {
     selector: 'app-tersect-distance-plot',
     templateUrl: './tersect-distance-plot.component.html',
     styleUrls: ['./tersect-distance-plot.component.css'],
-    providers: [ PlotCreatorService ]
+    providers: [
+        PlotCreatorService,
+        BinDrawService,
+        ScaleDrawService,
+        TreeDrawService,
+        ExportPlotService
+    ]
 })
 export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     @ViewChild(BinPlotComponent, { static: true })
@@ -63,7 +79,8 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     private fullRedraw: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotCreator: PlotCreatorService) { }
+                private readonly plotCreator: PlotCreatorService,
+                private readonly plotExporter: ExportPlotService) { }
 
     get plotLoadMessage() {
         return this.plotCreator.plotLoadMessage;
@@ -86,6 +103,10 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.fullRedraw.unsubscribe();
+    }
+
+    getPlotImage(): Promise<Blob> {
+        return this.plotExporter.exportImage();
     }
 
     getErrors(): string {

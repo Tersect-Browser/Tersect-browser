@@ -36,8 +36,7 @@ import {
 @Component({
     selector: 'app-bin-plot',
     templateUrl: './bin-plot.component.html',
-    styleUrls: ['./bin-plot.component.css'],
-    providers: [ BinDrawService ]
+    styleUrls: ['./bin-plot.component.css']
 })
 export class BinPlotComponent extends CanvasPlotElement
                               implements OnInit, OnDestroy  {

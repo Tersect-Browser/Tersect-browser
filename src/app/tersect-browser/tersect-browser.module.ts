@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SidebarModule } from 'primeng/sidebar';
 import { SliderModule } from 'primeng/slider';
+import { TabViewModule } from 'primeng/tabview';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { ToolbarModule } from 'primeng/toolbar';
 
@@ -39,6 +41,9 @@ import {
     ChromosomeSelectorComponent
 } from './chromosome-selector/chromosome-selector.component';
 import {
+    DownloadDialogComponent
+} from './download-dialog/download-dialog.component';
+import {
     IntervalSelectorComponent
 } from './interval-selector/interval-selector.component';
 import {
@@ -59,7 +64,8 @@ import {
         ChromosomeSelectorComponent,
         IntervalSelectorComponent,
         BinsizeSelectorComponent,
-        ShareMenuComponent
+        ShareMenuComponent,
+        DownloadDialogComponent
     ],
     exports: [
         TersectBrowserComponent
@@ -81,7 +87,9 @@ import {
         PlotClickMenuModule,
         TooltipModule,
         AccessionTabModule,
-        FitWindowModule
+        FitWindowModule,
+        TabViewModule,
+        DialogModule
     ]
 })
 export class TersectBrowserModule { }
