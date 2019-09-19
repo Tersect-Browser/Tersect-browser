@@ -11,7 +11,8 @@ import {
 } from '../../tersect-browser/browser-settings';
 import {
     ceilTo,
-    formatCanvasFont
+    formatCanvasFont,
+    isNullOrUndefined
 } from '../../utils/utils';
 import {
     AccessionTreeView
@@ -202,6 +203,9 @@ export class TreeDrawService {
      */
     getMaxColorCount(treeView: AccessionTreeView): number {
         let count = 0;
+        if (isNullOrUndefined(treeView.accessionDictionary)) {
+            return 0;
+        }
         Object.values(treeView.accessionDictionary).forEach(acc => {
             if ('colors' in acc && acc.colors.length > count) {
                 count = acc.colors.length;
