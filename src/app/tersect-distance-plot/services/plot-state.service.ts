@@ -119,7 +119,7 @@ export class PlotStateService {
         this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
     }
 
-    get plotPosition() {
+    get plotPosition(): Position {
         return this.plotPositionSource.getValue();
     }
 
