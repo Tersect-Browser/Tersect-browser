@@ -1,8 +1,14 @@
 import {
-    AccessionDisplayStyle,
-    AccessionInfo,
+    Chromosome
+} from '../../models/Chromosome';
+import {
+    Position
+} from '../../models/Plot';
+import {
     AccessionDictionary,
-    AccessionGroup
+    AccessionDisplayStyle,
+    AccessionGroup,
+    AccessionInfo
 } from '../../tersect-browser/browser-settings';
 
 export interface PlotState {
@@ -14,10 +20,10 @@ export interface PlotState {
     accessions: string[];
     reference: string;
     chromosome: Chromosome;
-    interval(): number[];
-    binsize(): number;
-    zoomLevel(): number;
-    orderedAccessions(): string[];
+    interval: number[];
+    binsize: number;
+    zoomLevel: number;
+    orderedAccessions: string[];
     plugins: string[];
-    plotPosition:
+    plotPosition: Position;
 }

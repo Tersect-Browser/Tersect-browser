@@ -21,9 +21,12 @@ import {
     isNullOrUndefined,
     sameElements
 } from '../../utils/utils';
+import {
+    PlotState
+} from '../models/PlotState';
 
 @Injectable()
-export class PlotStateService {
+export class PlotStateService implements PlotState {
     settings$: Observable<BrowserSettings>;
 
     /**
