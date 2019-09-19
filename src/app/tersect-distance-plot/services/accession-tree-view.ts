@@ -37,7 +37,7 @@ export class AccessionTreeView {
 
     canvasOffsetY: number;
     redrawRequired: boolean;
-    viewCanvas: HTMLCanvasElement;
+    offscreenCanvas: HTMLCanvasElement;
 
     private readonly scrollStepY: number;
 
@@ -63,8 +63,8 @@ export class AccessionTreeView {
         this.zoomLevel = zoomLevel;
         this.scrollStepY = !isNullOrUndefined(scrollStepY) ? scrollStepY : 1;
 
-        this.viewCanvas = document.createElement('canvas');
-        this.viewCanvas.height = AccessionTreeView.STORED_CANVAS_HEIGHT;
+        this.offscreenCanvas = document.createElement('canvas');
+        this.offscreenCanvas.height = AccessionTreeView.STORED_CANVAS_HEIGHT;
 
         this.redrawRequired = true;
     }

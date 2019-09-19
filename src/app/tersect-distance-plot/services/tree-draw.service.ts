@@ -73,7 +73,7 @@ export class TreeDrawService {
                         containerSize,
                         zoom);
         if (treeView.redrawRequired) {
-            this.updateCanvasWidth(targetCanvas, treeView.viewCanvas,
+            this.updateCanvasWidth(targetCanvas, treeView.offscreenCanvas,
                                    containerSize);
             this.generateTree(treeView);
             treeView.redrawRequired = false;
@@ -82,7 +82,7 @@ export class TreeDrawService {
         targetCanvas.height = containerSize.height;
         const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
         ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
-        ctx.drawImage(treeView.viewCanvas, 0,
+        ctx.drawImage(treeView.offscreenCanvas, 0,
                       this.plotCreator.offsetY - treeView.canvasOffsetY);
     }
 
@@ -93,7 +93,7 @@ export class TreeDrawService {
                                * this.plotCreator.binWidth;
             const colors = this.plotCreator.getAccessionColors(accId);
             colors.forEach((col, j) => {
-                const xpos = treeView.viewCanvas.width - (j + 1) * trackWidth;
+                const xpos = treeView.offscreenCanvas.width - (j + 1) * trackWidth;
                 const ypos = rowIndex * this.plotCreator.binHeight;
                 ctx.fillStyle = col;
                 ctx.fillRect(xpos, ypos, trackWidth,
@@ -188,7 +188,7 @@ export class TreeDrawService {
     }
 
     private generateTree(treeView: AccessionTreeView) {
-        const ctx: CanvasRenderingContext2D = treeView.viewCanvas
+        const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
                                                       .getContext('2d');
         // Draw background
         ctx.fillStyle = TreeDrawService.TREE_BG_COLOR;
@@ -250,7 +250,7 @@ export class TreeDrawService {
 
     private getTreeScale(ctx: CanvasRenderingContext2D,
                          treeView: AccessionTreeView): number {
-        const availableWidth = treeView.viewCanvas.width
+        const availableWidth = treeView.offscreenCanvas.width
                                - this.getMaxLabelWidth(ctx)
                                - this.getColorTracksWidth()
                                - this.plotCreator.binWidth
@@ -268,9 +268,9 @@ export class TreeDrawService {
     }
 
     private updateCanvasWidth(targetCanvas: HTMLCanvasElement,
-                              viewCanvas: HTMLCanvasElement,
+                              offscreenCanvas: HTMLCanvasElement,
                               containerSize: ContainerSize) {
-        const ctx: CanvasRenderingContext2D = viewCanvas.getContext('2d');
+        const ctx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
         let width: number;
         if (this.plotState.accessionStyle === 'labels') {
             width = ceilTo(this.getMaxLabelWidth(ctx)
@@ -281,7 +281,7 @@ export class TreeDrawService {
                            * TreeDrawService.TREE_PLOT_PROPORTION,
                            this.plotCreator.binWidth);
         }
-        viewCanvas.width = width;
+        offscreenCanvas.width = width;
         targetCanvas.width = width;
         this.plotCreator.guiMargins.left = width / this.plotCreator.zoomFactor;
     }
