@@ -56,24 +56,11 @@ export class TreePlotComponent extends CanvasPlotElement {
 
     draw() {
         if (isNullOrUndefined(this.storedTreeView)) {
-            this.storedTreeView = new AccessionTreeView(this.plotState.accessionDictionary,
-                                                        this.plotState.accessionStyle,
-                                                        this.plotCreator.pheneticTree,
-                                                        this.plotCreator.offsetY,
-                                                        this.getContainerSize(),
-                                                        this.plotCreator.binHeight);
-            this.storedTreeView.orderedAccessions = this.plotState
-                                                        .orderedAccessions;
-        } else {
-            this.storedTreeView.update(this.plotState.accessionDictionary,
-                                       this.plotState.accessionStyle,
-                                       this.plotCreator.pheneticTree,
-                                       this.plotCreator.offsetY,
-                                       this.getContainerSize(),
-                                       this.plotCreator.binHeight);
-            this.storedTreeView.orderedAccessions = this.plotState
-                                                        .orderedAccessions;
+            this.storedTreeView = new AccessionTreeView(this.plotCreator.pheneticTree,
+                                                        this.plotCreator.binHeight,
+                                                        this.getContainerSize());
         }
+        this.updateTreeView(this.storedTreeView);
         this.treeDrawService.drawTree(this.canvas.nativeElement,
                                       this.storedTreeView,
                                       0, this.plotCreator.offsetY,
@@ -141,5 +128,15 @@ export class TreePlotComponent extends CanvasPlotElement {
                               .parentElement
                               .offsetWidth
         };
+    }
+
+    private updateTreeView(treeView: AccessionTreeView) {
+        treeView.accessionDictionary = this.plotState.accessionDictionary;
+        treeView.accessionStyle = this.plotState.accessionStyle;
+        treeView.tree = this.plotCreator.pheneticTree;
+        treeView.canvasOffsetY = this.plotCreator.offsetY;
+        treeView.containerSize = this.getContainerSize();
+        treeView.textSize = this.plotCreator.binHeight;
+        treeView.orderedAccessions = this.plotState.orderedAccessions;
     }
 }

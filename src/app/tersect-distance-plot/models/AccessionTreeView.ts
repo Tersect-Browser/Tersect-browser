@@ -1,6 +1,9 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
+    treeToOrderedList
+} from '../../clustering/clustering';
+import {
     PheneticTree
 } from '../../models/PheneticTree';
 import {
@@ -9,7 +12,8 @@ import {
 } from '../../tersect-browser/browser-settings';
 import {
     ceilTo,
-    deepCopy
+    deepCopy,
+    isNullOrUndefined
 } from '../../utils/utils';
 import {
     ContainerSize
@@ -28,31 +32,27 @@ export class AccessionTreeView {
      */
     static readonly STORED_CANVAS_OFFSET_STEP = 0.5;
 
-    accessionStyle: AccessionDisplayStyle;
-    accessionDictionary: AccessionDictionary;
-    canvasOffsetY: number;
-    colorTrackWidth: number;
     offscreenCanvas: HTMLCanvasElement;
-    orderedAccessions: string[];
     redrawRequired: boolean;
-    textSize: number;
-    tree: PheneticTree;
 
-    private containerSize: ContainerSize;
+    private _accessionDictionary: AccessionDictionary;
+    private _accessionStyle: AccessionDisplayStyle;
+    private _canvasOffsetY: number;
+    private _colorTrackWidth: number;
+    private _containerSize: ContainerSize;
+    private _orderedAccessions: string[];
+    private _textSize: number;
+    private _tree: PheneticTree;
 
-    constructor(accDict: AccessionDictionary,
-                accStyle: AccessionDisplayStyle,
-                tree: PheneticTree,
-                containerOffsetY: number,
-                containerSize: ContainerSize,
-                textSize: number) {
-        this.accessionDictionary = deepCopy(accDict);
-        this.accessionStyle = accStyle;
-        this.tree = deepCopy(tree);
-
-        this.canvasOffsetY = containerOffsetY;
-        this.containerSize = deepCopy(containerSize);
+    constructor(tree: PheneticTree,
+                textSize: number,
+                containerSize: ContainerSize) {
+        this.tree = tree;
         this.textSize = textSize;
+        this.containerSize = containerSize;
+
+        this.accessionStyle = 'tree_linear';
+        this.canvasOffsetY = 0;
         this.colorTrackWidth = textSize;
 
         this.offscreenCanvas = document.createElement('canvas');
@@ -61,25 +61,100 @@ export class AccessionTreeView {
         this.redrawRequired = true;
     }
 
-    update(accDict: AccessionDictionary,
-           accStyle: AccessionDisplayStyle,
-           tree: PheneticTree,
-           containerOffsetY: number,
-           containerSize: ContainerSize,
-           textSize: number) {
-        if (!this.isVisibleAreaDrawn(containerOffsetY, containerSize)
-            || this.settingsChanged(accDict, accStyle, tree,
-                                    containerSize, textSize)) {
-            this.updateOffset(containerOffsetY, containerSize);
-
-            this.accessionDictionary = deepCopy(accDict);
-            this.accessionStyle = accStyle;
-            this.tree = deepCopy(tree);
-            this.containerSize = deepCopy(containerSize);
-            this.textSize = textSize;
-
+    set accessionDictionary(accessionDictionary: AccessionDictionary) {
+        if (isNullOrUndefined(this._accessionDictionary)
+            || !deepEqual(accessionDictionary, this._accessionDictionary)) {
+            this._accessionDictionary = deepCopy(accessionDictionary);
             this.redrawRequired = true;
         }
+    }
+    get accessionDictionary(): AccessionDictionary {
+        return this._accessionDictionary;
+    }
+
+    set accessionStyle(accessionStyle: AccessionDisplayStyle) {
+        if (isNullOrUndefined(this._accessionStyle)
+            || accessionStyle !== this._accessionStyle) {
+            this._accessionStyle = accessionStyle;
+            this.redrawRequired = true;
+        }
+    }
+    get accessionStyle(): AccessionDisplayStyle {
+        return this._accessionStyle;
+    }
+
+    set canvasOffsetY(canvasOffsetY: number) {
+        if (isNullOrUndefined(this._canvasOffsetY)) {
+            this._canvasOffsetY = canvasOffsetY;
+            this.redrawRequired = true;
+        } else if (!this.isVisibleAreaDrawn(canvasOffsetY,
+                                            this.containerSize)) {
+            this.updateOffset(canvasOffsetY, this.containerSize);
+            this.redrawRequired = true;
+        }
+    }
+    get canvasOffsetY(): number {
+        return this._canvasOffsetY;
+    }
+
+    set colorTrackWidth(colorTrackWidth: number) {
+        if (isNullOrUndefined(this._colorTrackWidth)
+            || colorTrackWidth !== this._colorTrackWidth) {
+            this._colorTrackWidth = colorTrackWidth;
+            this.redrawRequired = true;
+        }
+    }
+    get colorTrackWidth(): number {
+        return this._colorTrackWidth;
+    }
+
+    set containerSize(containerSize: ContainerSize) {
+        if (isNullOrUndefined(this._containerSize)
+            || containerSize.width !== this._containerSize.width
+            || containerSize.height !== this._containerSize.height) {
+            this._containerSize = deepCopy(containerSize);
+            this.redrawRequired = true;
+        }
+    }
+    get containerSize(): ContainerSize {
+        return this._containerSize;
+    }
+
+    set orderedAccessions(orderedAccessions: string[]) {
+        if (isNullOrUndefined(this._orderedAccessions)
+            || !deepEqual(orderedAccessions, this._orderedAccessions)) {
+            this._orderedAccessions = deepCopy(orderedAccessions);
+            this.redrawRequired = true;
+        }
+    }
+    get orderedAccessions(): string[] {
+        if (isNullOrUndefined(this._orderedAccessions)
+            && !isNullOrUndefined(this.tree)) {
+            this._orderedAccessions = treeToOrderedList(this.tree.root);
+        }
+        return this._orderedAccessions;
+    }
+
+    set tree(tree: PheneticTree) {
+        if (isNullOrUndefined(this._tree)
+            || !deepEqual(tree.query, this._tree.query)) {
+            this._tree = deepCopy(tree);
+            this.redrawRequired = true;
+        }
+    }
+    get tree(): PheneticTree {
+        return this._tree;
+    }
+
+    set textSize(textSize: number) {
+        if (isNullOrUndefined(this._textSize)
+            || textSize !== this._textSize) {
+            this._textSize = textSize;
+            this.redrawRequired = true;
+        }
+    }
+    get textSize(): number {
+        return this._textSize;
     }
 
     /**
@@ -107,22 +182,6 @@ export class AccessionTreeView {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Check whether the stored canvas settings match the provided settings.
-     */
-    private settingsChanged(accDict: AccessionDictionary,
-                            accStyle: AccessionDisplayStyle,
-                            tree: PheneticTree,
-                            containerSize: ContainerSize,
-                            textSize: number): boolean {
-        return textSize !== this.textSize
-               || containerSize.width !== this.containerSize.width
-               || containerSize.height !== this.containerSize.height
-               || accStyle !== this.accessionStyle
-               || !deepEqual(tree.query, this.tree.query)
-               || !deepEqual(accDict, this.accessionDictionary);
     }
 
     private updateOffset(containerOffsetY: number,
