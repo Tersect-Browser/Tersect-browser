@@ -9,8 +9,7 @@ import {
 } from '../../tersect-browser/browser-settings';
 import {
     ceilTo,
-    deepCopy,
-    isNullOrUndefined
+    deepCopy
 } from '../../utils/utils';
 import {
     ContainerSize
@@ -29,33 +28,32 @@ export class AccessionTreeView {
      */
     static readonly STORED_CANVAS_OFFSET_STEP = 0.5;
 
+    accessionStyle: AccessionDisplayStyle;
+    accessionDictionary: AccessionDictionary;
     canvasOffsetY: number;
-    redrawRequired: boolean;
+    colorTrackWidth: number;
     offscreenCanvas: HTMLCanvasElement;
+    orderedAccessions: string[];
+    redrawRequired: boolean;
+    textSize: number;
+    tree: PheneticTree;
 
-    private readonly scrollStepY: number;
-
-    private accessionDictionary: AccessionDictionary;
-    private accessionStyle: AccessionDisplayStyle;
     private containerSize: ContainerSize;
-    private tree: PheneticTree;
-    private zoomLevel: number;
 
     constructor(accDict: AccessionDictionary,
                 accStyle: AccessionDisplayStyle,
                 tree: PheneticTree,
                 containerOffsetY: number,
                 containerSize: ContainerSize,
-                zoomLevel: number,
-                scrollStepY?: number) {
+                textSize: number) {
         this.accessionDictionary = deepCopy(accDict);
         this.accessionStyle = accStyle;
         this.tree = deepCopy(tree);
 
         this.canvasOffsetY = containerOffsetY;
         this.containerSize = deepCopy(containerSize);
-        this.zoomLevel = zoomLevel;
-        this.scrollStepY = !isNullOrUndefined(scrollStepY) ? scrollStepY : 1;
+        this.textSize = textSize;
+        this.colorTrackWidth = textSize;
 
         this.offscreenCanvas = document.createElement('canvas');
         this.offscreenCanvas.height = AccessionTreeView.STORED_CANVAS_HEIGHT;
@@ -68,17 +66,17 @@ export class AccessionTreeView {
            tree: PheneticTree,
            containerOffsetY: number,
            containerSize: ContainerSize,
-           zoomLevel: number) {
+           textSize: number) {
         if (!this.isVisibleAreaDrawn(containerOffsetY, containerSize)
             || this.settingsChanged(accDict, accStyle, tree,
-                                    containerSize, zoomLevel)) {
+                                    containerSize, textSize)) {
             this.updateOffset(containerOffsetY, containerSize);
 
             this.accessionDictionary = deepCopy(accDict);
             this.accessionStyle = accStyle;
             this.tree = deepCopy(tree);
             this.containerSize = deepCopy(containerSize);
-            this.zoomLevel = zoomLevel;
+            this.textSize = textSize;
 
             this.redrawRequired = true;
         }
@@ -118,8 +116,8 @@ export class AccessionTreeView {
                             accStyle: AccessionDisplayStyle,
                             tree: PheneticTree,
                             containerSize: ContainerSize,
-                            zoomLevel: number): boolean {
-        return zoomLevel !== this.zoomLevel
+                            textSize: number): boolean {
+        return textSize !== this.textSize
                || containerSize.width !== this.containerSize.width
                || containerSize.height !== this.containerSize.height
                || accStyle !== this.accessionStyle
@@ -131,7 +129,7 @@ export class AccessionTreeView {
                          containerSize: ContainerSize) {
         const offsetStep = ceilTo(AccessionTreeView.STORED_CANVAS_OFFSET_STEP
                                   * AccessionTreeView.STORED_CANVAS_HEIGHT,
-                                  this.scrollStepY);
+                                  this.textSize);
         let overflow = this.getOverflowHeight(containerOffsetY);
         while (overflow <= 0) {
             this.canvasOffsetY -= offsetStep;

@@ -69,3 +69,31 @@ export function extractAccessionLabels(infos: AccessionInfo[]): AccessionDiction
     });
     return dict;
 }
+
+export function getAccessionColors(accessionDictionary: AccessionDictionary,
+                                   accession: string): string[] {
+    if (isNullOrUndefined(accessionDictionary)) {
+        return [];
+    } else if (accession in accessionDictionary
+               && 'colors' in accessionDictionary[accession]) {
+        return accessionDictionary[accession].colors;
+    } else {
+        return [];
+    }
+}
+
+/**
+ * Get accession label from dictionary if available. Otherwise the input
+ * identifier is used.
+ */
+export function getAccessionLabel(accessionDictionary: AccessionDictionary,
+                                  accession: string): string {
+    if (isNullOrUndefined(accessionDictionary)) {
+        return accession;
+    } else if (accession in accessionDictionary
+               && 'label' in accessionDictionary[accession]) {
+        return accessionDictionary[accession].label;
+    } else {
+        return accession;
+    }
+}

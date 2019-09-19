@@ -14,7 +14,7 @@ import {
 } from '../CanvasPlotElement';
 import {
     AccessionTreeView
-} from '../services/accession-tree-view';
+} from '../models/AccessionTreeView';
 import {
     PlotCreatorService
 } from '../services/plot-creator.service';
@@ -61,19 +61,25 @@ export class TreePlotComponent extends CanvasPlotElement {
                                                         this.plotCreator.pheneticTree,
                                                         this.plotCreator.offsetY,
                                                         this.getContainerSize(),
-                                                        this.plotState.zoomLevel,
                                                         this.plotCreator.binHeight);
+            this.storedTreeView.orderedAccessions = this.plotState
+                                                        .orderedAccessions;
         } else {
             this.storedTreeView.update(this.plotState.accessionDictionary,
                                        this.plotState.accessionStyle,
                                        this.plotCreator.pheneticTree,
                                        this.plotCreator.offsetY,
                                        this.getContainerSize(),
-                                       this.plotState.zoomLevel);
+                                       this.plotCreator.binHeight);
+            this.storedTreeView.orderedAccessions = this.plotState
+                                                        .orderedAccessions;
         }
         this.treeDrawService.drawTree(this.canvas.nativeElement,
                                       this.storedTreeView,
+                                      0, this.plotCreator.offsetY,
                                       this.getContainerSize());
+        this.plotCreator.guiMargins.left = this.storedTreeView.offscreenCanvas.width
+                                           / this.plotCreator.zoomFactor;
     }
 
     protected dragAction(dragState: DragState): void {

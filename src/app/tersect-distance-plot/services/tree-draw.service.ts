@@ -6,85 +6,75 @@ import {
     TreeNode
 } from '../../clustering/clustering';
 import {
+    getAccessionColors,
+    getAccessionLabel
+} from '../../tersect-browser/browser-settings';
+import {
     ceilTo,
-    formatCanvasFont,
-    isNullOrUndefined
+    formatCanvasFont
 } from '../../utils/utils';
+import {
+    AccessionTreeView
+} from '../models/AccessionTreeView';
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';
-import {
-    AccessionTreeView
-} from './accession-tree-view';
-import {
-    PlotCreatorService
-} from './plot-creator.service';
-import {
-    PlotStateService
-} from './plot-state.service';
 
 @Injectable()
 export class TreeDrawService {
     static readonly TREE_BG_COLOR = '#FFFFFF';
-
-    /**
-     * Width of the color tracks in multiples of the bin width.
-     */
-    static readonly TREE_COLOR_TRACK_WIDTH = 2;
 
     static readonly TREE_FONT = 'Courier New';
     static readonly TREE_FONT_COLOR = '#000000';
 
     static readonly TREE_LEFT_MARGIN = 5;
 
-    static readonly TREE_LINE_DASH = [0.2, 0.2];
+    static readonly TREE_LINE_DASH = [0.1, 0.1];
     static readonly TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
-    static readonly TREE_LINE_DASH_WIDTH = 0.2;
-    static readonly TREE_LINE_WIDTH = 0.2;
+    static readonly TREE_LINE_DASH_WIDTH = 0.1;
+    static readonly TREE_LINE_WIDTH = 0.1;
 
     /* Proportion of the width of the plot taken up by accession trees. This
      * should be half of the screen by default.
      */
     static readonly TREE_PLOT_PROPORTION = 0.5;
 
-    constructor(private readonly plotState: PlotStateService,
-                private readonly plotCreator: PlotCreatorService) { }
-
     drawTree(targetCanvas: HTMLCanvasElement, treeView: AccessionTreeView,
-             containerSize: ContainerSize) {
+             offsetX: number, offsetY: number, containerSize: ContainerSize) {
         if (treeView.redrawRequired) {
-            this.updateCanvasWidth(targetCanvas, treeView.offscreenCanvas,
-                                   containerSize);
+            this.updateCanvasWidth(treeView, containerSize);
             this.generateTree(treeView);
             treeView.redrawRequired = false;
         }
 
         targetCanvas.height = containerSize.height;
+        targetCanvas.width = treeView.offscreenCanvas.width;
+
         const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
-        ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
-        ctx.drawImage(treeView.offscreenCanvas, 0,
-                      this.plotCreator.offsetY - treeView.canvasOffsetY);
+        ctx.clearRect(0, 0, treeView.offscreenCanvas.width,
+                      treeView.offscreenCanvas.height);
+        ctx.drawImage(treeView.offscreenCanvas, offsetX,
+                      offsetY - treeView.canvasOffsetY);
     }
 
     private drawColorTracks(ctx: CanvasRenderingContext2D,
                             treeView: AccessionTreeView) {
-        this.plotState.orderedAccessions.forEach((accId, rowIndex) => {
-            const trackWidth = TreeDrawService.TREE_COLOR_TRACK_WIDTH
-                               * this.plotCreator.binWidth;
-            const colors = this.plotCreator.getAccessionColors(accId);
+       treeView.orderedAccessions.forEach((accId, rowIndex) => {
+            const colors = getAccessionColors(treeView.accessionDictionary,
+                                              accId);
             colors.forEach((col, j) => {
-                const xpos = treeView.offscreenCanvas.width - (j + 1) * trackWidth;
-                const ypos = rowIndex * this.plotCreator.binHeight;
+                const xpos = treeView.offscreenCanvas.width
+                             - (j + 1) * treeView.colorTrackWidth;
+                const ypos = rowIndex * treeView.textSize;
                 ctx.fillStyle = col;
-                ctx.fillRect(xpos, ypos, trackWidth,
-                             this.plotCreator.binHeight);
+                ctx.fillRect(xpos, ypos, treeView.colorTrackWidth,
+                             treeView.textSize);
             });
         });
     }
 
     private drawLabelTree(ctx: CanvasRenderingContext2D,
                           treeView: AccessionTreeView) {
-        const textHeight = this.plotCreator.binHeight;
         ctx.fillStyle = TreeDrawService.TREE_FONT_COLOR;
         ctx.textBaseline = 'top';
         const drawState = { current_row: 0 };
@@ -92,33 +82,35 @@ export class TreeDrawService {
         const scale = this.getTreeScale(ctx, treeView);
 
         const initialPosX = TreeDrawService.TREE_LEFT_MARGIN;
-        this._drawLabelTree(this.plotCreator.pheneticTree.root, initialPosX,
-                            ctx, textHeight, treeView.canvasOffsetY,
+        this._drawLabelTree(treeView.tree.root, initialPosX,
+                            ctx, treeView, treeView.canvasOffsetY,
                             scale, drawState);
     }
 
     private _drawLabelTree(subtree: TreeNode, basePosX: number,
-                           ctx: CanvasRenderingContext2D, textHeight: number,
+                           ctx: CanvasRenderingContext2D,
+                           treeView: AccessionTreeView,
                            yoffset: number, scale: number,
                            drawState: { current_row: number }) {
-        let prevPosY = yoffset + drawState.current_row * textHeight;
+        let prevPosY = yoffset + drawState.current_row * treeView.textSize;
         const subtreePosX = [];
         const subtreePosY = [];
 
         if (subtree.children.length) {
             subtree.children.forEach(child => {
-                const childPosX = basePosX + this.getEdgeLength(child) * scale;
-                this._drawLabelTree(child, childPosX, ctx, textHeight, yoffset,
+                const childPosX = this.getEdgeLength(child, treeView) * scale
+                                  + basePosX;
+                this._drawLabelTree(child, childPosX, ctx, treeView, yoffset,
                                     scale, drawState);
                 subtreePosX.push(childPosX);
-                const curPosY = yoffset + drawState.current_row * textHeight;
+                const curPosY = drawState.current_row * treeView.textSize
+                                + yoffset;
                 subtreePosY.push((prevPosY + curPosY) / 2);
                 prevPosY = curPosY;
             });
 
             ctx.beginPath();
-            ctx.lineWidth = TreeDrawService.TREE_LINE_WIDTH
-                            * this.plotCreator.zoomFactor;
+            ctx.lineWidth = TreeDrawService.TREE_LINE_WIDTH * treeView.textSize;
             ctx.strokeStyle = '#000000';
             ctx.setLineDash([]);
 
@@ -133,34 +125,35 @@ export class TreeDrawService {
             });
             ctx.stroke();
         } else {
-            const label = this.plotCreator.getAccessionLabel(subtree.taxon.name);
+            const label = getAccessionLabel(treeView.accessionDictionary,
+                                            subtree.taxon.name);
             ctx.fillText(label, basePosX, prevPosY);
             const textEndPos = basePosX + ctx.measureText(label).width + 5;
-            this.drawTrailingLine(ctx, textEndPos,
-                                  prevPosY + textHeight / 2 - 0.5);
+            this.drawTrailingLine(ctx, treeView, textEndPos,
+                                  prevPosY + treeView.textSize / 2 - 0.5);
             drawState.current_row++;
         }
     }
 
     private drawSimpleLabels(ctx: CanvasRenderingContext2D,
                              treeView: AccessionTreeView) {
-        const textHeight = this.plotCreator.binHeight;
         ctx.fillStyle = TreeDrawService.TREE_FONT_COLOR;
         ctx.textBaseline = 'top';
-        this.plotState.orderedAccessions.forEach((acc, index) => {
-            ctx.fillText(this.plotCreator.getAccessionLabel(acc), 0,
-                         index * textHeight + treeView.canvasOffsetY);
+        treeView.orderedAccessions.forEach((acc, index) => {
+            ctx.fillText(getAccessionLabel(treeView.accessionDictionary, acc),
+                         0, index * treeView.textSize + treeView.canvasOffsetY);
         });
     }
 
     private drawTrailingLine(ctx: CanvasRenderingContext2D,
+                             treeView: AccessionTreeView,
                              xStart: number, yPos: number) {
         ctx.beginPath();
         ctx.lineWidth = TreeDrawService.TREE_LINE_DASH_WIDTH
-                        * this.plotCreator.zoomFactor;
+                        * treeView.textSize;
         ctx.strokeStyle = TreeDrawService.TREE_LINE_DASH_STYLE;
         ctx.setLineDash(TreeDrawService.TREE_LINE_DASH.map(
-            x => x * this.plotCreator.zoomFactor
+            x => x * treeView.textSize
         ));
         ctx.moveTo(xStart, yPos);
         ctx.lineTo(ctx.canvas.width, yPos);
@@ -175,9 +168,10 @@ export class TreeDrawService {
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         // Draw labels
-        const fontSize = this.plotCreator.binHeight;
-        ctx.font = formatCanvasFont(fontSize, TreeDrawService.TREE_FONT);
-        if (this.plotState.accessionStyle === 'labels') {
+        ctx.font = formatCanvasFont(treeView.textSize,
+                                    TreeDrawService.TREE_FONT);
+
+        if (treeView.accessionStyle === 'labels') {
             this.drawSimpleLabels(ctx, treeView);
         } else {
             this.drawLabelTree(ctx, treeView);
@@ -188,16 +182,14 @@ export class TreeDrawService {
     /**
      * Get the total width of the group color tracks.
      */
-    private getColorTracksWidth() {
-        return TreeDrawService.TREE_COLOR_TRACK_WIDTH
-               * this.getMaxColorCount()
-               * this.plotCreator.binWidth;
+    private getColorTracksWidth(treeView: AccessionTreeView) {
+        return treeView.colorTrackWidth * this.getMaxColorCount(treeView);
     }
 
-    private getEdgeLength(node: TreeNode): number {
-        if (this.plotState.accessionStyle === 'tree_simple') {
+    private getEdgeLength(node: TreeNode, treeView: AccessionTreeView): number {
+        if (treeView.accessionStyle === 'tree_simple') {
             return 1;
-        } else if (this.plotState.accessionStyle === 'tree_linear') {
+        } else if (treeView.accessionStyle === 'tree_linear') {
             return node.length;
         } else {
             // Should not happen
@@ -208,9 +200,9 @@ export class TreeDrawService {
     /**
      * Return highest number of colors assigned to an accession.
      */
-    getMaxColorCount(): number {
+    getMaxColorCount(treeView: AccessionTreeView): number {
         let count = 0;
-        Object.values(this.plotState.accessionDictionary).forEach(acc => {
+        Object.values(treeView.accessionDictionary).forEach(acc => {
             if ('colors' in acc && acc.colors.length > count) {
                 count = acc.colors.length;
             }
@@ -218,12 +210,14 @@ export class TreeDrawService {
         return count;
     }
 
-    private getMaxLabelWidth(ctx: CanvasRenderingContext2D) {
-        const fontSize = this.plotCreator.binHeight;
-        ctx.font = formatCanvasFont(fontSize, TreeDrawService.TREE_FONT);
+    private getMaxLabelWidth(ctx: CanvasRenderingContext2D,
+                             treeView: AccessionTreeView) {
+        ctx.font = formatCanvasFont(treeView.textSize,
+                                    TreeDrawService.TREE_FONT);
         return Math.max(
-            ...this.plotState.orderedAccessions.map(acc =>
-                ctx.measureText(this.plotCreator.getAccessionLabel(acc)).width
+            ...treeView.orderedAccessions.map(acc =>
+                ctx.measureText(getAccessionLabel(treeView.accessionDictionary,
+                                                  acc)).width
             )
         );
     }
@@ -231,38 +225,34 @@ export class TreeDrawService {
     private getTreeScale(ctx: CanvasRenderingContext2D,
                          treeView: AccessionTreeView): number {
         const availableWidth = treeView.offscreenCanvas.width
-                               - this.getMaxLabelWidth(ctx)
-                               - this.getColorTracksWidth()
-                               - this.plotCreator.binWidth
+                               - this.getMaxLabelWidth(ctx, treeView)
+                               - this.getColorTracksWidth(treeView)
                                - TreeDrawService.TREE_LEFT_MARGIN;
-        if (this.plotState.accessionStyle === 'tree_simple') {
-            return availableWidth / getTreeDepth(this.plotCreator
-                                                     .pheneticTree.root);
-        } else if (this.plotState.accessionStyle === 'tree_linear') {
-            return availableWidth / getTreeDepthLinear(this.plotCreator
-                                                           .pheneticTree.root);
+        if (treeView.accessionStyle === 'tree_simple') {
+            return availableWidth / getTreeDepth(treeView.tree.root);
+        } else if (treeView.accessionStyle === 'tree_linear') {
+            return availableWidth / getTreeDepthLinear(treeView.tree.root);
         } else {
             // Should not happen
             return 0;
         }
     }
 
-    private updateCanvasWidth(targetCanvas: HTMLCanvasElement,
-                              offscreenCanvas: HTMLCanvasElement,
+    private updateCanvasWidth(treeView: AccessionTreeView,
                               containerSize: ContainerSize) {
-        const ctx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
+        const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
+                                                      .getContext('2d');
         let width: number;
-        if (this.plotState.accessionStyle === 'labels') {
-            width = ceilTo(this.getMaxLabelWidth(ctx)
-                           + this.getColorTracksWidth(),
-                           this.plotCreator.binWidth);
+        // Rounding width to multiple of text size
+        if (treeView.accessionStyle === 'labels') {
+            width = ceilTo(this.getMaxLabelWidth(ctx, treeView)
+                           + this.getColorTracksWidth(treeView),
+                           treeView.textSize);
         } else {
             width = ceilTo(containerSize.width
                            * TreeDrawService.TREE_PLOT_PROPORTION,
-                           this.plotCreator.binWidth);
+                           treeView.textSize);
         }
-        offscreenCanvas.width = width;
-        targetCanvas.width = width;
-        this.plotCreator.guiMargins.left = width / this.plotCreator.zoomFactor;
+        treeView.offscreenCanvas.width = width;
     }
 }
