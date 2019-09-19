@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { AccessionTreeView } from '../models/AccessionTreeView';
+import { ContainerSize } from '../tersect-distance-plot.component';
 import { BinDrawService } from './bin-draw.service';
 import { PlotCreatorService } from './plot-creator.service';
 import { ScaleDrawService } from './scale-draw.service';
@@ -13,13 +15,31 @@ export class ExportPlotService {
                 private readonly treeDraw: TreeDrawService) { }
 
     exportImage(): Promise<Blob> {
-        const tempCanvas = document.createElement('canvas');
-        const ctx: CanvasRenderingContext2D = tempCanvas.getContext('2d');
-        tempCanvas.width = this.plotCreator.colNum * this.plotCreator.binWidth;
-        tempCanvas.height = this.plotCreator.rowNum * this.plotCreator.binHeight;
-        ctx.putImageData(this.binDraw.getImageData(), 0, 0);
+        const containerSize: ContainerSize = {
+            height: this.plotCreator.rowNum * this.plotCreator.binHeight,
+            width: this.plotCreator.colNum * this.plotCreator.binWidth
+        };
+
+        const treeView = new AccessionTreeView(this.plotCreator.pheneticTree,
+                                               this.plotCreator.binHeight,
+                                               containerSize);
+        const treeCanvas = document.createElement('canvas');
+        this.treeDraw.drawTree(treeCanvas, treeView, 0, 0, containerSize);
+        const treeCtx: CanvasRenderingContext2D = treeCanvas.getContext('2d');
+        const treeImg = treeCtx.getImageData(0, 0, treeView.offscreenCanvas.width,
+                                             treeView.offscreenCanvas.height);
+
+        const fullCanvas = document.createElement('canvas');
+        const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');
+        fullCanvas.width = containerSize.width;
+        fullCanvas.height = containerSize.height;
+
+        fullCtx.putImageData(treeImg, 0, 0);
+        fullCtx.putImageData(this.binDraw.getImageData(),
+                             treeView.offscreenCanvas.width, 0);
+
         return new Promise(resolve => {
-            tempCanvas.toBlob(blob => {
+            fullCanvas.toBlob(blob => {
                 resolve(blob);
             });
         });
