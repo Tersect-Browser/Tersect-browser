@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 import {
     PlotArea,
     PlotBin,
-    Position
+    PlotPosition
 } from '../../models/Plot';
 import {
     isNullOrUndefined
@@ -81,7 +81,7 @@ export class BinPlotComponent extends CanvasPlotElement
 
     protected dragAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
-        const newPos: Position = {
+        const newPos: PlotPosition = {
             x: Math.round(dragState.currentPosition.x
                           / this.plotCreator.binWidth
                           - this.dragStartIndices.x),
@@ -114,7 +114,7 @@ export class BinPlotComponent extends CanvasPlotElement
         // No action
     }
 
-    protected getPositionTarget(mousePosition: Position): PlotArea {
+    protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
         if ([this.plotState.orderedAccessions,
              this.plotState.interval,
              this.plotState.binsize].some(isNullOrUndefined)) {

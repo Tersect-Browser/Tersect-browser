@@ -5,7 +5,7 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    Position
+    PlotPosition
 } from '../../models/Plot';
 import {
     AccessionDictionary,
@@ -84,7 +84,7 @@ export class PlotStateService implements PlotState {
      * Horizontal / vertical scroll position (in terms of bins and accessions,
      * respectively) of the plot.
      */
-    plotPositionSource = new BehaviorSubject<Position>({ x: 0, y: 0 });
+    plotPositionSource = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
 
     /**
      * Accession names in the order to be displayed on the drawn plot.
@@ -122,7 +122,7 @@ export class PlotStateService implements PlotState {
         this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
     }
 
-    get plotPosition(): Position {
+    get plotPosition(): PlotPosition {
         return this.plotPositionSource.getValue();
     }
 
@@ -279,7 +279,7 @@ export class PlotStateService implements PlotState {
         this.plotPositionSource.next({ x: 0, y: 0 });
     }
 
-    updatePosition(pos: Position) {
+    updatePosition(pos: PlotPosition) {
         this.plotPositionSource.next(pos);
     }
 }

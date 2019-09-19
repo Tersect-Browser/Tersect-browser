@@ -35,7 +35,7 @@ export interface PlotMouseMoveEvent {
     buttons?: number;
 }
 
-export interface Position {
+export interface PlotPosition {
     x: number;
     y: number;
 }

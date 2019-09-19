@@ -9,12 +9,12 @@ import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent,
-    Position
+    PlotPosition
 } from '../models/Plot';
 
 export interface ClickState {
     enableClicking: boolean;
-    clickPosition: { x: number, y: number };
+    clickPosition: PlotPosition;
     event: MouseEvent;
 }
 
@@ -22,8 +22,8 @@ export interface DragState {
     enableDragging: boolean;
     dragged: boolean;
     dragCursor: string;
-    startPosition: { x: number, y: number };
-    currentPosition: { x: number, y: number };
+    startPosition: PlotPosition;
+    currentPosition: PlotPosition;
     event: MouseEvent;
 }
 
@@ -31,7 +31,7 @@ export interface HoverState {
     enableHovering: boolean;
     hoverDelay: number;
     hoverTimer: NodeJS.Timer;
-    hoverPosition: { x: number, y: number };
+    hoverPosition: PlotPosition;
     event: MouseEvent;
 }
 
@@ -99,7 +99,7 @@ export abstract class CanvasPlotElement {
     protected abstract dragStartAction(dragState: DragState): void;
     protected abstract dragStopAction(dragState: DragState): void;
     protected abstract dragAction(dragState: DragState): void;
-    protected abstract getPositionTarget(position: Position): PlotArea;
+    protected abstract getPositionTarget(position: PlotPosition): PlotArea;
 
     /**
      * Default - feel free to override.

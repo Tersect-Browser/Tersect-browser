@@ -3,7 +3,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import {
     PlotAccession,
     PlotArea,
-    Position
+    PlotPosition
 } from '../../models/Plot';
 import {
     isNullOrUndefined
@@ -66,7 +66,7 @@ export class TreePlotComponent extends CanvasPlotElement {
 
     protected dragAction(dragState: DragState): void {
         // Only vertical dragging, rounded to accession indices.
-        const newPos: Position = {
+        const newPos: PlotPosition = {
             x: this.plotState.plotPosition.x,
             y: Math.round(dragState.currentPosition.y
                           / this.plotCreator.binHeight
@@ -91,7 +91,7 @@ export class TreePlotComponent extends CanvasPlotElement {
         // No action
     }
 
-    protected getPositionTarget(mousePosition: Position): PlotArea {
+    protected getPositionTarget(mousePosition: PlotPosition): PlotArea {
         if (isNullOrUndefined(this.plotState.orderedAccessions)) {
             return { plotAreaType: 'background' };
         }

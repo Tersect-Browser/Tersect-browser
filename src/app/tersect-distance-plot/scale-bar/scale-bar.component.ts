@@ -2,9 +2,9 @@ import { Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
 
 import {
     PlotArea,
+    PlotPosition,
     PlotSequenceInterval,
-    PlotSequencePosition,
-    Position
+    PlotSequencePosition
 } from '../../models/Plot';
 import {
     extractTags,
@@ -87,7 +87,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
         // Using dragStopGlobal instead
     }
 
-    protected getPositionTarget(position: Position): PlotArea {
+    protected getPositionTarget(position: PlotPosition): PlotArea {
         const interval = this.plotState.interval;
         const binsize = this.plotState.binsize;
         if ([interval, binsize].some(isNullOrUndefined)) {

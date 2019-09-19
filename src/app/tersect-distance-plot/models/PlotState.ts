@@ -2,7 +2,7 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    Position
+    PlotPosition
 } from '../../models/Plot';
 import {
     AccessionDictionary,
@@ -25,5 +25,5 @@ export interface PlotState {
     zoomLevel: number;
     orderedAccessions: string[];
     plugins: string[];
-    plotPosition: Position;
+    plotPosition: PlotPosition;
 }

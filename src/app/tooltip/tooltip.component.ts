@@ -5,9 +5,9 @@ import {
     PlotAccession,
     PlotBin,
     PlotMouseHoverEvent,
+    PlotPosition,
     PlotSequenceInterval,
-    PlotSequencePosition,
-    Position
+    PlotSequencePosition
 } from '../models/Plot';
 import {
     formatPosition
@@ -25,7 +25,7 @@ export class TooltipComponent {
     /**
      * Tooltip position relative to mouse.
      */
-    readonly tooltipOffset: Position = { x: 0, y: 20 };
+    readonly tooltipOffset: PlotPosition = { x: 0, y: 20 };
 
     hide() {
         this.tooltip.nativeElement.style.visibility = 'hidden';
