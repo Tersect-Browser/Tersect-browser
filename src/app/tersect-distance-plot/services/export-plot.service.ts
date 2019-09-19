@@ -23,18 +23,14 @@ export class ExportPlotService {
         const treeView = new AccessionTreeView(this.plotCreator.pheneticTree,
                                                this.plotCreator.binHeight,
                                                containerSize);
-        const treeCanvas = document.createElement('canvas');
-        this.treeDraw.drawTree(treeCanvas, treeView, 0, 0, containerSize);
-        const treeCtx: CanvasRenderingContext2D = treeCanvas.getContext('2d');
-        const treeImg = treeCtx.getImageData(0, 0, treeView.offscreenCanvas.width,
-                                             treeView.offscreenCanvas.height);
+        this.treeDraw.drawTree(treeView, 0, 0, containerSize);
 
         const fullCanvas = document.createElement('canvas');
         const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');
         fullCanvas.width = containerSize.width;
         fullCanvas.height = containerSize.height;
 
-        fullCtx.putImageData(treeImg, 0, 0);
+        fullCtx.putImageData(treeView.getImageData(), 0, 0);
         fullCtx.putImageData(this.binDraw.getImageData(),
                              treeView.offscreenCanvas.width, 0);
 

@@ -40,22 +40,24 @@ export class TreeDrawService {
      */
     static readonly TREE_PLOT_PROPORTION = 0.5;
 
-    drawTree(targetCanvas: HTMLCanvasElement, treeView: AccessionTreeView,
-             offsetX: number, offsetY: number, containerSize: ContainerSize) {
+    drawTree(treeView: AccessionTreeView, offsetX: number, offsetY: number,
+             containerSize: ContainerSize, targetCanvas?: HTMLCanvasElement) {
         if (treeView.redrawRequired) {
             this.updateCanvasWidth(treeView, containerSize);
             this.generateTree(treeView);
             treeView.redrawRequired = false;
         }
 
-        targetCanvas.height = containerSize.height;
-        targetCanvas.width = treeView.offscreenCanvas.width;
+        if (!isNullOrUndefined(targetCanvas)) {
+            targetCanvas.height = containerSize.height;
+            targetCanvas.width = treeView.offscreenCanvas.width;
 
-        const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
-        ctx.clearRect(0, 0, treeView.offscreenCanvas.width,
-                      treeView.offscreenCanvas.height);
-        ctx.drawImage(treeView.offscreenCanvas, offsetX,
-                      offsetY - treeView.canvasOffsetY);
+            const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
+            ctx.clearRect(0, 0, treeView.offscreenCanvas.width,
+                        treeView.offscreenCanvas.height);
+            ctx.drawImage(treeView.offscreenCanvas, offsetX,
+                        offsetY - treeView.canvasOffsetY);
+        }
     }
 
     private drawColorTracks(ctx: CanvasRenderingContext2D,
