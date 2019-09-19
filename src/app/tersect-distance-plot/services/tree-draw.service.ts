@@ -54,9 +54,9 @@ export class TreeDrawService {
 
             const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
             ctx.clearRect(0, 0, treeView.offscreenCanvas.width,
-                        treeView.offscreenCanvas.height);
+                          treeView.offscreenCanvas.height);
             ctx.drawImage(treeView.offscreenCanvas, offsetX,
-                        offsetY - treeView.canvasOffsetY);
+                          offsetY - treeView.canvasOffsetY);
         }
     }
 
