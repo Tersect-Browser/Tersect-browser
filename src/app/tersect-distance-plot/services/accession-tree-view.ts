@@ -1,7 +1,7 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
-    TreeQuery
+    PheneticTree
 } from '../../models/PheneticTree';
 import {
     AccessionDictionary,
@@ -15,12 +15,6 @@ import {
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';
-
-export interface TreeViewSettings {
-    accessionDictionary: AccessionDictionary;
-    accessionStyle: AccessionDisplayStyle;
-    treeQuery: TreeQuery;
-}
 
 export class AccessionTreeView {
     /**
@@ -44,19 +38,19 @@ export class AccessionTreeView {
     private accessionDictionary: AccessionDictionary;
     private accessionStyle: AccessionDisplayStyle;
     private containerSize: ContainerSize;
-    private treeQuery: TreeQuery;
+    private tree: PheneticTree;
     private zoomLevel: number;
 
     constructor(accDict: AccessionDictionary,
                 accStyle: AccessionDisplayStyle,
-                treeQuery: TreeQuery,
+                tree: PheneticTree,
                 containerOffsetY: number,
                 containerSize: ContainerSize,
                 zoomLevel: number,
                 scrollStepY?: number) {
         this.accessionDictionary = deepCopy(accDict);
         this.accessionStyle = accStyle;
-        this.treeQuery = deepCopy(treeQuery);
+        this.tree = deepCopy(tree);
 
         this.canvasOffsetY = containerOffsetY;
         this.containerSize = deepCopy(containerSize);
@@ -71,18 +65,18 @@ export class AccessionTreeView {
 
     update(accDict: AccessionDictionary,
            accStyle: AccessionDisplayStyle,
-           treeQuery: TreeQuery,
+           tree: PheneticTree,
            containerOffsetY: number,
            containerSize: ContainerSize,
            zoomLevel: number) {
         if (!this.isVisibleAreaDrawn(containerOffsetY, containerSize)
-            || this.settingsChanged(accDict, accStyle, treeQuery,
+            || this.settingsChanged(accDict, accStyle, tree,
                                     containerSize, zoomLevel)) {
             this.updateOffset(containerOffsetY, containerSize);
 
             this.accessionDictionary = deepCopy(accDict);
             this.accessionStyle = accStyle;
-            this.treeQuery = deepCopy(treeQuery);
+            this.tree = deepCopy(tree);
             this.containerSize = deepCopy(containerSize);
             this.zoomLevel = zoomLevel;
 
@@ -122,14 +116,14 @@ export class AccessionTreeView {
      */
     private settingsChanged(accDict: AccessionDictionary,
                             accStyle: AccessionDisplayStyle,
-                            treeQuery: TreeQuery,
+                            tree: PheneticTree,
                             containerSize: ContainerSize,
                             zoomLevel: number): boolean {
         return zoomLevel !== this.zoomLevel
                || containerSize.width !== this.containerSize.width
                || containerSize.height !== this.containerSize.height
                || accStyle !== this.accessionStyle
-               || !deepEqual(treeQuery, this.treeQuery)
+               || !deepEqual(tree.query, this.tree.query)
                || !deepEqual(accDict, this.accessionDictionary);
     }
 

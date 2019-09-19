@@ -50,28 +50,8 @@ export class TreeDrawService {
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService) { }
 
-    createTreeView(containerSize: ContainerSize,
-                   zoomLevel?: number): AccessionTreeView {
-        const zoom = isNullOrUndefined(zoomLevel) ? this.plotState.zoomLevel
-                                                  : zoomLevel;
-        return new AccessionTreeView(this.plotState.accessionDictionary,
-                                     this.plotState.accessionStyle,
-                                     this.plotCreator.pheneticTree.query,
-                                     this.plotCreator.offsetY,
-                                     containerSize, zoom,
-                                     this.plotCreator.binHeight);
-    }
-
     drawTree(targetCanvas: HTMLCanvasElement, treeView: AccessionTreeView,
-             containerSize: ContainerSize, zoomLevel?: number) {
-        const zoom = isNullOrUndefined(zoomLevel) ? this.plotState.zoomLevel
-                                                  : zoomLevel;
-        treeView.update(this.plotState.accessionDictionary,
-                        this.plotState.accessionStyle,
-                        this.plotCreator.pheneticTree.query,
-                        this.plotCreator.offsetY,
-                        containerSize,
-                        zoom);
+             containerSize: ContainerSize) {
         if (treeView.redrawRequired) {
             this.updateCanvasWidth(targetCanvas, treeView.offscreenCanvas,
                                    containerSize);
