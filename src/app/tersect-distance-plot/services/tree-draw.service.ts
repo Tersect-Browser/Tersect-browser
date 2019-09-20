@@ -45,7 +45,6 @@ export class TreeDrawService {
         if (treeView.redrawRequired) {
             this.updateCanvasWidth(treeView, containerSize);
             this.generateTree(treeView);
-            treeView.redrawRequired = false;
         }
 
         if (!isNullOrUndefined(targetCanvas)) {
@@ -180,6 +179,8 @@ export class TreeDrawService {
             this.drawLabelTree(ctx, treeView);
         }
         this.drawColorTracks(ctx, treeView);
+
+        treeView.redrawRequired = false;
     }
 
     /**
