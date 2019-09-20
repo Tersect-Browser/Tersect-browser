@@ -1,9 +1,9 @@
 <button pButton class="tb-square-button"
     icon="fa fa-tree"
-    (click)="tree_overlay.toggle($event)">
+    (click)="treeOverlay.toggle($event)">
 </button>
 
-<p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
+<p-overlayPanel #treeOverlay styleClass="accession-display-overlay">
     <div class="accession-display-overlay">
         <p-radioButton name="displayTypes"
             label="Accession labels" value="labels"
