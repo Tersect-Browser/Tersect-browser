@@ -6,7 +6,9 @@ import { GreyscalePalette } from '../DistancePalette';
 import { DistanceBinView } from '../models/DistanceBinView';
 import { PlotCreatorService } from './plot-creator.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class BinDrawService {
     drawBins(binView: DistanceBinView, offsetX?: number, offsetY?: number,
              targetCanvas?: HTMLCanvasElement) {

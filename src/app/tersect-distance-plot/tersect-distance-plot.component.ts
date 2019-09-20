@@ -25,7 +25,6 @@ import {
 import {
     ScaleBarComponent
 } from './scale-bar/scale-bar.component';
-import { BinDrawService } from './services/bin-draw.service';
 import {
     ExportPlotService
 } from './services/export-plot.service';
@@ -35,12 +34,6 @@ import {
 import {
     PlotStateService
 } from './services/plot-state.service';
-import {
-    ScaleDrawService
-} from './services/scale-draw.service';
-import {
-    TreeDrawService
-} from './services/tree-draw.service';
 import {
     TreePlotComponent
 } from './tree-plot/tree-plot.component';
@@ -56,9 +49,6 @@ export interface ContainerSize {
     styleUrls: ['./tersect-distance-plot.component.css'],
     providers: [
         PlotCreatorService,
-        BinDrawService,
-        ScaleDrawService,
-        TreeDrawService,
         ExportPlotService
     ]
 })

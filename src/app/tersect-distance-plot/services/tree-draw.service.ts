@@ -21,7 +21,9 @@ import {
     ContainerSize
 } from '../tersect-distance-plot.component';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class TreeDrawService {
     static readonly TREE_BG_COLOR = '#FFFFFF';
 

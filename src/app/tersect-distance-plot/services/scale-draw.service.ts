@@ -17,7 +17,9 @@ interface ScaleTick {
     unit?: 'Mbp' | 'kbp';
 }
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ScaleDrawService {
     static readonly GUI_SCALE_COLOR = '#327e04';
     static readonly GUI_SCALE_FONT = 'Arial';
