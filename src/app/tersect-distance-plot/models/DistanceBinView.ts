@@ -66,6 +66,16 @@ export class DistanceBinView {
     }
 
     getImageData(): ImageData {
-        return new ImageData(this.imageArray, this.colNum, this.rowNum);
+        const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = this.colNum * this.binWidth;
+        offscreenCanvas.height = this.rowNum * this.binHeight;
+        const ctx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.putImageData(new ImageData(this.imageArray, this.colNum,
+                                       this.rowNum), 0, 0);
+        ctx.scale(this.binWidth, this.binHeight);
+        ctx.drawImage(offscreenCanvas, 0, 0);
+        return ctx.getImageData(0, 0, offscreenCanvas.width,
+                                offscreenCanvas.height);
     }
 }
