@@ -80,7 +80,7 @@ export class TreeDrawService {
                           treeView: AccessionTreeView) {
         ctx.fillStyle = TreeDrawService.TREE_FONT_COLOR;
         ctx.textBaseline = 'top';
-        const drawState = { current_row: 0 };
+        const drawState = { currentRow: 0 };
 
         const scale = this.getTreeScale(ctx, treeView);
 
@@ -94,8 +94,8 @@ export class TreeDrawService {
                            ctx: CanvasRenderingContext2D,
                            treeView: AccessionTreeView,
                            yoffset: number, scale: number,
-                           drawState: { current_row: number }) {
-        let prevPosY = yoffset + drawState.current_row * treeView.textSize;
+                           drawState: { currentRow: number }) {
+        let prevPosY = yoffset + drawState.currentRow * treeView.textSize;
         const subtreePosX = [];
         const subtreePosY = [];
 
@@ -106,7 +106,7 @@ export class TreeDrawService {
                 this._drawLabelTree(child, childPosX, ctx, treeView, yoffset,
                                     scale, drawState);
                 subtreePosX.push(childPosX);
-                const curPosY = drawState.current_row * treeView.textSize
+                const curPosY = drawState.currentRow * treeView.textSize
                                 + yoffset;
                 subtreePosY.push((prevPosY + curPosY) / 2);
                 prevPosY = curPosY;
@@ -134,7 +134,7 @@ export class TreeDrawService {
             const textEndPos = basePosX + ctx.measureText(label).width + 5;
             this.drawTrailingLine(ctx, treeView, textEndPos,
                                   prevPosY + treeView.textSize / 2 - 0.5);
-            drawState.current_row++;
+            drawState.currentRow++;
         }
     }
 
