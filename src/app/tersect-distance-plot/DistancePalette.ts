@@ -5,7 +5,7 @@ export abstract class DistancePalette {
      * provided array of distances. The color scale depends on the specific
      * palette class.
      * @param distances array if numbers representing genetic distance
-     * @param max_distances list of maximum distances per bin, used for scaling
+     * @param maxDistances list of maximum distances per bin, used for scaling
      */
     constructor() {}
     abstract distanceToColors(distances: number[],
