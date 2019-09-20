@@ -5,15 +5,15 @@
 
 <p-overlayPanel #tree_overlay styleClass="accession-display-overlay">
     <div class="accession-display-overlay">
-        <p-radioButton name="display_types"
+        <p-radioButton name="displayTypes"
             label="Accession labels" value="labels"
             [(ngModel)]="accessionStyle">
         </p-radioButton>
-        <p-radioButton name="display_types"
+        <p-radioButton name="displayTypes"
             label="Phenetic tree (simplified)" value="tree_simple"
             [(ngModel)]="accessionStyle">
         </p-radioButton>
-        <p-radioButton name="display_types"
+        <p-radioButton name="displayTypes"
             label="Phenetic tree" value="tree_linear"
             [(ngModel)]="accessionStyle">
         </p-radioButton>
