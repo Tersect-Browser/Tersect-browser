@@ -151,7 +151,12 @@ export class BinDrawService {
                          targetCanvas: HTMLCanvasElement) {
         targetCanvas.style.width = `${binView.binWidth * 100}%`;
         targetCanvas.style.height = `${binView.binHeight * 100}%`;
-        targetCanvas.width = binView.containerSize.width;
-        targetCanvas.height = binView.containerSize.height;
+        if (isNullOrUndefined(binView.containerSize)) {
+            targetCanvas.width = binView.colNum * binView.binWidth;
+            targetCanvas.height = binView.rowNum * binView.binHeight;
+        } else {
+            targetCanvas.width = binView.containerSize.width;
+            targetCanvas.height = binView.containerSize.height;
+        }
     }
 }

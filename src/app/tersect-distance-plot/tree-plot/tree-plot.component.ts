@@ -6,6 +6,9 @@ import {
     PlotPosition
 } from '../../models/Plot';
 import {
+    getAccessionLabel
+} from '../../tersect-browser/browser-settings';
+import {
     isNullOrUndefined
 } from '../../utils/utils';
 import {
@@ -103,13 +106,15 @@ export class TreePlotComponent extends CanvasPlotElement {
         const accessionIndex = Math.floor(mousePosition.y
                                           / this.plotCreator.binHeight)
                                - this.plotState.plotPosition.y;
-        if (accessionIndex >= this.plotCreator.rowNum) {
+
+        if (accessionIndex >= this.storedTreeView.accessionCount) {
             return { plotAreaType: 'background' };
         }
         const accession = this.plotState.orderedAccessions[accessionIndex];
         const result: PlotAccession = {
             plotAreaType: 'accession',
-            accessionLabel: this.plotCreator.getAccessionLabel(accession),
+            accessionLabel: getAccessionLabel(this.plotState.accessionDictionary,
+                                              accession),
             accession: accession
         };
         return result;

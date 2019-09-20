@@ -18,22 +18,21 @@ export class ExportPlotService {
                 private readonly treeDraw: TreeDrawService) { }
 
     exportImage(): Promise<Blob> {
+        const binView = new DistanceBinView(this.plotCreator.distanceBins,
+                                            this.plotState.orderedAccessions,
+                                            this.plotCreator.binHeight);
+        binView.sequenceGaps = this.plotCreator.sequenceGaps;
+        this.binDraw.drawBins(binView);
+
         const containerSize: ContainerSize = {
-            height: this.plotCreator.rowNum * this.plotCreator.binHeight,
-            width: this.plotCreator.colNum * this.plotCreator.binWidth
+            height: binView.rowNum * this.plotCreator.binHeight,
+            width: binView.colNum * this.plotCreator.binWidth
         };
 
         const treeView = new AccessionTreeView(this.plotCreator.pheneticTree,
                                                this.plotCreator.binHeight,
                                                containerSize);
         this.treeDraw.drawTree(treeView, 0, 0, containerSize);
-
-        const binView = new DistanceBinView(this.plotCreator.distanceBins,
-                                            this.plotState.orderedAccessions,
-                                            this.plotCreator.binHeight,
-                                            containerSize);
-        binView.sequenceGaps = this.plotCreator.sequenceGaps;
-        this.binDraw.drawBins(binView);
 
         const fullCanvas = document.createElement('canvas');
         const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');

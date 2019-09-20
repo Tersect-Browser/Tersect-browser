@@ -14,6 +14,9 @@ import {
     PlotPosition
 } from '../../models/Plot';
 import {
+    getAccessionLabel
+} from '../../tersect-browser/browser-settings';
+import {
     isNullOrUndefined
 } from '../../utils/utils';
 import {
@@ -82,8 +85,7 @@ export class BinPlotComponent extends CanvasPlotElement
         if (isNullOrUndefined(this.storedBinView)) {
             this.storedBinView = new DistanceBinView(this.plotCreator.distanceBins,
                                                      this.plotState.orderedAccessions,
-                                                     this.plotCreator.binHeight,
-                                                     this.getContainerSize());
+                                                     this.plotCreator.binHeight);
         }
         this.updateDistanceBinView(this.storedBinView);
         this.binDrawService.drawBins(this.storedBinView,
@@ -96,10 +98,10 @@ export class BinPlotComponent extends CanvasPlotElement
         // Dragging 'rounded' to accession / bin indices.
         const newPos: PlotPosition = {
             x: Math.round(dragState.currentPosition.x
-                          / this.plotCreator.binWidth
+                          / this.storedBinView.binWidth
                           - this.dragStartIndices.x),
             y: Math.round(dragState.currentPosition.y
-                          / this.plotCreator.binHeight
+                          / this.storedBinView.binHeight
                           - this.dragStartIndices.y)
         };
 
@@ -116,9 +118,9 @@ export class BinPlotComponent extends CanvasPlotElement
     protected dragStartAction(dragState: DragState): void {
         // Dragging 'rounded' to accession / bin indices.
         this.dragStartIndices = {
-            x: dragState.startPosition.x / this.plotCreator.binWidth
+            x: dragState.startPosition.x / this.storedBinView.binWidth
                - this.plotState.plotPosition.x,
-            y: dragState.startPosition.y / this.plotCreator.binHeight
+            y: dragState.startPosition.y / this.storedBinView.binHeight
                - this.plotState.plotPosition.y
         };
     }
@@ -134,15 +136,15 @@ export class BinPlotComponent extends CanvasPlotElement
             return { plotAreaType: 'background' };
         }
         const binIndex = Math.floor(mousePosition.x
-                                    / this.plotCreator.binWidth)
+                                    / this.storedBinView.binWidth)
                          - this.plotCreator.guiMargins.left
                          - this.plotState.plotPosition.x;
         const accessionIndex = Math.floor(mousePosition.y
-                                          / this.plotCreator.binHeight)
+                                          / this.storedBinView.binHeight)
                                - this.plotState.plotPosition.y;
 
-        if (binIndex >= this.plotCreator.colNum
-            || accessionIndex >= this.plotCreator.rowNum) {
+        if (binIndex >= this.storedBinView.colNum
+            || accessionIndex >= this.storedBinView.rowNum) {
             return { plotAreaType: 'background' };
         }
 
@@ -153,7 +155,8 @@ export class BinPlotComponent extends CanvasPlotElement
 
         const result: PlotBin = {
             plotAreaType: 'bin',
-            accessionLabel: this.plotCreator.getAccessionLabel(accession),
+            accessionLabel: getAccessionLabel(this.plotState.accessionDictionary,
+                                              accession),
             accession: accession,
             startPosition: interval[0] + binIndex * binsize,
             endPosition: interval[0] + (binIndex + 1) * binsize - 1

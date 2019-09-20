@@ -149,12 +149,6 @@ export class PlotCreatorService implements OnDestroy {
         return this.zoomFactor;
     }
 
-    get colNum(): number {
-        // The number of bins is the same for all accessions
-        const acc = this.plotState.orderedAccessions[0];
-        return this.distanceBins.bins[acc].length;
-    }
-
     set distanceBins(distanceBins: DistanceBins) {
         this.distanceBinsSource.next(distanceBins);
     }
@@ -185,10 +179,6 @@ export class PlotCreatorService implements OnDestroy {
                       this.binHeight);
     }
 
-    get rowNum(): number {
-        return this.plotState.orderedAccessions.length;
-    }
-
     /**
      * Width of tree plot area in pixels.
      */
@@ -203,32 +193,6 @@ export class PlotCreatorService implements OnDestroy {
     ngOnDestroy() {
         if (!isNullOrUndefined(this.plotDataSub)) {
             this.plotDataSub.unsubscribe();
-        }
-    }
-
-    getAccessionColors(accession: string): string[] {
-        if (isNullOrUndefined(this.plotState.accessionDictionary)) {
-            return [];
-        } else if (accession in this.plotState.accessionDictionary
-                   && 'colors' in this.plotState.accessionDictionary[accession]) {
-            return this.plotState.accessionDictionary[accession].colors;
-        } else {
-            return [];
-        }
-    }
-
-    /**
-     * Get accession label from dictionary if available. Otherwise the input
-     * identifier is used.
-     */
-    getAccessionLabel(accession: string): string {
-        if (isNullOrUndefined(this.plotState.accessionDictionary)) {
-            return accession;
-        } else if (accession in this.plotState.accessionDictionary
-                   && 'label' in this.plotState.accessionDictionary[accession]) {
-            return this.plotState.accessionDictionary[accession].label;
-        } else {
-            return accession;
         }
     }
 

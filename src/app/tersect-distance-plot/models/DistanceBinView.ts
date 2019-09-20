@@ -23,12 +23,10 @@ export class DistanceBinView {
 
     constructor(distanceBins: DistanceBins,
                 orderedAccessions: string[],
-                binHeight: number,
-                containerSize: ContainerSize) {
+                binHeight: number) {
         this.distanceBins = distanceBins;
         this.orderedAccessions = orderedAccessions;
         this.binHeight = binHeight;
-        this.containerSize = containerSize;
         this.redrawRequired = true;
     }
 

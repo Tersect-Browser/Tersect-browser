@@ -61,6 +61,10 @@ export class AccessionTreeView {
         this.redrawRequired = true;
     }
 
+    get accessionCount(): number {
+        return this.orderedAccessions.length;
+    }
+
     set accessionDictionary(accessionDictionary: AccessionDictionary) {
         if (isNullOrUndefined(this._accessionDictionary)
             || !deepEqual(accessionDictionary, this._accessionDictionary)) {
