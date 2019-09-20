@@ -37,12 +37,12 @@ export class TreePlotComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
-    private storedTreeView: AccessionTreeView;
-
     /**
      * Drag start position in terms of accession index.
      */
     private dragStartIndex = 0;
+
+    private storedTreeView: AccessionTreeView;
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService,
