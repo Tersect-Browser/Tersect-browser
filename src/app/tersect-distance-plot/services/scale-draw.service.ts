@@ -7,14 +7,8 @@ import {
     formatPosition
 } from '../../utils/utils';
 import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
-import {
-    PlotCreatorService
-} from './plot-creator.service';
-import {
-    PlotStateService
-} from './plot-state.service';
+    ScaleView
+} from '../models/ScaleView';
 
 interface ScaleTick {
     position: number;
@@ -43,50 +37,44 @@ export class ScaleDrawService {
 
     static readonly GUI_TICK_LENGTH = 6;
 
-    constructor(private readonly plotState: PlotStateService,
-                private readonly plotCreator: PlotCreatorService) { }
-
-    private get bpPerPixel(): number {
-        return this.plotState.binsize / this.plotCreator.zoomFactor;
+    drawScale(scaleView: ScaleView, offsetX: number, offsetY: number,
+              targetCanvas: HTMLCanvasElement) {
+        this.updateCanvas(scaleView, targetCanvas);
+        this.drawPositionScale(scaleView, offsetX, offsetY, targetCanvas);
     }
 
-    drawScale(targetCanvas: HTMLCanvasElement, containerSize: ContainerSize) {
-        this.updateCanvas(targetCanvas, containerSize);
-        this.drawPositionScale(targetCanvas);
-    }
-
-    private drawAllTicks(ctx: CanvasRenderingContext2D) {
+    private drawAllTicks(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
         const tickBpDistance = findClosest(ScaleDrawService.GUI_TICK_DISTANCE
-                                           * this.bpPerPixel,
+                                           * scaleView.bpPerPixel,
                                            ScaleDrawService.GUI_SCALE_TICK_BP_DISTANCES);
         const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
 
-        this.drawBaseline(ctx);
+        this.drawBaseline(scaleView, ctx);
 
         // Start tick
-        this.drawScaleTick(ctx, {
-            position: this.plotState.interval[0],
+        this.drawScaleTick(scaleView, ctx, {
+            position: scaleView.interval[0],
             type: 'major',
             useLabel: false
         });
 
         // End tick
-        this.drawScaleTick(ctx, {
-            position: this.plotState.interval[1],
+        this.drawScaleTick(scaleView, ctx, {
+            position: scaleView.interval[1],
             type: 'major',
             useLabel: false
         });
 
-        this.drawMajorTicks(ctx, tickBpDistance, unit);
-        this.drawMinorTicks(ctx, tickBpDistance / 5);
+        this.drawMajorTicks(scaleView, ctx, tickBpDistance, unit);
+        this.drawMinorTicks(scaleView, ctx, tickBpDistance / 5);
     }
 
-    private drawBaseline(ctx: CanvasRenderingContext2D) {
-        const interval = this.plotState.interval;
-        const startX = (this.plotState.plotPosition.x * this.plotState.binsize)
-                       / this.bpPerPixel;
-        const endX = (this.plotState.plotPosition.x * this.plotState.binsize
-                      + interval[1] - interval[0]) / this.bpPerPixel;
+    private drawBaseline(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
+        const interval = scaleView.interval;
+        const startX = (scaleView.plotPosition.x * scaleView.binsize)
+                       / scaleView.bpPerPixel;
+        const endX = (scaleView.plotPosition.x * scaleView.binsize
+                      + interval[1] - interval[0]) / scaleView.bpPerPixel;
 
         const baselinePos = ctx.canvas.height - 1;
         ctx.beginPath();
@@ -95,7 +83,7 @@ export class ScaleDrawService {
         ctx.stroke();
     }
 
-    private drawMajorTicks(ctx: CanvasRenderingContext2D,
+    private drawMajorTicks(scaleView: ScaleView, ctx: CanvasRenderingContext2D,
                            tickBpDistance: number,
                            unit: 'Mbp' | 'kbp') {
         const tick: ScaleTick = {
@@ -104,25 +92,24 @@ export class ScaleDrawService {
             useLabel: true,
             unit: unit
         };
-        this.drawTicks(ctx, tickBpDistance, tick);
+        this.drawTicks(scaleView, ctx, tickBpDistance, tick);
     }
 
-    private drawMinorTicks(ctx: CanvasRenderingContext2D,
+    private drawMinorTicks(scaleView: ScaleView, ctx: CanvasRenderingContext2D,
                            tickBpDistance: number) {
         const tick: ScaleTick = {
             position: undefined,
             type: 'minor',
             useLabel: false
         };
-        this.drawTicks(ctx, tickBpDistance, tick);
+        this.drawTicks(scaleView, ctx, tickBpDistance, tick);
     }
 
-    private drawScaleTick(ctx: CanvasRenderingContext2D,
+    private drawScaleTick(scaleView: ScaleView, ctx: CanvasRenderingContext2D,
                           tick: ScaleTick) {
-        const bpPerPixel = this.plotState.binsize / this.plotCreator.zoomFactor;
-        const tickX = (this.plotState.plotPosition.x * this.plotState.binsize
-                       + tick.position - this.plotState.interval[0])
-                      / bpPerPixel;
+        const tickX = (scaleView.plotPosition.x * scaleView.binsize
+                       + tick.position - scaleView.interval[0])
+                      / scaleView.bpPerPixel;
         const tickSize = tick.type === 'major'
                          ? ScaleDrawService.GUI_TICK_LENGTH
                          : ScaleDrawService.GUI_TICK_LENGTH / 2;
@@ -148,19 +135,19 @@ export class ScaleDrawService {
         }
     }
 
-    private drawTicks(ctx: CanvasRenderingContext2D,
+    private drawTicks(scaleView: ScaleView, ctx: CanvasRenderingContext2D,
                       tickBpDistance: number,
                       genericTick: ScaleTick) {
-        for (let pos = ceilTo(this.plotState.interval[0] - 1,
-                              tickBpDistance);
-                 pos < this.plotState.interval[1];
-                 pos += tickBpDistance) {
+        for (let pos = ceilTo(scaleView.interval[0] - 1, tickBpDistance);
+                 pos < scaleView.interval[1]; pos += tickBpDistance) {
             genericTick.position = pos;
-            this.drawScaleTick(ctx, genericTick);
+            this.drawScaleTick(scaleView, ctx, genericTick);
         }
     }
 
-    private drawPositionScale(targetCanvas: HTMLCanvasElement) {
+    private drawPositionScale(scaleView: ScaleView,
+                              offsetX: number, offsetY: number,
+                              targetCanvas: HTMLCanvasElement) {
         const canvasWidth = targetCanvas.width;
         const canvasHeight = targetCanvas.height;
         const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
@@ -168,7 +155,7 @@ export class ScaleDrawService {
 
         // Correct for canvas positioning (no scale over label column)
         // and canvas pixel positioning (offset by 0.5 by default)
-        const effectiveWidth = canvasWidth - this.plotCreator.treePlotWidth;
+        const effectiveWidth = canvasWidth - offsetX;
         ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
 
         ctx.strokeStyle = ScaleDrawService.GUI_SCALE_COLOR;
@@ -179,17 +166,16 @@ export class ScaleDrawService {
         ctx.font = formatCanvasFont(ScaleDrawService.GUI_SCALE_FONT_SIZE,
                                     ScaleDrawService.GUI_SCALE_FONT);
 
-        this.drawAllTicks(ctx);
+        this.drawAllTicks(scaleView, ctx);
 
         // Hide scale over labels
         ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
-                      this.plotCreator.treePlotWidth,
-                      canvasHeight);
+                      offsetX, canvasHeight);
     }
 
-    private updateCanvas(targetCanvas: HTMLCanvasElement,
-                         containerSize: ContainerSize) {
-        targetCanvas.width = containerSize.width;
-        targetCanvas.height = containerSize.height;
+    private updateCanvas(scaleView: ScaleView,
+                         targetCanvas: HTMLCanvasElement) {
+        targetCanvas.width = scaleView.containerSize.width;
+        targetCanvas.height = scaleView.containerSize.height;
     }
 }

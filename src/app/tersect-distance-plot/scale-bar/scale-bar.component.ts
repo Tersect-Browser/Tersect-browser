@@ -15,6 +15,9 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
+    ScaleView
+} from '../models/ScaleView';
+import {
     PlotCreatorService
 } from '../services/plot-creator.service';
 import {
@@ -36,6 +39,8 @@ export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
+    private storedScaleView: ScaleView;
+
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService,
                 private readonly scaleDrawService: ScaleDrawService,
@@ -50,8 +55,16 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        this.scaleDrawService.drawScale(this.canvas.nativeElement,
-                                        this.getContainerSize());
+        if (isNullOrUndefined(this.storedScaleView)) {
+            this.storedScaleView = new ScaleView(this.plotState.interval,
+                                                 this.plotState.binsize,
+                                                 this.plotCreator.binWidth,
+                                                 this.getContainerSize());
+        }
+        this.updateScaleView(this.storedScaleView);
+        this.scaleDrawService.drawScale(this.storedScaleView,
+                                        this.plotCreator.treePlotWidth, 0,
+                                        this.canvas.nativeElement);
     }
 
     protected dragAction(dragState: DragState): void {
@@ -180,5 +193,13 @@ export class ScaleBarComponent extends CanvasPlotElement {
                               .parentElement
                               .offsetWidth
         };
+    }
+
+    private updateScaleView(scaleView: ScaleView) {
+        scaleView.interval = this.plotState.interval;
+        scaleView.binsize = this.plotState.binsize;
+        scaleView.binWidth = this.plotCreator.binWidth;
+        scaleView.containerSize = this.getContainerSize();
+        scaleView.plotPosition = this.plotState.plotPosition;
     }
 }
