@@ -12,7 +12,6 @@ export abstract class DistancePalette {
                               maxDistances: number[]): ImageData[];
     protected _distanceToColors(distances: number[], maxDistances: number[],
                                 palette: ImageData[]): ImageData[] {
-        // const max_distance = Math.max(...distances);
         return distances.map((d, i) => {
             if (maxDistances[i] === 0) {
                 return palette[0];
@@ -32,7 +31,7 @@ export class GreyscalePalette extends DistancePalette {
             for (let i = 0; i <= DistancePalette.MAX_DISTANCE; i++) {
                 /* ImageData constructor is experimental; with it we won't need
                 the context. */
-                // GreyscalePalette.palette_pixels[i] = ctx.createImageData(1, 1);
+                // GreyscalePalette.palettePixels[i] = ctx.createImageData(1, 1);
                 GreyscalePalette.palettePixels[i] = new ImageData(1, 1);
                 GreyscalePalette.palettePixels[i].data[0] = 255 - i; // R
                 GreyscalePalette.palettePixels[i].data[1] = 255 - i; // G
