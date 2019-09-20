@@ -79,8 +79,8 @@ router.route('/query/:datasetId/samples')
     const options = {
         maxBuffer: 5 * 1024 * 1024 // 5 megabytes
     };
-    const tsi_location = res.locals.dataset.tsi_location;
-    const tersectCommand = `tersect samples -n ${tsi_location}`;
+    const tsiLocation = res.locals.dataset.tsi_location;
+    const tersectCommand = `tersect samples -n ${tsiLocation}`;
     exec(tersectCommand, options, (err, stdout, stderr) => {
         if (err) {
             res.json(err);
@@ -131,7 +131,7 @@ router.route('/query/:datasetId/dist')
         maxBuffer: 200 * 1024 * 1024 // 200 megabytes
     };
 
-    const tsi_location = res.locals.dataset.tsi_location;
+    const tsiLocation = res.locals.dataset.tsi_location;
     const distBinQuery: DistanceBinQuery = req.body;
 
     const region = formatRegion(distBinQuery.chromosome_name,
@@ -142,7 +142,7 @@ router.route('/query/:datasetId/dist')
     const binsize = distBinQuery.binsize;
 
     writeAccessions(distBinQuery.accessions).then((accFile) => {
-        const tersectCommand = `tersect dist -j ${tsi_location} \
+        const tersectCommand = `tersect dist -j ${tsiLocation} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
         const output: DistanceBins = {
@@ -237,7 +237,7 @@ router.route('/views/export')
 
 router.route('/query/:datasetId/tree')
       .post((req, res) => {
-    const tsi_location = res.locals.dataset.tsi_location;
+    const tsiLocation = res.locals.dataset.tsi_location;
     const treeQuery: TreeQuery = req.body;
     const dbQuery: TreeDatabaseQuery = {
         datasetId: req.params.datasetId,
@@ -261,7 +261,7 @@ router.route('/query/:datasetId/tree')
                 if (saveErr) {
                     return res.status(500).send('Tree creation failed');
                 }
-                generateTree(tsi_location, treeQuery, dbQuery);
+                generateTree(tsiLocation, treeQuery, dbQuery);
             });
             res.json(phyloTree);
         } else {
