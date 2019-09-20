@@ -21,6 +21,9 @@ import {
     DragState
 } from '../CanvasPlotElement';
 import {
+    DistanceBinView
+} from '../models/DistanceBinView';
+import {
     BinDrawService
 } from '../services/bin-draw.service';
 import {
@@ -52,6 +55,8 @@ export class BinPlotComponent extends CanvasPlotElement
     private dragStartIndices = { x: 0, y: 0 };
     private highlightUpdate: Subscription;
 
+    private storedBinView: DistanceBinView;
+
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService,
                 private readonly binDrawService: BinDrawService) {
@@ -74,8 +79,16 @@ export class BinPlotComponent extends CanvasPlotElement
     }
 
     draw() {
-        this.binDrawService.drawBins(this.canvas.nativeElement,
-                                     this.getContainerSize());
+        if (isNullOrUndefined(this.storedBinView)) {
+            this.storedBinView = new DistanceBinView(this.plotCreator.distanceBins,
+                                                     this.plotState.orderedAccessions,
+                                                     this.plotCreator.binHeight,
+                                                     this.getContainerSize());
+        }
+        this.updateDistanceBinView(this.storedBinView);
+        this.binDrawService.drawBins(this.storedBinView,
+                                     this.plotCreator.guiMargins.left, 0,
+                                     this.canvas.nativeElement);
         this.updateHighlight();
     }
 
@@ -161,6 +174,16 @@ export class BinPlotComponent extends CanvasPlotElement
                               .parentElement
                               .offsetWidth
         };
+    }
+
+    private updateDistanceBinView(binView: DistanceBinView) {
+        binView.aspectRatio = this.plotCreator.aspectRatio;
+        binView.binHeight = this.plotCreator.binHeight;
+        binView.containerSize = this.getContainerSize();
+        binView.orderedAccessions = this.plotState.orderedAccessions;
+        binView.plotPosition = this.plotState.plotPosition;
+        binView.sequenceGaps = this.plotCreator.sequenceGaps;
+        binView.distanceBins = this.plotCreator.distanceBins;
     }
 
     private updateHighlight() {

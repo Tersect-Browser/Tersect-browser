@@ -1,66 +1,51 @@
 import { Injectable } from '@angular/core';
 
-import * as deepEqual from 'fast-deep-equal';
-
-import { DistanceBinQuery } from '../../models/DistanceBins';
 import { SequenceInterval } from '../../models/SequenceInterval';
-import { ceilTo, deepCopy, floorTo } from '../../utils/utils';
+import { ceilTo, floorTo, isNullOrUndefined } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
-import { ContainerSize } from '../tersect-distance-plot.component';
+import { DistanceBinView } from '../models/DistanceBinView';
 import { PlotCreatorService } from './plot-creator.service';
-import { PlotStateService } from './plot-state.service';
 
 @Injectable()
 export class BinDrawService {
-    private imageArray: Uint8ClampedArray;
-    private storedDistanceBinQuery: DistanceBinQuery;
-
-    constructor(private readonly plotState: PlotStateService,
-                private readonly plotCreator: PlotCreatorService) { }
-
-    drawBins(targetCanvas: HTMLCanvasElement,
-             containerSize: ContainerSize) {
-        this.updateCanvas(targetCanvas, containerSize);
-
-        if (!deepEqual(this.plotCreator.distanceBins.query,
-                       this.storedDistanceBinQuery)) {
+    drawBins(binView: DistanceBinView, offsetX?: number, offsetY?: number,
+             targetCanvas?: HTMLCanvasElement) {
+        if (binView.redrawRequired) {
             // Updated distance bins
-            this.imageArray = this.generatePlotArray();
-            this.storedDistanceBinQuery = deepCopy(this.plotCreator
-                                                       .distanceBins.query);
+            this.generatePlotArray(binView);
         }
 
-        const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
-        ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
-        ctx.putImageData(this.extractVisibleImage(targetCanvas, this.imageArray),
-                         this.plotCreator.guiMargins.left, 0);
+        if (!isNullOrUndefined(targetCanvas)) {
+            this.updateCanvas(binView, targetCanvas);
+            const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            const visibleImage = this.extractVisibleImage(binView,
+                                                          offsetX, offsetY,
+                                                          targetCanvas);
+            ctx.putImageData(visibleImage, offsetX, offsetY);
+        }
     }
 
-    getImageData(): ImageData {
-        return new ImageData(this.imageArray, this.plotCreator.colNum,
-                             this.plotCreator.rowNum);
-    }
-
-    private addPlotGap(plotArray: Uint8ClampedArray, gap: SequenceInterval) {
-        const rowNum = this.plotCreator.rowNum;
-        const colNum = this.plotCreator.colNum;
-        const interval = this.plotState.interval;
+    private addPlotGap(binView: DistanceBinView, gap: SequenceInterval) {
+        const rowNum = binView.rowNum;
+        const colNum = binView.colNum;
+        const interval = binView.interval;
         const startPos = gap.start > interval[0] ? gap.start : interval[0];
         const endPos = gap.end < interval[1] ? gap.end : interval[1];
-        const binStart = ceilTo(startPos - interval[0], this.plotState.binsize)
-                         / this.plotState.binsize;
+        const binStart = ceilTo(startPos - interval[0], binView.binsize)
+                         / binView.binsize;
         // NOTE: binEnd index is exclusive while gap.end position is inclusive
-        const binEnd = floorTo(endPos - interval[0] + 1, this.plotState.binsize)
-                       / this.plotState.binsize;
+        const binEnd = floorTo(endPos - interval[0] + 1, binView.binsize)
+                       / binView.binsize;
         for (let accessionIndex = 0;
                  accessionIndex < rowNum;
                  accessionIndex++) {
             for (let binIndex = binStart; binIndex < binEnd; binIndex++) {
                 const pos = 4 * (binIndex + colNum * accessionIndex);
-                plotArray[pos] = PlotCreatorService.GAP_COLOR[0];
-                plotArray[pos + 1] = PlotCreatorService.GAP_COLOR[1];
-                plotArray[pos + 2] = PlotCreatorService.GAP_COLOR[2];
-                plotArray[pos + 3] = PlotCreatorService.GAP_COLOR[3];
+                binView.imageArray[pos] = PlotCreatorService.GAP_COLOR[0];
+                binView.imageArray[pos + 1] = PlotCreatorService.GAP_COLOR[1];
+                binView.imageArray[pos + 2] = PlotCreatorService.GAP_COLOR[2];
+                binView.imageArray[pos + 3] = PlotCreatorService.GAP_COLOR[3];
             }
         }
     }
@@ -68,22 +53,29 @@ export class BinDrawService {
     /**
      * Add gaps to existing plot array.
      */
-    private addPlotGaps(plotArray: Uint8ClampedArray) {
-        this.plotCreator.sequenceGaps.forEach(gap => {
-            if (gap.size >= this.plotState.binsize) {
-                this.addPlotGap(plotArray, gap);
+    private addPlotGaps(binView: DistanceBinView) {
+        binView.sequenceGaps.forEach(gap => {
+            if (gap.size >= binView.binsize) {
+                this.addPlotGap(binView, gap);
             }
         });
     }
 
-    private extractVisibleImage(targetCanvas: HTMLCanvasElement,
-                                imageArray: Uint8ClampedArray): ImageData {
-        const pos = this.plotState.plotPosition;
-        const colNum = this.plotCreator.colNum;
+    private extractVisibleImage(binView: DistanceBinView,
+                                offsetX: number, offsetY: number,
+                                targetCanvas: HTMLCanvasElement): ImageData {
+        if (isNullOrUndefined(offsetX)) {
+            offsetX = 0;
+        }
+        if (isNullOrUndefined(offsetY)) {
+            offsetY = 0;
+        }
 
-        let visibleCols = Math.ceil(targetCanvas.width
-                                    / this.plotCreator.binWidth)
-                          - this.plotCreator.guiMargins.left;
+        const pos = binView.plotPosition;
+        const colNum = binView.colNum;
+
+        let visibleCols = Math.ceil(targetCanvas.width / binView.binWidth)
+                          - offsetX;
         if (visibleCols > colNum + pos.x) {
             // More visible area than available columns
             visibleCols = colNum + pos.x;
@@ -92,46 +84,50 @@ export class BinDrawService {
             }
         }
 
-        const visibleRows = Math.ceil(targetCanvas.height
-                                      / this.plotCreator.binHeight);
+        const visibleRows = Math.ceil(targetCanvas.height / binView.binHeight)
+                            - offsetY;
 
         const visibleArray = new Uint8ClampedArray(4 * visibleRows
                                                    * visibleCols);
 
         for (let i = 0; i < visibleRows; i++) {
             const rowStart = 4 * (colNum * (i - pos.y) - pos.x);
-            visibleArray.set(imageArray.slice(rowStart,
-                                              rowStart + 4 * visibleCols),
+            visibleArray.set(binView.imageArray
+                                    .slice(rowStart, rowStart + 4 * visibleCols),
                              4 * i * visibleCols);
         }
         return new ImageData(visibleArray, visibleCols, visibleRows);
     }
 
-    private generatePlotArray(): Uint8ClampedArray {
+    private generatePlotArray(binView: DistanceBinView) {
         const palette = new GreyscalePalette();
-        const accessionBins = this.plotState.orderedAccessions.map(
-            accession => this.plotCreator.distanceBins.bins[accession]
+        const accessionBins = binView.orderedAccessions.map(
+            accession => binView.distanceBins.bins[accession]
         );
 
         const binMaxDistances = this.getMaxDistances(accessionBins);
 
-        const rowNum = this.plotCreator.rowNum;
-        const colNum = this.plotCreator.colNum;
-        const plotArray = new Uint8ClampedArray(4 * rowNum * colNum);
+        const rowNum = binView.rowNum;
+        const colNum = binView.colNum;
+        binView.imageArray = new Uint8ClampedArray(4 * rowNum * colNum);
 
         accessionBins.forEach((accessionBin, accessionIndex) => {
             palette.distanceToColors(accessionBin, binMaxDistances)
                    .forEach((color, binIndex) => {
                 const pos = 4 * (binIndex + colNum * accessionIndex);
-                plotArray[pos] = color.data[0];
-                plotArray[pos + 1] = color.data[1];
-                plotArray[pos + 2] = color.data[2];
-                plotArray[pos + 3] = color.data[3];
+                binView.imageArray[pos] = color.data[0];
+                binView.imageArray[pos + 1] = color.data[1];
+                binView.imageArray[pos + 2] = color.data[2];
+                binView.imageArray[pos + 3] = color.data[3];
             });
         });
 
-        this.addPlotGaps(plotArray);
-        return plotArray;
+        if (!isNullOrUndefined(binView.sequenceGaps) &&
+            !isNullOrUndefined(binView.interval)) {
+            this.addPlotGaps(binView);
+        }
+
+        binView.redrawRequired = false;
     }
 
     /**
@@ -149,12 +145,11 @@ export class BinDrawService {
         return binMaxDistances;
     }
 
-    private updateCanvas(targetCanvas: HTMLCanvasElement,
-                         containerSize: ContainerSize) {
-        targetCanvas.style.width = `${this.plotState.zoomLevel}%`;
-        targetCanvas.style.height = `${this.plotState.zoomLevel
-                                       / this.plotCreator.aspectRatio}%`;
-        targetCanvas.width = containerSize.width;
-        targetCanvas.height = containerSize.height;
+    private updateCanvas(binView: DistanceBinView,
+                         targetCanvas: HTMLCanvasElement) {
+        targetCanvas.style.width = `${binView.binWidth * 100}%`;
+        targetCanvas.style.height = `${binView.binHeight * 100}%`;
+        targetCanvas.width = binView.containerSize.width;
+        targetCanvas.height = binView.containerSize.height;
     }
 }
