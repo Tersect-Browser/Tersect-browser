@@ -14,10 +14,11 @@ const config = JSON.parse(
     fs.readFileSync('./src/backend/config.json').toString()
 );
 
-const uri = `${config.mongo_hostname}:${config.port}/${config.db_name}`;
+const url = `${config.mongo_hostname}:${config.port}/${config.db_name}`;
+mongoose.set('useNewUrlParser', true)
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
-mongoose.connect(uri, { useNewUrlParser: true });
+mongoose.connect(url);
 
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.json());
