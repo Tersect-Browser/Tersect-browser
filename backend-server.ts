@@ -15,8 +15,9 @@ const config = JSON.parse(
 );
 
 const uri = `${config.mongo_hostname}:${config.port}/${config.db_name}`;
-mongoose.connect(uri, { useNewUrlParser: true });
+mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
+mongoose.connect(uri, { useNewUrlParser: true });
 
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.json());
