@@ -6,7 +6,7 @@ import { CardModule } from 'primeng/card';
 
 import {
     TersectBackendService
-} from '../../shared/services/tersect-backend.service';
+} from '../../services/tersect-backend.service';
 
 import { IntroPageComponent } from './intro-page.component';
 

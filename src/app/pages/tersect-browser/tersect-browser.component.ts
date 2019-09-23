@@ -7,31 +7,31 @@ import { switchMap } from 'rxjs/operators';
 
 import {
     PlotClickMenuComponent
-} from '../../plot-click-menu/plot-click-menu.component';
-import {
-    Chromosome
-} from '../../shared/models/Chromosome';
-import {
-    PlotMouseClickEvent
-} from '../../shared/models/Plot';
-import {
-    TersectBackendService
-} from '../../shared/services/tersect-backend.service';
-import {
-    isNullOrUndefined
-} from '../../shared/utils/utils';
+} from '../../components/plot-click-menu/plot-click-menu.component';
 import {
     PlotStateService
-} from '../../tersect-distance-plot/services/plot-state.service';
+} from '../../components/tersect-distance-plot/services/plot-state.service';
 import {
     PlotZoomService
-} from '../../tersect-distance-plot/services/plot-zoom.service';
+} from '../../components/tersect-distance-plot/services/plot-zoom.service';
 import {
     TersectDistancePlotComponent
-} from '../../tersect-distance-plot/tersect-distance-plot.component';
+} from '../../components/tersect-distance-plot/tersect-distance-plot.component';
 import {
     TooltipComponent
-} from '../../tooltip/tooltip.component';
+} from '../../components/tooltip/tooltip.component';
+import {
+    Chromosome
+} from '../../models/Chromosome';
+import {
+    PlotMouseClickEvent
+} from '../../models/Plot';
+import {
+    TersectBackendService
+} from '../../services/tersect-backend.service';
+import {
+    isNullOrUndefined
+} from '../../utils/utils';
 import {
     AccessionDisplayStyle,
     AccessionGroup,

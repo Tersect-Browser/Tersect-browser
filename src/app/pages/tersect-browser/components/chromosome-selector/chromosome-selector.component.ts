@@ -3,15 +3,15 @@ import { Component, Input } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
+    PlotStateService
+} from '../../../../components/tersect-distance-plot/services/plot-state.service';
+import {
     Chromosome
-} from '../../../../shared/models/Chromosome';
+} from '../../../../models/Chromosome';
 import {
     formatPosition,
     isNullOrUndefined
-} from '../../../../shared/utils/utils';
-import {
-    PlotStateService
-} from '../../../../tersect-distance-plot/services/plot-state.service';
+} from '../../../../utils/utils';
 
 @Component({
     selector: 'app-chromosome-selector',

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { isNullOrUndefined } from '../app/shared/utils/utils';
+import { isNullOrUndefined } from '../app/utils/utils';
 import { AccessionTGRC } from './models/accessiontgrc';
 import { GeneTGRC } from './models/genetgrc';
 

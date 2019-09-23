@@ -5,7 +5,7 @@ import {
 } from '../../../backend/models/dataset';
 import {
     TersectBackendService
-} from '../../shared/services/tersect-backend.service';
+} from '../../services/tersect-backend.service';
 
 @Component({
     selector: 'app-intro-page',

@@ -32,15 +32,15 @@ import {
 import {
     DistanceBinQuery,
     DistanceBins
-} from '../app/shared/models/DistanceBins';
+} from '../app/models/DistanceBins';
 import {
     TreeDatabaseQuery,
     TreeQuery
-} from '../app/shared/models/PheneticTree';
+} from '../app/models/PheneticTree';
 import {
     formatRegion,
     isNullOrUndefined
-} from '../app/shared/utils/utils';
+} from '../app/utils/utils';
 
 import { ChromosomeIndex } from './models/chromosomeindex';
 import { Dataset, DatasetPublic } from './models/dataset';
