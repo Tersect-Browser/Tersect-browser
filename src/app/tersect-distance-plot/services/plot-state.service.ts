@@ -2,6 +2,15 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import {
+    AccessionDictionary,
+    AccessionDisplayStyle,
+    AccessionGroup,
+    AccessionInfo,
+    BrowserSettings,
+    extractAccessionColors,
+    extractAccessionLabels
+} from '../../pages/tersect-browser/browser-settings';
+import {
     Chromosome
 } from '../../shared/models/Chromosome';
 import {
@@ -12,15 +21,6 @@ import {
     isNullOrUndefined,
     sameElements
 } from '../../shared/utils/utils';
-import {
-    AccessionDictionary,
-    AccessionDisplayStyle,
-    AccessionGroup,
-    AccessionInfo,
-    BrowserSettings,
-    extractAccessionColors,
-    extractAccessionLabels
-} from '../../tersect-browser/browser-settings';
 import {
     PlotState
 } from '../models/PlotState';

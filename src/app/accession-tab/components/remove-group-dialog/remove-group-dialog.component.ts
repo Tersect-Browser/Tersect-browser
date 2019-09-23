@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 
-import { AccessionGroup } from '../../../tersect-browser/browser-settings';
+import { AccessionGroup } from '../../../pages/tersect-browser/browser-settings';
 
 @Component({
     selector: 'app-remove-group-dialog',

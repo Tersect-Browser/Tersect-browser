@@ -6,10 +6,10 @@ import { OverlayPanel } from 'primeng/overlaypanel';
 
 import {
     TersectBackendService
-} from '../../../shared/services/tersect-backend.service';
+} from '../../../../shared/services/tersect-backend.service';
 import {
     PlotStateService
-} from '../../../tersect-distance-plot/services/plot-state.service';
+} from '../../../../tersect-distance-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-share-menu',

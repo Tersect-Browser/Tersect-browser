@@ -1,6 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 import {
+    getAccessionLabel
+} from '../../../pages/tersect-browser/browser-settings';
+import {
     PlotAccession,
     PlotArea,
     PlotPosition
@@ -8,9 +11,6 @@ import {
 import {
     isNullOrUndefined
 } from '../../../shared/utils/utils';
-import {
-    getAccessionLabel
-} from '../../../tersect-browser/browser-settings';
 import {
     AccessionTreeView
 } from '../../models/AccessionTreeView';

@@ -12,11 +12,11 @@ import {
     ColorSelectorComponent
 } from '../../../color-selector/color-selector.component';
 import {
+    AccessionGroup
+} from '../../../pages/tersect-browser/browser-settings';
+import {
     isNullOrUndefined
 } from '../../../shared/utils/utils';
-import {
-    AccessionGroup
-} from '../../../tersect-browser/browser-settings';
 import {
     RemoveGroupDialogComponent
 } from '../remove-group-dialog/remove-group-dialog.component';

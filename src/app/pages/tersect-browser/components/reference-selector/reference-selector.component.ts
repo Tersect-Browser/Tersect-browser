@@ -5,10 +5,10 @@ import { Subscription } from 'rxjs';
 
 import {
     isNullOrUndefined
-} from '../../../shared/utils/utils';
+} from '../../../../shared/utils/utils';
 import {
     PlotStateService
-} from '../../../tersect-distance-plot/services/plot-state.service';
+} from '../../../../tersect-distance-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-reference-selector',

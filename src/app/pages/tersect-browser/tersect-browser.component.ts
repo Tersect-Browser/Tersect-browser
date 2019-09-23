@@ -7,31 +7,31 @@ import { switchMap } from 'rxjs/operators';
 
 import {
     PlotClickMenuComponent
-} from '../plot-click-menu/plot-click-menu.component';
+} from '../../plot-click-menu/plot-click-menu.component';
 import {
     Chromosome
-} from '../shared/models/Chromosome';
+} from '../../shared/models/Chromosome';
 import {
     PlotMouseClickEvent
-} from '../shared/models/Plot';
+} from '../../shared/models/Plot';
 import {
     TersectBackendService
-} from '../shared/services/tersect-backend.service';
+} from '../../shared/services/tersect-backend.service';
 import {
     isNullOrUndefined
-} from '../shared/utils/utils';
+} from '../../shared/utils/utils';
 import {
     PlotStateService
-} from '../tersect-distance-plot/services/plot-state.service';
+} from '../../tersect-distance-plot/services/plot-state.service';
 import {
     PlotZoomService
-} from '../tersect-distance-plot/services/plot-zoom.service';
+} from '../../tersect-distance-plot/services/plot-zoom.service';
 import {
     TersectDistancePlotComponent
-} from '../tersect-distance-plot/tersect-distance-plot.component';
+} from '../../tersect-distance-plot/tersect-distance-plot.component';
 import {
     TooltipComponent
-} from '../tooltip/tooltip.component';
+} from '../../tooltip/tooltip.component';
 import {
     AccessionDisplayStyle,
     AccessionGroup,

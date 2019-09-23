@@ -3,17 +3,17 @@ import {
 } from 'rxjs';
 
 import {
+    AccessionDictionary,
+    AccessionDisplayStyle,
+    AccessionGroup,
+    AccessionInfo
+} from '../../pages/tersect-browser/browser-settings';
+import {
     Chromosome
 } from '../../shared/models/Chromosome';
 import {
     PlotPosition
 } from '../../shared/models/Plot';
-import {
-    AccessionDictionary,
-    AccessionDisplayStyle,
-    AccessionGroup,
-    AccessionInfo
-} from '../../tersect-browser/browser-settings';
 
 export interface PlotState {
     accessionStyle$: Observable<AccessionDisplayStyle>;

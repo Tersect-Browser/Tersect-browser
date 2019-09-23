@@ -2,8 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { SelectItem } from 'primeng/components/common/selectitem';
 
+import { AccessionGroup } from '../../../pages/tersect-browser/browser-settings';
 import { isNullOrUndefined } from '../../../shared/utils/utils';
-import { AccessionGroup } from '../../../tersect-browser/browser-settings';
 
 @Component({
     selector: 'app-add-group-dialog',

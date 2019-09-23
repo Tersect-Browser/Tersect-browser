@@ -6,20 +6,20 @@ import { RouterModule, Routes } from '@angular/router';
 
 import {
     IntroPageModule
-} from './intro-page/intro-page.module';
+} from './pages/intro-page/intro-page.module';
 import {
     TersectBrowserModule
-} from './tersect-browser/tersect-browser.module';
+} from './pages/tersect-browser/tersect-browser.module';
 
 import {
     AppComponent
 } from './app.component';
 import {
     IntroPageComponent
-} from './intro-page/intro-page.component';
+} from './pages/intro-page/intro-page.component';
 import {
     TersectBrowserComponent
-} from './tersect-browser/tersect-browser.component';
+} from './pages/tersect-browser/tersect-browser.component';
 
 import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
 

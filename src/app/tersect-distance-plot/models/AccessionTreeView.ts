@@ -1,6 +1,10 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
+    AccessionDictionary,
+    AccessionDisplayStyle
+} from '../../pages/tersect-browser/browser-settings';
+import {
     PheneticTree
 } from '../../shared/models/PheneticTree';
 import {
@@ -8,10 +12,6 @@ import {
     deepCopy,
     isNullOrUndefined
 } from '../../shared/utils/utils';
-import {
-    AccessionDictionary,
-    AccessionDisplayStyle
-} from '../../tersect-browser/browser-settings';
 import {
     treeToOrderedList
 } from '../clustering/clustering';

@@ -17,19 +17,19 @@ import { ToolbarModule } from 'primeng/toolbar';
 
 import {
     AccessionTabModule
-} from '../accession-tab/accession-tab.module';
+} from '../../accession-tab/accession-tab.module';
 import {
     PlotClickMenuModule
-} from '../plot-click-menu/plot-click-menu.module';
+} from '../../plot-click-menu/plot-click-menu.module';
 import {
     FitWindowModule
-} from '../shared/directives/fit-window/fit-window.module';
+} from '../../shared/directives/fit-window/fit-window.module';
 import {
     TersectDistancePlotModule
-} from '../tersect-distance-plot/tersect-distance-plot.module';
+} from '../../tersect-distance-plot/tersect-distance-plot.module';
 import {
     TooltipModule
-} from '../tooltip/tooltip.module';
+} from '../../tooltip/tooltip.module';
 
 import {
     AccessionStyleSelectorComponent

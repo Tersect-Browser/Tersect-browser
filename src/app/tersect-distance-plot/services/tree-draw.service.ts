@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 
 import {
+    getAccessionColors,
+    getAccessionLabel
+} from '../../pages/tersect-browser/browser-settings';
+import {
     ceilTo,
     formatCanvasFont,
     isNullOrUndefined
 } from '../../shared/utils/utils';
-import {
-    getAccessionColors,
-    getAccessionLabel
-} from '../../tersect-browser/browser-settings';
 import {
     getTreeDepth,
     getTreeDepthLinear,

@@ -1,6 +1,6 @@
 import { EventEmitter, Input, Output } from '@angular/core';
 
-import { AccessionInfo } from '../../../tersect-browser/browser-settings';
+import { AccessionInfo } from '../../../pages/tersect-browser/browser-settings';
 
 export abstract class AccessionInfoImporterComponent {
     @Input()

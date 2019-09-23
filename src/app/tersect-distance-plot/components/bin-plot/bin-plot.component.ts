@@ -9,6 +9,9 @@ import {
 import { Subscription } from 'rxjs';
 
 import {
+    getAccessionLabel
+} from '../../../pages/tersect-browser/browser-settings';
+import {
     PlotArea,
     PlotBin,
     PlotPosition
@@ -16,9 +19,6 @@ import {
 import {
     isNullOrUndefined
 } from '../../../shared/utils/utils';
-import {
-    getAccessionLabel
-} from '../../../tersect-browser/browser-settings';
 import {
     DistanceBinView
 } from '../../models/DistanceBinView';
