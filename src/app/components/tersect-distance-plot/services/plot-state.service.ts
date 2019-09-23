@@ -30,12 +30,11 @@ import {
     AccessionDictionary,
     AccessionDisplayStyle,
     AccessionGroup,
-    AccessionInfo,
-    PlotState
+    AccessionInfo
 } from '../models/PlotState';
 
 @Injectable()
-export class PlotStateService implements PlotState {
+export class PlotStateService {
     settings$: Observable<BrowserSettings>;
 
     /**

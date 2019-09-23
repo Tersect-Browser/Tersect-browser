@@ -34,25 +34,3 @@ export interface AccessionInfo {
     [s: string]: string;
 }
 
-export interface PlotState {
-    accessionStyle$: Observable<AccessionDisplayStyle>;
-    zoomLevel$: Observable<number>;
-    accessionDictionary$: Observable<AccessionDictionary>;
-    plotPosition$: Observable<PlotPosition>;
-    distanceBins$: Observable<DistanceBins>;
-
-    datasetId: string;
-    accessionStyle: AccessionDisplayStyle;
-    accessionInfos: AccessionInfo[];
-    accessionDictionary: AccessionDictionary;
-    accessionGroups: AccessionGroup[];
-    accessions: string[];
-    reference: string;
-    chromosome: Chromosome;
-    interval: number[];
-    binsize: number;
-    zoomLevel: number;
-    orderedAccessions: string[];
-    plugins: string[];
-    plotPosition: PlotPosition;
-}
