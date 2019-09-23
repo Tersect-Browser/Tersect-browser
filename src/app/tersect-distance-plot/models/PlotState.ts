@@ -1,4 +1,8 @@
 import {
+    Observable
+} from 'rxjs';
+
+import {
     Chromosome
 } from '../../models/Chromosome';
 import {
@@ -12,6 +16,11 @@ import {
 } from '../../tersect-browser/browser-settings';
 
 export interface PlotState {
+    accessionStyle$: Observable<AccessionDisplayStyle>;
+    zoomLevel$: Observable<number>;
+    accessionDictionary$: Observable<AccessionDictionary>;
+    plotPosition$: Observable<PlotPosition>;
+
     datasetId: string;
     accessionStyle: AccessionDisplayStyle;
     accessionInfos: AccessionInfo[];
