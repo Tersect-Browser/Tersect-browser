@@ -81,16 +81,16 @@ export class PlotStateService implements PlotState {
     plugins: string[] = [];
 
     /**
-     * Horizontal / vertical scroll position (in terms of bins and accessions,
-     * respectively) of the plot.
-     */
-    plotPositionSource = new BehaviorSubject<PlotPosition>({ x: 0, y: 0 });
-
-    /**
      * Accession names in the order to be displayed on the drawn plot.
      * Generally this is the order based on clustering.
      */
     orderedAccessions$: Observable<string[]>;
+
+    /**
+     * Horizontal / vertical scroll position (in terms of bins and accessions,
+     * respectively) of the plot.
+     */
+    plotPosition$: Observable<PlotPosition>;
 
     private readonly settingsSource = new Subject<BrowserSettings>();
     private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
@@ -105,6 +105,10 @@ export class PlotStateService implements PlotState {
     private readonly binsizeSource = new BehaviorSubject<number>(undefined);
     private readonly zoomLevelSource = new BehaviorSubject<number>(100);
     private readonly orderedAccessionsSource = new BehaviorSubject<string[]>(null);
+    private readonly plotPositionSource = new BehaviorSubject<PlotPosition>({
+        x: 0,
+        y: 0
+    });
 
     constructor() {
         this.settings$ = this.settingsSource.asObservable();
@@ -120,6 +124,7 @@ export class PlotStateService implements PlotState {
         this.binsize$ = this.binsizeSource.asObservable();
         this.zoomLevel$ = this.zoomLevelSource.asObservable();
         this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
+        this.plotPosition$ = this.plotPositionSource.asObservable();
     }
 
     get plotPosition(): PlotPosition {

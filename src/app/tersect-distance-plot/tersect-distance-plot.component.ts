@@ -81,7 +81,7 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
             this.plotState.accessionStyle$,
             this.plotState.zoomLevel$,
             this.plotState.accessionDictionary$,
-            this.plotState.plotPositionSource,
+            this.plotState.plotPosition$,
             this.plotCreator.distanceBinsSource
         ]).pipe(
             filter(triggerVars => !triggerVars.some(isNullOrUndefined))
