@@ -23,15 +23,15 @@ export class DownloadDialogComponent {
     downloadImage() {
         this.imageData.then(blob => {
             saveAs(blob, 'output.png');
-            this.hideDialog();
+            this.hide();
         });
     }
 
-    hideDialog() {
+    hide() {
         this.visible = false;
     }
 
-    showDialog() {
+    show() {
         this.imageData = this.exportPlotService.exportImage();
         this.visible = true;
     }
