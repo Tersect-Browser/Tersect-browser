@@ -11,7 +11,7 @@ import {
 } from '../shared/models/Plot';
 import {
     formatPosition
-} from '../utils/utils';
+} from '../shared/utils/utils';
 
 @Component({
     selector: 'app-tooltip',

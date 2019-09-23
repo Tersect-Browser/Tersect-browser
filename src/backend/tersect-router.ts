@@ -40,7 +40,7 @@ import {
 import {
     formatRegion,
     isNullOrUndefined
-} from '../app/utils/utils';
+} from '../app/shared/utils/utils';
 
 import { ChromosomeIndex } from './models/chromosomeindex';
 import { Dataset, DatasetPublic } from './models/dataset';

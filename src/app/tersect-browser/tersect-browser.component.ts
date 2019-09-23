@@ -18,6 +18,9 @@ import {
     TersectBackendService
 } from '../shared/services/tersect-backend.service';
 import {
+    isNullOrUndefined
+} from '../shared/utils/utils';
+import {
     PlotStateService
 } from '../tersect-distance-plot/services/plot-state.service';
 import {
@@ -29,9 +32,6 @@ import {
 import {
     TooltipComponent
 } from '../tooltip/tooltip.component';
-import {
-    isNullOrUndefined
-} from '../utils/utils';
 import {
     AccessionDisplayStyle,
     AccessionGroup,

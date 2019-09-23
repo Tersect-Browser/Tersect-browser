@@ -4,11 +4,11 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 import { Subscription } from 'rxjs';
 
 import {
+    isNullOrUndefined
+} from '../../../shared/utils/utils';
+import {
     PlotStateService
 } from '../../../tersect-distance-plot/services/plot-state.service';
-import {
-    isNullOrUndefined
-} from '../../../utils/utils';
 
 @Component({
     selector: 'app-reference-selector',

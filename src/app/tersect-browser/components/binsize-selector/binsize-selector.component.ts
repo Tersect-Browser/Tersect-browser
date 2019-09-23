@@ -5,13 +5,13 @@ import {
 } from 'rxjs';
 
 import {
-    PlotStateService
-} from '../../../tersect-distance-plot/services/plot-state.service';
-import {
     ceilTo,
     clamp,
     isNullOrUndefined
-} from '../../../utils/utils';
+} from '../../../shared/utils/utils';
+import {
+    PlotStateService
+} from '../../../tersect-distance-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-binsize-selector',

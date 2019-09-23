@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { SequenceInterval } from '../../shared/models/SequenceInterval';
-import { ceilTo, floorTo, isNullOrUndefined } from '../../utils/utils';
+import { ceilTo, floorTo, isNullOrUndefined } from '../../shared/utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { DistanceBinView } from '../models/DistanceBinView';
 import { PlotCreatorService } from './plot-creator.service';

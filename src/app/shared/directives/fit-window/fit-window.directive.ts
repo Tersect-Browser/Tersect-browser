@@ -1,6 +1,6 @@
 import { Directive, ElementRef, Input } from '@angular/core';
 
-import { fixedElementPosition } from '../../../utils/utils';
+import { fixedElementPosition } from '../../utils/utils';
 
 @Directive({
     selector: '[appFitWindow]'

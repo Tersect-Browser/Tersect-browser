@@ -5,7 +5,7 @@ import {
     findClosest,
     formatCanvasFont,
     formatPosition
-} from '../../utils/utils';
+} from '../../shared/utils/utils';
 import {
     ScaleView
 } from '../models/ScaleView';

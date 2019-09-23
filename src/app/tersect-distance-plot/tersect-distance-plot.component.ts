@@ -18,7 +18,7 @@ import {
 } from '../shared/models/Plot';
 import {
     isNullOrUndefined
-} from '../utils/utils';
+} from '../shared/utils/utils';
 import {
     BinPlotComponent
 } from './components/bin-plot/bin-plot.component';

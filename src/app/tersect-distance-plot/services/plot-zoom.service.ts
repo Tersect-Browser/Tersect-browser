@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { ceilTo, floorTo } from '../../utils/utils';
+import { ceilTo, floorTo } from '../../shared/utils/utils';
 import { PlotStateService } from './plot-state.service';
 
 @Injectable()

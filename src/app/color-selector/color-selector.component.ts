@@ -6,7 +6,7 @@ import {
     Output
 } from '@angular/core';
 
-import { fixedElementPosition } from '../utils/utils';
+import { fixedElementPosition } from '../shared/utils/utils';
 
 export interface ColorChangeEvent {
     color: string;

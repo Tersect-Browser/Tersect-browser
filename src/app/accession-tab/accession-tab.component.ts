@@ -16,20 +16,20 @@ import { TableState } from 'primeng/components/common/tablestate';
 import { Table } from 'primeng/table';
 
 import {
-    AccessionGroup,
-    AccessionInfo
-} from '../tersect-browser/browser-settings';
-import {
-    TGRCGeneImporterComponent
-} from '../tgrc-gene-importer/tgrc-gene-importer.component';
-import {
     arraySubtract,
     arrayUnion,
     deepCopy,
     isNullOrUndefined,
     isSubset,
     uniqueArray
-} from '../utils/utils';
+} from '../shared/utils/utils';
+import {
+    AccessionGroup,
+    AccessionInfo
+} from '../tersect-browser/browser-settings';
+import {
+    TGRCGeneImporterComponent
+} from '../tgrc-gene-importer/tgrc-gene-importer.component';
 import {
     AccessionInfoImporterComponent
 } from './components/plugins/accession-info-importer.component';

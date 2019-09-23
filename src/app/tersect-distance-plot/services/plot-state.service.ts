@@ -8,6 +8,11 @@ import {
     PlotPosition
 } from '../../shared/models/Plot';
 import {
+    deepCopy,
+    isNullOrUndefined,
+    sameElements
+} from '../../shared/utils/utils';
+import {
     AccessionDictionary,
     AccessionDisplayStyle,
     AccessionGroup,
@@ -16,11 +21,6 @@ import {
     extractAccessionColors,
     extractAccessionLabels
 } from '../../tersect-browser/browser-settings';
-import {
-    deepCopy,
-    isNullOrUndefined,
-    sameElements
-} from '../../utils/utils';
 import {
     PlotState
 } from '../models/PlotState';

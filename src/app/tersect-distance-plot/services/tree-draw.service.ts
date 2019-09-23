@@ -6,14 +6,14 @@ import {
     TreeNode
 } from '../../clustering/clustering';
 import {
-    getAccessionColors,
-    getAccessionLabel
-} from '../../tersect-browser/browser-settings';
-import {
     ceilTo,
     formatCanvasFont,
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../shared/utils/utils';
+import {
+    getAccessionColors,
+    getAccessionLabel
+} from '../../tersect-browser/browser-settings';
 import {
     AccessionTreeView
 } from '../models/AccessionTreeView';

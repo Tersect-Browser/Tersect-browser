@@ -46,7 +46,7 @@ import {
     ceilTo,
     isNullOrUndefined,
     sameElements
-} from '../../utils/utils';
+} from '../../shared/utils/utils';
 import {
     PlotStateService
 } from './plot-state.service';

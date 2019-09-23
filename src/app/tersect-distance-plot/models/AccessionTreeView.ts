@@ -7,14 +7,14 @@ import {
     PheneticTree
 } from '../../shared/models/PheneticTree';
 import {
-    AccessionDictionary,
-    AccessionDisplayStyle
-} from '../../tersect-browser/browser-settings';
-import {
     ceilTo,
     deepCopy,
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../shared/utils/utils';
+import {
+    AccessionDictionary,
+    AccessionDisplayStyle
+} from '../../tersect-browser/browser-settings';
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';

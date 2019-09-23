@@ -6,11 +6,11 @@ import {
     PlotPosition
 } from '../../../shared/models/Plot';
 import {
+    isNullOrUndefined
+} from '../../../shared/utils/utils';
+import {
     getAccessionLabel
 } from '../../../tersect-browser/browser-settings';
-import {
-    isNullOrUndefined
-} from '../../../utils/utils';
 import {
     AccessionTreeView
 } from '../../models/AccessionTreeView';

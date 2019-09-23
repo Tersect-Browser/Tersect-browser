@@ -3,7 +3,7 @@ import * as deepEqual from 'fast-deep-equal';
 import { DistanceBins } from '../../shared/models/DistanceBins';
 import { PlotPosition } from '../../shared/models/Plot';
 import { SequenceInterval } from '../../shared/models/SequenceInterval';
-import { deepCopy, isNullOrUndefined } from '../../utils/utils';
+import { deepCopy, isNullOrUndefined } from '../../shared/utils/utils';
 import { ContainerSize } from '../tersect-distance-plot.component';
 
 export class DistanceBinView {

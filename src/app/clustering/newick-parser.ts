@@ -1,4 +1,4 @@
-import { isNullOrUndefined, syncSort } from '../utils/utils';
+import { isNullOrUndefined, syncSort } from '../shared/utils/utils';
 import { TreeNode } from './clustering';
 
 export function ladderizeTree(tree: TreeNode, weighted = false): TreeNode {

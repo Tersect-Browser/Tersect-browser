@@ -9,7 +9,7 @@ import {
 import {
     extractTags,
     isNullOrUndefined
-} from '../../../utils/utils';
+} from '../../../shared/utils/utils';
 import {
     ScaleView
 } from '../../models/ScaleView';
