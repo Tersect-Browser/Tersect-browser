@@ -10,7 +10,7 @@ import {
     PlotMouseHoverEvent,
     PlotMouseMoveEvent,
     PlotPosition
-} from '../shared/models/Plot';
+} from '../../shared/models/Plot';
 
 export interface ClickState {
     enableClicking: boolean;

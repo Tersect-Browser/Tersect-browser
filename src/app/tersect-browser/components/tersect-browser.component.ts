@@ -18,14 +18,14 @@ import {
     TersectBackendService
 } from '../../shared/services/tersect-backend.service';
 import {
+    TersectDistancePlotComponent
+} from '../../tersect-distance-plot/components/tersect-distance-plot.component';
+import {
     PlotStateService
 } from '../../tersect-distance-plot/services/plot-state.service';
 import {
     PlotZoomService
 } from '../../tersect-distance-plot/services/plot-zoom.service';
-import {
-    TersectDistancePlotComponent
-} from '../../tersect-distance-plot/tersect-distance-plot.component';
 import {
     TooltipComponent
 } from '../../tooltip/tooltip.component';

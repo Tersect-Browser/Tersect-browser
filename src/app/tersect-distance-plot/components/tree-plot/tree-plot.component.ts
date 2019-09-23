@@ -4,29 +4,29 @@ import {
     PlotAccession,
     PlotArea,
     PlotPosition
-} from '../../shared/models/Plot';
+} from '../../../shared/models/Plot';
 import {
     getAccessionLabel
-} from '../../tersect-browser/browser-settings';
+} from '../../../tersect-browser/browser-settings';
 import {
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../../utils/utils';
+import {
+    AccessionTreeView
+} from '../../models/AccessionTreeView';
+import {
+    PlotCreatorService
+} from '../../services/plot-creator.service';
+import {
+    PlotStateService
+} from '../../services/plot-state.service';
+import {
+    TreeDrawService
+} from '../../services/tree-draw.service';
 import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
-import {
-    AccessionTreeView
-} from '../models/AccessionTreeView';
-import {
-    PlotCreatorService
-} from '../services/plot-creator.service';
-import {
-    PlotStateService
-} from '../services/plot-state.service';
-import {
-    TreeDrawService
-} from '../services/tree-draw.service';
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';

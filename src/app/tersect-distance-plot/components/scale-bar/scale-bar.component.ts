@@ -5,27 +5,27 @@ import {
     PlotPosition,
     PlotSequenceInterval,
     PlotSequencePosition
-} from '../../shared/models/Plot';
+} from '../../../shared/models/Plot';
 import {
     extractTags,
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../../utils/utils';
+import {
+    ScaleView
+} from '../../models/ScaleView';
+import {
+    PlotCreatorService
+} from '../../services/plot-creator.service';
+import {
+    PlotStateService
+} from '../../services/plot-state.service';
+import {
+    ScaleDrawService
+} from '../../services/scale-draw.service';
 import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
-import {
-    ScaleView
-} from '../models/ScaleView';
-import {
-    PlotCreatorService
-} from '../services/plot-creator.service';
-import {
-    PlotStateService
-} from '../services/plot-state.service';
-import {
-    ScaleDrawService
-} from '../services/scale-draw.service';
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';

@@ -15,11 +15,11 @@ import {
     isNullOrUndefined
 } from '../../utils/utils';
 import {
+    ContainerSize
+} from '../components/tersect-distance-plot.component';
+import {
     AccessionTreeView
 } from '../models/AccessionTreeView';
-import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
 
 @Injectable({
     providedIn: 'root'

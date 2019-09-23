@@ -1,5 +1,5 @@
 import { PlotPosition } from '../../shared/models/Plot';
-import { ContainerSize } from '../tersect-distance-plot.component';
+import { ContainerSize } from '../components/tersect-distance-plot.component';
 
 export class ScaleView {
     binsize: number;

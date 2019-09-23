@@ -15,25 +15,25 @@ import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent
-} from '../shared/models/Plot';
+} from '../../shared/models/Plot';
 import {
     isNullOrUndefined
-} from '../utils/utils';
+} from '../../utils/utils';
+import {
+    ExportPlotService
+} from '../services/export-plot.service';
+import {
+    PlotCreatorService
+} from '../services/plot-creator.service';
+import {
+    PlotStateService
+} from '../services/plot-state.service';
 import {
     BinPlotComponent
 } from './bin-plot/bin-plot.component';
 import {
     ScaleBarComponent
 } from './scale-bar/scale-bar.component';
-import {
-    ExportPlotService
-} from './services/export-plot.service';
-import {
-    PlotCreatorService
-} from './services/plot-creator.service';
-import {
-    PlotStateService
-} from './services/plot-state.service';
 import {
     TreePlotComponent
 } from './tree-plot/tree-plot.component';

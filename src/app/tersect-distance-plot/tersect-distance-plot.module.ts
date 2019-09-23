@@ -6,10 +6,18 @@ import {
     TersectBackendService
 } from '../shared/services/tersect-backend.service';
 
-import { BinPlotComponent } from './bin-plot/bin-plot.component';
-import { ScaleBarComponent } from './scale-bar/scale-bar.component';
-import { TersectDistancePlotComponent } from './tersect-distance-plot.component';
-import { TreePlotComponent } from './tree-plot/tree-plot.component';
+import {
+    BinPlotComponent
+} from './components/bin-plot/bin-plot.component';
+import {
+    ScaleBarComponent
+} from './components/scale-bar/scale-bar.component';
+import {
+    TersectDistancePlotComponent
+} from './components/tersect-distance-plot.component';
+import {
+    TreePlotComponent
+} from './components/tree-plot/tree-plot.component';
 
 @NgModule({
     declarations: [
