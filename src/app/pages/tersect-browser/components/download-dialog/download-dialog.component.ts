@@ -18,10 +18,9 @@ export class DownloadDialogComponent {
 
     constructor(private readonly exportPlotService: ExportPlotService) { }
 
-    private imageData: Promise<Blob>;
-
     downloadImage() {
-        this.imageData.then(blob => {
+        const imageData = this.exportPlotService.exportImage();
+        imageData.then(blob => {
             saveAs(blob, 'output.png');
             this.hide();
         });
@@ -32,7 +31,6 @@ export class DownloadDialogComponent {
     }
 
     show() {
-        this.imageData = this.exportPlotService.exportImage();
         this.visible = true;
     }
 }
