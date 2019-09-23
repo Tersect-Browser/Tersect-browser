@@ -1,7 +1,13 @@
 import { isNullOrUndefined, syncSort } from '../shared/utils/utils';
 import { TreeNode } from './clustering';
 
-export function ladderizeTree(tree: TreeNode, weighted = false): TreeNode {
+export function parseNewick(newick: string, ladderize = false) {
+    const tokens = newickTokens(newick);
+    const tree = _parseNewick(tokens);
+    return ladderize ? ladderizeTree(tree, true) : tree;
+}
+
+function ladderizeTree(tree: TreeNode, weighted = false): TreeNode {
     _ladderizeSubtree(tree, weighted);
     return tree;
 }
@@ -20,12 +26,6 @@ function _ladderizeSubtree(node: TreeNode, weighted = false): number {
     } else {
         return weighted ? node.length : 1;
     }
-}
-
-export function parseNewick(newick: string, ladderize = false) {
-    const tokens = newickTokens(newick);
-    const tree = _parseNewick(tokens);
-    return ladderize ? ladderizeTree(tree, true) : tree;
 }
 
 function _parseNewick(tokens: Iterator<string>,
