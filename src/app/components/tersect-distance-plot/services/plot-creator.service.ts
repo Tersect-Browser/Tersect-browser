@@ -43,10 +43,10 @@ import {
 } from '../../../utils/utils';
 import {
     treeToOrderedList
-} from '../clustering/clustering';
+} from '../utils/clustering';
 import {
     parseNewick
-} from '../clustering/newick-parser';
+} from '../utils/newick-parser';
 import {
     PlotStateService
 } from './plot-state.service';

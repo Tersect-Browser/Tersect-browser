@@ -9,11 +9,11 @@ import {
     isNullOrUndefined
 } from '../../../utils/utils';
 import {
-    treeToOrderedList
-} from '../clustering/clustering';
-import {
     ContainerSize
 } from '../tersect-distance-plot.component';
+import {
+    treeToOrderedList
+} from '../utils/clustering';
 import {
     AccessionDictionary,
     AccessionDisplayStyle

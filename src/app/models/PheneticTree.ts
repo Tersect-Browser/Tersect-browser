@@ -1,6 +1,6 @@
 import {
     TreeNode
-} from '../components/tersect-distance-plot/clustering/clustering';
+} from '../components/tersect-distance-plot/utils/clustering';
 
 export interface TreeQuery {
     chromosomeName: string;
