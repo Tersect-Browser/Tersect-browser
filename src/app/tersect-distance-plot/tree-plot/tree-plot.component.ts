@@ -4,7 +4,7 @@ import {
     PlotAccession,
     PlotArea,
     PlotPosition
-} from '../../models/Plot';
+} from '../../shared/models/Plot';
 import {
     getAccessionLabel
 } from '../../tersect-browser/browser-settings';

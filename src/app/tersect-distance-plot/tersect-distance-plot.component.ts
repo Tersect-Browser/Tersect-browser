@@ -15,7 +15,7 @@ import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent
-} from '../models/Plot';
+} from '../shared/models/Plot';
 import {
     isNullOrUndefined
 } from '../utils/utils';

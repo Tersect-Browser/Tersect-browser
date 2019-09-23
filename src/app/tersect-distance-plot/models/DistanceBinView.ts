@@ -1,8 +1,8 @@
 import * as deepEqual from 'fast-deep-equal';
 
-import { DistanceBins } from '../../models/DistanceBins';
-import { PlotPosition } from '../../models/Plot';
-import { SequenceInterval } from '../../models/SequenceInterval';
+import { DistanceBins } from '../../shared/models/DistanceBins';
+import { PlotPosition } from '../../shared/models/Plot';
+import { SequenceInterval } from '../../shared/models/SequenceInterval';
 import { deepCopy, isNullOrUndefined } from '../../utils/utils';
 import { ContainerSize } from '../tersect-distance-plot.component';
 

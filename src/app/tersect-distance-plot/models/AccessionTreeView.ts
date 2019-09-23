@@ -5,7 +5,7 @@ import {
 } from '../../clustering/clustering';
 import {
     PheneticTree
-} from '../../models/PheneticTree';
+} from '../../shared/models/PheneticTree';
 import {
     AccessionDictionary,
     AccessionDisplayStyle

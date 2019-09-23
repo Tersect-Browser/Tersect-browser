@@ -1,4 +1,4 @@
-import { Chromosome } from '../models/Chromosome';
+import { Chromosome } from '../shared/models/Chromosome';
 import { isNullOrUndefined } from '../utils/utils';
 
 export type AccessionDisplayStyle = 'labels' | 'tree_simple' | 'tree_linear';

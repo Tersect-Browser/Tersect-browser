@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { SequenceInterval } from '../../models/SequenceInterval';
+import { SequenceInterval } from '../../shared/models/SequenceInterval';
 import { ceilTo, floorTo, isNullOrUndefined } from '../../utils/utils';
 import { GreyscalePalette } from '../DistancePalette';
 import { DistanceBinView } from '../models/DistanceBinView';

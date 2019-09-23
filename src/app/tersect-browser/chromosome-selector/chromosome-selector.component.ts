@@ -4,7 +4,7 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
     Chromosome
-} from '../../models/Chromosome';
+} from '../../shared/models/Chromosome';
 import {
     PlotStateService
 } from '../../tersect-distance-plot/services/plot-state.service';

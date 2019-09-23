@@ -1,9 +1,19 @@
-import { exec, spawn } from 'child_process';
-import { Router } from 'express';
+import {
+    exec,
+    spawn
+} from 'child_process';
+import {
+    Router
+} from 'express';
 import * as fs from 'fs';
-import { default as Hashids } from 'hashids';
+import {
+    default as Hashids
+} from 'hashids';
 import * as path from 'path';
-import { fromEvent, merge } from 'rxjs';
+import {
+    fromEvent,
+    merge
+} from 'rxjs';
 import {
     concatMap,
     map,
@@ -12,12 +22,25 @@ import {
     takeUntil,
     throttleTime
 } from 'rxjs/operators';
-import { fileSync } from 'tmp';
-import { promisify } from 'util';
+import {
+    fileSync
+} from 'tmp';
+import {
+    promisify
+} from 'util';
 
-import { DistanceBinQuery, DistanceBins } from '../app/models/DistanceBins';
-import { TreeDatabaseQuery, TreeQuery } from '../app/models/PheneticTree';
-import { formatRegion, isNullOrUndefined } from '../app/utils/utils';
+import {
+    DistanceBinQuery,
+    DistanceBins
+} from '../app/shared/models/DistanceBins';
+import {
+    TreeDatabaseQuery,
+    TreeQuery
+} from '../app/shared/models/PheneticTree';
+import {
+    formatRegion,
+    isNullOrUndefined
+} from '../app/utils/utils';
 
 import { ChromosomeIndex } from './models/chromosomeindex';
 import { Dataset, DatasetPublic } from './models/dataset';

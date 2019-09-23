@@ -6,14 +6,14 @@ import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import {
-    Chromosome
-} from '../models/Chromosome';
-import {
-    PlotMouseClickEvent
-} from '../models/Plot';
-import {
     PlotClickMenuComponent
 } from '../plot-click-menu/plot-click-menu.component';
+import {
+    Chromosome
+} from '../shared/models/Chromosome';
+import {
+    PlotMouseClickEvent
+} from '../shared/models/Plot';
 import {
     TersectBackendService
 } from '../shared/services/tersect-backend.service';

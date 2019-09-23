@@ -1,4 +1,4 @@
-import { TreeNode } from '../clustering/clustering';
+import { TreeNode } from '../../clustering/clustering';
 
 export interface TreeQuery {
     chromosomeName: string;

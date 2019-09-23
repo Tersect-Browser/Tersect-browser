@@ -1,4 +1,4 @@
-import { PlotPosition } from '../../models/Plot';
+import { PlotPosition } from '../../shared/models/Plot';
 import { ContainerSize } from '../tersect-distance-plot.component';
 
 export class ScaleView {

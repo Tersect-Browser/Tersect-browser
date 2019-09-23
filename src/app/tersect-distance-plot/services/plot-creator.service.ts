@@ -29,16 +29,16 @@ import {
 } from '../../clustering/newick-parser';
 import {
     Chromosome
-} from '../../models/Chromosome';
+} from '../../shared/models/Chromosome';
 import {
     DistanceBins
-} from '../../models/DistanceBins';
+} from '../../shared/models/DistanceBins';
 import {
     PheneticTree
-} from '../../models/PheneticTree';
+} from '../../shared/models/PheneticTree';
 import {
     SequenceInterval
-} from '../../models/SequenceInterval';
+} from '../../shared/models/SequenceInterval';
 import {
     TersectBackendService
 } from '../../shared/services/tersect-backend.service';

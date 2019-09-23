@@ -3,10 +3,10 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import {
     Chromosome
-} from '../../models/Chromosome';
+} from '../../shared/models/Chromosome';
 import {
     PlotPosition
-} from '../../models/Plot';
+} from '../../shared/models/Plot';
 import {
     AccessionDictionary,
     AccessionDisplayStyle,

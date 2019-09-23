@@ -12,7 +12,7 @@ import {
     PlotArea,
     PlotBin,
     PlotPosition
-} from '../../models/Plot';
+} from '../../shared/models/Plot';
 import {
     getAccessionLabel
 } from '../../tersect-browser/browser-settings';

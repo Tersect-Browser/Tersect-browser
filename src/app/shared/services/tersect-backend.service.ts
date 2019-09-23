@@ -6,12 +6,12 @@ import { Observable, of } from 'rxjs';
 import { DatasetPublic } from '../../../backend/models/dataset';
 import { NewickTree } from '../../../backend/models/newicktree';
 import { APP_CONFIG, AppConfig } from '../../app.config';
-import { Chromosome } from '../../models/Chromosome';
-import { DistanceBinQuery, DistanceBins } from '../../models/DistanceBins';
-import { TreeQuery } from '../../models/PheneticTree';
-import { SequenceInterval } from '../../models/SequenceInterval';
 import { BrowserSettings } from '../../tersect-browser/browser-settings';
 import { isNullOrUndefined } from '../../utils/utils';
+import { Chromosome } from '../models/Chromosome';
+import { DistanceBinQuery, DistanceBins } from '../models/DistanceBins';
+import { TreeQuery } from '../models/PheneticTree';
+import { SequenceInterval } from '../models/SequenceInterval';
 
 @Injectable()
 export class TersectBackendService {

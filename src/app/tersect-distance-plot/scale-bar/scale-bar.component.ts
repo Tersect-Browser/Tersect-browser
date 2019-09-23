@@ -5,7 +5,7 @@ import {
     PlotPosition,
     PlotSequenceInterval,
     PlotSequencePosition
-} from '../../models/Plot';
+} from '../../shared/models/Plot';
 import {
     extractTags,
     isNullOrUndefined

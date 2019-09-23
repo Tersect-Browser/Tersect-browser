@@ -8,7 +8,7 @@ import {
     PlotPosition,
     PlotSequenceInterval,
     PlotSequencePosition
-} from '../models/Plot';
+} from '../shared/models/Plot';
 import {
     formatPosition
 } from '../utils/utils';
