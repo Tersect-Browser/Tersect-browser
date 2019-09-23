@@ -6,12 +6,12 @@ import {
 
 import {
     PlotStateService
-} from '../../tersect-distance-plot/services/plot-state.service';
+} from '../../../tersect-distance-plot/services/plot-state.service';
 import {
     ceilTo,
     clamp,
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../../utils/utils';
 
 @Component({
     selector: 'app-binsize-selector',

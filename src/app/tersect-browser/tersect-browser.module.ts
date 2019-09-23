@@ -33,28 +33,28 @@ import {
 
 import {
     AccessionStyleSelectorComponent
-} from './accession-style-selector/accession-style-selector.component';
+} from './components/accession-style-selector/accession-style-selector.component';
 import {
     BinsizeSelectorComponent
-} from './binsize-selector/binsize-selector.component';
+} from './components/binsize-selector/binsize-selector.component';
 import {
     ChromosomeSelectorComponent
-} from './chromosome-selector/chromosome-selector.component';
+} from './components/chromosome-selector/chromosome-selector.component';
 import {
     DownloadDialogComponent
-} from './download-dialog/download-dialog.component';
+} from './components/download-dialog/download-dialog.component';
 import {
     IntervalSelectorComponent
-} from './interval-selector/interval-selector.component';
+} from './components/interval-selector/interval-selector.component';
 import {
     ReferenceSelectorComponent
-} from './reference-selector/reference-selector.component';
+} from './components/reference-selector/reference-selector.component';
 import {
     ShareMenuComponent
-} from './share-menu/share-menu.component';
+} from './components/share-menu/share-menu.component';
 import {
     TersectBrowserComponent
-} from './tersect-browser.component';
+} from './components/tersect-browser.component';
 
 @NgModule({
     declarations: [

@@ -4,14 +4,14 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
     Chromosome
-} from '../../shared/models/Chromosome';
+} from '../../../shared/models/Chromosome';
 import {
     PlotStateService
-} from '../../tersect-distance-plot/services/plot-state.service';
+} from '../../../tersect-distance-plot/services/plot-state.service';
 import {
     formatPosition,
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../../utils/utils';
 
 @Component({
     selector: 'app-chromosome-selector',

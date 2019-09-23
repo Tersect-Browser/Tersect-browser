@@ -19,7 +19,7 @@ import {
 } from './intro-page/intro-page.component';
 import {
     TersectBrowserComponent
-} from './tersect-browser/tersect-browser.component';
+} from './tersect-browser/components/tersect-browser.component';
 
 import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
 
