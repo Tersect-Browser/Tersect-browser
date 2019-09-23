@@ -29,9 +29,6 @@ import {
     TreePlotComponent
 } from './components/tree-plot/tree-plot.component';
 import {
-    ExportPlotService
-} from './services/export-plot.service';
-import {
     PlotCreatorService
 } from './services/plot-creator.service';
 import {
