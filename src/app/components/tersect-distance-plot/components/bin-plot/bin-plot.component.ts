@@ -9,6 +9,9 @@ import {
 import { Subscription } from 'rxjs';
 
 import {
+    DistanceBinView
+} from '../../../../models/DistanceBinView';
+import {
     PlotArea,
     PlotBin,
     PlotPosition
@@ -20,9 +23,6 @@ import {
     getAccessionLabel,
     isNullOrUndefined
 } from '../../../../utils/utils';
-import {
-    DistanceBinView
-} from '../../models/DistanceBinView';
 import {
     PlotCreatorService
 } from '../../services/plot-creator.service';

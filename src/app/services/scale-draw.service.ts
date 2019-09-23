@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import {
     ScaleView
-} from '../components/tersect-distance-plot/models/ScaleView';
+} from '../models/ScaleView';
 import {
     ceilTo,
     findClosest,

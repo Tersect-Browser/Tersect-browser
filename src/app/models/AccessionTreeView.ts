@@ -1,23 +1,23 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
-    PheneticTree
-} from '../../../models/PheneticTree';
+    AccessionDictionary,
+    AccessionDisplayStyle
+} from '../components/tersect-distance-plot/models/PlotState';
+import {
+    ContainerSize
+} from '../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
+    treeToOrderedList
+} from '../components/tersect-distance-plot/utils/clustering';
 import {
     ceilTo,
     deepCopy,
     isNullOrUndefined
-} from '../../../utils/utils';
+} from '../utils/utils';
 import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
-import {
-    treeToOrderedList
-} from '../utils/clustering';
-import {
-    AccessionDictionary,
-    AccessionDisplayStyle
-} from './PlotState';
+    PheneticTree
+} from './PheneticTree';
 
 export class AccessionTreeView {
     /**

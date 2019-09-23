@@ -4,11 +4,11 @@ import {
     GreyscalePalette
 } from '../components/tersect-distance-plot/DistancePalette';
 import {
-    DistanceBinView
-} from '../components/tersect-distance-plot/models/DistanceBinView';
-import {
     PlotCreatorService
 } from '../components/tersect-distance-plot/services/plot-creator.service';
+import {
+    DistanceBinView
+} from '../models/DistanceBinView';
 import {
     SequenceInterval
 } from '../models/SequenceInterval';

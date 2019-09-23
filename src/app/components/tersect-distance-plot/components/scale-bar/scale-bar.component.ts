@@ -7,15 +7,15 @@ import {
     PlotSequencePosition
 } from '../../../../models/Plot';
 import {
+    ScaleView
+} from '../../../../models/ScaleView';
+import {
     ScaleDrawService
 } from '../../../../services/scale-draw.service';
 import {
     extractTags,
     isNullOrUndefined
 } from '../../../../utils/utils';
-import {
-    ScaleView
-} from '../../models/ScaleView';
 import {
     PlotCreatorService
 } from '../../services/plot-creator.service';

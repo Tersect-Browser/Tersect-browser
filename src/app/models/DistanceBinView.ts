@@ -1,10 +1,21 @@
 import * as deepEqual from 'fast-deep-equal';
 
-import { DistanceBins } from '../../../models/DistanceBins';
-import { PlotPosition } from '../../../models/Plot';
-import { SequenceInterval } from '../../../models/SequenceInterval';
-import { deepCopy, isNullOrUndefined } from '../../../utils/utils';
-import { ContainerSize } from '../tersect-distance-plot.component';
+import {
+    ContainerSize
+} from '../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
+    deepCopy,
+    isNullOrUndefined
+} from '../utils/utils';
+import {
+    DistanceBins
+} from './DistanceBins';
+import {
+    PlotPosition
+} from './Plot';
+import {
+    SequenceInterval
+} from './SequenceInterval';
 
 export class DistanceBinView {
     static readonly DEFAULT_ASPECT_RATIO = 1 / 2;

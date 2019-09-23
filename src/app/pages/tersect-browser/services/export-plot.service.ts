@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
 
 import {
-    AccessionTreeView
-} from '../../../components/tersect-distance-plot/models/AccessionTreeView';
-import {
-    DistanceBinView
-} from '../../../components/tersect-distance-plot/models/DistanceBinView';
-import {
     PlotStateService
 } from '../../../components/tersect-distance-plot/services/plot-state.service';
 import {
     ContainerSize
 } from '../../../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
+    AccessionTreeView
+} from '../../../models/AccessionTreeView';
+import {
+    DistanceBinView
+} from '../../../models/DistanceBinView';
 import {
     BinDrawService
 } from '../../../services/bin-draw.service';

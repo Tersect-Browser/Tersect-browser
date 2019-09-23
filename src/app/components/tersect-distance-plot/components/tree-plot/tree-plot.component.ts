@@ -1,6 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 import {
+    AccessionTreeView
+} from '../../../../models/AccessionTreeView';
+import {
     PlotAccession,
     PlotArea,
     PlotPosition
@@ -12,9 +15,6 @@ import {
     getAccessionLabel,
     isNullOrUndefined
 } from '../../../../utils/utils';
-import {
-    AccessionTreeView
-} from '../../models/AccessionTreeView';
 import {
     PlotCreatorService
 } from '../../services/plot-creator.service';
