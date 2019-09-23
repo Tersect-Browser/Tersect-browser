@@ -14,14 +14,12 @@ import {
     PlotPosition
 } from '../../../../models/Plot';
 import {
+    getAccessionLabel,
     isNullOrUndefined
 } from '../../../../utils/utils';
 import {
     DistanceBinView
 } from '../../models/DistanceBinView';
-import {
-    getAccessionLabel
-} from '../../models/PlotState';
 import {
     BinDrawService
 } from '../../services/bin-draw.service';

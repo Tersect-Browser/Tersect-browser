@@ -6,14 +6,12 @@ import {
     PlotPosition
 } from '../../../../models/Plot';
 import {
+    getAccessionLabel,
     isNullOrUndefined
 } from '../../../../utils/utils';
 import {
     AccessionTreeView
 } from '../../models/AccessionTreeView';
-import {
-    getAccessionLabel
-} from '../../models/PlotState';
 import {
     PlotCreatorService
 } from '../../services/plot-creator.service';
