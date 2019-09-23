@@ -1,10 +1,22 @@
 import { Injectable } from '@angular/core';
 
-import { SequenceInterval } from '../../../models/SequenceInterval';
-import { ceilTo, floorTo, isNullOrUndefined } from '../../../utils/utils';
-import { GreyscalePalette } from '../DistancePalette';
-import { DistanceBinView } from '../models/DistanceBinView';
-import { PlotCreatorService } from './plot-creator.service';
+import {
+    GreyscalePalette
+} from '../components/tersect-distance-plot/DistancePalette';
+import {
+    DistanceBinView
+} from '../components/tersect-distance-plot/models/DistanceBinView';
+import {
+    PlotCreatorService
+} from '../components/tersect-distance-plot/services/plot-creator.service';
+import {
+    SequenceInterval
+} from '../models/SequenceInterval';
+import {
+    ceilTo,
+    floorTo,
+    isNullOrUndefined
+} from '../utils/utils';
 
 @Injectable({
     providedIn: 'root'

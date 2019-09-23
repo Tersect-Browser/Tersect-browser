@@ -14,15 +14,15 @@ import {
     PlotPosition
 } from '../../../../models/Plot';
 import {
+    BinDrawService
+} from '../../../../services/bin-draw.service';
+import {
     getAccessionLabel,
     isNullOrUndefined
 } from '../../../../utils/utils';
 import {
     DistanceBinView
 } from '../../models/DistanceBinView';
-import {
-    BinDrawService
-} from '../../services/bin-draw.service';
 import {
     PlotCreatorService
 } from '../../services/plot-creator.service';

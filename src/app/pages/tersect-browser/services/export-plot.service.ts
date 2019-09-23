@@ -1,12 +1,26 @@
 import { Injectable } from '@angular/core';
 
-import { AccessionTreeView } from '../../../components/tersect-distance-plot/models/AccessionTreeView';
-import { DistanceBinView } from '../../../components/tersect-distance-plot/models/DistanceBinView';
-import { BinDrawService } from '../../../components/tersect-distance-plot/services/bin-draw.service';
-import { PlotStateService } from '../../../components/tersect-distance-plot/services/plot-state.service';
-import { ScaleDrawService } from '../../../components/tersect-distance-plot/services/scale-draw.service';
-import { TreeDrawService } from '../../../components/tersect-distance-plot/services/tree-draw.service';
-import { ContainerSize } from '../../../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
+    AccessionTreeView
+} from '../../../components/tersect-distance-plot/models/AccessionTreeView';
+import {
+    DistanceBinView
+} from '../../../components/tersect-distance-plot/models/DistanceBinView';
+import {
+    PlotStateService
+} from '../../../components/tersect-distance-plot/services/plot-state.service';
+import {
+    ContainerSize
+} from '../../../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
+    BinDrawService
+} from '../../../services/bin-draw.service';
+import {
+    ScaleDrawService
+} from '../../../services/scale-draw.service';
+import {
+    TreeDrawService
+} from '../../../services/tree-draw.service';
 
 @Injectable()
 export class ExportPlotService {

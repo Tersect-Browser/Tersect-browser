@@ -7,6 +7,9 @@ import {
     PlotSequencePosition
 } from '../../../../models/Plot';
 import {
+    ScaleDrawService
+} from '../../../../services/scale-draw.service';
+import {
     extractTags,
     isNullOrUndefined
 } from '../../../../utils/utils';
@@ -19,9 +22,6 @@ import {
 import {
     PlotStateService
 } from '../../services/plot-state.service';
-import {
-    ScaleDrawService
-} from '../../services/scale-draw.service';
 import {
     ContainerSize
 } from '../../tersect-distance-plot.component';

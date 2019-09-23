@@ -6,6 +6,9 @@ import {
     PlotPosition
 } from '../../../../models/Plot';
 import {
+    TreeDrawService
+} from '../../../../services/tree-draw.service';
+import {
     getAccessionLabel,
     isNullOrUndefined
 } from '../../../../utils/utils';
@@ -18,9 +21,6 @@ import {
 import {
     PlotStateService
 } from '../../services/plot-state.service';
-import {
-    TreeDrawService
-} from '../../services/tree-draw.service';
 import {
     ContainerSize
 } from '../../tersect-distance-plot.component';

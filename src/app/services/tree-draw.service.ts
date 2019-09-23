@@ -1,23 +1,23 @@
 import { Injectable } from '@angular/core';
 
 import {
+    AccessionTreeView
+} from '../components/tersect-distance-plot/models/AccessionTreeView';
+import {
+    ContainerSize
+} from '../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
+    getTreeDepth,
+    getTreeDepthLinear,
+    TreeNode
+} from '../components/tersect-distance-plot/utils/clustering';
+import {
     ceilTo,
     formatCanvasFont,
     getAccessionColors,
     getAccessionLabel,
     isNullOrUndefined
-} from '../../../utils/utils';
-import {
-    AccessionTreeView
-} from '../models/AccessionTreeView';
-import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
-import {
-    getTreeDepth,
-    getTreeDepthLinear,
-    TreeNode
-} from '../utils/clustering';
+} from '../utils/utils';
 
 @Injectable({
     providedIn: 'root'

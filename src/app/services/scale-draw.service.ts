@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 
 import {
+    ScaleView
+} from '../components/tersect-distance-plot/models/ScaleView';
+import {
     ceilTo,
     findClosest,
     formatCanvasFont,
     formatPosition
-} from '../../../utils/utils';
-import {
-    ScaleView
-} from '../models/ScaleView';
+} from '../utils/utils';
 
 interface ScaleTick {
     position: number;
