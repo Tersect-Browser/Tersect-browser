@@ -4,7 +4,7 @@ import { saveAs } from 'file-saver';
 
 import {
     ExportPlotService
-} from '../../../../components/tersect-distance-plot/services/export-plot.service';
+} from '../../services/export-plot.service';
 
 @Component({
     selector: 'app-download-dialog',
