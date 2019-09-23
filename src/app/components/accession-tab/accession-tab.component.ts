@@ -16,10 +16,6 @@ import { TableState } from 'primeng/components/common/tablestate';
 import { Table } from 'primeng/table';
 
 import {
-    AccessionGroup,
-    AccessionInfo
-} from '../../pages/tersect-browser/browser-settings';
-import {
     arraySubtract,
     arrayUnion,
     deepCopy,
@@ -27,6 +23,10 @@ import {
     isSubset,
     uniqueArray
 } from '../../utils/utils';
+import {
+    AccessionGroup,
+    AccessionInfo
+} from '../tersect-distance-plot/models/PlotState';
 import {
     TGRCGeneImporterComponent
 } from '../tgrc-gene-importer/tgrc-gene-importer.component';

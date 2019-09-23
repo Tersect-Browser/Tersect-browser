@@ -8,20 +8,20 @@ import {
     PlotPosition
 } from '../../../models/Plot';
 import {
-    AccessionDictionary,
-    AccessionDisplayStyle,
-    AccessionGroup,
-    AccessionInfo,
     BrowserSettings,
     extractAccessionColors,
     extractAccessionLabels
-} from '../../../pages/tersect-browser/browser-settings';
+} from '../../../pages/tersect-browser/models/BrowserSettings';
 import {
     deepCopy,
     isNullOrUndefined,
     sameElements
 } from '../../../utils/utils';
 import {
+    AccessionDictionary,
+    AccessionDisplayStyle,
+    AccessionGroup,
+    AccessionInfo,
     PlotState
 } from '../models/PlotState';
 

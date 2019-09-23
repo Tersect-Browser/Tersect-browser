@@ -3,11 +3,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
-    AccessionGroup
-} from '../../../../pages/tersect-browser/browser-settings';
-import {
     isNullOrUndefined
 } from '../../../../utils/utils';
+import {
+    AccessionGroup
+} from '../../../tersect-distance-plot/models/PlotState';
 
 @Component({
     selector: 'app-add-group-dialog',

@@ -9,11 +9,30 @@ import {
     PlotPosition
 } from '../../../models/Plot';
 import {
-    AccessionDictionary,
-    AccessionDisplayStyle,
-    AccessionGroup,
-    AccessionInfo
-} from '../../../pages/tersect-browser/browser-settings';
+    isNullOrUndefined
+} from '../../../utils/utils';
+
+export type AccessionDisplayStyle = 'labels' | 'tree_simple' | 'tree_linear';
+
+export interface AccessionDictionary {
+    [accessionId: string]: {
+        label?: string;
+        colors?: string[];
+    };
+}
+
+export interface AccessionGroup {
+    name: string;
+    category?: string;
+    color?: string;
+    accessions: string[];
+}
+
+export interface AccessionInfo {
+    id: string;
+    Label: string;
+    [s: string]: string;
+}
 
 export interface PlotState {
     accessionStyle$: Observable<AccessionDisplayStyle>;

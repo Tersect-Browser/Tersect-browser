@@ -9,6 +9,10 @@ import {
     PlotClickMenuComponent
 } from '../../components/plot-click-menu/plot-click-menu.component';
 import {
+    AccessionDisplayStyle,
+    AccessionGroup
+} from '../../components/tersect-distance-plot/models/PlotState';
+import {
     PlotStateService
 } from '../../components/tersect-distance-plot/services/plot-state.service';
 import {
@@ -30,10 +34,8 @@ import {
     isNullOrUndefined
 } from '../../utils/utils';
 import {
-    AccessionDisplayStyle,
-    AccessionGroup,
     BrowserSettings
-} from './browser-settings';
+} from './models/BrowserSettings';
 import {
     PlotZoomService
 } from './services/plot-zoom.service';

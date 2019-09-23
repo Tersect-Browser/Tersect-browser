@@ -4,10 +4,6 @@ import {
     PheneticTree
 } from '../../../models/PheneticTree';
 import {
-    AccessionDictionary,
-    AccessionDisplayStyle
-} from '../../../pages/tersect-browser/browser-settings';
-import {
     ceilTo,
     deepCopy,
     isNullOrUndefined
@@ -18,6 +14,10 @@ import {
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';
+import {
+    AccessionDictionary,
+    AccessionDisplayStyle
+} from './PlotState';
 
 export class AccessionTreeView {
     /**

@@ -8,15 +8,15 @@ import {
 } from '@angular/core';
 
 import {
-    AccessionGroup
-} from '../../../../pages/tersect-browser/browser-settings';
-import {
     isNullOrUndefined
 } from '../../../../utils/utils';
 import {
     ColorChangeEvent,
     ColorSelectorComponent
 } from '../../../color-selector/color-selector.component';
+import {
+    AccessionGroup
+} from '../../../tersect-distance-plot/models/PlotState';
 import {
     RemoveGroupDialogComponent
 } from '../remove-group-dialog/remove-group-dialog.component';

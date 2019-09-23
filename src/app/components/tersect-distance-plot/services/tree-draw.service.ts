@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 
 import {
-    getAccessionColors,
-    getAccessionLabel
-} from '../../../pages/tersect-browser/browser-settings';
-import {
     ceilTo,
     formatCanvasFont,
     isNullOrUndefined
@@ -17,6 +13,10 @@ import {
 import {
     AccessionTreeView
 } from '../models/AccessionTreeView';
+import {
+    getAccessionColors,
+    getAccessionLabel
+} from '../models/PlotState';
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';

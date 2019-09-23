@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 
 import {
+    AccessionDisplayStyle
+} from '../../../../components/tersect-distance-plot/models/PlotState';
+import {
     PlotStateService
 } from '../../../../components/tersect-distance-plot/services/plot-state.service';
-import {
-    AccessionDisplayStyle
-} from '../../browser-settings';
 
 @Component({
     selector: 'app-accession-style-selector',

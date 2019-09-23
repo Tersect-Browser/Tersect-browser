@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 
-import {
-    AccessionGroup
-} from '../../../../pages/tersect-browser/browser-settings';
+import { AccessionGroup } from '../../../tersect-distance-plot/models/PlotState';
 
 @Component({
     selector: 'app-remove-group-dialog',

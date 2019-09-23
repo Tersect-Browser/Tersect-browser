@@ -14,14 +14,14 @@ import {
     PlotPosition
 } from '../../../../models/Plot';
 import {
-    getAccessionLabel
-} from '../../../../pages/tersect-browser/browser-settings';
-import {
     isNullOrUndefined
 } from '../../../../utils/utils';
 import {
     DistanceBinView
 } from '../../models/DistanceBinView';
+import {
+    getAccessionLabel
+} from '../../models/PlotState';
 import {
     BinDrawService
 } from '../../services/bin-draw.service';

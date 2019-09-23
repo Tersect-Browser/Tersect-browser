@@ -1,8 +1,6 @@
 import { EventEmitter, Input, Output } from '@angular/core';
 
-import {
-    AccessionInfo
-} from '../../../../pages/tersect-browser/browser-settings';
+import { AccessionInfo } from '../../../tersect-distance-plot/models/PlotState';
 
 export abstract class AccessionInfoImporterComponent {
     @Input()

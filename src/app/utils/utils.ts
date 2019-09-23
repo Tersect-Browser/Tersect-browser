@@ -1,4 +1,5 @@
 import { ElementRef } from '@angular/core';
+import { AccessionDictionary } from '../components/tersect-distance-plot/models/PlotState';
 
 /**
  * Remove all elements in the second array from the first array
@@ -128,6 +129,34 @@ export function formatRegion(chromosomeName: string,
                              startPos: number, endPos: number): string {
 
     return `${chromosomeName}:${startPos}-${endPos}`;
+}
+
+export function getAccessionColors(accessionDictionary: AccessionDictionary,
+                                   accession: string): string[] {
+    if (isNullOrUndefined(accessionDictionary)) {
+        return [];
+    } else if (accession in accessionDictionary
+               && 'colors' in accessionDictionary[accession]) {
+        return accessionDictionary[accession].colors;
+    } else {
+        return [];
+    }
+}
+
+/**
+ * Get accession label from dictionary if available. Otherwise the input
+ * identifier is used.
+ */
+export function getAccessionLabel(accessionDictionary: AccessionDictionary,
+                                  accession: string): string {
+    if (isNullOrUndefined(accessionDictionary)) {
+        return accession;
+    } else if (accession in accessionDictionary
+               && 'label' in accessionDictionary[accession]) {
+        return accessionDictionary[accession].label;
+    } else {
+        return accession;
+    }
 }
 
 /**
