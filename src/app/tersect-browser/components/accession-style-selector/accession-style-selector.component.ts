@@ -12,7 +12,7 @@ import {
     templateUrl: './accession-style-selector.component.html',
     styleUrls: [
         './accession-style-selector.component.css',
-        '../tersect-browser.widgets.css'
+        '../../tersect-browser.widgets.css'
     ]
 })
 export class AccessionStyleSelectorComponent {
