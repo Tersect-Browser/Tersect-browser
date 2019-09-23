@@ -4,7 +4,9 @@ import { RouterModule } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
 
-import { TersectBackendService } from '../services/tersect-backend.service';
+import {
+    TersectBackendService
+} from '../shared/services/tersect-backend.service';
 
 import { IntroPageComponent } from './intro-page.component';
 

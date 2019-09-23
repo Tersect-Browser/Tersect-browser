@@ -2,7 +2,9 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-import { TersectBackendService } from '../services/tersect-backend.service';
+import {
+    TersectBackendService
+} from '../shared/services/tersect-backend.service';
 
 import { BinPlotComponent } from './bin-plot/bin-plot.component';
 import { ScaleBarComponent } from './scale-bar/scale-bar.component';

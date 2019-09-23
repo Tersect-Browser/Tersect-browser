@@ -41,7 +41,7 @@ import {
 } from '../../models/SequenceInterval';
 import {
     TersectBackendService
-} from '../../services/tersect-backend.service';
+} from '../../shared/services/tersect-backend.service';
 import {
     ceilTo,
     isNullOrUndefined,

@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
-import { DatasetPublic } from '../../backend/models/dataset';
-import { TersectBackendService } from '../services/tersect-backend.service';
+import {
+    DatasetPublic
+} from '../../backend/models/dataset';
+import {
+    TersectBackendService
+} from '../shared/services/tersect-backend.service';
 
 @Component({
     selector: 'app-intro-page',

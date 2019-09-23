@@ -11,7 +11,7 @@ import {
 import {
     AccessionAlleles,
     TGRCBackendService
-} from '../services/tgrc-backend.service';
+} from '../shared/services/tgrc-backend.service';
 
 @Component({
     selector: 'app-tgrc-gene-importer',

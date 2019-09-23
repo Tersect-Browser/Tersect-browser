@@ -1,6 +1,6 @@
 import { inject, TestBed } from '@angular/core/testing';
 
-import { TersectBackendService } from '../services/tersect-backend.service';
+import { TersectBackendService } from './tersect-backend.service';
 
 describe('TersectBackendService', () => {
   beforeEach(() => {

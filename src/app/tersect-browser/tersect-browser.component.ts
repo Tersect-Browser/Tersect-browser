@@ -16,7 +16,7 @@ import {
 } from '../plot-click-menu/plot-click-menu.component';
 import {
     TersectBackendService
-} from '../services/tersect-backend.service';
+} from '../shared/services/tersect-backend.service';
 import {
     PlotStateService
 } from '../tersect-distance-plot/services/plot-state.service';

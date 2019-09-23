@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { DropdownModule } from 'primeng/dropdown';
 
-import { TGRCBackendService } from '../services/tgrc-backend.service';
+import { TGRCBackendService } from '../shared/services/tgrc-backend.service';
 
 import { TGRCGeneImporterComponent } from './tgrc-gene-importer.component';
 
