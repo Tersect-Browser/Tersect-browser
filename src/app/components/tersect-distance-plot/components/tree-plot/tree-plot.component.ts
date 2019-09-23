@@ -57,7 +57,7 @@ export class TreePlotComponent extends CanvasPlotElement {
 
     draw() {
         if (isNullOrUndefined(this.storedTreeView)) {
-            this.storedTreeView = new AccessionTreeView(this.plotCreator.pheneticTree,
+            this.storedTreeView = new AccessionTreeView(this.plotState.pheneticTree,
                                                         this.plotCreator.binHeight,
                                                         this.getContainerSize());
         }
@@ -136,7 +136,7 @@ export class TreePlotComponent extends CanvasPlotElement {
     private updateTreeView(treeView: AccessionTreeView) {
         treeView.accessionDictionary = this.plotState.accessionDictionary;
         treeView.accessionStyle = this.plotState.accessionStyle;
-        treeView.tree = this.plotCreator.pheneticTree;
+        treeView.tree = this.plotState.pheneticTree;
         treeView.canvasOffsetY = this.plotCreator.offsetY;
         treeView.containerSize = this.getContainerSize();
         treeView.textSize = this.plotCreator.binHeight;

@@ -81,7 +81,7 @@ export class BinPlotComponent extends CanvasPlotElement
 
     draw() {
         if (isNullOrUndefined(this.storedBinView)) {
-            this.storedBinView = new DistanceBinView(this.plotCreator.distanceBins,
+            this.storedBinView = new DistanceBinView(this.plotState.distanceBins,
                                                      this.plotState.orderedAccessions,
                                                      this.plotCreator.binHeight);
         }
@@ -183,8 +183,8 @@ export class BinPlotComponent extends CanvasPlotElement
         binView.containerSize = this.getContainerSize();
         binView.orderedAccessions = this.plotState.orderedAccessions;
         binView.plotPosition = this.plotState.plotPosition;
-        binView.sequenceGaps = this.plotCreator.sequenceGaps;
-        binView.distanceBins = this.plotCreator.distanceBins;
+        binView.sequenceGaps = this.plotState.sequenceGaps;
+        binView.distanceBins = this.plotState.distanceBins;
     }
 
     private updateHighlight() {

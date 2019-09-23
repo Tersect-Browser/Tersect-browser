@@ -28,9 +28,6 @@ import {
     DistanceBins
 } from '../../../models/DistanceBins';
 import {
-    PheneticTree
-} from '../../../models/PheneticTree';
-import {
     SequenceInterval
 } from '../../../models/SequenceInterval';
 import {
@@ -86,12 +83,6 @@ export class PlotCreatorService implements OnDestroy {
     aspectRatio = 1 / 2;
 
     /**
-     * Genetic distance bins between reference and other accessions for
-     * currently viewed interval.
-     */
-    distanceBinsSource = new BehaviorSubject<DistanceBins>(undefined);
-
-    /**
      * Set of currently active error messages.
      */
     errorMessages: Set<string> = new Set();
@@ -109,20 +100,10 @@ export class PlotCreatorService implements OnDestroy {
     highlightSource = new BehaviorSubject<SequenceInterval>(undefined);
 
     /**
-     * Phenetic tree built for the selected accessions (specified in query).
-     */
-    pheneticTree: PheneticTree = { query: null, root: null };
-
-    /**
      * Plot load status. When not an empty string, spinner overlay is displayed
      * (unless an error message is displayed, as those take priority).
      */
     plotLoadMessage = '';
-
-    /**
-     * List of sequence gaps in the current chromosome.
-     */
-    sequenceGaps: SequenceInterval[];
 
     private readonly plotData$: Observable<PlotData>;
     private plotDataSub: Subscription;
@@ -147,13 +128,6 @@ export class PlotCreatorService implements OnDestroy {
 
     get binWidth() {
         return this.zoomFactor;
-    }
-
-    set distanceBins(distanceBins: DistanceBins) {
-        this.distanceBinsSource.next(distanceBins);
-    }
-    get distanceBins(): DistanceBins {
-        return this.distanceBinsSource.getValue();
     }
 
     set highlight(highlightInterval: SequenceInterval) {
@@ -350,18 +324,19 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     private readonly generatePlot = ([distBins, tree, gaps]: PlotData) => {
-        if (!deepEqual(this.pheneticTree.query, tree.query)) {
+        if (!deepEqual(this.plotState.pheneticTree.query, tree.query)) {
             // Tree updated
-            this.pheneticTree = {
+            this.plotState.pheneticTree = {
                 query: tree.query,
                 root: parseNewick(tree.tree, true)
             };
-            this.plotState
-                .orderedAccessions = treeToOrderedList(this.pheneticTree.root);
+            this.plotState.orderedAccessions = treeToOrderedList(this.plotState
+                                                                     .pheneticTree
+                                                                     .root);
             // Technically the gaps are not expected to change
-            this.sequenceGaps = gaps;
+            this.plotState.sequenceGaps = gaps;
             this.plotState.resetPosition();
         }
-        this.distanceBins = distBins;
+        this.plotState.distanceBins = distBins;
     }
 }

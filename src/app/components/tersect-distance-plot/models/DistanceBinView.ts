@@ -7,7 +7,7 @@ import { deepCopy, isNullOrUndefined } from '../../../utils/utils';
 import { ContainerSize } from '../tersect-distance-plot.component';
 
 export class DistanceBinView {
-    private static readonly DEFAULT_ASPECT_RATIO = 1 / 2;
+    static readonly DEFAULT_ASPECT_RATIO = 1 / 2;
 
     imageArray: Uint8ClampedArray;
     redrawRequired: boolean;

@@ -48,8 +48,7 @@ export interface ContainerSize {
     templateUrl: './tersect-distance-plot.component.html',
     styleUrls: ['./tersect-distance-plot.component.css'],
     providers: [
-        PlotCreatorService,
-        ExportPlotService
+        PlotCreatorService
     ]
 })
 export class TersectDistancePlotComponent implements OnInit, OnDestroy {
@@ -69,8 +68,7 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     private fullRedraw: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
-                private readonly plotCreator: PlotCreatorService,
-                private readonly plotExporter: ExportPlotService) { }
+                private readonly plotCreator: PlotCreatorService) { }
 
     get plotLoadMessage() {
         return this.plotCreator.plotLoadMessage;
@@ -82,7 +80,7 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
             this.plotState.zoomLevel$,
             this.plotState.accessionDictionary$,
             this.plotState.plotPosition$,
-            this.plotCreator.distanceBinsSource
+            this.plotState.distanceBins$
         ]).pipe(
             filter(triggerVars => !triggerVars.some(isNullOrUndefined))
         ).subscribe(() => {
@@ -93,10 +91,6 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.fullRedraw.unsubscribe();
-    }
-
-    getPlotImage(): Promise<Blob> {
-        return this.plotExporter.exportImage();
     }
 
     getErrors(): string {

@@ -13,6 +13,9 @@ import {
     AccessionGroup
 } from '../../components/tersect-distance-plot/models/PlotState';
 import {
+    ExportPlotService
+} from '../../components/tersect-distance-plot/services/export-plot.service';
+import {
     PlotStateService
 } from '../../components/tersect-distance-plot/services/plot-state.service';
 import {
@@ -48,8 +51,8 @@ import {
         './tersect-browser.widgets.css'
     ],
     providers: [
-        PlotZoomService,
-        PlotStateService
+        PlotStateService,
+        PlotZoomService
     ]
 })
 export class TersectBrowserComponent implements OnInit {

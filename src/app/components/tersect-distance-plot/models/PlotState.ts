@@ -6,6 +6,9 @@ import {
     Chromosome
 } from '../../../models/Chromosome';
 import {
+    DistanceBins
+} from '../../../models/DistanceBins';
+import {
     PlotPosition
 } from '../../../models/Plot';
 
@@ -36,6 +39,7 @@ export interface PlotState {
     zoomLevel$: Observable<number>;
     accessionDictionary$: Observable<AccessionDictionary>;
     plotPosition$: Observable<PlotPosition>;
+    distanceBins$: Observable<DistanceBins>;
 
     datasetId: string;
     accessionStyle: AccessionDisplayStyle;

@@ -5,8 +5,17 @@ import {
     Chromosome
 } from '../../../models/Chromosome';
 import {
+    DistanceBins
+} from '../../../models/DistanceBins';
+import {
+    PheneticTree
+} from '../../../models/PheneticTree';
+import {
     PlotPosition
 } from '../../../models/Plot';
+import {
+    SequenceInterval
+} from '../../../models/SequenceInterval';
 import {
     BrowserSettings,
     extractAccessionColors,
@@ -92,6 +101,18 @@ export class PlotStateService implements PlotState {
      */
     plotPosition$: Observable<PlotPosition>;
 
+    distanceBins$: Observable<DistanceBins>;
+
+    /**
+     * Phenetic tree built for the selected accessions (specified in query).
+     */
+    pheneticTree: PheneticTree = { query: null, root: null };
+
+    /**
+     * List of sequence gaps in the current chromosome.
+     */
+    sequenceGaps: SequenceInterval[];
+
     private readonly settingsSource = new Subject<BrowserSettings>();
     private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
     private readonly accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');
@@ -110,6 +131,12 @@ export class PlotStateService implements PlotState {
         y: 0
     });
 
+    /**
+     * Genetic distance bins between reference and other accessions for
+     * currently viewed interval.
+     */
+    private readonly distanceBinsSource = new BehaviorSubject<DistanceBins>(undefined);
+
     constructor() {
         this.settings$ = this.settingsSource.asObservable();
         this.datasetId$ = this.datasetIdSource.asObservable();
@@ -125,6 +152,7 @@ export class PlotStateService implements PlotState {
         this.zoomLevel$ = this.zoomLevelSource.asObservable();
         this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
         this.plotPosition$ = this.plotPositionSource.asObservable();
+        this.distanceBins$ = this.distanceBinsSource.asObservable();
     }
 
     get plotPosition(): PlotPosition {
@@ -278,6 +306,13 @@ export class PlotStateService implements PlotState {
     }
     get orderedAccessions(): string[] {
         return this.orderedAccessionsSource.getValue();
+    }
+
+    set distanceBins(distanceBins: DistanceBins) {
+        this.distanceBinsSource.next(distanceBins);
+    }
+    get distanceBins(): DistanceBins {
+        return this.distanceBinsSource.getValue();
     }
 
     resetPosition() {
