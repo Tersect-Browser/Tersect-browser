@@ -15,28 +15,28 @@ import {
     PlotMouseClickEvent,
     PlotMouseHoverEvent,
     PlotMouseMoveEvent
-} from '../../shared/models/Plot';
+} from '../shared/models/Plot';
 import {
     isNullOrUndefined
-} from '../../utils/utils';
-import {
-    ExportPlotService
-} from '../services/export-plot.service';
-import {
-    PlotCreatorService
-} from '../services/plot-creator.service';
-import {
-    PlotStateService
-} from '../services/plot-state.service';
+} from '../utils/utils';
 import {
     BinPlotComponent
-} from './bin-plot/bin-plot.component';
+} from './components/bin-plot/bin-plot.component';
 import {
     ScaleBarComponent
-} from './scale-bar/scale-bar.component';
+} from './components/scale-bar/scale-bar.component';
 import {
     TreePlotComponent
-} from './tree-plot/tree-plot.component';
+} from './components/tree-plot/tree-plot.component';
+import {
+    ExportPlotService
+} from './services/export-plot.service';
+import {
+    PlotCreatorService
+} from './services/plot-creator.service';
+import {
+    PlotStateService
+} from './services/plot-state.service';
 
 export interface ContainerSize {
     height: number;

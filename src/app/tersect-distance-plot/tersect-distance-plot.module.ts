@@ -13,11 +13,11 @@ import {
     ScaleBarComponent
 } from './components/scale-bar/scale-bar.component';
 import {
-    TersectDistancePlotComponent
-} from './components/tersect-distance-plot.component';
-import {
     TreePlotComponent
 } from './components/tree-plot/tree-plot.component';
+import {
+    TersectDistancePlotComponent
+} from './tersect-distance-plot.component';
 
 @NgModule({
     declarations: [

@@ -10,13 +10,13 @@ import {
 import {
     ColorChangeEvent,
     ColorSelectorComponent
-} from '../../color-selector/color-selector.component';
+} from '../../../color-selector/color-selector.component';
 import {
     AccessionGroup
-} from '../../tersect-browser/browser-settings';
+} from '../../../tersect-browser/browser-settings';
 import {
     isNullOrUndefined
-} from '../../utils/utils';
+} from '../../../utils/utils';
 import {
     RemoveGroupDialogComponent
 } from '../remove-group-dialog/remove-group-dialog.component';

@@ -4,7 +4,7 @@ import { DistanceBins } from '../../shared/models/DistanceBins';
 import { PlotPosition } from '../../shared/models/Plot';
 import { SequenceInterval } from '../../shared/models/SequenceInterval';
 import { deepCopy, isNullOrUndefined } from '../../utils/utils';
-import { ContainerSize } from '../components/tersect-distance-plot.component';
+import { ContainerSize } from '../tersect-distance-plot.component';
 
 export class DistanceBinView {
     private static readonly DEFAULT_ASPECT_RATIO = 1 / 2;

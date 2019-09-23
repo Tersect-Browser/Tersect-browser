@@ -32,12 +32,12 @@ import {
     PlotStateService
 } from '../../services/plot-state.service';
 import {
+    ContainerSize
+} from '../../tersect-distance-plot.component';
+import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
-import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
 
 @Component({
     selector: 'app-bin-plot',

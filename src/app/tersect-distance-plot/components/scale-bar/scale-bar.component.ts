@@ -23,12 +23,12 @@ import {
     ScaleDrawService
 } from '../../services/scale-draw.service';
 import {
+    ContainerSize
+} from '../../tersect-distance-plot.component';
+import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
-import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
 
 @Component({
     selector: 'app-scale-bar',

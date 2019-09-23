@@ -7,7 +7,7 @@ import {
 } from '../../backend/models/genetgrc';
 import {
     AccessionInfoImporterComponent
-} from '../accession-tab/plugins/accession-info-importer.component';
+} from '../accession-tab/components/plugins/accession-info-importer.component';
 import {
     AccessionAlleles,
     TGRCBackendService

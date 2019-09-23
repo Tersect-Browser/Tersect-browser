@@ -54,7 +54,7 @@ import {
 } from './components/share-menu/share-menu.component';
 import {
     TersectBrowserComponent
-} from './components/tersect-browser.component';
+} from './tersect-browser.component';
 
 @NgModule({
     declarations: [

@@ -24,12 +24,12 @@ import {
     TreeDrawService
 } from '../../services/tree-draw.service';
 import {
+    ContainerSize
+} from '../../tersect-distance-plot.component';
+import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
-import {
-    ContainerSize
-} from '../tersect-distance-plot.component';
 
 @Component({
     selector: 'app-tree-plot',

@@ -17,7 +17,7 @@ import {
 } from '../../utils/utils';
 import {
     ContainerSize
-} from '../components/tersect-distance-plot.component';
+} from '../tersect-distance-plot.component';
 
 export class AccessionTreeView {
     /**

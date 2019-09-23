@@ -32,7 +32,7 @@ import {
 } from '../utils/utils';
 import {
     AccessionInfoImporterComponent
-} from './plugins/accession-info-importer.component';
+} from './components/plugins/accession-info-importer.component';
 
 interface FilterSet {
     [s: string]: FilterMetadata;

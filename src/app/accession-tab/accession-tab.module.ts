@@ -34,13 +34,13 @@ import {
 } from './accession-tab.component';
 import {
     AddGroupDialogComponent
-} from './add-group-dialog/add-group-dialog.component';
+} from './components/add-group-dialog/add-group-dialog.component';
 import {
     GroupBoxComponent
-} from './group-box/group-box.component';
+} from './components/group-box/group-box.component';
 import {
     RemoveGroupDialogComponent
-} from './remove-group-dialog/remove-group-dialog.component';
+} from './components/remove-group-dialog/remove-group-dialog.component';
 
 @NgModule({
     declarations: [
