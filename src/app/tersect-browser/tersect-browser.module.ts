@@ -19,11 +19,11 @@ import {
     AccessionTabModule
 } from '../accession-tab/accession-tab.module';
 import {
-    FitWindowModule
-} from '../directives/fit-window/fit-window.module';
-import {
     PlotClickMenuModule
 } from '../plot-click-menu/plot-click-menu.module';
+import {
+    FitWindowModule
+} from '../shared/directives/fit-window/fit-window.module';
 import {
     TersectDistancePlotModule
 } from '../tersect-distance-plot/tersect-distance-plot.module';

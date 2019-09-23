@@ -25,7 +25,7 @@ import {
 
 import {
     FitWindowModule
-} from '../directives/fit-window/fit-window.module';
+} from '../shared/directives/fit-window/fit-window.module';
 import {
     TGRCGeneImporterComponent
 } from '../tgrc-gene-importer/tgrc-gene-importer.component';
