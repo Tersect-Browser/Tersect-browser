@@ -1,11 +1,6 @@
 import { Injectable } from '@angular/core';
 
 import {
-    getTreeDepth,
-    getTreeDepthLinear,
-    TreeNode
-} from '../../clustering/clustering';
-import {
     ceilTo,
     formatCanvasFont,
     isNullOrUndefined
@@ -14,6 +9,11 @@ import {
     getAccessionColors,
     getAccessionLabel
 } from '../../tersect-browser/browser-settings';
+import {
+    getTreeDepth,
+    getTreeDepthLinear,
+    TreeNode
+} from '../clustering/clustering';
 import {
     AccessionTreeView
 } from '../models/AccessionTreeView';

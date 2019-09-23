@@ -22,12 +22,6 @@ import {
     NewickTree
 } from '../../../backend/models/newicktree';
 import {
-    treeToOrderedList
-} from '../../clustering/clustering';
-import {
-    parseNewick
-} from '../../clustering/newick-parser';
-import {
     Chromosome
 } from '../../shared/models/Chromosome';
 import {
@@ -47,6 +41,12 @@ import {
     isNullOrUndefined,
     sameElements
 } from '../../shared/utils/utils';
+import {
+    treeToOrderedList
+} from '../clustering/clustering';
+import {
+    parseNewick
+} from '../clustering/newick-parser';
 import {
     PlotStateService
 } from './plot-state.service';

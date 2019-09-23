@@ -1,4 +1,4 @@
-import { isNullOrUndefined, syncSort } from '../shared/utils/utils';
+import { isNullOrUndefined, syncSort } from '../../shared/utils/utils';
 import { TreeNode } from './clustering';
 
 export function parseNewick(newick: string, ladderize = false) {

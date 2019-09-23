@@ -1,9 +1,6 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
-    treeToOrderedList
-} from '../../clustering/clustering';
-import {
     PheneticTree
 } from '../../shared/models/PheneticTree';
 import {
@@ -15,6 +12,9 @@ import {
     AccessionDictionary,
     AccessionDisplayStyle
 } from '../../tersect-browser/browser-settings';
+import {
+    treeToOrderedList
+} from '../clustering/clustering';
 import {
     ContainerSize
 } from '../tersect-distance-plot.component';

@@ -1,4 +1,4 @@
-import { TreeNode } from '../../clustering/clustering';
+import { TreeNode } from '../../tersect-distance-plot/clustering/clustering';
 
 export interface TreeQuery {
     chromosomeName: string;
