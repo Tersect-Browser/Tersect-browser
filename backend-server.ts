@@ -15,7 +15,7 @@ const config = JSON.parse(
 );
 
 const url = `${config.mongo_hostname}:${config.port}/${config.db_name}`;
-mongoose.set('useNewUrlParser', true)
+mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
 mongoose.connect(url);
