@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 
-import { ceilTo, floorTo } from '../../../utils/utils';
-import { PlotStateService } from './plot-state.service';
+import {
+    PlotStateService
+} from '../../../components/tersect-distance-plot/services/plot-state.service';
+import {
+    ceilTo,
+    floorTo
+} from '../../../utils/utils';
 
 @Injectable()
 export class PlotZoomService {

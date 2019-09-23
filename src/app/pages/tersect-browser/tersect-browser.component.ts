@@ -12,9 +12,6 @@ import {
     PlotStateService
 } from '../../components/tersect-distance-plot/services/plot-state.service';
 import {
-    PlotZoomService
-} from '../../components/tersect-distance-plot/services/plot-zoom.service';
-import {
     TersectDistancePlotComponent
 } from '../../components/tersect-distance-plot/tersect-distance-plot.component';
 import {
@@ -37,6 +34,9 @@ import {
     AccessionGroup,
     BrowserSettings
 } from './browser-settings';
+import {
+    PlotZoomService
+} from './services/plot-zoom.service';
 
 @Component({
     selector: 'app-tersect-browser',
