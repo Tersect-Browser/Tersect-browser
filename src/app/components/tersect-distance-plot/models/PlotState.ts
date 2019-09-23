@@ -8,9 +8,6 @@ import {
 import {
     PlotPosition
 } from '../../../models/Plot';
-import {
-    isNullOrUndefined
-} from '../../../utils/utils';
 
 export type AccessionDisplayStyle = 'labels' | 'tree_simple' | 'tree_linear';
 
