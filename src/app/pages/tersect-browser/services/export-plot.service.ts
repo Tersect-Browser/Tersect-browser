@@ -29,13 +29,20 @@ export class ExportPlotService {
                 private readonly scaleDraw: ScaleDrawService,
                 private readonly treeDraw: TreeDrawService) { }
 
-    exportImage(): Promise<Blob> {
+    getPlotSize(binHeight: number) {
+        const binWidth = binHeight * DistanceBinView.DEFAULT_ASPECT_RATIO;
+        const containerSize: ContainerSize = {
+            height: binView.rowNum * binHeight,
+            width: binView.colNum * binWidth
+        };
+        return
+    }
+
+    exportImage(binView: DistanceBinView,
+                treeView: AccessionTreeView): Promise<Blob> {
         const binHeight = 10;
         const binWidth = binHeight * DistanceBinView.DEFAULT_ASPECT_RATIO;
 
-        const binView = new DistanceBinView(this.plotState.distanceBins,
-                                            this.plotState.orderedAccessions,
-                                            binHeight);
         binView.sequenceGaps = this.plotState.sequenceGaps;
         this.binDraw.drawBins(binView);
 
@@ -43,10 +50,6 @@ export class ExportPlotService {
             height: binView.rowNum * binHeight,
             width: binView.colNum * binWidth
         };
-
-        const treeView = new AccessionTreeView(this.plotState.pheneticTree,
-                                               binHeight,
-                                               containerSize);
         this.treeDraw.drawTree(treeView, 0, 0, containerSize);
 
         const fullCanvas = document.createElement('canvas');

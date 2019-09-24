@@ -74,6 +74,13 @@ export class DistanceBinView {
         return this.distanceBins.query.interval;
     }
 
+    getImageSize(): ContainerSize {
+        return {
+            width: this.colNum * this.binWidth,
+            height: this.rowNum * this.binHeight
+        };
+    }
+
     getImageData(): ImageData {
         const offscreenCanvas = document.createElement('canvas');
         offscreenCanvas.width = this.colNum * this.binWidth;
