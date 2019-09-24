@@ -37,8 +37,8 @@ export class TreeDrawService {
      */
     static readonly TREE_PLOT_PROPORTION = 0.5;
 
-    drawTree(treeView: AccessionTreeView, offsetX: number, offsetY: number,
-             targetCanvas?: HTMLCanvasElement) {
+    draw(treeView: AccessionTreeView, offsetX: number, offsetY: number,
+         targetCanvas?: HTMLCanvasElement) {
         if (treeView.redrawRequired) {
             this.generateTree(treeView);
         }

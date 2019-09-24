@@ -86,9 +86,9 @@ export class BinPlotComponent extends CanvasPlotElement
                                                      this.plotCreator.binHeight);
         }
         this.updateDistanceBinView(this.storedBinView);
-        this.binDrawService.drawBins(this.storedBinView,
-                                     this.plotCreator.guiMargins.left, 0,
-                                     this.canvas.nativeElement);
+        this.binDrawService.draw(this.storedBinView,
+                                 this.plotCreator.guiMargins.left, 0,
+                                 this.canvas.nativeElement);
         this.updateHighlight();
     }
 

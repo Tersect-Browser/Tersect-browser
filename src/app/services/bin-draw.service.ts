@@ -22,8 +22,8 @@ import {
     providedIn: 'root'
 })
 export class BinDrawService {
-    drawBins(binView: DistanceBinView, offsetX?: number, offsetY?: number,
-             targetCanvas?: HTMLCanvasElement) {
+    draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
+         targetCanvas?: HTMLCanvasElement) {
         if (binView.redrawRequired) {
             // Updated distance bins
             this.generatePlotArray(binView);

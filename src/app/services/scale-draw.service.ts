@@ -39,8 +39,8 @@ export class ScaleDrawService {
 
     static readonly GUI_TICK_LENGTH = 6;
 
-    drawScale(scaleView: ScaleView, offsetX: number, offsetY: number,
-              targetCanvas: HTMLCanvasElement) {
+    draw(scaleView: ScaleView, offsetX: number, offsetY: number,
+         targetCanvas: HTMLCanvasElement) {
         this.updateCanvas(scaleView, targetCanvas);
         this.drawPositionScale(scaleView, offsetX, offsetY, targetCanvas);
     }

@@ -62,9 +62,9 @@ export class ScaleBarComponent extends CanvasPlotElement {
                                                  this.getContainerSize());
         }
         this.updateScaleView(this.storedScaleView);
-        this.scaleDrawService.drawScale(this.storedScaleView,
-                                        this.plotCreator.treePlotWidth, 0,
-                                        this.canvas.nativeElement);
+        this.scaleDrawService.draw(this.storedScaleView,
+                                   this.plotCreator.treePlotWidth, 0,
+                                   this.canvas.nativeElement);
     }
 
     protected dragAction(dragState: DragState): void {
