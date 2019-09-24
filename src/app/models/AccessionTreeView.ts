@@ -46,7 +46,7 @@ export class AccessionTreeView {
 
     constructor(tree: PheneticTree,
                 textSize: number,
-                containerSize: ContainerSize) {
+                containerSize?: ContainerSize) {
         this.tree = tree;
         this.textSize = textSize;
         this.containerSize = containerSize;
