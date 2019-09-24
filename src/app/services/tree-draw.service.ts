@@ -43,7 +43,7 @@ export class TreeDrawService {
     drawTree(treeView: AccessionTreeView, offsetX: number, offsetY: number,
              containerSize: ContainerSize, targetCanvas?: HTMLCanvasElement) {
         if (treeView.redrawRequired) {
-            this.updateCanvasWidth(treeView, containerSize);
+            this.updateCanvasWidth(treeView);
             this.generateTree(treeView);
         }
 
@@ -204,7 +204,7 @@ export class TreeDrawService {
     /**
      * Return highest number of colors assigned to an accession.
      */
-    getMaxColorCount(treeView: AccessionTreeView): number {
+    private getMaxColorCount(treeView: AccessionTreeView): number {
         let count = 0;
         if (isNullOrUndefined(treeView.accessionDictionary)) {
             return 0;
@@ -245,8 +245,7 @@ export class TreeDrawService {
         }
     }
 
-    private updateCanvasWidth(treeView: AccessionTreeView,
-                              containerSize: ContainerSize) {
+    private updateCanvasWidth(treeView: AccessionTreeView) {
         const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
                                                       .getContext('2d');
         let width: number;
@@ -256,7 +255,7 @@ export class TreeDrawService {
                            + this.getColorTracksWidth(treeView),
                            treeView.textSize);
         } else {
-            width = ceilTo(containerSize.width
+            width = ceilTo(treeView.containerSize.width
                            * TreeDrawService.TREE_PLOT_PROPORTION,
                            treeView.textSize);
         }
