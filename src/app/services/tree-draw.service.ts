@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 
 import {
+    ContainerSize
+} from '../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
     getTreeDepth,
     getTreeDepthLinear,
     TreeNode
@@ -63,6 +66,16 @@ export class TreeDrawService {
                                                       .getContext('2d');
         return ctx.getImageData(0, 0, treeView.offscreenCanvas.width,
                                 treeView.offscreenCanvas.height);
+    }
+
+    getImageSize(treeView: AccessionTreeView): ContainerSize {
+        if (treeView.redrawRequired) {
+            this.generateTree(treeView);
+        }
+        return {
+            width: treeView.offscreenCanvas.width,
+            height: treeView.offscreenCanvas.height
+        };
     }
 
     private drawColorTracks(ctx: CanvasRenderingContext2D,
