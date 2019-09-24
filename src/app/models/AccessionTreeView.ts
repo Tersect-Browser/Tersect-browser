@@ -21,6 +21,11 @@ import {
 
 export class AccessionTreeView {
     /**
+     * Default tree container view width in pixels.
+     */
+    static readonly DEFAULT_CONTAINER_WIDTH = 600;
+
+    /**
      * The stored canvas height is limited due to browser-specific limits.
      * The image requires redrawing when the user scrolls past this limit.
      */
@@ -45,11 +50,21 @@ export class AccessionTreeView {
     private _tree: PheneticTree;
 
     constructor(tree: PheneticTree,
+                orderedAccessions: string[],
                 textSize: number,
                 containerSize?: ContainerSize) {
         this.tree = tree;
+        this.orderedAccessions = orderedAccessions;
         this.textSize = textSize;
-        this.containerSize = containerSize;
+
+        if (!isNullOrUndefined(containerSize)) {
+            this.containerSize = containerSize;
+        } else {
+            this.containerSize = {
+                width: AccessionTreeView.DEFAULT_CONTAINER_WIDTH,
+                height: this.accessionCount * this.textSize
+            };
+        }
 
         this.accessionStyle = 'tree_linear';
         this.canvasOffsetY = 0;

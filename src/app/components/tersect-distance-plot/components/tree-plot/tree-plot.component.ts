@@ -58,13 +58,13 @@ export class TreePlotComponent extends CanvasPlotElement {
     draw() {
         if (isNullOrUndefined(this.storedTreeView)) {
             this.storedTreeView = new AccessionTreeView(this.plotState.pheneticTree,
+                                                        this.plotState.orderedAccessions,
                                                         this.plotCreator.binHeight,
                                                         this.getContainerSize());
         }
         this.updateTreeView(this.storedTreeView);
         this.treeDrawService.drawTree(this.storedTreeView,
                                       0, this.plotCreator.offsetY,
-                                      this.getContainerSize(),
                                       this.canvas.nativeElement);
         this.plotCreator.guiMargins.left = this.storedTreeView.offscreenCanvas.width
                                            / this.plotCreator.zoomFactor;

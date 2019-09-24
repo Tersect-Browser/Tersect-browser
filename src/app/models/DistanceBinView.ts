@@ -76,8 +76,8 @@ export class DistanceBinView {
 
     getImageSize(): ContainerSize {
         return {
-            width: this.colNum * this.binWidth,
-            height: this.rowNum * this.binHeight
+            width: Math.ceil(this.colNum * this.binWidth),
+            height: Math.ceil(this.rowNum * this.binHeight)
         };
     }
 
