@@ -7,6 +7,9 @@ import {
     PlotCreatorService
 } from '../components/tersect-distance-plot/services/plot-creator.service';
 import {
+    ContainerSize
+} from '../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
     DistanceBinView
 } from '../models/DistanceBinView';
 import {
@@ -25,7 +28,6 @@ export class BinDrawService {
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
          targetCanvas?: HTMLCanvasElement) {
         if (binView.redrawRequired) {
-            // Updated distance bins
             this.generatePlotArray(binView);
         }
 
@@ -38,6 +40,30 @@ export class BinDrawService {
                                                           targetCanvas);
             ctx.putImageData(visibleImage, offsetX, offsetY);
         }
+    }
+
+    getImageData(binView: DistanceBinView): ImageData {
+        if (binView.redrawRequired) {
+            this.generatePlotArray(binView);
+        }
+        const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = binView.colNum * binView.binWidth;
+        offscreenCanvas.height = binView.rowNum * binView.binHeight;
+        const ctx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.putImageData(new ImageData(binView.imageArray, binView.colNum,
+                                       binView.rowNum), 0, 0);
+        ctx.scale(binView.binWidth, binView.binHeight);
+        ctx.drawImage(offscreenCanvas, 0, 0);
+        return ctx.getImageData(0, 0, offscreenCanvas.width,
+                                offscreenCanvas.height);
+    }
+
+    getImageSize(binView: DistanceBinView): ContainerSize {
+        return {
+            width: Math.ceil(binView.colNum * binView.binWidth),
+            height: Math.ceil(binView.rowNum * binView.binHeight)
+        };
     }
 
     private addPlotGap(binView: DistanceBinView, gap: SequenceInterval) {
