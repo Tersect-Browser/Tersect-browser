@@ -176,13 +176,6 @@ export class AccessionTreeView {
         return this._textSize;
     }
 
-    getImageData(): ImageData {
-        const ctx: CanvasRenderingContext2D = this.offscreenCanvas
-                                                  .getContext('2d');
-        return ctx.getImageData(0, 0, this.offscreenCanvas.width,
-                                this.offscreenCanvas.height);
-    }
-
     /**
      * Return the height of the canvas that overflows the container area.
      * This represents a pre-drawn area available for scrolling. When this is

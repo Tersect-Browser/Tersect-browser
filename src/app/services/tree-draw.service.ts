@@ -55,6 +55,16 @@ export class TreeDrawService {
         }
     }
 
+    getImageData(treeView: AccessionTreeView): ImageData {
+        if (treeView.redrawRequired) {
+            this.generateTree(treeView);
+        }
+        const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
+                                                      .getContext('2d');
+        return ctx.getImageData(0, 0, treeView.offscreenCanvas.width,
+                                treeView.offscreenCanvas.height);
+    }
+
     private drawColorTracks(ctx: CanvasRenderingContext2D,
                             treeView: AccessionTreeView) {
        treeView.orderedAccessions.forEach((accId, rowIndex) => {
