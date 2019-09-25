@@ -125,6 +125,7 @@ export class TreeDrawService {
                 prevPosY = curPosY;
             });
 
+            ctx.lineCap = 'round';
             ctx.beginPath();
             ctx.lineWidth = TreeDrawService.TREE_LINE_WIDTH * treeView.textSize;
             ctx.strokeStyle = '#000000';
@@ -164,6 +165,7 @@ export class TreeDrawService {
     private drawTrailingLine(ctx: CanvasRenderingContext2D,
                              treeView: AccessionTreeView,
                              xStart: number, yPos: number) {
+        ctx.lineCap = 'butt';
         ctx.beginPath();
         ctx.lineWidth = TreeDrawService.TREE_LINE_DASH_WIDTH
                         * treeView.textSize;
