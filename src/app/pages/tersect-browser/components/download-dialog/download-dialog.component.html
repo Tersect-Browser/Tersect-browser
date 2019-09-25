@@ -4,15 +4,18 @@
         <b>Labels:</b>
         <p-radioButton name="displayTypes"
             label="Accession labels" value="labels"
-            [(ngModel)]="accessionStyle">
+            [(ngModel)]="accessionStyle"
+            [disabled]="loading">
         </p-radioButton>
         <p-radioButton name="displayTypes"
             label="Phenetic tree" value="tree_linear"
-            [(ngModel)]="accessionStyle">
+            [(ngModel)]="accessionStyle"
+            [disabled]="loading">
         </p-radioButton>
         <p-radioButton name="displayTypes"
             label="Phenetic tree (simplified)" value="tree_simple"
-            [(ngModel)]="accessionStyle">
+            [(ngModel)]="accessionStyle"
+            [disabled]="loading">
         </p-radioButton>
     </div>
 
@@ -23,7 +26,8 @@
             <p-spinner pKeyFilter="pint"
                 [(ngModel)]="binHeight"
                 [min]="1" [max]="50"
-                [inputStyle]="{'width': '3.5em'}">
+                [inputStyle]="{'width': '3.5em'}"
+                [disabled]="loading">
             </p-spinner>
         </div>
         <div>
@@ -34,7 +38,8 @@
                 [min]="binHeight"
                 [step]="binHeight"
                 [inputStyle]="{'width': '6em'}"
-                [readonly]="accessionStyle === 'labels'">
+                [readonly]="accessionStyle === 'labels'"
+                [disabled]="loading">
             </p-spinner>
         </div>
     </div>
@@ -46,7 +51,8 @@
                 [ngModel]="totalSize.width | unit: 'px'"
                 (ngModelChange)="totalSize.width = $event"
                 [inputStyle]="{'width': '6em'}"
-                [readonly]="true">
+                [readonly]="true"
+                [disabled]="loading">
             </p-spinner>
         </div>
         <div>
@@ -55,17 +61,22 @@
                 [ngModel]="totalSize.height | unit: 'px'"
                 (ngModelChange)="totalSize.height = $event"
                 [inputStyle]="{'width': '6em'}"
-                [readonly]="true">
+                [readonly]="true"
+                [disabled]="loading">
             </p-spinner>
         </div>
     </div>
+
+    <p-progressBar *ngIf="loading" mode="indeterminate"></p-progressBar>
 
     <div style="float: right;">
         <button pButton label="Cancel" class="dialog-small-margin"
             (click)="hide()">
         </button>
-        <button pButton label="Download" icon="fa fa-download"
-            (click)="downloadImage()" class="dialog-small-margin">
+        <button pButton [label]="loading ? 'Loading...' : 'Download'"
+            icon="fa fa-download"
+            (click)="downloadImage()" class="dialog-small-margin"
+            [disabled]="loading">
         </button>
     </div>
 </p-dialog>

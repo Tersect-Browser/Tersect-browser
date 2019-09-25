@@ -27,20 +27,19 @@ export class ExportPlotService {
 
     exportImage(binView: DistanceBinView,
                 treeView: AccessionTreeView): Promise<Blob> {
-        const binSize = this.binDraw.getImageSize(binView);
-        const treeSize = this.treeDraw.getImageSize(treeView);
-
-        const fullCanvas = document.createElement('canvas');
-        const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');
-
-        fullCanvas.width = binSize.width + treeSize.width;
-        fullCanvas.height = binSize.height;
-
-        fullCtx.putImageData(this.treeDraw.getImageData(treeView), 0, 0);
-        fullCtx.putImageData(this.binDraw.getImageData(binView),
-                             treeSize.width, 0);
-
         return new Promise(resolve => {
+            const binSize = this.binDraw.getImageSize(binView);
+            const treeSize = this.treeDraw.getImageSize(treeView);
+
+            const fullCanvas = document.createElement('canvas');
+            const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');
+
+            fullCanvas.width = binSize.width + treeSize.width;
+            fullCanvas.height = binSize.height;
+
+            fullCtx.putImageData(this.treeDraw.getImageData(treeView), 0, 0);
+            fullCtx.putImageData(this.binDraw.getImageData(binView),
+                                 treeSize.width, 0);
             fullCanvas.toBlob(blob => {
                 resolve(blob);
             });

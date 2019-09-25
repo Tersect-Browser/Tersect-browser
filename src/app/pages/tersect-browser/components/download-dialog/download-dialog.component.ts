@@ -36,6 +36,7 @@ export class DownloadDialogComponent {
     private static readonly DEFAULT_BIN_HEIGHT = 10;
 
     binView: DistanceBinView;
+    loading = false;
     totalSize: ContainerSize = { height: undefined, width: undefined };
     treeView: AccessionTreeView;
     visible = false;
@@ -81,15 +82,23 @@ export class DownloadDialogComponent {
     }
 
     downloadImage() {
-        const imageData = this.exportPlotService.exportImage(this.binView,
-                                                             this.treeView);
-        imageData.then(blob => {
-            saveAs(blob, 'output.png');
-            this.hide();
-        });
+        this.loading = true;
+        setTimeout(() => {
+            // Timeout to update progress bar immediately
+            const imageData = this.exportPlotService.exportImage(this.binView,
+                                                                 this.treeView);
+            imageData.then(blob => {
+                if (this.loading) {
+                    this.loading = false;
+                    saveAs(blob, 'output.png');
+                    this.hide();
+                }
+            });
+        }, 200);
     }
 
     hide() {
+        this.loading = false;
         this.visible = false;
     }
 

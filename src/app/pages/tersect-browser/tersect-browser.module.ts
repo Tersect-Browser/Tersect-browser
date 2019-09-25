@@ -8,6 +8,7 @@ import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SidebarModule } from 'primeng/sidebar';
 import { SliderModule } from 'primeng/slider';
@@ -95,7 +96,8 @@ import {
         TabViewModule,
         DialogModule,
         SpinnerModule,
-        SharedPipesModule
+        SharedPipesModule,
+        ProgressBarModule
     ]
 })
 export class TersectBrowserModule { }
