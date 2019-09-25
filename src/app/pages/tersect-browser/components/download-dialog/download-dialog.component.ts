@@ -97,7 +97,7 @@ export class DownloadDialogComponent {
                     this.hide();
                 }
             }).catch(() => {
-                this.errorMessage = 'Output resolution too high.';
+                this.errorMessage = 'Total resolution too high.';
                 this.loading = false;
             });
         }, 200);
