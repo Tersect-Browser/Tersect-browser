@@ -68,7 +68,7 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
                 private readonly plotCreator: PlotCreatorService) { }
 
     get plotLoadMessage() {
-        return this.plotCreator.plotLoadMessage;
+        return this.plotState.plotLoadMessage;
     }
 
     ngOnInit() {
@@ -91,11 +91,11 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     }
 
     getErrors(): string {
-        return Array.from(this.plotCreator.errorMessages).join('\n');
+        return Array.from(this.plotState.errorMessages).join('\n');
     }
 
     hasErrors(): boolean {
-        return this.plotCreator.errorMessages.size > 0;
+        return this.plotState.errorMessages.size > 0;
     }
 
     onClick($event: PlotMouseClickEvent) {
@@ -111,7 +111,7 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     }
 
     isLoading(): boolean {
-        return this.plotCreator.isLoading();
+        return this.plotState.plotLoadMessage !== '';
     }
 
     private redrawPlot() {

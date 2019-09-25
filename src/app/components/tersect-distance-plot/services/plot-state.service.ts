@@ -112,6 +112,17 @@ export class PlotStateService {
      */
     sequenceGaps: SequenceInterval[];
 
+    /**
+     * Set of currently active error messages.
+     */
+    errorMessages: Set<string> = new Set();
+
+    /**
+     * Plot load status. When not an empty string, spinner overlay is displayed
+     * (unless an error message is displayed, as those take priority).
+     */
+    plotLoadMessage = '';
+
     private readonly settingsSource = new Subject<BrowserSettings>();
     private readonly datasetIdSource = new BehaviorSubject<string>(undefined);
     private readonly accessionStyleSource = new BehaviorSubject<AccessionDisplayStyle>('labels');

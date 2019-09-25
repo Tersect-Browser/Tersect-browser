@@ -82,11 +82,6 @@ export class PlotCreatorService implements OnDestroy {
      */
     aspectRatio = 1 / 2;
 
-    /**
-     * Set of currently active error messages.
-     */
-    errorMessages: Set<string> = new Set();
-
     guiMargins: GUIMargins = {
         top: PlotCreatorService.GUI_SCALE_BAR_SIZE,
         right: 0,
@@ -98,12 +93,6 @@ export class PlotCreatorService implements OnDestroy {
      * Highlighted area of the plot.
      */
     highlightSource = new BehaviorSubject<SequenceInterval>(undefined);
-
-    /**
-     * Plot load status. When not an empty string, spinner overlay is displayed
-     * (unless an error message is displayed, as those take priority).
-     */
-    plotLoadMessage = '';
 
     private readonly plotData$: Observable<PlotData>;
     private plotDataSub: Subscription;
@@ -170,18 +159,15 @@ export class PlotCreatorService implements OnDestroy {
         }
     }
 
-    isLoading(): boolean {
-        return this.plotLoadMessage !== '';
-    }
-
     startLoading() {
-        if (this.plotLoadMessage === '') {
-            this.plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;
+        if (this.plotState.plotLoadMessage === '') {
+            this.plotState
+                .plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;
         }
     }
 
     stopLoading() {
-        this.plotLoadMessage = '';
+        this.plotState.plotLoadMessage = '';
     }
 
     /**
@@ -231,7 +217,7 @@ export class PlotCreatorService implements OnDestroy {
                                      accessions).pipe(
                     tap((tree: NewickTree) => {
                         if (tree.status !== 'ready') {
-                            this.plotLoadMessage = tree.status;
+                            this.plotState.plotLoadMessage = tree.status;
                             throw new Error('Tree still loading');
                         }
                     }),
@@ -284,12 +270,12 @@ export class PlotCreatorService implements OnDestroy {
 
     private validateAccessions(accessions: string[]): boolean {
         if (accessions.length < 2) {
-            this.errorMessages
-                .add(PlotCreatorService.ERROR_MESSAGE_ACCESSIONS);
+            this.plotState.errorMessages
+                          .add(PlotCreatorService.ERROR_MESSAGE_ACCESSIONS);
             return false;
         } else {
-            this.errorMessages
-                .delete(PlotCreatorService.ERROR_MESSAGE_ACCESSIONS);
+            this.plotState.errorMessages
+                          .delete(PlotCreatorService.ERROR_MESSAGE_ACCESSIONS);
             return true;
         }
     }
@@ -310,12 +296,12 @@ export class PlotCreatorService implements OnDestroy {
             || isNaN(parseInt(interval[0].toString(), 10))
             || isNaN(parseInt(interval[1].toString(), 10))
             || interval[1] - interval[0] < binsize) {
-            this.errorMessages
-                .add(PlotCreatorService.ERROR_MESSAGE_BINSIZE);
+            this.plotState.errorMessages
+                          .add(PlotCreatorService.ERROR_MESSAGE_BINSIZE);
             return false;
         } else {
-            this.errorMessages
-                .delete(PlotCreatorService.ERROR_MESSAGE_BINSIZE);
+            this.plotState.errorMessages
+                          .delete(PlotCreatorService.ERROR_MESSAGE_BINSIZE);
             return true;
         }
     }
