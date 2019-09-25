@@ -170,6 +170,10 @@ export class PlotCreatorService implements OnDestroy {
         }
     }
 
+    isLoading(): boolean {
+        return this.plotLoadMessage !== '';
+    }
+
     startLoading() {
         if (this.plotLoadMessage === '') {
             this.plotLoadMessage = PlotCreatorService.DEFAULT_LOAD_MESSAGE;

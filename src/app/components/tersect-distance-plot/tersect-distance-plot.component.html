@@ -1,5 +1,5 @@
-<div [ngStyle]="{'visibility': plotLoadMessage != ''
-                               && !hasErrors() ? 'visible' : 'hidden'}">
+<div [ngStyle]="{'visibility': isLoading() && !hasErrors() ? 'visible'
+                                                           : 'hidden'}">
     <div class="update-spinner">
         <p-progressSpinner></p-progressSpinner>
     </div>

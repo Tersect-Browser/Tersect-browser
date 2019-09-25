@@ -110,6 +110,10 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
         this.plotMouseMove.emit($event);
     }
 
+    isLoading(): boolean {
+        return this.plotCreator.isLoading();
+    }
+
     private redrawPlot() {
         this.treePlot.draw();
         this.scaleBar.draw();
