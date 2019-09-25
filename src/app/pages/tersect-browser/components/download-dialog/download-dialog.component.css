@@ -1,0 +1,24 @@
+:host {
+    font-size: 90%;
+}
+
+p-radiobutton {
+    display: block;
+}
+
+.input-section {
+    display: table;
+    margin-bottom: 1em;
+}
+
+.input-section div {
+    display: table-row;
+}
+
+.input-section div label {
+    width: 100px;
+}
+
+.input-section div * {
+    display: table-cell;
+}

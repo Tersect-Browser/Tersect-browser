@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 
 import {
+    ContainerSize
+} from '../../../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
     AccessionTreeView
 } from '../../../models/AccessionTreeView';
 import {
@@ -24,24 +27,37 @@ export class ExportPlotService {
 
     exportImage(binView: DistanceBinView,
                 treeView: AccessionTreeView): Promise<Blob> {
-        this.binDraw.drawBins(binView);
-
-        const containerSize = binView.getImageSize();
-        this.treeDraw.drawTree(treeView, 0, 0, containerSize);
+        const binSize = this.binDraw.getImageSize(binView);
+        const treeSize = this.treeDraw.getImageSize(treeView);
 
         const fullCanvas = document.createElement('canvas');
         const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');
-        fullCanvas.width = containerSize.width;
-        fullCanvas.height = containerSize.height;
 
-        fullCtx.putImageData(treeView.getImageData(), 0, 0);
-        fullCtx.putImageData(binView.getImageData(),
-                             treeView.offscreenCanvas.width, 0);
+        fullCanvas.width = binSize.width + treeSize.width;
+        fullCanvas.height = binSize.height;
+
+        fullCtx.putImageData(this.treeDraw.getImageData(treeView), 0, 0);
+        fullCtx.putImageData(this.binDraw.getImageData(binView),
+                             treeSize.width, 0);
 
         return new Promise(resolve => {
             fullCanvas.toBlob(blob => {
                 resolve(blob);
             });
         });
+    }
+
+    getLabelWidth(treeView: AccessionTreeView): number {
+        return this.treeDraw.getImageSize(treeView).width;
+    }
+
+    getTotalSize(binView: DistanceBinView,
+                 treeView: AccessionTreeView): ContainerSize {
+        const binSize = this.binDraw.getImageSize(binView);
+        const treeSize = this.treeDraw.getImageSize(treeView);
+        return {
+            width: binSize.width + treeSize.width,
+            height: binSize.height
+        };
     }
 }

@@ -11,6 +11,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SidebarModule } from 'primeng/sidebar';
 import { SliderModule } from 'primeng/slider';
+import { SpinnerModule } from 'primeng/spinner';
 import { TabViewModule } from 'primeng/tabview';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -31,6 +32,9 @@ import {
     FitWindowModule
 } from '../../directives/fit-window/fit-window.module';
 
+import {
+    SharedPipesModule
+} from '../../pipes/shared-pipes.module';
 import {
     AccessionStyleSelectorComponent
 } from './components/accession-style-selector/accession-style-selector.component';
@@ -89,7 +93,9 @@ import {
         AccessionTabModule,
         FitWindowModule,
         TabViewModule,
-        DialogModule
+        DialogModule,
+        SpinnerModule,
+        SharedPipesModule
     ]
 })
 export class TersectBrowserModule { }

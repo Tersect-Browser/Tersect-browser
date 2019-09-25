@@ -1,14 +1,71 @@
 <p-dialog header="Export plot image" [(visible)]="visible"
           modal="true" [resizable]="false">
-    <div>Bin height: {{ binHeight }}</div>
-    <div>Width: {{ width }} px</div>
-    <div>Height: {{ height }} px</div>
+    <div class="input-section">
+        <b>Labels:</b>
+        <p-radioButton name="displayTypes"
+            label="Accession labels" value="labels"
+            [(ngModel)]="accessionStyle">
+        </p-radioButton>
+        <p-radioButton name="displayTypes"
+            label="Phenetic tree" value="tree_linear"
+            [(ngModel)]="accessionStyle">
+        </p-radioButton>
+        <p-radioButton name="displayTypes"
+            label="Phenetic tree (simplified)" value="tree_simple"
+            [(ngModel)]="accessionStyle">
+        </p-radioButton>
+    </div>
+
+    <div class="input-section">
+        <b>Image size:</b>
+        <div>
+            <label>Bin / font size:</label>
+            <p-spinner pKeyFilter="pint"
+                [(ngModel)]="binHeight"
+                [min]="1" [max]="50"
+                [inputStyle]="{'width': '3.5em'}">
+            </p-spinner>
+        </div>
+        <div>
+            <label>Label width:</label>
+            <p-spinner pKeyFilter="pint"
+                [ngModel]="labelWidth | unit: 'px'"
+                (ngModelChange)="labelWidth = $event"
+                [min]="binHeight"
+                [step]="binHeight"
+                [inputStyle]="{'width': '6em'}"
+                [readonly]="accessionStyle === 'labels'">
+            </p-spinner>
+        </div>
+    </div>
+
+    <div class="input-section">
+        <div>
+            <label>Total width:</label>
+            <p-spinner pKeyFilter="pint"
+                [ngModel]="totalSize.width | unit: 'px'"
+                (ngModelChange)="totalSize.width = $event"
+                [inputStyle]="{'width': '6em'}"
+                [readonly]="true">
+            </p-spinner>
+        </div>
+        <div>
+            <label>Total height:</label>
+            <p-spinner pKeyFilter="pint"
+                [ngModel]="totalSize.height | unit: 'px'"
+                (ngModelChange)="totalSize.height = $event"
+                [inputStyle]="{'width': '6em'}"
+                [readonly]="true">
+            </p-spinner>
+        </div>
+    </div>
+
     <div style="float: right;">
         <button pButton label="Cancel" class="dialog-small-margin"
-                (click)="hide()">
+            (click)="hide()">
         </button>
         <button pButton label="Download" icon="fa fa-download"
-                (click)="downloadImage()" class="dialog-small-margin">
+            (click)="downloadImage()" class="dialog-small-margin">
         </button>
     </div>
 </p-dialog>

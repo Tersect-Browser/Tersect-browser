@@ -3,8 +3,14 @@ import { Component } from '@angular/core';
 import { saveAs } from 'file-saver';
 
 import {
+    AccessionDisplayStyle
+} from '../../../../components/tersect-distance-plot/models/PlotState';
+import {
     PlotStateService
 } from '../../../../components/tersect-distance-plot/services/plot-state.service';
+import {
+    ContainerSize
+} from '../../../../components/tersect-distance-plot/tersect-distance-plot.component';
 import {
     AccessionTreeView
 } from '../../../../models/AccessionTreeView';
@@ -21,6 +27,7 @@ import {
 @Component({
     selector: 'app-download-dialog',
     templateUrl: './download-dialog.component.html',
+    styleUrls: [ './download-dialog.component.css' ],
     providers: [
         ExportPlotService
     ]
@@ -29,26 +36,45 @@ export class DownloadDialogComponent {
     private static readonly DEFAULT_BIN_HEIGHT = 10;
 
     binView: DistanceBinView;
+    totalSize: ContainerSize = { height: undefined, width: undefined };
     treeView: AccessionTreeView;
-
-    binHeight = DownloadDialogComponent.DEFAULT_BIN_HEIGHT;
-
     visible = false;
+
+    private _accessionStyle: AccessionDisplayStyle = 'labels';
+    private _binHeight = DownloadDialogComponent.DEFAULT_BIN_HEIGHT;
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly exportPlotService: ExportPlotService) { }
 
-    get height(): number {
-        if (!isNullOrUndefined(this.binView)) {
-            return this.binView.getImageSize().height;
-        } else {
-            return undefined;
-        }
+    set accessionStyle(accessionStyle: AccessionDisplayStyle) {
+        this._accessionStyle = accessionStyle;
+        this.treeView.accessionStyle = accessionStyle;
+        this.updateTotalSize();
+    }
+    get accessionStyle(): AccessionDisplayStyle {
+        return this._accessionStyle;
     }
 
-    get width(): number {
-        if (!isNullOrUndefined(this.binView)) {
-            return this.binView.getImageSize().width;
+    set binHeight(binHeight: number) {
+        this._binHeight = binHeight;
+        this.binView.binHeight = this._binHeight;
+        this.treeView.textSize = this._binHeight;
+        this.updateTotalSize();
+    }
+    get binHeight(): number {
+        return this._binHeight;
+    }
+
+    set labelWidth(labelWidth: number) {
+        this.treeView.containerSize = {
+            height: this.treeView.containerSize.height,
+            width: labelWidth
+        };
+        this.updateTotalSize();
+    }
+    get labelWidth(): number {
+        if (!isNullOrUndefined(this.treeView)) {
+            return this.exportPlotService.getLabelWidth(this.treeView);
         } else {
             return undefined;
         }
@@ -78,6 +104,15 @@ export class DownloadDialogComponent {
                                            this.binHeight);
         this.binView.sequenceGaps = this.plotState.sequenceGaps;
         this.treeView = new AccessionTreeView(this.plotState.pheneticTree,
+                                              this.plotState.orderedAccessions,
                                               this.binHeight);
+        this.treeView.accessionDictionary = this.plotState.accessionDictionary;
+        this.treeView.accessionStyle = this.accessionStyle;
+        this.updateTotalSize();
+    }
+
+    private updateTotalSize() {
+        this.totalSize = this.exportPlotService.getTotalSize(this.binView,
+                                                             this.treeView);
     }
 }
