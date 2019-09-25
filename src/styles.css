@@ -40,6 +40,10 @@ html, body {
     animation: fade-in 0.2s linear;
 }
 
+.ui-progressbar {
+    background-color: #327e04;
+}
+
 @keyframes fade-in {
     0% {
         opacity: 0;
