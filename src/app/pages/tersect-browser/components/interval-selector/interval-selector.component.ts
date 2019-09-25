@@ -18,7 +18,7 @@ import {
 export class IntervalSelectorComponent implements OnInit, OnDestroy {
     static readonly TYPING_DELAY = 750;
 
-    interval = [1, 1];
+    interval = [1, Infinity];
 
     private intervalInputTimeout: NodeJS.Timer;
     private intervalUpdate: Subscription;
