@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+
 import { saveAs } from 'file-saver';
 
 import {
@@ -36,6 +37,7 @@ export class DownloadDialogComponent {
     private static readonly DEFAULT_BIN_HEIGHT = 10;
 
     binView: DistanceBinView;
+    errorMessage = '';
     loading = false;
     totalSize: ContainerSize = { height: undefined, width: undefined };
     treeView: AccessionTreeView;
@@ -82,6 +84,7 @@ export class DownloadDialogComponent {
     }
 
     downloadImage() {
+        this.errorMessage = '';
         this.loading = true;
         setTimeout(() => {
             // Timeout to update progress bar immediately
@@ -93,11 +96,15 @@ export class DownloadDialogComponent {
                     saveAs(blob, 'output.png');
                     this.hide();
                 }
+            }).catch(() => {
+                this.errorMessage = 'Output resolution too high.';
+                this.loading = false;
             });
         }, 200);
     }
 
     hide() {
+        this.errorMessage = '';
         this.loading = false;
         this.visible = false;
     }

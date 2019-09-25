@@ -34,6 +34,9 @@ import {
 } from '../../directives/fit-window/fit-window.module';
 
 import {
+    MessageModule
+} from 'primeng/message';
+import {
     SharedPipesModule
 } from '../../pipes/shared-pipes.module';
 import {
@@ -97,7 +100,8 @@ import {
         DialogModule,
         SpinnerModule,
         SharedPipesModule,
-        ProgressBarModule
+        ProgressBarModule,
+        MessageModule
     ]
 })
 export class TersectBrowserModule { }

@@ -69,6 +69,14 @@
 
     <p-progressBar *ngIf="loading" mode="indeterminate"></p-progressBar>
 
+    <div>
+        <p-message *ngIf="errorMessage !== ''"
+            styleClass="fade-in"
+            severity="error"
+            text="{{ errorMessage }}">
+        </p-message>
+    </div>
+
     <div style="float: right;">
         <button pButton label="Cancel" class="dialog-small-margin"
             (click)="hide()">
