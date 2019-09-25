@@ -36,8 +36,8 @@ export class ChromosomeSelectorComponent {
     set selectedChromosome(chrom: Chromosome) {
         if (this.plotState.chromosome.name !== chrom.name
             || this.plotState.chromosome.size !== chrom.size) {
-            this.plotState.interval = [1, chrom.size];
             this.plotState.chromosome = chrom;
+            this.plotState.interval = [1, chrom.size];
         }
     }
     get selectedChromosome(): Chromosome {
