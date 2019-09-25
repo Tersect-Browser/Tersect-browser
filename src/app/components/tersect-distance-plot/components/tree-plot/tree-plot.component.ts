@@ -35,6 +35,8 @@ import {
     styleUrls: ['./tree-plot.component.css']
 })
 export class TreePlotComponent extends CanvasPlotElement {
+    private static readonly TREE_CONTAINER_PROPORTION = 0.5;
+
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
@@ -141,5 +143,6 @@ export class TreePlotComponent extends CanvasPlotElement {
         treeView.containerSize = this.getContainerSize();
         treeView.textSize = this.plotCreator.binHeight;
         treeView.orderedAccessions = this.plotState.orderedAccessions;
+        treeView.containerProportion = TreePlotComponent.TREE_CONTAINER_PROPORTION;
     }
 }

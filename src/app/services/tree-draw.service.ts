@@ -35,11 +35,6 @@ export class TreeDrawService {
     static readonly TREE_LINE_DASH_WIDTH = 0.1;
     static readonly TREE_LINE_WIDTH = 0.1;
 
-    /* Proportion of the width of the plot taken up by accession trees. This
-     * should be half of the screen by default.
-     */
-    static readonly TREE_PLOT_PROPORTION = 0.5;
-
     draw(treeView: AccessionTreeView, offsetX: number, offsetY: number,
          targetCanvas?: HTMLCanvasElement) {
         if (treeView.redrawRequired) {
@@ -276,7 +271,7 @@ export class TreeDrawService {
                            treeView.textSize);
         } else {
             width = ceilTo(treeView.containerSize.width
-                           * TreeDrawService.TREE_PLOT_PROPORTION,
+                           * treeView.containerProportion,
                            treeView.textSize);
         }
         treeView.offscreenCanvas.width = width;

@@ -21,6 +21,11 @@ import {
 
 export class AccessionTreeView {
     /**
+     * Default proportion of the container taken up by the tree image.
+     */
+    static readonly DEFAULT_CONTAINER_PROPORTION = 1;
+
+    /**
      * Default tree container view width in pixels.
      */
     static readonly DEFAULT_CONTAINER_WIDTH = 600;
@@ -44,6 +49,7 @@ export class AccessionTreeView {
     private _accessionStyle: AccessionDisplayStyle;
     private _canvasOffsetY: number;
     private _colorTrackWidth: number;
+    private _containerProportion: number;
     private _containerSize: ContainerSize;
     private _orderedAccessions: string[];
     private _textSize: number;
@@ -65,6 +71,7 @@ export class AccessionTreeView {
                 height: this.accessionCount * this.textSize
             };
         }
+        this.containerProportion = AccessionTreeView.DEFAULT_CONTAINER_PROPORTION;
 
         this.accessionStyle = 'tree_linear';
         this.canvasOffsetY = 0;
@@ -125,6 +132,16 @@ export class AccessionTreeView {
     }
     get colorTrackWidth(): number {
         return this._colorTrackWidth;
+    }
+
+    set containerProportion(containerProportion: number) {
+        if (isNullOrUndefined(this._containerProportion)
+            || containerProportion !== this._containerProportion) {
+            this._containerProportion = containerProportion;
+        }
+    }
+    get containerProportion(): number {
+        return this._containerProportion;
     }
 
     set containerSize(containerSize: ContainerSize) {
