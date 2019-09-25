@@ -70,7 +70,7 @@ export class TreeDrawService {
 
     getImageSize(treeView: AccessionTreeView): ContainerSize {
         if (treeView.redrawRequired) {
-            this.generateTree(treeView);
+            this.updateCanvasWidth(treeView);
         }
         return {
             width: treeView.offscreenCanvas.width,
