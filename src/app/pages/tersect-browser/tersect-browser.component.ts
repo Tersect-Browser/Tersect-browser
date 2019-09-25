@@ -114,6 +114,11 @@ export class TersectBrowserComponent implements OnInit {
         });
     }
 
+    isDownloadReady(): boolean {
+        return this.plotState.plotLoadMessage !== ''
+               || this.plotState.errorMessages.size > 0;
+    }
+
     isZoomMax(): boolean {
         return this.plotZoom.isZoomMax();
     }

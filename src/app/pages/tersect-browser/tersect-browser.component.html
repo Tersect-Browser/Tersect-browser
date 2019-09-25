@@ -39,6 +39,7 @@
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
         <button pButton label="Download" icon="fa fa-download"
+            [disabled]="isDownloadReady()"
             (click)="downloadDialog.show()">
         </button>
         <app-download-dialog #downloadDialog></app-download-dialog>
