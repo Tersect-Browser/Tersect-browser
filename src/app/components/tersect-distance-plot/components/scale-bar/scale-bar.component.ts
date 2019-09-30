@@ -59,6 +59,7 @@ export class ScaleBarComponent extends CanvasPlotElement {
             this.storedScaleView = new ScaleView(this.plotState.interval,
                                                  this.plotState.binsize,
                                                  this.plotCreator.binWidth,
+                                                 this.guiMargins.top,
                                                  this.getContainerSize());
         }
         this.updateScaleView(this.storedScaleView);

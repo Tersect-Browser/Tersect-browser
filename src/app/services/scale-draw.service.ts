@@ -21,10 +21,13 @@ interface ScaleTick {
     providedIn: 'root'
 })
 export class ScaleDrawService {
-    static readonly GUI_SCALE_COLOR = '#327e04';
-    static readonly GUI_SCALE_FONT = 'Arial';
-    static readonly GUI_SCALE_FONT_SIZE = 13;
-    static readonly GUI_SCALE_TICK_BP_DISTANCES = [
+    static readonly MAJOR_TICK_PROPORTION = 0.25;
+    static readonly MINOR_TICK_PROPORTION = 0.12;
+    static readonly TEXT_SIZE_PROPORTION = 0.6;
+
+    static readonly SCALE_COLOR = '#327e04';
+    static readonly SCALE_FONT = 'Arial';
+    static readonly SCALE_TICK_BP_DISTANCES = [
         2500, 5000, 10000,
         25000, 50000, 100000,
         250000, 500000, 1000000,
@@ -32,12 +35,10 @@ export class ScaleDrawService {
     ];
 
     /**
-     * Optimal large tick distance in pixels. Ticks will be drawn as close to
-     * this distance as possible using one of the GUI_SCALE_TICK_BP_DISTANCES.
+     * Example maximum width text label on the scale, used for positining.
      */
-    static readonly GUI_TICK_DISTANCE = 120;
-
-    static readonly GUI_TICK_LENGTH = 6;
+    private static readonly MAX_WIDTH_SCALE_LABEL = '250.25 Mbp';
+    private static readonly MAX_WIDTH_SCALE_LABEL_MARGIN = 1.5;
 
     draw(scaleView: ScaleView, offsetX: number, offsetY: number,
          targetCanvas: HTMLCanvasElement) {
@@ -46,9 +47,7 @@ export class ScaleDrawService {
     }
 
     private drawAllTicks(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
-        const tickBpDistance = findClosest(ScaleDrawService.GUI_TICK_DISTANCE
-                                           * scaleView.bpPerPixel,
-                                           ScaleDrawService.GUI_SCALE_TICK_BP_DISTANCES);
+        const tickBpDistance = this.getTickBpDistance(scaleView, ctx);
         const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
 
         this.drawBaseline(scaleView, ctx);
@@ -113,8 +112,10 @@ export class ScaleDrawService {
                        + tick.position - scaleView.interval[0])
                       / scaleView.bpPerPixel;
         const tickSize = tick.type === 'major'
-                         ? ScaleDrawService.GUI_TICK_LENGTH
-                         : ScaleDrawService.GUI_TICK_LENGTH / 2;
+                         ? scaleView.scaleBarHeight
+                           * ScaleDrawService.MAJOR_TICK_PROPORTION
+                         : scaleView.scaleBarHeight
+                           * ScaleDrawService.MINOR_TICK_PROPORTION;
         ctx.beginPath();
         ctx.moveTo(tickX, ctx.canvas.height - 1);
         ctx.lineTo(tickX, ctx.canvas.height - tickSize - 1);
@@ -160,19 +161,39 @@ export class ScaleDrawService {
         const effectiveWidth = canvasWidth - offsetX;
         ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
 
-        ctx.strokeStyle = ScaleDrawService.GUI_SCALE_COLOR;
+        ctx.strokeStyle = ScaleDrawService.SCALE_COLOR;
         ctx.lineWidth = 1;
 
         ctx.textBaseline = 'top';
         ctx.textAlign = 'center';
-        ctx.font = formatCanvasFont(ScaleDrawService.GUI_SCALE_FONT_SIZE,
-                                    ScaleDrawService.GUI_SCALE_FONT);
+        ctx.font = formatCanvasFont(this.getFontSize(scaleView),
+                                    ScaleDrawService.SCALE_FONT);
 
         this.drawAllTicks(scaleView, ctx);
 
         // Hide scale over labels
         ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
                       offsetX, canvasHeight);
+    }
+
+    private getFontSize(scaleView: ScaleView): number {
+        return scaleView.scaleBarHeight
+               * ScaleDrawService.TEXT_SIZE_PROPORTION;
+    }
+
+    /**
+     * Get the optimum distance between major ticks in terms of base pairs.
+     * This is the predicted width of the largest allowable labels
+     * (plus a margin) rounded to nearest GUI_SCALE_TICK_BP_DISTANCES.
+     * Ticks will be drawn as close to this distance as possible.
+     */
+    private getTickBpDistance(scaleView: ScaleView,
+                              ctx: CanvasRenderingContext2D): number {
+        const maxLabel = ctx.measureText(ScaleDrawService.MAX_WIDTH_SCALE_LABEL);
+        return findClosest(maxLabel.width
+                           * ScaleDrawService.MAX_WIDTH_SCALE_LABEL_MARGIN
+                           * scaleView.bpPerPixel,
+                           ScaleDrawService.SCALE_TICK_BP_DISTANCES);
     }
 
     private updateCanvas(scaleView: ScaleView,

@@ -11,12 +11,14 @@ export class ScaleView {
     containerSize: ContainerSize;
     interval: number[];
     plotPosition: PlotPosition = { x: 0, y: 0 };
+    scaleBarHeight: number;
 
     constructor(interval: number[], binsize: number, binWidth: number,
-                containerSize: ContainerSize) {
+                scaleBarHeight: number, containerSize: ContainerSize) {
         this.interval = interval;
         this.binsize = binsize;
         this.binWidth = binWidth;
+        this.scaleBarHeight = scaleBarHeight;
         this.containerSize = containerSize;
     }
 
