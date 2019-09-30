@@ -65,7 +65,7 @@ export class TreeDrawService {
 
     getImageSize(treeView: AccessionTreeView): ContainerSize {
         if (treeView.redrawRequired) {
-            this.updateCanvasWidth(treeView);
+            this.updateOffscreenCanvasWidth(treeView);
         }
         return {
             width: treeView.offscreenCanvas.width,
@@ -179,7 +179,7 @@ export class TreeDrawService {
     }
 
     private generateTree(treeView: AccessionTreeView) {
-        this.updateCanvasWidth(treeView);
+        this.updateOffscreenCanvasWidth(treeView);
         const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
                                                       .getContext('2d');
         // Draw background
@@ -262,7 +262,7 @@ export class TreeDrawService {
         }
     }
 
-    private updateCanvasWidth(treeView: AccessionTreeView) {
+    private updateOffscreenCanvasWidth(treeView: AccessionTreeView) {
         const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
                                                       .getContext('2d');
         let width: number;
