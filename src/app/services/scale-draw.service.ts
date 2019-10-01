@@ -60,7 +60,8 @@ export class ScaleDrawService {
 
     getImageSize(scaleView: ScaleView): ContainerSize {
         return {
-            width: scaleView.bpToPixelPosition(scaleView.interval[1]),
+            width: scaleView.bpToPixelPosition(ceilTo(scaleView.interval[1],
+                                                      scaleView.binsize)) + 1,
             height: scaleView.scaleBarHeight
         };
     }
@@ -80,21 +81,22 @@ export class ScaleDrawService {
 
         // End tick
         this.drawScaleTick(scaleView, ctx, {
-            position: scaleView.interval[1],
+            position: ceilTo(scaleView.interval[1], scaleView.binsize),
             type: 'major',
             useLabel: false
-        });
+        }, -1);
 
         this.drawMajorTicks(scaleView, ctx, tickBpDistance, unit);
         this.drawMinorTicks(scaleView, ctx, tickBpDistance / 5);
     }
 
     private drawBaseline(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
-        const endX = scaleView.bpToPixelPosition(scaleView.interval[1]);
+        const endX = scaleView.bpToPixelPosition(ceilTo(scaleView.interval[1],
+                                                        scaleView.binsize));
         const baselinePos = ctx.canvas.height - 1;
         ctx.beginPath();
         ctx.moveTo(0, baselinePos);
-        ctx.lineTo(endX, baselinePos);
+        ctx.lineTo(endX - 1, baselinePos);
         ctx.stroke();
     }
 
@@ -121,8 +123,11 @@ export class ScaleDrawService {
     }
 
     private drawScaleTick(scaleView: ScaleView, ctx: CanvasRenderingContext2D,
-                          tick: ScaleTick) {
-        const tickX = scaleView.bpToPixelPosition(tick.position);
+                          tick: ScaleTick, offsetX?: number) {
+        let tickX = scaleView.bpToPixelPosition(tick.position);
+        if (!isNullOrUndefined(offsetX)) {
+            tickX += offsetX;
+        }
         const tickSize = tick.type === 'major'
                          ? scaleView.scaleBarHeight
                            * ScaleDrawService.MAJOR_TICK_PROPORTION
