@@ -69,10 +69,11 @@ export class DownloadDialogComponent {
 
     set binHeight(binHeight: number) {
         this._binHeight = binHeight;
-        this.binView.binHeight = this._binHeight;
-        this.treeView.textSize = this._binHeight;
-        this.scaleView.scaleBarHeight = this.binHeight
+        this.binView.binHeight = binHeight;
+        this.treeView.textSize = binHeight;
+        this.scaleView.scaleBarHeight = binHeight
                                         * DownloadDialogComponent.SCALE_BAR_HEIGHT;
+        this.scaleView.binWidth = binHeight * this.binView.aspectRatio;
         this.updateTotalSize();
     }
     get binHeight(): number {
