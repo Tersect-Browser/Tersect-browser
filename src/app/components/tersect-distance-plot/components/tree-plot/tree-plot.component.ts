@@ -142,6 +142,7 @@ export class TreePlotComponent extends CanvasPlotElement {
         treeView.canvasOffsetY = this.plotCreator.offsetY;
         treeView.containerSize = this.getContainerSize();
         treeView.textSize = this.plotCreator.binHeight;
+        treeView.colorTrackWidth = this.plotCreator.binHeight;
         treeView.orderedAccessions = this.plotState.orderedAccessions;
         treeView.containerProportion = TreePlotComponent.TREE_CONTAINER_PROPORTION;
     }
