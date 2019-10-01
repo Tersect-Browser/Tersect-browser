@@ -32,15 +32,15 @@ export class ExportPlotService {
                 treeView: AccessionTreeView,
                 scaleView: ScaleView): Promise<Blob> {
         return new Promise(resolve => {
-            const binSize = this.binDraw.getImageSize(binView);
             const treeSize = this.treeDraw.getImageSize(treeView);
             const scaleSize = this.scaleDraw.getImageSize(scaleView);
+            const totalSize = this.getTotalSize(binView, treeView, scaleView);
 
             const fullCanvas = document.createElement('canvas');
             const fullCtx: CanvasRenderingContext2D = fullCanvas.getContext('2d');
 
-            fullCanvas.width = binSize.width + treeSize.width;
-            fullCanvas.height = binSize.height + scaleSize.height;
+            fullCanvas.width = totalSize.width;
+            fullCanvas.height = totalSize.height;
 
             fullCtx.putImageData(this.treeDraw.getImageData(treeView),
                                  0, scaleSize.height);
@@ -65,8 +65,8 @@ export class ExportPlotService {
         const treeSize = this.treeDraw.getImageSize(treeView);
         const scaleSize = this.scaleDraw.getImageSize(scaleView);
         return {
-            width: binSize.width + treeSize.width,
-            height: binSize.height + scaleSize.height
+            width: Math.ceil(binSize.width + treeSize.width),
+            height: Math.floor(binSize.height + scaleSize.height)
         };
     }
 }
