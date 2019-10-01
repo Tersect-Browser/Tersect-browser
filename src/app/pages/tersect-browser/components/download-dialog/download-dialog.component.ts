@@ -19,6 +19,9 @@ import {
     DistanceBinView
 } from '../../../../models/DistanceBinView';
 import {
+    ScaleView
+} from '../../../../models/ScaleView';
+import {
     isNullOrUndefined
 } from '../../../../utils/utils';
 import {
@@ -36,10 +39,16 @@ import {
 export class DownloadDialogComponent {
     private static readonly DEFAULT_BIN_HEIGHT = 10;
 
+    /**
+     * Scale bar height as proportion of bin height.
+     */
+    private static readonly SCALE_BAR_HEIGHT = 1.25;
+
     binView: DistanceBinView;
     errorMessage = '';
     loading = false;
     totalSize: ContainerSize = { height: undefined, width: undefined };
+    scaleView: ScaleView;
     treeView: AccessionTreeView;
     visible = false;
 
@@ -62,6 +71,8 @@ export class DownloadDialogComponent {
         this._binHeight = binHeight;
         this.binView.binHeight = this._binHeight;
         this.treeView.textSize = this._binHeight;
+        this.scaleView.scaleBarHeight = this.binHeight
+                                        * DownloadDialogComponent.SCALE_BAR_HEIGHT;
         this.updateTotalSize();
     }
     get binHeight(): number {
@@ -89,7 +100,8 @@ export class DownloadDialogComponent {
         setTimeout(() => {
             // Timeout to update progress bar immediately
             const imageData = this.exportPlotService.exportImage(this.binView,
-                                                                 this.treeView);
+                                                                 this.treeView,
+                                                                 this.scaleView);
             imageData.then(blob => {
                 if (this.loading) {
                     this.loading = false;
@@ -124,11 +136,16 @@ export class DownloadDialogComponent {
                                               this.binHeight);
         this.treeView.accessionDictionary = this.plotState.accessionDictionary;
         this.treeView.accessionStyle = this.accessionStyle;
+        this.scaleView = new ScaleView(this.plotState.interval,
+                                       this.plotState.binsize,
+                                       this.binHeight * this.binView.aspectRatio,
+                                       this.binHeight * DownloadDialogComponent.SCALE_BAR_HEIGHT);
         this.updateTotalSize();
     }
 
     private updateTotalSize() {
         this.totalSize = this.exportPlotService.getTotalSize(this.binView,
-                                                             this.treeView);
+                                                             this.treeView,
+                                                             this.scaleView);
     }
 }
