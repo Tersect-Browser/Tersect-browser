@@ -81,7 +81,8 @@ export class ScaleDrawService {
 
         // End tick
         this.drawScaleTick(scaleView, ctx, {
-            position: ceilTo(scaleView.interval[1], scaleView.binsize),
+            position: ceilTo(scaleView.interval[1] - scaleView.interval[0] + 1,
+                             scaleView.binsize) + scaleView.interval[0],
             type: 'major',
             useLabel: false
         }, -1);
@@ -91,12 +92,12 @@ export class ScaleDrawService {
     }
 
     private drawBaseline(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
-        const endX = scaleView.bpToPixelPosition(ceilTo(scaleView.interval[1],
-                                                        scaleView.binsize));
+        const endPos = ceilTo(scaleView.interval[1] - scaleView.interval[0] + 1,
+                              scaleView.binsize) + scaleView.interval[0];
         const baselinePos = ctx.canvas.height - 1;
         ctx.beginPath();
         ctx.moveTo(0, baselinePos);
-        ctx.lineTo(endX - 1, baselinePos);
+        ctx.lineTo(scaleView.bpToPixelPosition(endPos) - 1, baselinePos);
         ctx.stroke();
     }
 
