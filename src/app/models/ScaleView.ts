@@ -14,7 +14,7 @@ export class ScaleView {
     scaleBarHeight: number;
 
     constructor(interval: number[], binsize: number, binWidth: number,
-                scaleBarHeight: number, containerSize: ContainerSize) {
+                scaleBarHeight: number, containerSize?: ContainerSize) {
         this.interval = interval;
         this.binsize = binsize;
         this.binWidth = binWidth;
@@ -24,5 +24,13 @@ export class ScaleView {
 
     get bpPerPixel(): number {
         return this.binsize / this.binWidth;
+    }
+
+    /**
+     * Convert position in terms of base pairs to position in terms of canvas
+     * pixels.
+     */
+    bpToPixelPosition(bpPosition: number): number {
+        return (bpPosition - this.interval[0]) / this.bpPerPixel;
     }
 }

@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 
 import {
+    ContainerSize
+} from '../components/tersect-distance-plot/tersect-distance-plot.component';
+import {
     ScaleView
 } from '../models/ScaleView';
 import {
     ceilTo,
     findClosest,
     formatCanvasFont,
-    formatPosition
+    formatPosition,
+    isNullOrUndefined
 } from '../utils/utils';
 
 interface ScaleTick {
@@ -46,6 +50,21 @@ export class ScaleDrawService {
         this.drawPositionScale(scaleView, offsetX, offsetY, targetCanvas);
     }
 
+    getImageData(scaleView: ScaleView): ImageData {
+        const offscreenCanvas = document.createElement('canvas');
+        this.draw(scaleView, 0, 0, offscreenCanvas);
+        const ctx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
+        return ctx.getImageData(0, 0, offscreenCanvas.width,
+                                offscreenCanvas.height);
+    }
+
+    getImageSize(scaleView: ScaleView): ContainerSize {
+        return {
+            width: scaleView.bpToPixelPosition(scaleView.interval[1]),
+            height: scaleView.scaleBarHeight
+        };
+    }
+
     private drawAllTicks(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
         const tickBpDistance = this.getTickBpDistance(scaleView, ctx);
         const unit = tickBpDistance < 100000 ? 'kbp' : 'Mbp';
@@ -71,15 +90,10 @@ export class ScaleDrawService {
     }
 
     private drawBaseline(scaleView: ScaleView, ctx: CanvasRenderingContext2D) {
-        const interval = scaleView.interval;
-        const startX = (scaleView.plotPosition.x * scaleView.binsize)
-                       / scaleView.bpPerPixel;
-        const endX = (scaleView.plotPosition.x * scaleView.binsize
-                      + interval[1] - interval[0]) / scaleView.bpPerPixel;
-
+        const endX = scaleView.bpToPixelPosition(scaleView.interval[1]);
         const baselinePos = ctx.canvas.height - 1;
         ctx.beginPath();
-        ctx.moveTo(startX, baselinePos);
+        ctx.moveTo(0, baselinePos);
         ctx.lineTo(endX, baselinePos);
         ctx.stroke();
     }
@@ -108,9 +122,7 @@ export class ScaleDrawService {
 
     private drawScaleTick(scaleView: ScaleView, ctx: CanvasRenderingContext2D,
                           tick: ScaleTick) {
-        const tickX = (scaleView.plotPosition.x * scaleView.binsize
-                       + tick.position - scaleView.interval[0])
-                      / scaleView.bpPerPixel;
+        const tickX = scaleView.bpToPixelPosition(tick.position);
         const tickSize = tick.type === 'major'
                          ? scaleView.scaleBarHeight
                            * ScaleDrawService.MAJOR_TICK_PROPORTION
@@ -126,7 +138,8 @@ export class ScaleDrawService {
 
             // Shifting first label if it does not fit in the viewing area
             const halfLabelWidth = ctx.measureText(label).width / 2;
-            const labelOverflow = tickX - halfLabelWidth;
+            const labelOverflow = tickX - halfLabelWidth
+                                  + this.getPlotScrollOffsetX(scaleView);
             if (labelOverflow < 0) {
                 if (-labelOverflow > halfLabelWidth) {
                     labelX += halfLabelWidth;
@@ -156,10 +169,12 @@ export class ScaleDrawService {
         const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        // Correct for canvas positioning (no scale over label column)
+        // Correct for canvas positioning (no scale over label column),
+        // plot position (horizontal scroll)
         // and canvas pixel positioning (offset by 0.5 by default)
-        const effectiveWidth = canvasWidth - offsetX;
-        ctx.translate(0.5 + canvasWidth - effectiveWidth, 0.5);
+        const fullOffsetX = 0.5 + offsetX + this.getPlotScrollOffsetX(scaleView);
+        const fullOffsetY = 0.5;
+        ctx.translate(fullOffsetX, fullOffsetY);
 
         ctx.strokeStyle = ScaleDrawService.SCALE_COLOR;
         ctx.lineWidth = 1;
@@ -172,8 +187,7 @@ export class ScaleDrawService {
         this.drawAllTicks(scaleView, ctx);
 
         // Hide scale over labels
-        ctx.clearRect(-(canvasWidth - effectiveWidth) - 0.5, 0,
-                      offsetX, canvasHeight);
+        ctx.clearRect(-fullOffsetX, 0, offsetX, canvasHeight);
     }
 
     private getFontSize(scaleView: ScaleView): number {
@@ -196,9 +210,17 @@ export class ScaleDrawService {
                            ScaleDrawService.SCALE_TICK_BP_DISTANCES);
     }
 
+    private getPlotScrollOffsetX(scaleView: ScaleView): number {
+        return scaleView.plotPosition.x * scaleView.binWidth;
+    }
+
     private updateCanvas(scaleView: ScaleView,
                          targetCanvas: HTMLCanvasElement) {
-        targetCanvas.width = scaleView.containerSize.width;
-        targetCanvas.height = scaleView.containerSize.height;
+        if (isNullOrUndefined(scaleView.containerSize)) {
+            targetCanvas.width = this.getImageSize(scaleView).width;
+        } else {
+            targetCanvas.width = scaleView.containerSize.width;
+        }
+        targetCanvas.height = scaleView.scaleBarHeight;
     }
 }
