@@ -23,8 +23,6 @@ import {
     providedIn: 'root'
 })
 export class TreeDrawService {
-    static readonly TREE_BG_COLOR = '#FFFFFF';
-
     static readonly TREE_FONT = 'Courier New';
     static readonly TREE_FONT_COLOR = '#000000';
 
@@ -182,10 +180,6 @@ export class TreeDrawService {
         this.updateOffscreenCanvasWidth(treeView);
         const ctx: CanvasRenderingContext2D = treeView.offscreenCanvas
                                                       .getContext('2d');
-        // Draw background
-        ctx.fillStyle = TreeDrawService.TREE_BG_COLOR;
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
         // Draw labels
         ctx.font = formatCanvasFont(treeView.textSize,
                                     TreeDrawService.TREE_FONT);
