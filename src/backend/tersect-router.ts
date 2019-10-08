@@ -282,7 +282,7 @@ router.route('/query/:datasetId/tree')
                 'query.interval': treeQuery.interval,
                 'query.accessions': treeQuery.accessions,
                 status: 'Collating data...'
-            }).save((saveErr: any) => {
+            }).save(saveErr => {
                 if (saveErr) {
                     return res.status(500).send('Tree creation failed');
                 }
