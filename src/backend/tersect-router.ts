@@ -3,6 +3,8 @@ import {
     spawn
 } from 'child_process';
 import {
+    Request,
+    Response,
     Router
 } from 'express';
 import * as fs from 'fs';
@@ -232,7 +234,7 @@ function randomHash(): string {
     return hash.encode(Math.floor(Math.random() * MAX_VIEW_ID));
 }
 
-function exportView(req, res) {
+function exportView(req: Request, res: Response) {
     const nextId = randomHash();
     // Casting to any to fix compilation bug where the settings are not
     // recognized as a known property
