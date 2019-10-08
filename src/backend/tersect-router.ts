@@ -164,7 +164,7 @@ router.route('/query/:datasetId/dist')
     const reference = distBinQuery.reference;
     const binsize = distBinQuery.binsize;
 
-    writeAccessions(distBinQuery.accessions).then((accFile) => {
+    writeAccessions(distBinQuery.accessions).then(accFile => {
         const tersectCommand = `tersect dist -j ${tsiLocation} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
