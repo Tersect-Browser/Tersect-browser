@@ -269,7 +269,7 @@ router.route('/query/:datasetId/tree')
         'query.accessions': treeQuery.accessions
     };
     NewickTree.findOne(dbQuery)
-                .exec((err, result: NewickTree) => {
+              .exec((err, result: NewickTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
         } else if (isNullOrUndefined(result)) {
