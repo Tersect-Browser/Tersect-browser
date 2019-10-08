@@ -392,11 +392,9 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
         const negative = matrixFiles.slice(positiveMatrixFiles.length,
                                             matrixFiles.length).join(' ');
         const script = path.join(__dirname, 'merge_phylip.py');
-        let mergeCommand: string;
+        let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile}`;
         if (negative.length) {
-            mergeCommand = `${script} ${tsiLocation} ${positive} -n ${negative} -a ${accFile}`;
-        } else {
-            mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile}`;
+            mergeCommand = `${mergeCommand} -n ${negative}`;
         }
         return execPromise(mergeCommand);
     }).then((outputFilename: string) => {
