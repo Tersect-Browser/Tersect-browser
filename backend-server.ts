@@ -7,12 +7,12 @@ import { router as tbRouter } from './src/backend/tersect-router';
 import { router as tgrcRouter } from './src/backend/tgrc-router';
 import { cleanDatabase } from './src/backend/utils/dbutils';
 
-const app = express();
-const port = process.env.PORT || 8060;
-
 const config = JSON.parse(
     fs.readFileSync('./src/backend/config.json').toString()
 );
+
+const app = express();
+const port = process.env.PORT || config.api_port;
 
 const url = `${config.mongo_hostname}:${config.mongo_port}/${config.db_name}`;
 mongoose.set('useNewUrlParser', true);
