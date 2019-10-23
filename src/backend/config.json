@@ -1,6 +1,6 @@
 {
     "mongo_hostname": "mongodb://localhost",
-    "port": 27017,
+    "mongo_port": 27017,
     "db_name": "tersect",
     "local_db_location": "../../local_db",
     "salt": "tersectsalt",

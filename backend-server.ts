@@ -14,7 +14,7 @@ const config = JSON.parse(
     fs.readFileSync('./src/backend/config.json').toString()
 );
 
-const url = `${config.mongo_hostname}:${config.port}/${config.db_name}`;
+const url = `${config.mongo_hostname}:${config.mongo_port}/${config.db_name}`;
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
