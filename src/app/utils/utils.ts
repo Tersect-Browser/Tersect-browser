@@ -123,7 +123,7 @@ export function formatPosition(genomePosition: number,
 }
 
 /**
- * Formats a region string as used by Tersect and tabix.
+ * Formats a region string as used by samtools, Tersect, and tabix.
  */
 export function formatRegion(chromosomeName: string,
                              startPos: number, endPos: number): string {
