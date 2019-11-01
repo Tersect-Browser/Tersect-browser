@@ -6,8 +6,8 @@ export interface AppConfig {
 }
 
 export const TERSECT_BROWSER_CONFIG: AppConfig = {
-    tbApiUrl: 'http://localhost:8060/tbapi',
-    tgrcApiUrl: 'http://localhost:8060/tgrc'
+    tbApiUrl: './tbapi',
+    tgrcApiUrl: './tgrc'
 };
 
 export const APP_CONFIG = new InjectionToken<AppConfig>('app.config');

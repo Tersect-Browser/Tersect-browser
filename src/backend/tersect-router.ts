@@ -54,7 +54,7 @@ import { partitionQuery } from './partitioning';
 export const router = Router();
 
 function loadConfig() {
-    const contents = fs.readFileSync(path.join(__dirname, 'config.json'));
+    const contents = fs.readFileSync(path.join(__dirname, '../../tbconfig.json'));
     return JSON.parse(contents.toString());
 }
 

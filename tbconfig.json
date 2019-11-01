@@ -1,5 +1,5 @@
 {
-    "api_port": "8060",
+    "server_port": "4500",
     "mongo_hostname": "mongodb://localhost",
     "mongo_port": 27017,
     "db_name": "tersect",
