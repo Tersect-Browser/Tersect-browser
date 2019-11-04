@@ -4,7 +4,7 @@ import { SelectItem } from 'primeng/components/common/selectitem';
 
 import {
     GeneTGRC
-} from '../../../backend/models/genetgrc';
+} from '../../../../../backend/src/models/genetgrc';
 import {
     AccessionAlleles,
     TGRCBackendService

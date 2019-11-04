@@ -34,15 +34,15 @@ import {
 import {
     DistanceBinQuery,
     DistanceBins
-} from '../app/models/DistanceBins';
+} from '../../frontend/src/app/models/DistanceBins';
 import {
     TreeDatabaseQuery,
     TreeQuery
-} from '../app/models/PheneticTree';
+} from '../../frontend/src/app/models/PheneticTree';
 import {
     formatRegion,
     isNullOrUndefined
-} from '../app/utils/utils';
+} from '../../frontend/src/app/utils/utils';
 
 import { ChromosomeIndex } from './models/chromosomeindex';
 import { Dataset, DatasetPublic } from './models/dataset';
@@ -54,7 +54,7 @@ import { partitionQuery } from './partitioning';
 export const router = Router();
 
 function loadConfig() {
-    const contents = fs.readFileSync(path.join(__dirname, '../../tbconfig.json'));
+    const contents = fs.readFileSync(path.join(__dirname, '../tbconfig.json'));
     return JSON.parse(contents.toString());
 }
 

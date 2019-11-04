@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import {
     DatasetPublic
-} from '../../../backend/models/dataset';
+} from '../../../../../backend/src/models/dataset';
 import {
     TersectBackendService
 } from '../../services/tersect-backend.service';

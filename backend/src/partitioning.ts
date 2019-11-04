@@ -6,7 +6,7 @@
 
 import { execSync } from 'child_process';
 
-import { TreeQuery } from '../app/models/PheneticTree';
+import { TreeQuery } from '../../frontend/src/app/models/PheneticTree';
 
 interface ChromosomePartitions {
     [chromosomeNames: string]: number[];

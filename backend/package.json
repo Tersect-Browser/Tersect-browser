@@ -1,0 +1,28 @@
+{
+    "name": "tersect-browser-backend",
+    "version": "0.9.0",
+    "license": "MIT",
+    "scripts": {
+        "start": "nodemon server.ts"
+    },
+    "private": true,
+    "dependencies": {
+        "cors": "^2.8.4",
+        "express": "^4.16.3",
+        "hashids": "^1.2.2",
+        "mongoose": "^5.3.1",
+        "path": "^0.12.7",
+        "rxjs": "^6.4.0",
+        "tmp": "^0.1.0"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.4",
+        "@types/express": "^4.16.0",
+        "@types/hashids": "^1.0.30",
+        "@types/mongodb": "3.1.10",
+        "@types/mongoose": "^5.5.17",
+        "@types/node": "^12.12.5",
+        "@types/tmp": "^0.1.0",
+        "nodemon": "^1.19.4"
+    }
+}

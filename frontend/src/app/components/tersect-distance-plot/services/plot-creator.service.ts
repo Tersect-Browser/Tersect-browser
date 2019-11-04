@@ -20,7 +20,7 @@ import {
 
 import {
     NewickTree
-} from '../../../../backend/models/newicktree';
+} from '../../../../../../backend/src/models/newicktree';
 import {
     Chromosome
 } from '../../../models/Chromosome';

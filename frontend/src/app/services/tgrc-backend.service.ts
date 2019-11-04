@@ -4,8 +4,8 @@ import { Inject, Injectable } from '@angular/core';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { AccessionTGRC } from '../../backend/models/accessiontgrc';
-import { GeneTGRC } from '../../backend/models/genetgrc';
+import { AccessionTGRC } from '../../../../backend/src/models/accessiontgrc';
+import { GeneTGRC } from '../../../../backend/src/models/genetgrc';
 import { APP_CONFIG, AppConfig } from '../app.config';
 
 export interface AccessionAlleles {

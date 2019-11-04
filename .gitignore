@@ -6,6 +6,7 @@ dist/
 /tmp
 /out-tsc
 *.pyc
+__pycache__/
 
 # local data storage
 /local_db

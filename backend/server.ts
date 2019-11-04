@@ -5,9 +5,9 @@ import * as fs from 'fs';
 import mongoose = require('mongoose');
 import path = require('path');
 
-import { router as tbRouter } from './src/backend/tersect-router';
-import { router as tgrcRouter } from './src/backend/tgrc-router';
-import { cleanDatabase } from './src/backend/utils/dbutils';
+import { router as tbRouter } from './src/tersect-router';
+import { router as tgrcRouter } from './src/tgrc-router';
+import { cleanDatabase } from './src/utils/dbutils';
 
 const config = JSON.parse(
     fs.readFileSync('tbconfig.json').toString()
