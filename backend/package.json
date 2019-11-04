@@ -3,7 +3,8 @@
     "version": "0.9.0",
     "license": "MIT",
     "scripts": {
-        "start": "nodemon server.ts"
+        "start": "nodemon server.ts",
+        "lint": "tslint --project ."
     },
     "private": true,
     "dependencies": {
@@ -23,6 +24,7 @@
         "@types/mongoose": "^5.5.17",
         "@types/node": "^12.12.5",
         "@types/tmp": "^0.1.0",
-        "nodemon": "^1.19.4"
+        "nodemon": "^1.19.4",
+        "tslint": "^6.0.0-beta0"
     }
 }
