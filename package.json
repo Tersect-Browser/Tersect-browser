@@ -15,7 +15,10 @@
         "build-frontend": "cd frontend && npm run build",
         "build-backend": "cd backend && npm run build",
         "build": "npm-run-all build-frontend build-backend",
-        "deploy": "cd backend && npm run deploy"
+        "deploy": "cd backend && npm run deploy",
+        "clean-frontend": "cd frontend && npm run clean",
+        "clean-backend": "cd backend && npm run clean",
+        "clean": "npm-run-all clean-frontend clean-backend && rimraf node_modules"
     },
     "private": true,
     "repository": {
@@ -31,6 +34,7 @@
     "devDependencies": {
         "@types/node": "^12.12.5",
         "@types/yargs": "^13.0.3",
-        "npm-run-all": "^4.1.5"
+        "npm-run-all": "^4.1.5",
+        "rimraf": "^3.0.0"
     }
 }
