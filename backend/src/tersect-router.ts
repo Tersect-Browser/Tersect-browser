@@ -54,7 +54,7 @@ import { partitionQuery } from './partitioning';
 export const router = Router();
 
 function loadConfig() {
-    const contents = fs.readFileSync(path.join(__dirname, '../tbconfig.json'));
+    const contents = fs.readFileSync(path.join(process.cwd(), 'tbconfig.json'));
     return JSON.parse(contents.toString());
 }
 
@@ -391,7 +391,7 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
                                     .join(' ');
         const negative = matrixFiles.slice(positiveMatrixFiles.length,
                                            matrixFiles.length).join(' ');
-        const script = path.join(__dirname, 'merge_phylip.py');
+        const script = path.join(process.cwd(), 'src/merge_phylip.py');
         let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile}`;
         if (negative.length) {
             mergeCommand = `${mergeCommand} -n ${negative}`;

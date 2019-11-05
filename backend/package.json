@@ -4,7 +4,9 @@
     "license": "MIT",
     "scripts": {
         "start": "nodemon server.ts",
-        "lint": "tslint --project ."
+        "lint": "tslint --project .",
+        "build": "tsc --project .",
+        "deploy": "node ./dist/backend/server.js"
     },
     "private": true,
     "dependencies": {

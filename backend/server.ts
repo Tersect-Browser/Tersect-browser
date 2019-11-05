@@ -10,7 +10,7 @@ import { router as tgrcRouter } from './src/tgrc-router';
 import { cleanDatabase } from './src/utils/dbutils';
 
 const config = JSON.parse(
-    fs.readFileSync('tbconfig.json').toString()
+    fs.readFileSync(path.join(process.cwd(), 'tbconfig.json')).toString()
 );
 
 const app = express();
@@ -32,7 +32,8 @@ app.use('/TersectBrowser/tgrc', tgrcRouter);
 
 cleanDatabase();
 
-app.use('/TersectBrowser', express.static(path.join(__dirname, 'dist')));
+const frontend = express.static(path.join(process.cwd(), '../frontend/dist'));
+app.use('/TersectBrowser', frontend);
 app.listen(port, () => {
     console.log(`Server started on port ${port}`);
 });
