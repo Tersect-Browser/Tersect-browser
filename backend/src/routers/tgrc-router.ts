@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import { isNullOrUndefined } from '../../frontend/src/app/utils/utils';
-import { AccessionTGRC } from './models/accessiontgrc';
-import { GeneTGRC } from './models/genetgrc';
+import { isNullOrUndefined } from '../../../frontend/src/app/utils/utils';
+import { AccessionTGRC } from '../models/accessiontgrc';
+import { GeneTGRC } from '../models/genetgrc';
 
 export const router = Router();
 

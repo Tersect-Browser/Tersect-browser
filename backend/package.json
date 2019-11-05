@@ -3,7 +3,7 @@
     "version": "0.9.0",
     "license": "MIT",
     "scripts": {
-        "start": "nodemon server.ts",
+        "start": "nodemon server-dev.ts",
         "lint": "tslint --project .",
         "build": "tsc --project .",
         "deploy": "node ./dist/backend/server.js"

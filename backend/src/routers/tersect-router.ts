@@ -34,31 +34,25 @@ import {
 import {
     DistanceBinQuery,
     DistanceBins
-} from '../../frontend/src/app/models/DistanceBins';
+} from '../../../frontend/src/app/models/DistanceBins';
 import {
     TreeDatabaseQuery,
     TreeQuery
-} from '../../frontend/src/app/models/PheneticTree';
+} from '../../../frontend/src/app/models/PheneticTree';
 import {
     formatRegion,
     isNullOrUndefined
-} from '../../frontend/src/app/utils/utils';
+} from '../../../frontend/src/app/utils/utils';
 
-import { ChromosomeIndex } from './models/chromosomeindex';
-import { Dataset, DatasetPublic } from './models/dataset';
-import { DBMatrix } from './models/dbmatrix';
-import { NewickTree } from './models/newicktree';
-import { ViewSettings } from './models/viewsettings';
-import { partitionQuery } from './partitioning';
+import { ChromosomeIndex } from '../models/chromosomeindex';
+import { Dataset, DatasetPublic } from '../models/dataset';
+import { DBMatrix } from '../models/dbmatrix';
+import { NewickTree } from '../models/newicktree';
+import { ViewSettings } from '../models/viewsettings';
+import { tbConfig } from '../utils/config';
+import { partitionQuery } from '../utils/partitioning';
 
 export const router = Router();
-
-function loadConfig() {
-    const contents = fs.readFileSync(path.join(process.cwd(), 'tbconfig.json'));
-    return JSON.parse(contents.toString());
-}
-
-const config = loadConfig();
 
 function execPromise(command: string, options = {}) {
     return new Promise((resolve, reject) => {
@@ -230,7 +224,7 @@ router.route('/views/share/:id')
 const MAX_VIEW_ID = 2000000000;
 
 function randomHash(): string {
-    const hash = new Hashids(config['salt']);
+    const hash = new Hashids(tbConfig.salt);
     return hash.encode(Math.floor(Math.random() * MAX_VIEW_ID));
 }
 
@@ -339,7 +333,7 @@ async function writeAccessions(accessions: string[]): Promise<string> {
 
 function generateTree(tsiLocation: string, treeQuery: TreeQuery,
                       dbQuery: TreeDatabaseQuery) {
-    const partitions = partitionQuery(tsiLocation, config['index_partitions'],
+    const partitions = partitionQuery(tsiLocation, tbConfig.index_partitions,
                                       treeQuery);
 
     const dbFiles = partitions.indexed.map(async interval => {
@@ -391,7 +385,7 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
                                     .join(' ');
         const negative = matrixFiles.slice(positiveMatrixFiles.length,
                                            matrixFiles.length).join(' ');
-        const script = path.join(process.cwd(), 'src/merge_phylip.py');
+        const script = path.join(process.cwd(), 'src/scripts/merge_phylip.py');
         let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile}`;
         if (negative.length) {
             mergeCommand = `${mergeCommand} -n ${negative}`;
