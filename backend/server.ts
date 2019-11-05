@@ -1,8 +1,8 @@
 import express = require('express');
 import path = require('path');
 
+import { tbConfig } from '../common/config';
 import { app } from './src/app';
-import { tbConfig } from './src/utils/config';
 
 const frontend = express.static(path.join(process.cwd(), '../frontend/dist'));
 app.use('/TersectBrowser', frontend);

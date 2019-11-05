@@ -44,12 +44,12 @@ import {
     isNullOrUndefined
 } from '../../../frontend/src/app/utils/utils';
 
+import { tbConfig } from '../../../common/config';
 import { ChromosomeIndex } from '../models/chromosomeindex';
 import { Dataset, DatasetPublic } from '../models/dataset';
 import { DBMatrix } from '../models/dbmatrix';
 import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
-import { tbConfig } from '../utils/config';
 import { partitionQuery } from '../utils/partitioning';
 
 export const router = Router();

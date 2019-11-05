@@ -3,9 +3,9 @@ import cors = require('cors');
 import express = require('express');
 import mongoose = require('mongoose');
 
+import { tbConfig } from '../../common/config';
 import { router as tbRouter } from './routers/tersect-router';
 import { router as tgrcRouter } from './routers/tgrc-router';
-import { tbConfig } from './utils/config';
 import { cleanDatabase } from './utils/dbutils';
 
 const url = `${tbConfig.mongo_hostname}:${tbConfig.mongo_port}/${tbConfig.db_name}`;

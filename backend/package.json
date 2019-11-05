@@ -3,10 +3,10 @@
     "version": "0.9.0",
     "license": "MIT",
     "scripts": {
-        "start": "nodemon server-dev.ts",
+        "start": "nodemon server-dev.ts -- --config ../tbconfig.json",
         "lint": "tslint --project .",
         "build": "tsc --project .",
-        "deploy": "node ./dist/backend/server.js"
+        "deploy": "node ./dist/backend/server.js --config ../tbconfig.json"
     },
     "private": true,
     "dependencies": {
@@ -27,6 +27,7 @@
         "@types/node": "^12.12.5",
         "@types/tmp": "^0.1.0",
         "nodemon": "^1.19.4",
+        "ts-node": "^8.4.1",
         "tslint": "^6.0.0-beta0"
     }
 }
