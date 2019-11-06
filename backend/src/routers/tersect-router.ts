@@ -221,10 +221,11 @@ router.route('/views/share/:id')
     });
 });
 
+const DEFAULT_VIEW_SALT = 'tersectsalt';
 const MAX_VIEW_ID = 2000000000;
 
 function randomHash(): string {
-    const hash = new Hashids(tbConfig.salt);
+    const hash = new Hashids(DEFAULT_VIEW_SALT);
     return hash.encode(Math.floor(Math.random() * MAX_VIEW_ID));
 }
 

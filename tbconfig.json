@@ -5,7 +5,6 @@
     "mongo_port": 27017,
     "db_name": "tersect",
     "local_db_location": "../../local_db",
-    "salt": "tersectsalt",
     "index_partitions": [
         100000000,
         50000000,

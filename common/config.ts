@@ -10,7 +10,6 @@ export interface TersectBrowserConfig {
     mongo_port: number;
     db_name: string;
     local_db_location: string;
-    salt: string;
     index_partitions: number[];
 }
 
