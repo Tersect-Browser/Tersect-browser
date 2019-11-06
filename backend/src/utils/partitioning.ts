@@ -32,7 +32,7 @@ export function partitionQuery(tsiLocation: string,
                                query: TreeQuery): IntervalPartitions {
     // TODO: check if calling this each time affects performance
     const chromosomePartitions = loadChromosomePartitions(tsiLocation,
-                                                           indexPartitions);
+                                                          indexPartitions);
 
     const partitions = partitionInterval({
         start: query.interval[0], end: query.interval[1]
