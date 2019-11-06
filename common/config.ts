@@ -7,7 +7,7 @@ export interface TersectBrowserConfig {
     baseHref?: string;
     mongoHost: string;
     dbName: string;
-    local_db_location: string;
+    localDbPath: string;
     index_partitions: number[];
 }
 

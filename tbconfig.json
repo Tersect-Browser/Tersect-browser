@@ -3,7 +3,7 @@
     "baseHref": "/TersectBrowser/",
     "mongoHost": "mongodb://localhost:27017",
     "dbName": "tersect",
-    "local_db_location": "../../local_db",
+    "localDbPath": "../../local_db",
     "index_partitions": [
         100000000,
         50000000,

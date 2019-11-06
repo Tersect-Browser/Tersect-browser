@@ -73,4 +73,4 @@ def invert_dict(d):
     return dict(zip(d.values(), d.keys()))
 
 def get_db_location(cfg):
-    return os.path.realpath(cfg['local_db_location'])
+    return os.path.realpath(cfg['localDbPath'])

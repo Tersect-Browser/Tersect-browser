@@ -113,7 +113,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
     if verbose:
         print("Adding dataset '%s'..." % dataset_id)
 
-    local_db_location = os.path.realpath(cfg['local_db_location'])
+    local_db_location = os.path.realpath(cfg['localDbPath'])
     if not os.path.exists(local_db_location):
         os.makedirs(local_db_location)
 
