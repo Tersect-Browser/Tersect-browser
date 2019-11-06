@@ -4,7 +4,6 @@ import yargs = require('yargs');
 
 export interface TersectBrowserConfig {
     server_port: number;
-    server_port_dev?: number;
     baseHref?: string;
     mongo_hostname: string;
     mongo_port: number;
