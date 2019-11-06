@@ -4,13 +4,21 @@ const fs = require('fs');
 const path = require('path');
 const yargs = require('yargs');
 
-const argv = yargs.option('port', {
-    type: 'number',
-    description: 'development server port',
-    default: 4200
+const argv = yargs.options({
+    'port': {
+        type: 'number',
+        description: 'development server port',
+        default: 4200
+    },
+    'config': {
+        alias: 'c',
+        type: 'string',
+        description: 'configuration file',
+        default: '../tbconfig.json'
+    }
 }).argv;
 
-const configFile = path.join(__dirname, '../../tbconfig.json');
+const configFile = path.join(process.cwd(), argv.config);
 const tbConfig = JSON.parse(fs.readFileSync(configFile).toString());
 
 const baseHref = tbConfig.baseHref || '/';

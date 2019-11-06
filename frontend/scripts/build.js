@@ -2,8 +2,16 @@
 const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const yargs = require('yargs');
 
-const configFile = path.join(__dirname, '../../tbconfig.json');
+const argv = yargs.option('config', {
+    alias: 'c',
+    type: 'string',
+    description: 'configuration file',
+    default: '../tbconfig.json'
+}).argv;
+
+const configFile = path.join(process.cwd(), argv.config);
 const tbConfig = JSON.parse(fs.readFileSync(configFile).toString());
 
 const baseHref = tbConfig.baseHref || '/';
