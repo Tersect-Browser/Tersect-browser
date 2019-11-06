@@ -334,7 +334,7 @@ async function writeAccessions(accessions: string[]): Promise<string> {
 
 function generateTree(tsiLocation: string, treeQuery: TreeQuery,
                       dbQuery: TreeDatabaseQuery) {
-    const partitions = partitionQuery(tsiLocation, tbConfig.index_partitions,
+    const partitions = partitionQuery(tsiLocation, tbConfig.indexPartitions,
                                       treeQuery);
 
     const dbFiles = partitions.indexed.map(async interval => {

@@ -8,7 +8,7 @@ export interface TersectBrowserConfig {
     mongoHost: string;
     dbName: string;
     localDbPath: string;
-    index_partitions: number[];
+    indexPartitions: number[];
 }
 
 const argv = yargs.option('config', {

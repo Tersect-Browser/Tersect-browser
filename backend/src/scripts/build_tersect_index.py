@@ -106,12 +106,12 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
     if not os.path.exists(distmap_db_location):
         os.makedirs(distmap_db_location)
 
-    cfg['index_partitions'].sort()
+    cfg['indexPartitions'].sort()
     for chrom in chromosomes:
         if verbose:
             print('Generating indices for %s' % chrom['name'])
         existing_partitions = []
-        for part_size in cfg['index_partitions']:
+        for part_size in cfg['indexPartitions']:
             if part_size < chrom['size']:
                 generate_partition_indices(cfg, dataset_id, tsi_file,
                                            matrices, chrom, part_size,
