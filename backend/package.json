@@ -5,7 +5,7 @@
     "scripts": {
         "start": "nodemon server-dev.ts -- --config ../tbconfig.json",
         "lint": "tslint --project .",
-        "build": "tsc --project .",
+        "build": "tsc --project . && ncp src/scripts dist/backend/src/scripts",
         "deploy": "node ./dist/backend/server.js --config ../tbconfig.json",
         "clean": "rimraf dist/ node_modules/"
     },
@@ -27,6 +27,7 @@
         "@types/mongoose": "^5.5.17",
         "@types/node": "^12.12.5",
         "@types/tmp": "^0.1.0",
+        "ncp": "^2.0.0",
         "nodemon": "^1.19.4",
         "rimraf": "^3.0.0",
         "ts-node": "^8.4.1",
