@@ -9,7 +9,7 @@ import { router as tbRouter } from './routers/tersect-router';
 import { router as tgrcRouter } from './routers/tgrc-router';
 import { cleanDatabase } from './utils/dbutils';
 
-const mongoUrl = `${tbConfig.mongo_hostname}:${tbConfig.mongo_port}/${tbConfig.db_name}`;
+const mongoUrl = `${tbConfig.mongoHost}/${tbConfig.db_name}`;
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);

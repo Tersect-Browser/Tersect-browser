@@ -1,8 +1,7 @@
 {
     "serverPort": 4500,
     "baseHref": "/TersectBrowser/",
-    "mongo_hostname": "mongodb://localhost",
-    "mongo_port": 27017,
+    "mongoHost": "mongodb://localhost:27017",
     "db_name": "tersect",
     "local_db_location": "../../local_db",
     "index_partitions": [
