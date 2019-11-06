@@ -11,7 +11,9 @@ const argv = yargs.option('config', {
     default: '../tbconfig.json'
 }).argv;
 
-const configFile = path.join(process.cwd(), argv.config);
+const configFile = path.isAbsolute(argv.config) ? argv.config
+                                                : path.join(process.cwd(),
+                                                            argv.config);
 const tbConfig = JSON.parse(fs.readFileSync(configFile).toString());
 
 const baseHref = tbConfig.baseHref || '/';

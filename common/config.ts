@@ -18,7 +18,9 @@ const argv = yargs.option('config', {
     default: 'tbconfig.json'
 }).argv;
 
-const configFile = path.join(process.cwd(), argv.config);
+const configFile = path.isAbsolute(argv.config) ? argv.config
+                                                : path.join(process.cwd(),
+                                                            argv.config);
 
 if (!fs.existsSync(configFile)) {
     console.error(`Config file not found! (${configFile})`);
