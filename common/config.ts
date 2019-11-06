@@ -3,7 +3,7 @@ import path = require('path');
 import yargs = require('yargs');
 
 export interface TersectBrowserConfig {
-    server_port: number;
+    serverPort: number;
     baseHref?: string;
     mongo_hostname: string;
     mongo_port: number;
