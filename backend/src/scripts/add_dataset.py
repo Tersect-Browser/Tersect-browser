@@ -15,6 +15,7 @@ from tbutils import abspath, randomHash
 from tersectutils import get_accession_names, rename_accession
 
 # Supporting up to two billion views
+# NOTE: this is meant to match MAX_VIEW_ID in tersect-router.ts
 MAX_VIEW_ID = 2000000000
 
 def add_default_view(cfg, client, dataset_id, accession_infos, groups=None,
