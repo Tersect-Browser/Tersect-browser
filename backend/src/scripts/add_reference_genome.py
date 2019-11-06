@@ -29,7 +29,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
         print("Loading %s as %s" % (reference_file, reference_id))
 
     client = MongoClient(cfg['mongoHost'])
-    chrom_index = client[cfg['db_name']]['chromosomes']
+    chrom_index = client[cfg['dbName']]['chromosomes']
 
     if (chrom_index.find_one({'reference': reference_id}) is not None):
         if force:

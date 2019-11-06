@@ -6,7 +6,7 @@ export interface TersectBrowserConfig {
     serverPort: number;
     baseHref?: string;
     mongoHost: string;
-    db_name: string;
+    dbName: string;
     local_db_location: string;
     index_partitions: number[];
 }

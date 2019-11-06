@@ -21,7 +21,7 @@ MAX_VIEW_ID = 2000000000
 def add_default_view(cfg, client, dataset_id, accession_infos, groups=None,
                      plugins=[]):
     view_id = randomHash(cfg['salt'], MAX_VIEW_ID)
-    views = client[cfg['db_name']]['views']
+    views = client[cfg['dbName']]['views']
     settings = {
         'dataset_id': dataset_id,
         'accession_infos': accession_infos,
@@ -100,7 +100,7 @@ def load_groups(groups_filepath, acc_name_map=None):
 
 def remove_dataset_matrices(cfg, dataset_id):
     client = MongoClient(cfg['mongoHost'])
-    matrices = client[cfg['db_name']]['matrices']
+    matrices = client[cfg['dbName']]['matrices']
     for matrix in matrices.find({'dataset_id': dataset_id}):
         if os.path.isfile(matrix['matrix_file']):
             os.remove(matrix['matrix_file'])
@@ -118,9 +118,9 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
         os.makedirs(local_db_location)
 
     client = MongoClient(cfg['mongoHost'])
-    datasets = client[cfg['db_name']]['datasets']
-    trees = client[cfg['db_name']]['trees']
-    views = client[cfg['db_name']]['views']
+    datasets = client[cfg['dbName']]['datasets']
+    trees = client[cfg['dbName']]['trees']
+    views = client[cfg['dbName']]['views']
 
     existing_dataset = datasets.find_one({'_id': dataset_id})
     if (existing_dataset is not None):

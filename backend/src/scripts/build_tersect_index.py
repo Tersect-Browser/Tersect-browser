@@ -83,7 +83,7 @@ def generate_indices(cfg, dataset_id, tsi_file, force=False, verbose=False):
     if (chromosomes == None):
         return None
     client = MongoClient(cfg['mongoHost'])
-    matrices = client[cfg['db_name']]['matrices']
+    matrices = client[cfg['dbName']]['matrices']
     matrices.create_index([('dataset_id', ASCENDING), ('region', ASCENDING)],
                           unique=True)
 
