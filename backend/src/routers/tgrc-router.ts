@@ -1,6 +1,5 @@
 import { Router } from 'express';
 
-import { isNullOrUndefined } from '../../../frontend/src/app/utils/utils';
 import { AccessionTGRC } from '../models/accessiontgrc';
 import { GeneTGRC } from '../models/genetgrc';
 
@@ -28,10 +27,8 @@ router.route('/genes')
 router.route('/accessions/:gene?/:filter?')
       .get((req, res) => {
     const gene = req.params.gene;
-    const filter = isNullOrUndefined(req.params.filter) ? false
-                                                        : req.params.filter;
-    const query = isNullOrUndefined(gene) ? {}
-                                          : { 'alleles.gene': gene };
+    const filter = req.params.filter || false;
+    const query = { 'alleles.gene': gene };
     const projection = { _id: 0, accession: 1, alleles: 1};
     AccessionTGRC.find(AccessionTGRC.translateAliases(query),
                        AccessionTGRC.translateAliases(projection))
