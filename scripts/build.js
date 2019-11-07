@@ -7,12 +7,13 @@ const argv = yargs.option('config', {
     alias: 'c',
     type: 'string',
     description: 'configuration file',
-    default: '../tbconfig.json'
+    default: 'tbconfig.json'
 }).argv;
 
-const configFilepath = path.resolve(argv.config);
-
-const buildCommand = 'npm run build -- --config ' + configFilepath;
+const configFile = path.isAbsolute(argv.config) ? argv.config
+                                                : path.join(process.cwd(),
+                                                            argv.config);
+const buildCommand = 'npm run build -- --config ' + configFile;
 
 cp.execSync(buildCommand, {
     cwd: path.join(__dirname, '../frontend/'),

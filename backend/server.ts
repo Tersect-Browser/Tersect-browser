@@ -1,8 +1,8 @@
 import express = require('express');
 import path = require('path');
 
-import { tbConfig } from '../common/config';
 import { app } from './src/app';
+import { tbConfig } from './src/load-config';
 
 const frontend = express.static(path.join(__dirname, '../../../frontend/dist'));
 app.use(tbConfig.baseHref || '/', frontend);

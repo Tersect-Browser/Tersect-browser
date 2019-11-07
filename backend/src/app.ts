@@ -4,7 +4,7 @@ import express = require('express');
 import mongoose = require('mongoose');
 import url = require('url');
 
-import { tbConfig } from '../../common/config';
+import { tbConfig } from './load-config';
 import { router as tbRouter } from './routers/tersect-router';
 import { router as tgrcRouter } from './routers/tgrc-router';
 import { cleanDatabase } from './utils/dbutils';

@@ -44,7 +44,7 @@ import {
     isNullOrUndefined
 } from '../../../frontend/src/app/utils/utils';
 
-import { tbConfig } from '../../../common/config';
+import { tbConfig } from '../load-config';
 import { ChromosomeIndex } from '../models/chromosomeindex';
 import { Dataset, DatasetPublic } from '../models/dataset';
 import { DBMatrix } from '../models/dbmatrix';

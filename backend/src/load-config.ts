@@ -2,14 +2,7 @@ import * as fs from 'fs';
 import path = require('path');
 import yargs = require('yargs');
 
-export interface TersectBrowserConfig {
-    serverPort: number;
-    baseHref?: string;
-    mongoHost: string;
-    dbName: string;
-    localDbPath: string;
-    indexPartitions: number[];
-}
+import { TersectBrowserConfig } from '../../common/config';
 
 const argv = yargs.option('config', {
     alias: 'c',

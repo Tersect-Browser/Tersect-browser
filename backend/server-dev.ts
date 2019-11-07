@@ -1,5 +1,5 @@
-import { tbConfig } from '../common/config';
 import { app } from './src/app';
+import { tbConfig } from './src/load-config';
 
 const port = process.env.PORT || tbConfig.serverPort;
 app.set('port', port);
