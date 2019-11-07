@@ -5,8 +5,7 @@
     "scripts": {
         "start": "nodemon server-dev.ts -- --config ../tbconfig.json",
         "lint": "tslint --project .",
-        "build": "tsc --project . && ncp src/scripts dist/backend/src/scripts",
-        "deploy": "node ./dist/backend/server.js --config ../tbconfig.json",
+        "build": "tsc --project . && ncp src/scripts ../dist/src/scripts && ncp node_modules ../dist/node_modules",
         "clean": "rimraf dist/ node_modules/"
     },
     "private": true,
