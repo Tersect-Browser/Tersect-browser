@@ -1,5 +1,5 @@
+import { TreeNode } from '../../../../../../common/PheneticTree';
 import { isNullOrUndefined, syncSort } from '../../../utils/utils';
-import { TreeNode } from './clustering';
 
 export function parseNewick(newick: string, ladderize = false) {
     const tokens = newickTokens(newick);

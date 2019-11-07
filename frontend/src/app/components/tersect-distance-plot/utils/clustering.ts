@@ -1,8 +1,4 @@
-export type TreeNode = {
-    taxon?: { name: string, genotype?: string },
-    length?: number,
-    children: TreeNode[]
-};
+import { TreeNode } from '../../../../../../common/PheneticTree';
 
 /**
  * Extract am ordered list of accessions from a tree object. The order

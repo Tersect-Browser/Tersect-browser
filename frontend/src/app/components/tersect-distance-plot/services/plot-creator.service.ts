@@ -22,11 +22,11 @@ import {
     NewickTree
 } from '../../../../../../backend/src/models/newicktree';
 import {
+    DistanceBins
+} from '../../../../../../common/DistanceBins';
+import {
     Chromosome
 } from '../../../models/Chromosome';
-import {
-    DistanceBins
-} from '../../../models/DistanceBins';
 import {
     SequenceInterval
 } from '../../../models/SequenceInterval';

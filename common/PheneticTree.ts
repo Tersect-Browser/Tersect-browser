@@ -1,6 +1,8 @@
-import {
-    TreeNode
-} from '../components/tersect-distance-plot/utils/clustering';
+export type TreeNode = {
+    taxon?: { name: string, genotype?: string },
+    length?: number,
+    children: TreeNode[]
+};
 
 export interface TreeQuery {
     chromosomeName: string;

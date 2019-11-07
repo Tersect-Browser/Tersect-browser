@@ -5,10 +5,10 @@ import { Observable, of } from 'rxjs';
 
 import { DatasetPublic } from '../../../../backend/src/models/dataset';
 import { NewickTree } from '../../../../backend/src/models/newicktree';
+import { DistanceBinQuery, DistanceBins } from '../../../../common/DistanceBins';
+import { TreeQuery } from '../../../../common/PheneticTree';
 import { APP_CONFIG, AppConfig } from '../app.config';
 import { Chromosome } from '../models/Chromosome';
-import { DistanceBinQuery, DistanceBins } from '../models/DistanceBins';
-import { TreeQuery } from '../models/PheneticTree';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../pages/tersect-browser/models/BrowserSettings';
 import { isNullOrUndefined } from '../utils/utils';

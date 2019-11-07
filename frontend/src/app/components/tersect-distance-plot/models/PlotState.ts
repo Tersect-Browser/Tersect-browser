@@ -1,17 +1,3 @@
-import {
-    Observable
-} from 'rxjs';
-
-import {
-    Chromosome
-} from '../../../models/Chromosome';
-import {
-    DistanceBins
-} from '../../../models/DistanceBins';
-import {
-    PlotPosition
-} from '../../../models/Plot';
-
 export type AccessionDisplayStyle = 'labels' | 'tree_simple' | 'tree_linear';
 
 export interface AccessionDictionary {

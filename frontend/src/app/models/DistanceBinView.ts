@@ -1,15 +1,15 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
+    DistanceBins
+} from '../../../../common/DistanceBins';
+import {
     ContainerSize
 } from '../components/tersect-distance-plot/tersect-distance-plot.component';
 import {
     deepCopy,
     isNullOrUndefined
 } from '../utils/utils';
-import {
-    DistanceBins
-} from './DistanceBins';
 import {
     PlotPosition
 } from './Plot';

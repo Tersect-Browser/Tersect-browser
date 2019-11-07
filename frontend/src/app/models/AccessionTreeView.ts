@@ -1,6 +1,9 @@
 import * as deepEqual from 'fast-deep-equal';
 
 import {
+    PheneticTree
+} from '../../../../common/PheneticTree';
+import {
     AccessionDictionary,
     AccessionDisplayStyle
 } from '../components/tersect-distance-plot/models/PlotState';
@@ -15,9 +18,6 @@ import {
     deepCopy,
     isNullOrUndefined
 } from '../utils/utils';
-import {
-    PheneticTree
-} from './PheneticTree';
 
 export class AccessionTreeView {
     /**

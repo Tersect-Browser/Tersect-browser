@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import {
-    Chromosome
-} from '../../../models/Chromosome';
-import {
     DistanceBins
-} from '../../../models/DistanceBins';
+} from '../../../../../../common/DistanceBins';
 import {
     PheneticTree
-} from '../../../models/PheneticTree';
+} from '../../../../../../common/PheneticTree';
+import {
+    Chromosome
+} from '../../../models/Chromosome';
 import {
     PlotPosition
 } from '../../../models/Plot';

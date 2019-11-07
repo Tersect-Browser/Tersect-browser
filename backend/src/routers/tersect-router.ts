@@ -34,15 +34,11 @@ import {
 import {
     DistanceBinQuery,
     DistanceBins
-} from '../../../frontend/src/app/models/DistanceBins';
+} from '../../../common/DistanceBins';
 import {
     TreeDatabaseQuery,
     TreeQuery
-} from '../../../frontend/src/app/models/PheneticTree';
-import {
-    formatRegion,
-    isNullOrUndefined
-} from '../../../frontend/src/app/utils/utils';
+} from '../../../common/PheneticTree';
 
 import { tbConfig } from '../load-config';
 import { ChromosomeIndex } from '../models/chromosomeindex';
@@ -51,6 +47,7 @@ import { DBMatrix } from '../models/dbmatrix';
 import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
 import { partitionQuery } from '../utils/partitioning';
+import { formatRegion } from '../utils/utils';
 
 export const router = Router();
 
@@ -83,7 +80,7 @@ router.use('/query/:datasetId', (req, res, next) => {
         if (err) {
             res.send(err);
             return;
-        } else if (isNullOrUndefined(dataset)) {
+        } else if (!dataset) {
             res.status(404).send('Dataset not found');
             return;
         } else {
@@ -120,7 +117,7 @@ router.route('/query/:datasetId/chromosomes')
     }, {'name': 1, 'size': 1, '_id': 0}).exec((err, chroms) => {
         if (err) {
             res.send(err);
-        } else if (isNullOrUndefined(chroms)) {
+        } else if (!chroms) {
             res.status(404).send('Chromosomes not found');
         } else {
             res.json(chroms);
@@ -136,7 +133,7 @@ router.route('/query/:datasetId/gaps/:chromosome')
     }, 'gaps').exec((err, gaps) => {
         if (err) {
             res.send(err);
-        } else if (isNullOrUndefined(gaps)) {
+        } else if (!gaps) {
             res.status(404).send('Chromosome not found');
         } else {
             res.json(gaps['gaps']);
@@ -194,7 +191,7 @@ router.route('/query/:datasetId/dist')
 router.route('/datasets')
       .get((req, res) => {
     Dataset.find().exec((err, r: Dataset[]) => {
-        if (err || isNullOrUndefined(r)) {
+        if (err || !r) {
             res.json(undefined);
         } else {
             const output: DatasetPublic[] = r.map(dataset => {
@@ -213,7 +210,7 @@ router.route('/views/share/:id')
       .get((req, res) => {
     ViewSettings.findOne({ '_id': req.params.id })
                 .exec((err, r) => {
-        if (err || isNullOrUndefined(r)) {
+        if (err || !r) {
             res.json(undefined);
         } else {
             res.json(r['settings']);
@@ -269,7 +266,7 @@ router.route('/query/:datasetId/tree')
               .exec((err, result: NewickTree) => {
         if (err) {
             return res.status(500).send('Tree creation failed');
-        } else if (isNullOrUndefined(result)) {
+        } else if (!result) {
             // Generating new tree
             const phyloTree = new NewickTree({
                 datasetId: req.params.datasetId,

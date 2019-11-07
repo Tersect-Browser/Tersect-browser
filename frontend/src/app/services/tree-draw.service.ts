@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 
 import {
+    TreeNode
+} from '../../../../common/PheneticTree';
+import {
     ContainerSize
 } from '../components/tersect-distance-plot/tersect-distance-plot.component';
 import {
     getTreeDepth,
-    getTreeDepthLinear,
-    TreeNode
+    getTreeDepthLinear
 } from '../components/tersect-distance-plot/utils/clustering';
 import {
     AccessionTreeView
