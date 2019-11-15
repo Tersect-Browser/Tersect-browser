@@ -1,8 +1,8 @@
 'use strict';
 const cp = require('child_process');
-const fs = require('fs');
-const path = require('path');
 const yargs = require('yargs');
+
+const { readJSON, toAbsolutePath } = require('../../common/utils');
 
 const argv = yargs.option('config', {
     alias: 'c',
@@ -11,10 +11,8 @@ const argv = yargs.option('config', {
     default: '../tbconfig.json'
 }).argv;
 
-const configFile = path.isAbsolute(argv.config) ? argv.config
-                                                : path.join(process.cwd(),
-                                                            argv.config);
-const tbConfig = JSON.parse(fs.readFileSync(configFile).toString());
+const configFile = toAbsolutePath(argv.config);
+const tbConfig = readJSON(configFile);
 
 const baseHref = tbConfig.baseHref || '/';
 const deployUrl = baseHref;

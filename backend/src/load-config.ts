@@ -1,8 +1,7 @@
-import * as fs from 'fs';
-import path = require('path');
 import yargs = require('yargs');
 
 import { TersectBrowserConfig } from '../../common/config';
+import { readJSON, toAbsolutePath } from '../../common/utils';
 
 const argv = yargs.option('config', {
     alias: 'c',
@@ -11,15 +10,10 @@ const argv = yargs.option('config', {
     default: 'tbconfig.json'
 }).argv;
 
-const configFile = path.isAbsolute(argv.config) ? argv.config
-                                                : path.join(process.cwd(),
-                                                            argv.config);
+const configFile = toAbsolutePath(argv.config);
+export const tbConfig: TersectBrowserConfig = readJSON(configFile);
 
-if (!fs.existsSync(configFile)) {
-    console.error(`Config file not found! (${configFile})`);
+if (!tbConfig) {
+    console.error(`Config file could not be read! (${configFile})`);
     process.exit(1);
 }
-
-export const tbConfig: TersectBrowserConfig = JSON.parse(
-    fs.readFileSync(configFile).toString()
-);

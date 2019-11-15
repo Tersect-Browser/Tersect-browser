@@ -1,10 +1,11 @@
 'use strict';
-const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+const { readJSON } = require('../../common/utils');
+
 const configFile = path.join(__dirname, '../../tbconfig.json');
-const tbConfig = JSON.parse(fs.readFileSync(configFile).toString());
+const tbConfig = readJSON(configFile);
 const devPort = process.env.PORT || tbConfig.serverPort;
 
 const baseHref = tbConfig.baseHref || '/';

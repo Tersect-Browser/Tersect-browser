@@ -3,6 +3,8 @@ const cp = require('child_process');
 const path = require('path');
 const yargs = require('yargs');
 
+const { toAbsolutePath } = require('../common/utils');
+
 const argv = yargs.option('config', {
     alias: 'c',
     type: 'string',
@@ -10,9 +12,7 @@ const argv = yargs.option('config', {
     default: 'tbconfig.json'
 }).argv;
 
-const configFile = path.isAbsolute(argv.config) ? argv.config
-                                                : path.join(process.cwd(),
-                                                            argv.config);
+const configFile = toAbsolutePath(argv.config);
 const buildCommand = 'npm run build -- --config ' + configFile;
 
 cp.execSync(buildCommand, {
