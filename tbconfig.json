@@ -1,5 +1,5 @@
 {
-    "serverPort": 4200,
+    "serverPort": 4300,
     "baseHref": "/",
     "mongoHost": "mongodb://localhost:27017",
     "dbName": "tersect",
