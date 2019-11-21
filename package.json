@@ -23,7 +23,10 @@
         "type": "git",
         "url": "git+https://tomkurowski@bitbucket.org/tomkurowski/tersect-browser.git"
     },
-    "author": "Tom Kurowski (t.j.kurowski@cranfield.ac.uk)",
+    "author": {
+        "name": "Tomasz Kurowski",
+        "email": "t.j.kurowski@cranfield.ac.uk"
+    },
     "license": "MIT",
     "homepage": "https://bitbucket.org/tomkurowski/tersect-browser#readme",
     "devDependencies": {
