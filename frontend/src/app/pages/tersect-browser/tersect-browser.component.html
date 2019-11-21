@@ -1,4 +1,4 @@
-<div class="p-grid p-justify-between tb-toolbar p-nogutter">
+<div class="p-grid p-justify-between tb-toolbar p-nogutter animation-fade-in">
     <div>
         <div class="input-label-small">Genomes</div>
         <app-accession-style-selector></app-accession-style-selector>
@@ -61,7 +61,7 @@
     </app-accession-tab>
 </p-sidebar>
 
-<div class="plot-container">
+<div class="plot-container animation-fade-in">
     <app-tersect-distance-plot
         (plotMouseClick)="plotClick($event)"
         (plotMouseHover)="tooltip.show($event)"

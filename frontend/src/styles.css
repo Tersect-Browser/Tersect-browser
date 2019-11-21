@@ -11,6 +11,10 @@ html, body {
     width: 1000px;
 }
 
+.animation-fade-in {
+    animation: fade-in 0.2s linear;
+}
+
 .vcenter-wrapper {
     display: flex;
     align-items: center;
