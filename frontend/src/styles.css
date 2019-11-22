@@ -58,7 +58,7 @@ html, body {
 }
 
 .empty-color {
-    background-image: url("assets/nofill.png");
+    background-image: url("assets/images/nofill.png");
     background-size: cover;
 }
 
