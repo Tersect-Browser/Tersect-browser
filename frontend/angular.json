@@ -26,6 +26,7 @@
               "node_modules/font-awesome/css/font-awesome.css",
               "node_modules/primeng/resources/primeng.min.css",
               "themes/south-street/theme.css",
+              "src/assets/icons/tbicons.css",
               "src/styles.css"
             ],
             "scripts": []

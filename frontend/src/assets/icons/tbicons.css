@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'TersectBrowserIcons';
+    src: url('./tbicons.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.tb-icon {
+    display: inline-block;
+    font: normal normal normal 14px/1 TersectBrowserIcons;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.tb-tree:before {
+    content: "\e000";
+}
