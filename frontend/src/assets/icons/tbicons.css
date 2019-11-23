@@ -17,3 +17,7 @@
 .tb-tree:before {
     content: "\e000";
 }
+
+.tb-tree-simple:before {
+    content: "\e001";
+}
