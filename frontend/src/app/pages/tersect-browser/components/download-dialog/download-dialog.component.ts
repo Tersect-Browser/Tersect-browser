@@ -106,7 +106,7 @@ export class DownloadDialogComponent {
             imageData.then(blob => {
                 if (this.loading) {
                     this.loading = false;
-                    saveAs(blob, 'output.png');
+                    saveAs(blob, this.formatOutputFilename());
                     this.hide();
                 }
             }).catch(() => {
@@ -125,6 +125,12 @@ export class DownloadDialogComponent {
     show() {
         this.prepareViews();
         this.visible = true;
+    }
+
+    private formatOutputFilename(extension = 'png'): string {
+        const chromosome = this.plotState.chromosome.name;
+        const interval = this.plotState.interval;
+        return `${chromosome}_${interval[0]}-${interval[1]}.${extension}`;
     }
 
     private prepareViews() {
