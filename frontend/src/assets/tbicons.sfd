@@ -1,27 +1,26 @@
 SplineFontDB: 3.0
-FontName: Untitled1
-FullName: Untitled1
-FamilyName: Untitled1
+FontName: TersectBrowserIcons
+FullName: TersectBrowserIcons
+FamilyName: TersectBrowserIcons
 Weight: Regular
-Copyright: Copyright (c) 2019, Tom Kurowski
-UComments: "2019-11-22: Created with FontForge (http://fontforge.org)"
+Copyright: Copyright (c) 2019, Tomasz Kurowski
+UComments: "2019-11-22: Created with FontForge (http://fontforge.org)" 
 Version: 001.000
 ItalicAngle: 0
 UnderlinePosition: -102
 UnderlineWidth: 51
 Ascent: 819
 Descent: 205
-InvalidEm: 0
 LayerCount: 2
-Layer: 0 0 "Back" 1
-Layer: 1 0 "Fore" 0
+Layer: 0 0 "Back"  1
+Layer: 1 0 "Fore"  0
 XUID: [1021 209 331953334 1318383]
 FSType: 0
 OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1574421879
-ModificationTime: 1574448650
+ModificationTime: 1574573001
 PfmFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -46,7 +45,7 @@ DEI: 91125
 Encoding: UnicodeBmp
 Compacted: 1
 UnicodeInterp: none
-NameList: AGL For New Fonts
+NameList: Adobe Glyph List
 DisplaySize: -48
 AntiAlias: 1
 FitToEm: 0
@@ -55,16 +54,18 @@ BeginPrivate: 0
 EndPrivate
 BeginChars: 65536 2
 
-StartChar: uniE000
+StartChar: tree
 Encoding: 57344 57344 0
 Width: 1024
 VWidth: 0
 InSpiro: 1
-Flags: HW
+Flags: W
+HStem: -205 80<754 1006.86> -87 80<484 674> 31 80<754 1006.86> 90 80<264 404> 267 80<484 1006.86> 355 80<1.57003 184> 503 80<654 1006.86> 621 80<264 574> 739 80<654 1021.76>
+VStem: 184 80<170 355 435 621> 404 80<-7 90 170 267> 574 80<583 621 701 739> 674 80<-125 -87 -7 31>
 LayerCount: 2
 Fore
 SplineSet
-989 819 m 2
+989 819 m 2xdff8
  992 819 995 819 998 818 c 0
  1002 817 1004 816 1007 814 c 0
  1012 811 1016 807 1019 802 c 0
@@ -104,7 +105,7 @@ SplineSet
  264 400 l 1
  264 390 l 1
  264 170 l 1
- 404 170 l 1
+ 404 170 l 1xdff8
  404 302 l 1
  404 312 l 2
  404 315 404 318 404 321 c 0
@@ -148,7 +149,7 @@ SplineSet
  1015 43 1011 39 1007 36 c 0
  1004 34 1001 32 998 31 c 0
  995 31 992 31 989 31 c 2
- 754 31 l 1
+ 754 31 l 1xeff8
  754 -42 l 1
  754 -52 l 1
  754 -125 l 1
@@ -217,7 +218,7 @@ SplineSet
  582 806 586 810 591 814 c 0
  593 815 596 817 599 818 c 0
  602 818 605 819 609 819 c 2
- 989 819 l 2
+ 989 819 l 2xdff8
   Spiro
     989 819 ]
     1007 814 o
@@ -338,20 +339,22 @@ EndSplineSet
 Validated: 1
 EndChar
 
-StartChar: uniE001
+StartChar: tree_simple
 Encoding: 57345 57345 1
 Width: 1024
 VWidth: 0
-Flags: HO
+Flags: H
+HStem: -205 158<759 999.125> 11 156<384 603> 228 158<759 999.125> 336 156<24.8754 228> 661 158<384 999.125>
+VStem: 228 156<167 336 492 661> 603 156<-47 11 167 228>
 LayerCount: 2
 Fore
 SplineSet
-603 304 m 6
+603 304 m 6xde
  603 352 640 386 684 386 c 6
  944 386 l 6
  988 386 1024 351 1024 307 c 4
  1024 263 988 228 944 228 c 6
- 759 228 l 5
+ 759 228 l 5xee
  759 -47 l 5
  944 -47 l 6
  988 -47 1024 -82 1024 -126 c 4
@@ -376,7 +379,7 @@ SplineSet
  384 661 l 5
  384 167 l 5
  603 167 l 5
- 603 304 l 6
+ 603 304 l 6xde
 EndSplineSet
 EndChar
 EndChars
