@@ -140,27 +140,31 @@ export class BinDrawService {
     }
 
     private generatePlotArray(binView: DistanceBinView) {
-        const palette = new GreyscalePalette();
-        const accessionBins = binView.orderedAccessions.map(
+        const palette = GreyscalePalette;
+
+        // First dimension (rows) are accessions, second (cols) are bins.
+        const binMatrix: number[][] = binView.orderedAccessions.map(
             accession => binView.distanceBins.bins[accession]
         );
 
-        const binMaxDistances = this.getMaxDistances(accessionBins);
+        const binMaxDistances = this.getMaxDistances(binMatrix);
 
         const rowNum = binView.rowNum;
         const colNum = binView.colNum;
         binView.imageArray = new Uint8ClampedArray(4 * rowNum * colNum);
 
-        accessionBins.forEach((accessionBin, accessionIndex) => {
-            palette.distanceToColors(accessionBin, binMaxDistances)
-                   .forEach((color, binIndex) => {
-                const pos = 4 * (binIndex + colNum * accessionIndex);
+        for (let row = 0; row < rowNum; row++) {
+            const rowOffset = colNum * row;
+            for (let col = 0; col < colNum; col++) {
+                const color = palette.getDistanceColor(binMatrix[row][col],
+                                                       binMaxDistances[col]);
+                const pos = 4 * (col + rowOffset);
                 binView.imageArray[pos] = color.data[0];
                 binView.imageArray[pos + 1] = color.data[1];
                 binView.imageArray[pos + 2] = color.data[2];
                 binView.imageArray[pos + 3] = color.data[3];
-            });
-        });
+            }
+        }
 
         if (!isNullOrUndefined(binView.sequenceGaps) &&
             !isNullOrUndefined(binView.interval)) {
@@ -173,9 +177,9 @@ export class BinDrawService {
     /**
      * Get an array of maximum distances per bin for a given set of accessions.
      */
-    private getMaxDistances(accessionBins: number[][]): number[] {
-        const binMaxDistances = new Array(accessionBins[0].length).fill(0);
-        accessionBins.forEach(accBin => {
+    private getMaxDistances(binMatrix: number[][]): number[] {
+        const binMaxDistances = new Array(binMatrix[0].length).fill(0);
+        binMatrix.forEach(accBin => {
             accBin.forEach((dist, i) => {
                 if (dist > binMaxDistances[i]) {
                     binMaxDistances[i] = dist;
