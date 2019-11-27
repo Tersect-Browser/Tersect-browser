@@ -49,12 +49,12 @@ export class GreyscalePalette extends DistancePalette {
 
 export class RedPalette extends DistancePalette {
     static palettePixels: ImageData[];
-    constructor(ctx: CanvasRenderingContext2D) {
+    constructor() {
         super();
         if (!RedPalette.palettePixels) {
             RedPalette.palettePixels = [];
             for (let i = 0; i <= DistancePalette.MAX_DISTANCE; i++) {
-                RedPalette.palettePixels[i] = ctx.createImageData(1, 1);
+                RedPalette.palettePixels[i] = new ImageData(1, 1);
                 RedPalette.palettePixels[i].data[0] = 255; // R
                 RedPalette.palettePixels[i].data[1] = 255 - i; // G
                 RedPalette.palettePixels[i].data[2] = 255 - i; // B
