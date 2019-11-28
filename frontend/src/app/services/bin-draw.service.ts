@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import {
-    GreyscalePalette
+    DistancePalette, GreyscalePalette
 } from '../components/tersect-distance-plot/DistancePalette';
 import {
     PlotCreatorService
@@ -140,7 +140,7 @@ export class BinDrawService {
     }
 
     private generatePlotArray(binView: DistanceBinView) {
-        const palette = GreyscalePalette;
+        const palette: DistancePalette = GreyscalePalette;
 
         // First dimension (rows) are accessions, second (cols) are bins.
         const binMatrix: number[][] = binView.orderedAccessions.map(

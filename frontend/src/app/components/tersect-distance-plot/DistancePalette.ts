@@ -1,7 +1,15 @@
 export abstract class DistancePalette {
-    protected static _getDistanceColor(palette: ImageData[],
-                                       distance: number,
-                                       maxDistance: number): ImageData {
+    protected readonly palette: ImageData[];
+
+    constructor() {
+        this.palette = [];
+    }
+
+    abstract getDistanceColor(distance: number, maxDistance: number): ImageData;
+
+    protected _getDistanceColor(palette: ImageData[],
+                                distance: number,
+                                maxDistance: number): ImageData {
         if (maxDistance === 0) {
             return palette[0];
         }
@@ -11,50 +19,30 @@ export abstract class DistancePalette {
     }
 }
 
-export class GreyscalePalette extends DistancePalette {
-    private static readonly COLOR_NUM = 256;
-    private static palette: ImageData[];
+export class InterpolatedPalette extends DistancePalette {
+    constructor(startColor: number[],
+                endColor: number[],
+                levels = 256) {
+        super();
+        for (let i = 0; i < levels; i++) {
+            const endWeight = i / (levels - 1);
 
-    static initialize() {
-        if (!GreyscalePalette.palette) {
-            GreyscalePalette.palette = [];
-            for (let i = 0; i < GreyscalePalette.COLOR_NUM; i++) {
-                GreyscalePalette.palette[i] = new ImageData(1, 1);
-                GreyscalePalette.palette[i].data[0] = 255 - i; // R
-                GreyscalePalette.palette[i].data[1] = 255 - i; // G
-                GreyscalePalette.palette[i].data[2] = 255 - i; // B
-                GreyscalePalette.palette[i].data[3] = 255; // alpha
+            this.palette[i] = new ImageData(1, 1);
+            for (let c = 0; c < 4; c++) {
+                this.palette[i].data[c] = Math.round(
+                    startColor[c] + (endColor[c] - startColor[c]) * endWeight
+                );
             }
         }
     }
 
-    static getDistanceColor(distance: number, maxDistance: number): ImageData {
-        return super._getDistanceColor(GreyscalePalette.palette,
-                                       distance, maxDistance);
+    getDistanceColor(distance: number, maxDistance: number): ImageData {
+        return this._getDistanceColor(this.palette, distance, maxDistance);
     }
 }
-GreyscalePalette.initialize();
 
-export class RedPalette extends DistancePalette {
-    private static readonly COLOR_NUM = 256;
-    private static palette: ImageData[];
+export const GreyscalePalette = new InterpolatedPalette([255, 255, 255, 255],
+                                                        [0, 0, 0, 255]);
 
-    static initialize() {
-        if (!RedPalette.palette) {
-            RedPalette.palette = [];
-            for (let i = 0; i < RedPalette.COLOR_NUM; i++) {
-                RedPalette.palette[i] = new ImageData(1, 1);
-                RedPalette.palette[i].data[0] = 255; // R
-                RedPalette.palette[i].data[1] = 255 - i; // G
-                RedPalette.palette[i].data[2] = 255 - i; // B
-                RedPalette.palette[i].data[3] = 255; // alpha
-            }
-        }
-    }
-
-    static getDistanceColor(distance: number, maxDistance: number): ImageData {
-        return super._getDistanceColor(RedPalette.palette,
-                                       distance, maxDistance);
-    }
-}
-RedPalette.initialize();
+export const RedPalette = new InterpolatedPalette([255, 255, 255, 255],
+                                                  [255, 0, 0, 255]);
