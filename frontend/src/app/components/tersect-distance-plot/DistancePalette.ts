@@ -1,4 +1,4 @@
-import * as convert from 'color-convert';
+import { ColorSpace, convertColorSpace, interpolateColors } from './utils/colors';
 
 export abstract class DistancePalette {
     protected readonly palette: ImageData[];
@@ -20,8 +20,6 @@ export abstract class DistancePalette {
         return palette[colorIndex];
     }
 }
-
-type ColorSpace = 'rgb' | 'hsv' | 'hsl' | 'hwb';
 
 interface InterpolationOptions {
     inputColorSpace?: ColorSpace;
@@ -57,12 +55,7 @@ class InterpolatedPalette extends DistancePalette {
 
         for (let i = 0; i < options.levels; i++) {
             const endWeight = i / (options.levels - 1);
-            let color = [];
-            for (let c = 0; c < 3; c++) {
-                color[c] = Math.round(
-                    startColor[c] + (endColor[c] - startColor[c]) * endWeight
-                );
-            }
+            let color = interpolateColors(startColor, endColor, endWeight);
             color = convertColorSpace(color, options.colorSpace, 'rgb');
             color[3] = 255; // No alpha interpolation
             this.palette[i] = new ImageData(1, 1);
@@ -85,10 +78,3 @@ export const BlueToRedPalette = new InterpolatedPalette([0, 0, 255],
                                                         [255, 0, 0],
                                                         { colorSpace: 'hwb' });
 
-function convertColorSpace(color: number[], from: ColorSpace, to: ColorSpace) {
-    if (from === to) {
-        return color;
-    } else {
-        return convert[from][to](color);
-    }
-}
