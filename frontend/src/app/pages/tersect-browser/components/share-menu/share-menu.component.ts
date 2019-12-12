@@ -1,7 +1,6 @@
 import { PlatformLocation } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 
-import { join } from 'path';
 import { OverlayPanel } from 'primeng/overlaypanel';
 
 import {
@@ -45,8 +44,8 @@ export class ShareMenuComponent {
     exportView() {
         this.tersectBackendService.exportSettings(this.plotState.settings)
                                   .subscribe(id => {
-            const host = this.platformLocation['location'].origin;
-            this.shareLink = join(host, 'TersectBrowser', 'share', id);
+            const shareURL = new URL(`share/${id}`, document.baseURI);
+            this.shareLink = shareURL.href;
         });
     }
 
