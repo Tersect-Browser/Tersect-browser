@@ -6,6 +6,7 @@ import { tbConfig } from './src/load-config';
 
 const frontend = express.static(path.join(__dirname, 'frontend'));
 app.use(tbConfig.baseHref || '/', frontend);
+app.use('*', frontend);
 
 const port = process.env.PORT || tbConfig.serverPort;
 app.set('port', port);
