@@ -4,7 +4,7 @@ import { isNullOrUndefined, syncSort } from '../../../utils/utils';
 export function parseNewick(newick: string, ladderize = false) {
     const tokens = newickTokens(newick);
     const tree = _parseNewick(tokens);
-    return ladderize ? ladderizeTree(tree, true) : tree;
+    return ladderize ? ladderizeTree(tree, false) : tree;
 }
 
 function ladderizeTree(tree: TreeNode, weighted = false): TreeNode {
