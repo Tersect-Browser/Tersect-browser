@@ -26,11 +26,13 @@
                 <button pButton
                         label="Clear selection"
                         style="font-size: 1.2em; margin: 0.1em;"
+                        (click)="clearSelection()"
                         [disabled]="selectedAccessions.length === 0">
                 </button>
                 <button pButton
                         label="Clear filters"
                         style="font-size: 1.2em; margin: 0.1em;"
+                        (click)="clearFilters()"
                         [disabled]="!filtersUsed()">
                 </button>
             </div>
@@ -57,6 +59,7 @@
                 </th>
                 <th *ngFor="let col of columns" [style.width.px]="col.width">
                     <app-input-autocomplete
+                        [value]="previousFilters[col.field]?.value"
                         [options]="extractColumnOptions(col.field)"
                         (valueChange)="filterField($event, col.field)"
                         appendTo="body">

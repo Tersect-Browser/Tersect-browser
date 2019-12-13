@@ -32,6 +32,7 @@ export class InputAutocompleteComponent {
 
     private _value: string;
 
+    @Input()
     set value(value: string) {
         this.valueChange.emit(value);
         this._value = value;

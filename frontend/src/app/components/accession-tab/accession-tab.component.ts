@@ -157,6 +157,14 @@ export class AccessionTabComponent implements AfterViewInit {
         this.accessionGroups = [...this.accessionGroups, $event];
     }
 
+    clearFilters() {
+        this.dt.reset();
+    }
+
+    clearSelection() {
+        this.selectedAccessions = [];
+    }
+
     createPlugins() {
         this.importPlugins.filter(plugin => plugin in pluginComponents)
                           .forEach(plugin => {
