@@ -28,7 +28,7 @@ router.route('/accessions/:gene?/:filter?')
       .get((req, res) => {
     const gene = req.params.gene;
     const filter = req.params.filter || false;
-    const query = { 'alleles.gene': gene };
+    const query = gene ? { 'alleles.gene': gene } : {};
     const projection = { _id: 0, accession: 1, alleles: 1};
     AccessionTGRC.find(AccessionTGRC.translateAliases(query),
                        AccessionTGRC.translateAliases(projection))
