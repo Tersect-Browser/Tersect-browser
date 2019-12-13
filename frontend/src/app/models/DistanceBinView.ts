@@ -51,8 +51,7 @@ export class DistanceBinView {
 
     get colNum(): number {
         // The number of bins is the same for all accessions
-        const acc = this.orderedAccessions[0];
-        return this.distanceBins.bins[acc].length;
+        return Object.values(this.distanceBins.bins)[0].length;
     }
 
     set distanceBins(distanceBins: DistanceBins) {
