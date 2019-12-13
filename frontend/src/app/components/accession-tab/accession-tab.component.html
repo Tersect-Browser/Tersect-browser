@@ -14,13 +14,27 @@
              [(selection)]="selectedAccessions"
              [scrollable]="true"
              [virtualScroll]="true"
-             scrollHeight="calc(100vh - 130px)"
+             scrollHeight="calc(100vh - 180px)"
              [totalRecords]="filteredAccessions.length"
              [virtualRowHeight]="21"
              [virtualScrollDelay]="100"
              [rows]="50"
              (onLazyLoad)="loadDataOnScroll($event)"
              [lazy]="true">
+        <ng-template pTemplate="caption">
+            <div style="text-align: left">
+                <button pButton
+                        label="Clear selection"
+                        style="font-size: 1.2em; margin: 0.1em;"
+                        [disabled]="selectedAccessions.length === 0">
+                </button>
+                <button pButton
+                        label="Clear filters"
+                        style="font-size: 1.2em; margin: 0.1em;"
+                        [disabled]="!filtersUsed()">
+                </button>
+            </div>
+        </ng-template>
         <ng-template pTemplate="header" let-columns>
             <tr>
                 <th class="checkbox-cell" [pSortableColumn]="'selected'">
