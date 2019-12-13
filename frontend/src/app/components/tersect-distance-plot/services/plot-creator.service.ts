@@ -10,7 +10,6 @@ import {
 import {
     debounceTime,
     delay,
-    distinctUntilChanged,
     filter,
     first,
     retryWhen,
@@ -207,7 +206,6 @@ export class PlotCreatorService implements OnDestroy {
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(inputs => this.validateTreeInputs(...inputs)),
-            distinctUntilChanged(deepEqual),
             tap(() => this.startLoading()),
             debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, chrom, interval, accessions]) =>
@@ -256,7 +254,6 @@ export class PlotCreatorService implements OnDestroy {
         ]).pipe(
             filter(inputs => !inputs.some(isNullOrUndefined)),
             filter(inputs => this.validateBinInputs(...inputs)),
-            distinctUntilChanged(deepEqual),
             tap(() => this.startLoading()),
             debounceTime(PlotCreatorService.DEBOUNCE_TIME),
             switchMap(([datasetId, ref, chrom, interval, binsize, accs]) =>
