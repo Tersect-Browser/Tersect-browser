@@ -11,7 +11,7 @@ const AccessionTGRCSchema = new Schema({
         alias: 'accession'
     },
     lgene: {
-        type: [ { geme: String, allele: String } ],
+        type: [ { gene: String, allele: String } ],
         alias: 'alleles'
     }
 });
