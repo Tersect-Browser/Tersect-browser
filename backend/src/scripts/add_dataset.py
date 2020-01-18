@@ -14,10 +14,12 @@ from tersectutils import get_accession_names, rename_accession
 # Supporting up to two billion views
 # NOTE: this is meant to match MAX_VIEW_ID in tersect-router.ts
 MAX_VIEW_ID = 2000000000
+# Default salt, meant to match DEFAULT_VIEW_SALT tersect-router.ts
+DEFAULT_VIEW_SALT = 'tersectsalt';
 
 def add_default_view(cfg, client, dataset_id, accession_infos, groups=None,
                      plugins=[]):
-    view_id = randomHash(cfg['salt'], MAX_VIEW_ID)
+    view_id = randomHash(DEFAULT_VIEW_SALT, MAX_VIEW_ID)
     views = client[cfg['dbName']]['views']
     settings = {
         'dataset_id': dataset_id,
