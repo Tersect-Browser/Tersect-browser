@@ -5,12 +5,13 @@ import json
 import subprocess
 
 from pymongo import ASCENDING, MongoClient
+from pymongo.collection import Collection
 from math import ceil
 from timeit import default_timer as timer
 from tbutils import merge_phylip_files, open_phylip_file, get_db_location, abspath
 from tersectutils import get_chromosome_sizes
 
-def add_region_index_db(matrices, dataset_id,
+def add_region_index_db(matrices: Collection, dataset_id,
                         chromosome_name, start_pos, end_pos,
                         subpart_size, distmap_db_location, verbose=False):
     region = '%s:%d-%d' % (chromosome_name, start_pos, end_pos)
@@ -35,7 +36,7 @@ def add_region_index_db(matrices, dataset_id,
     })
     return True
 
-def add_region_index_tersect(matrices, dataset_id,
+def add_region_index_tersect(matrices: Collection, dataset_id,
                              chromosome_name, start_pos, end_pos,
                              tersect_db_location, distmap_db_location,
                              verbose=False):
@@ -52,7 +53,7 @@ def add_region_index_tersect(matrices, dataset_id,
     fh.close()
 
 def generate_partition_indices(cfg, dataset_id, tsi_file,
-                               matrices, chrom, part_size,
+                               matrices: Collection, chrom, part_size,
                                distmap_db_location,
                                existing_partitions=[],
                                verbose=False):
