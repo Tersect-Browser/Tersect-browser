@@ -17,8 +17,8 @@ MAX_VIEW_ID = 2000000000
 # Default salt, meant to match DEFAULT_VIEW_SALT tersect-router.ts
 DEFAULT_VIEW_SALT = 'tersectsalt';
 
-def add_default_view(cfg, client, dataset_id, accession_infos, groups=None,
-                     plugins=[]):
+def add_default_view(cfg, client: MongoClient, dataset_id,
+                     accession_infos, groups=None, plugins=[]):
     view_id = randomHash(DEFAULT_VIEW_SALT, MAX_VIEW_ID)
     views = client[cfg['dbName']]['views']
     settings = {
