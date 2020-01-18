@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 import collections
 import csv
-import sys
 import os
 import argparse
-import random
 import shutil
 import json
 import subprocess
 
-from hashids import Hashids
-from pymongo import errors, ASCENDING, MongoClient
+from pymongo import errors, MongoClient
 from tbutils import abspath, randomHash
 from tersectutils import get_accession_names, rename_accession
 

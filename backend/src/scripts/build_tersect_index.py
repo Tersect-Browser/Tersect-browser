@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 import os
 import argparse
 import json
@@ -8,7 +7,7 @@ import subprocess
 from pymongo import ASCENDING, MongoClient
 from math import ceil
 from timeit import default_timer as timer
-from tbutils import randomHash, merge_phylip_files, open_phylip_file, get_db_location, abspath
+from tbutils import merge_phylip_files, open_phylip_file, get_db_location, abspath
 from tersectutils import get_chromosome_sizes
 
 def add_region_index_db(matrices, dataset_id,
