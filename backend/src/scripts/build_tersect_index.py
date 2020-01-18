@@ -28,7 +28,7 @@ def add_region_index_db(matrices: Collection, dataset_id,
         else:
             # Reached the end of region covered by subpartitions
             break
-    matrices.insert({
+    matrices.insert_one({
         'dataset_id': dataset_id,
         'region': region,
         'matrix_file': merge_phylip_files(subregion_files,
@@ -45,7 +45,7 @@ def add_region_index_tersect(matrices: Collection, dataset_id,
         print('    Adding index for %s' % region)
     fh = open_phylip_file(location=distmap_db_location)
     subprocess.call(['tersect', 'dist', tersect_db_location, region], stdout=fh)
-    matrices.insert({
+    matrices.insert_one({
         'dataset_id': dataset_id,
         'region': region,
         'matrix_file': fh.name

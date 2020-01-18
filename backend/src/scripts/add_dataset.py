@@ -29,7 +29,7 @@ def add_default_view(cfg, client: MongoClient, dataset_id,
     if (groups is not None):
         settings['accession_groups'] = groups
     try:
-        views.insert({
+        views.insert_one({
             '_id': view_id,
             'settings': settings
         })
@@ -158,7 +158,7 @@ def add_dataset(cfg, dataset_id, tersect_db_file, reference_id,
         'reference': reference_id
     }
 
-    datasets.insert(ds)
+    datasets.insert_one(ds)
     client.close()
     return ds
 

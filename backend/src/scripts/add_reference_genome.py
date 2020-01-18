@@ -51,7 +51,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
     for chromosome in chromosomes:
         if verbose:
             print("Processing %s" % chromosome.name)
-        chrom_index.insert({
+        chrom_index.insert_one({
             'reference': reference_id,
             'name': chromosome.name,
             'size': len(chromosome),
