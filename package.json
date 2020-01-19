@@ -13,7 +13,7 @@
         "backend": "cd backend && npm start",
         "start": "npm-run-all -p frontend backend",
         "build": "node scripts/build.js",
-        "deploy": "node ./dist/server.js --config tbconfig.json",
+        "deploy": "node --trace-warnings ./dist/server.js --config tbconfig.json",
         "clean-frontend": "cd frontend && npm run clean",
         "clean-backend": "cd backend && npm run clean",
         "clean": "npm-run-all clean-frontend clean-backend && rimraf dist/ && rimraf node_modules/"
