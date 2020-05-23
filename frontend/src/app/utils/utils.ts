@@ -211,3 +211,10 @@ export function syncSort(toSort: any[], sortBy: any[],
 export function uniqueArray(a: any[]): any[] {
     return Array.from(new Set(a));
 }
+
+/*
+ * Calculate Jukes-Cantor distance based on SNV count
+ */
+export function snvCountToJC(snvCount: number, intervalSize: number) {
+    return -0.75 * Math.log(1 - (4 / 3) * (snvCount / intervalSize));
+}

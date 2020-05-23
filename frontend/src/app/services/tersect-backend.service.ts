@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 
 import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { DatasetPublic } from '../../../../backend/src/models/dataset';
 import { NewickTree } from '../../../../backend/src/models/newicktree';
@@ -11,7 +12,7 @@ import { APP_CONFIG, AppConfig } from '../app.config';
 import { Chromosome } from '../models/Chromosome';
 import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../pages/tersect-browser/models/BrowserSettings';
-import { isNullOrUndefined } from '../utils/utils';
+import { isNullOrUndefined, snvCountToJC } from '../utils/utils';
 
 @Injectable()
 export class TersectBackendService {
@@ -49,7 +50,16 @@ export class TersectBackendService {
             binsize: binsize,
             accessions: accessions
         };
-        return this.http.post<DistanceBins>(query, distBinQuery, httpOptions);
+        return this.http.post<DistanceBins>(query, distBinQuery, httpOptions)
+                        .pipe(
+            tap(distBins => {
+                for (const accId of Object.keys(distBins.bins)) {
+                    distBins.bins[accId] = distBins.bins[accId].map(
+                        dist => snvCountToJC(dist, binsize)
+                    );
+                }
+            })
+        )
     }
 
     /**
