@@ -13,6 +13,9 @@ def randomHash(salt='', max_id=1000000000000):
     hashids = Hashids(salt=salt)
     return hashids.encode(random.randint(0, max_id))
 
+def snv_count_to_jc(snv_count, interval_size):
+    return -0.75 * numpy.log(1 - (4 / 3) * (snv_count / interval_size))
+
 def open_phylip_file(location='/tmp', mode='x'):
     filename = randomHash() + '.phylip'
     filepath = os.path.join(location, filename)
@@ -22,7 +25,8 @@ def open_phylip_file(location='/tmp', mode='x'):
         return open_phylip_file(location=location, mode=mode)
 
 def merge_phylip_files(filenames, negative_filenames=None,
-                       output_location='/tmp', indices=None):
+                       output_location='/tmp', indices=None,
+                       interval_size=None):
     output_file = open_phylip_file(location=output_location)
     all_filenames = filenames.copy()
     negative_indices = None
@@ -50,7 +54,11 @@ def merge_phylip_files(filenames, negative_filenames=None,
                 for i in negative_indices:
                     numpy.negative(arrays[i], out=arrays[i])
                 output_file.write(lines[0][0] + ' ')
-                writer.writerow(sum(arrays))
+                output_distance = sum(arrays)
+                if interval_size is not None:
+                    output_distance = snv_count_to_jc(output_distance,
+                                                      interval_size)
+                writer.writerow(output_distance)
         else:
             # Merging only accessions at specified indices
             writer.writerow([len(indices)])
@@ -64,7 +72,11 @@ def merge_phylip_files(filenames, negative_filenames=None,
                 for i in negative_indices:
                     numpy.negative(arrays[i], out=arrays[i])
                 output_file.write(lines[0][0] + ' ')
-                writer.writerow(sum(arrays))
+                output_distance = sum(arrays)
+                if interval_size is not None:
+                    output_distance = snv_count_to_jc(output_distance,
+                                                      interval_size)
+                writer.writerow(output_distance)
 
     output_file.close()
     return output_file.name

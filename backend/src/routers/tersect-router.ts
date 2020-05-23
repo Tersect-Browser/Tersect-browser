@@ -289,7 +289,7 @@ router.route('/query/:datasetId/tree')
 });
 
 function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
-    const rapidnj = spawn('rapidnj', ['-i', 'pd', phylipFile]);
+    const rapidnj = spawn('rapidnj', ['-a', 'jc', '-i', 'pd', phylipFile]);
 
     const stdoutClose$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
     const stderrClose$ = fromEvent(rapidnj.stderr, 'close').pipe(take(1));
@@ -378,13 +378,15 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
         ...negativeMatrixFiles
     ];
 
+    const intervalSize = treeQuery.interval[1] - treeQuery.interval[0];
+
     Promise.all(inputFiles).then(([accFile, ...matrixFiles]) => {
         const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
                                     .join(' ');
         const negative = matrixFiles.slice(positiveMatrixFiles.length,
                                            matrixFiles.length).join(' ');
         const script = path.join(__dirname, '../scripts/merge_phylip.py');
-        let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile}`;
+        let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile} --interval-size ${intervalSize}`;
         if (negative.length) {
             mergeCommand = `${mergeCommand} -n ${negative}`;
         }
