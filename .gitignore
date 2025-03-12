@@ -54,3 +54,5 @@ Thumbs.db
 
 # Test directories
 test/
+
+ .turbo

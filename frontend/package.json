@@ -5,7 +5,7 @@
     "scripts": {
         "ng": "ng",
         "start": "node scripts/serve.js --port 4200",
-        "build": "node --openssl-legacy-provider start scripts/build.js",
+        "build": "node scripts/build.js",
         "clean": "rimraf dist/ node_modules/",
         "lint": "ng lint"
     },

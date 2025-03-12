@@ -12,6 +12,7 @@
         "frontend": "cd frontend && npm start",
         "backend": "cd backend && npm start",
         "start": "npm-run-all -p frontend backend",
+        "dev": "npm-run-all -p frontend backend",
         "build": "node scripts/build.js",
         "deploy": "node --trace-warnings ./dist/server.js --config tbconfig.json",
         "clean-frontend": "cd frontend && npm run clean",
@@ -34,6 +35,9 @@
         "@types/yargs": "^13.0.3",
         "npm-run-all": "^4.1.5",
         "rimraf": "^3.0.0",
+        "turbo": "^2.4.4",
         "yargs": "^14.2.0"
-    }
+    },
+    "packageManager": "npm@8.5.0"
+    
 }

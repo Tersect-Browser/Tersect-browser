@@ -1,9 +1,9 @@
 {
     "serverPort": 4300,
     "baseHref": "/",
-    "mongoHost": "mongodb://localhost:27017",
+    "mongoHost": "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2",
     "dbName": "tersect",
-    "localDbPath": "../../local_db",
+    "localDbPath": "./local_db",
     "indexPartitions": [
         100000000,
         50000000,
