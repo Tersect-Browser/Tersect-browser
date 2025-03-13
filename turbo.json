@@ -8,6 +8,9 @@
       "lint": {
         "dependsOn": ["^lint"]
       },
+      "deploy": {
+        "dependsOn": ["^build"]
+      },
       "dev": {
         "persistent": true,
         "cache": false

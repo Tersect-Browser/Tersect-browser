@@ -55,4 +55,6 @@ Thumbs.db
 # Test directories
 test/
 
- .turbo
+.turbo
+
+./tbconfig.json
