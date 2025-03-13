@@ -2,6 +2,7 @@
 
 # compiled output
 dist/
+.turbo/
 /dist-server
 /tmp
 /out-tsc
@@ -55,6 +56,6 @@ Thumbs.db
 # Test directories
 test/
 
-.turbo
+.turbo/
 
-./tbconfig.json
+tbconfig.json
