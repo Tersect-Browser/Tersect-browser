@@ -1,5 +1,17 @@
 # TersectBrowser
 
+## Table of Contents
+
+- [How to install](#how-to-install)
+- [How to load data set](#how-to-load-data-set)
+  - [Generating the dataset](#generating-the-dataset)
+- [Development server](#development-server)
+- [Code scaffolding](#code-scaffolding)
+- [Build](#build)
+- [Running unit tests](#running-unit-tests)
+- [Running end-to-end tests](#running-end-to-end-tests)
+- [Further help](#further-help)
+
 ## How to install
 
 Ensure you have nvm installed on your machine and perform the following steps;
@@ -10,7 +22,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
 - Run `turbo build` to build the application
 - add a `tbconfig.json` with the following values
 
-```
+```json
 {
     "serverPort": 4300,
     "baseHref": "/TersectBrowserGP/",
@@ -26,42 +38,43 @@ Ensure you have nvm installed on your machine and perform the following steps;
         1000000
     ]
 }
-
 ```
 - Run `turbo dev` to start the application (it'll load the frontend and backend application).
 
 ## How to load data set
-first requires a valid Mongodb installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine so it should not be an issue.
 
-After successful installation, start the mongodb server by running `mongod`. By default mongodb will try to create and store data in a `/data/db` path. There is a tendency that on mac this is a read only path. If that is the case you may need to use a different path. Personally i used `~/mongo-data`.
+First requires a valid Mongodb installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine so it should not be an issue.
 
-to start mongodb with a different path, create the path by running  `mkdir -p ~/mongo-data` then run mongodb with this path  `mongod --dbpath ~/mongo-data`.
+After successful installation, start the mongodb server by running `mongod`. By default mongodb will try to create and store data in a `/data/db` path. There is a tendency that on mac this is a read-only path. If that is the case you may need to use a different path. Personally, I used `~/mongo-data`.
 
-when your database is up and running you can start the backend server.
+to start mongodb with a different path, create the path by running `mkdir -p ~/mongo-data` then run mongodb with this path `mongod --dbpath ~/mongo-data`.
+
+When your database is up and running you can start the backend server.
 
 ### Generating the dataset
+
 To generate the data set, copy the data in the `gp_data` folder on elvis to the root of the `tersect_browser` folder.
-copy also the `add_example_dataset` script to the root of the `tersect_browser` folder.
+Copy also the `add_example_dataset` script to the root of the `tersect_browser` folder.
 
 An example copy script via the terminal is;
 `scp -r username@port:/home/tbrowser/add_example_dataset.sh  /Users/davidoluwasusi/msc_project/tersect-browser/gp_data`
 
-create a python virtual environment with venv at the root of the `tersect_browser` folder.
+Create a python virtual environment with venv at the root of the `tersect_browser` folder.
 `python3.11 -m venv .tersect`
 
-we are using python 3.11 because numpy has issues when we try to install via python > 3.12.
+We are using python 3.11 because numpy has issues when we try to install via python > 3.12.
 
-activate the virtual environment
+Activate the virtual environment
 `source .tersect/bin/activate`
 
-install the dependencies in the requirements.txt file
-`pip3 install -r /path/to/requirements.txt` the file is in  `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
+Install the dependencies in the requirements.txt file
+`pip3 install -r /path/to/requirements.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
 
-Follow the installation instructions on the tersect-cli [github page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect cli on your machine.
+Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
 
-give the `add_example_dataset.sh` script write access by running `chmod u+x add_example_dataset.sh`.
+Give the `add_example_dataset.sh` script write access by running `chmod u+x add_example_dataset.sh`.
 
-run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
+Run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.1.
 
