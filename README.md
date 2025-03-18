@@ -18,9 +18,12 @@ Ensure you have nvm installed on your machine and perform the following steps;
 
 - Run `nvm use 16` to switch to a compatible node version
 - In the root of the application run `npm install`
+  If errors with this, do:
+  - Run `npm config set registry https://registry.npmjs.org/`to ensure the right npm registry
+  - Run `npm cache clear --force` to remove package discrepancies
+  - Run `npm install` with no errors
 - Run `npm install -g turbo` to install turbo
-- Run `turbo build` to build the application
-- add a `tbconfig.json` with the following values
+- Add a `tbconfig.json` with the following values (remove commented line)
 
 ```json
 {
@@ -39,6 +42,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
     ]
 }
 ```
+- Run `turbo build` to build the application
 - Run `turbo dev` to start the application (it'll load the frontend and backend application).
 
 ## How to load data set
