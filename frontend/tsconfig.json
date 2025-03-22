@@ -1,21 +1,26 @@
 {
     "compileOnSave": false,
     "compilerOptions": {
-        "downlevelIteration": true,
-        "module": "commonjs",
-        "sourceMap": true,
-        "declaration": false,
-        "moduleResolution": "node",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
-        "target": "es2015",
-        "typeRoots": [
-            "node_modules/@types"
-        ],
-        "lib": [
-            "es2017",
-            "dom"
-        ]
-    }
-}
+      "downlevelIteration": true,
+      "module": "commonjs",
+      "sourceMap": true,
+      "declaration": false,
+      "moduleResolution": "node",
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "allowSyntheticDefaultImports": true,
+      "target": "es2015",
+      "typeRoots": [
+        "node_modules/@types"
+      ],
+      "lib": [
+        "es2017",
+        "dom"
+      ],
+      "jsx": "react"
+    },
+    "exclude": [
+      "**/node_modules"
+    ]
+  }
+  
