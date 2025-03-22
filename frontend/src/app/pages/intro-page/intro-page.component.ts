@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import {
     DatasetPublic
@@ -10,7 +10,7 @@ import {
 @Component({
     selector: 'app-intro-page',
     templateUrl: './intro-page.component.html',
-    styleUrls: ['./intro-page.component.css']
+    styleUrls: ['./intro-page.component.css'],
 })
 export class IntroPageComponent implements OnInit {
     datasets: DatasetPublic[];

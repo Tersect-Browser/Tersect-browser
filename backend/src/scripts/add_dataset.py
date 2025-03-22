@@ -15,7 +15,7 @@ from tersectutils import get_accession_names, rename_accession
 # NOTE: this is meant to match MAX_VIEW_ID in tersect-router.ts
 MAX_VIEW_ID = 2000000000
 # Default salt, meant to match DEFAULT_VIEW_SALT tersect-router.ts
-DEFAULT_VIEW_SALT = 'tersectsalt';
+DEFAULT_VIEW_SALT = 'tersectsalt'
 
 def add_default_view(cfg, client: MongoClient, dataset_id,
                      accession_infos, groups=None, plugins=[]):
