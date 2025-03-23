@@ -60,6 +60,7 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
+<jbrowser-wrapper *ngIf="isJbrowserReady" name="Hello from AngularJS"></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot

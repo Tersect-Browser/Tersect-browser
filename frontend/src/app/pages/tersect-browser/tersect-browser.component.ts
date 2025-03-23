@@ -1,7 +1,5 @@
-
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -69,13 +67,10 @@ export class TersectBrowserComponent implements OnInit {
     accessionGroups: AccessionGroup[];
     chromosomes: Chromosome[];
     displaySidebar = false;
-
-    /**
-     * The following two properties are used to store accession tab outputs
-     * locally before the plot state is updated once the sidebar containing
-     * the tab is closed.
-     */
     selectedAccessions: string[];
+
+    // ✅ NEW: flag to track when the custom element is ready
+    isJbrowserReady: boolean = false;
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotZoom: PlotZoomService,
@@ -94,23 +89,28 @@ export class TersectBrowserComponent implements OnInit {
                            .getExportedSettings(params.get('exportid'));
             })
         );
+
         settings$.subscribe(settings => {
             if (isNullOrUndefined(settings)) {
                 this.router.navigate(['']);
                 return;
             }
-            const accessions$ = this.tersectBackendService
-                                    .getAccessionNames(settings.dataset_id);
-            const chromosomes$ = this.tersectBackendService
-                                     .getChromosomes(settings.dataset_id);
-            forkJoin([accessions$, chromosomes$]).subscribe(([accessions,
-                                                              chromosomes]) => {
+
+            const accessions$ = this.tersectBackendService.getAccessionNames(settings.dataset_id);
+            const chromosomes$ = this.tersectBackendService.getChromosomes(settings.dataset_id);
+
+            forkJoin([accessions$, chromosomes$]).subscribe(([accessions, chromosomes]) => {
                 this.generateMissingSettings(settings, accessions, chromosomes);
                 this.plotState.settings = settings;
                 this.chromosomes = chromosomes;
                 this.accessionGroups = settings.accession_groups;
                 this.selectedAccessions = settings.selected_accessions;
             });
+        });
+
+        // ✅ Wait for jbrowser-wrapper to be defined before rendering
+        customElements.whenDefined('jbrowser-wrapper').then(() => {
+            this.isJbrowserReady = true;
         });
     }
 
@@ -203,23 +203,19 @@ export class TersectBrowserComponent implements OnInit {
             settings.selected_binsize = TersectBrowserComponent.DEFAULT_BINSIZE;
         }
         if (isNullOrUndefined(settings.selected_chromosome)) {
-            // Selecting the largest chromosome
-            const largestChrom = chromosomes.reduce((prev, current) => {
-                return (current.size > prev.size) ? current : prev;
-            });
+            const largestChrom = chromosomes.reduce((prev, current) =>
+                current.size > prev.size ? current : prev
+            );
             settings.selected_chromosome = largestChrom;
         }
         if (isNullOrUndefined(settings.zoom_level)) {
             settings.zoom_level = TersectBrowserComponent.DEFAULT_ZOOM_LEVEL;
         }
         if (isNullOrUndefined(settings.selected_interval)) {
-            settings.selected_interval = [
-                1, settings.selected_chromosome.size
-            ];
+            settings.selected_interval = [1, settings.selected_chromosome.size];
         }
         if (isNullOrUndefined(settings.accession_infos)) {
-            settings.accession_infos = settings.selected_accessions
-                                               .map(accId => ({
+            settings.accession_infos = settings.selected_accessions.map(accId => ({
                 id: accId,
                 Label: accId
             }));
