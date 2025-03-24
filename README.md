@@ -80,6 +80,39 @@ Give the `add_example_dataset.sh` script write access by running `chmod u+x add_
 
 Run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
 
+###Additional Requirement For Running The Browser
+[RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood, git clone the repository, and run make in the root.
+
+NB mac users with M series chip
+Install Rosetta (if not already):
+
+```
+softwareupdate --install-rosetta
+```
+Run the Terminal in Rosetta:
+
+Go to Applications > Utilities > Terminal.
+
+Right-click → Get Info.
+
+Check “Open using Rosetta”.
+
+Run `make` again in the Rosetta terminal.
+
+This way, clang++ will target x86_64 and the SSE2 instructions will work.
+
+
+Making it available system wide:
+
+After running `make` cd into the bin directory
+
+run ls as shown below to check that the binary exists
+`ls -l rapidnj`
+
+move it to the usr path
+`sudo mv rapidnj /usr/local/bin/`
+
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.1.
 
 ## Development server
