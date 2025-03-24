@@ -5,6 +5,7 @@
 - [How to install](#how-to-install)
 - [How to load data set](#how-to-load-data-set)
   - [Generating the dataset](#generating-the-dataset)
+  - [Loading the dataset](#additional-requirement-for-running-the-browser)
 - [Development server](#development-server)
 - [Code scaffolding](#code-scaffolding)
 - [Build](#build)
@@ -80,7 +81,7 @@ Give the `add_example_dataset.sh` script write access by running `chmod u+x add_
 
 Run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
 
-###Additional Requirement For Running The Browser
+### Additional Requirement For Running The Browser
 [RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood, git clone the repository, and run make in the root.
 
 NB mac users with M series chip
