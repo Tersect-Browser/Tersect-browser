@@ -51,6 +51,22 @@ import { formatRegion } from '../utils/utils';
 
 export const router = Router();
 
+/**
+ * Save list of accessions into a temporary file and return the file name.
+ */
+async function writeAccessions(accessions: string[]): Promise<string> {
+    try {
+        const outputFile = fileSync();
+    await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
+    return outputFile.name;
+    } catch (error) {
+        console.log('Error writing accessions to file');
+        console.log(error);
+        
+    }
+    
+}
+
 function execPromise(command: string, options = {}) {
     return new Promise((resolve, reject) => {
         exec(command, options, (error, stdout, stderr) => {
@@ -143,6 +159,8 @@ router.route('/query/:datasetId/gaps/:chromosome')
 
 router.route('/query/:datasetId/dist')
       .post((req, res) => {
+        try {
+        
     const options = {
         maxBuffer: 200 * 1024 * 1024 // 200 megabytes
     };
@@ -156,7 +174,7 @@ router.route('/query/:datasetId/dist')
 
     const reference = distBinQuery.reference;
     const binsize = distBinQuery.binsize;
-
+    
     writeAccessions(distBinQuery.accessions).then(accFile => {
         const tersectCommand = `tersect dist -j ${tsiLocation} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
@@ -165,27 +183,36 @@ router.route('/query/:datasetId/dist')
             query: distBinQuery,
             bins: {}
         };
-
-        exec(tersectCommand, options, (err, stdout, stderr) => {
-            if (err) {
-                res.json(err);
-            } else if (stderr) {
-                res.json(stderr);
-            } else {
-                const tersectOutput = JSON.parse(stdout);
-                const accessions = tersectOutput['columns'];
-                accessions.forEach((accessionName: string) => {
-                    output.bins[accessionName] = [];
-                });
-                tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
-                    binMatrix[0].forEach((dist: number, i: number) => {
-                        output.bins[accessions[i]].push(dist);
+        try {
+            exec(tersectCommand, options, (err, stdout, stderr) => {
+                if (err) {
+                    res.json(err);
+                } else if (stderr) {
+                    res.json(stderr);
+                } else {
+                    const tersectOutput = JSON.parse(stdout);
+                    const accessions = tersectOutput['columns'];
+                    accessions.forEach((accessionName: string) => {
+                        output.bins[accessionName] = [];
                     });
-                });
-                res.json(output);
-            }
-        });
+                    tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
+                        binMatrix[0].forEach((dist: number, i: number) => {
+                            output.bins[accessions[i]].push(dist);
+                        });
+                    });
+                    res.json(output);
+                }
+            });
+        } catch (error) {
+            
+        }
+       
     });
+} catch (error) {
+        console.log(error);
+        res.status(500).send('Error processing request');
+              
+}
 });
 
 router.route('/datasets')
@@ -254,38 +281,46 @@ router.route('/views/export')
 
 router.route('/query/:datasetId/tree')
       .post((req, res) => {
-    const tsiLocation = res.locals.dataset.tsi_location;
-    const treeQuery: TreeQuery = req.body;
-    const dbQuery: TreeDatabaseQuery = {
-        datasetId: req.params.datasetId,
-        'query.chromosomeName': treeQuery.chromosomeName,
-        'query.interval': treeQuery.interval,
-        'query.accessions': treeQuery.accessions
-    };
-    NewickTree.findOne(dbQuery)
-              .exec((err, result: NewickTree) => {
-        if (err) {
-            return res.status(500).send('Tree creation failed');
-        } else if (!result) {
-            // Generating new tree
-            const phyloTree = new NewickTree({
+        try {
+            const tsiLocation = res.locals.dataset.tsi_location;
+            const treeQuery: TreeQuery = req.body;
+            const dbQuery: TreeDatabaseQuery = {
                 datasetId: req.params.datasetId,
                 'query.chromosomeName': treeQuery.chromosomeName,
                 'query.interval': treeQuery.interval,
-                'query.accessions': treeQuery.accessions,
-                status: 'Collating data...'
-            }).save(saveErr => {
-                if (saveErr) {
+                'query.accessions': treeQuery.accessions
+            };
+            NewickTree.findOne(dbQuery)
+                      .exec((err, result: NewickTree) => {
+                if (err) {
                     return res.status(500).send('Tree creation failed');
+                } else if (!result) {
+                    // Generating new tree
+                    const phyloTree = new NewickTree({
+                        datasetId: req.params.datasetId,
+                        'query.chromosomeName': treeQuery.chromosomeName,
+                        'query.interval': treeQuery.interval,
+                        'query.accessions': treeQuery.accessions,
+                        status: 'Collating data...'
+                    }).save(saveErr => {
+                        if (saveErr) {
+                            return res.status(500).send('Tree creation failed');
+                        }
+                        generateTree(tsiLocation, treeQuery, dbQuery);
+                    });
+                    res.json(phyloTree);
+                } else {
+                    // Retrieved previously generated tree
+                    res.json(result);
                 }
-                generateTree(tsiLocation, treeQuery, dbQuery);
             });
-            res.json(phyloTree);
-        } else {
-            // Retrieved previously generated tree
-            res.json(result);
+        } catch (error) {
+            console.log('Error creating tree');
+            console.log(error);
+            res.status(500).send('Tree creation failed');
         }
-    });
+        
+
 });
 
 function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
@@ -320,14 +355,7 @@ function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
     ).subscribe(() => {});
 }
 
-/**
- * Save list of accessions into a temporary file and return the file name.
- */
-async function writeAccessions(accessions: string[]): Promise<string> {
-    const outputFile = fileSync();
-    await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
-    return outputFile.name;
-}
+
 
 function generateTree(tsiLocation: string, treeQuery: TreeQuery,
                       dbQuery: TreeDatabaseQuery) {
