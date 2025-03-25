@@ -49,6 +49,41 @@ import { ViewSettings } from '../models/viewsettings';
 import { partitionQuery } from '../utils/partitioning';
 import { formatRegion } from '../utils/utils';
 
+const util = require('util');
+
+const readdir = util.promisify(fs.readdir);
+const stat = util.promisify(fs.stat);
+const access = util.promisify(fs.access);
+
+// Recursive function to find the file by name
+async function findFileRecursive(dir, targetFileName) {
+    let entries;
+    try {
+        entries = await readdir(dir);
+    } catch (err) {
+        return null; // Can't read directory
+    }
+
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry);
+        let stats;
+        try {
+            stats = await stat(fullPath);
+        } catch (err) {
+            continue; // Skip unreadable entries
+        }
+
+        if (stats.isDirectory()) {
+            const found = await findFileRecursive(fullPath, targetFileName);
+            if (found) return found;
+        } else if (entry === targetFileName) {
+            return fullPath;
+        }
+    }
+
+    return null;
+}
+
 export const router = Router();
 
 /**
@@ -104,7 +139,45 @@ router.use('/query/:datasetId', (req, res, next) => {
             return next();
         }
     });
-});
+})
+
+
+
+
+    router.use('/datafiles/:filename', async (req, res) => {
+        const localDbLocation = tbConfig.localDbPath;
+        const fileName = req.params.filename;
+        const searchRoot = path.join(localDbLocation, 'gp_data_copy');
+    
+        try {
+            const foundFilePath = await findFileRecursive(searchRoot, fileName);
+    
+            if (!foundFilePath) {
+                return res.status(404).send('File not found');
+            }
+    
+            await access(foundFilePath, fs.constants.R_OK);
+    
+            res.sendFile(foundFilePath, (err) => {
+                if (err) {
+                    if (err.message === 'EACCES') {
+                        return res.status(403).send('Permission denied while sending file');
+                    } else {
+                        console.error('Error sending file:', err);
+                        res.status(500).send('Internal Server Error');
+                    }
+                }
+            });
+    
+        } catch (err) {
+            if (err.code === 'EACCES') {
+                return res.status(403).send('Permission denied while accessing file');
+            } else {
+                console.error('Unexpected error during file search:', err);
+                res.status(500).send('Internal Server Error');
+            }
+        }
+    });
 
 router.route('/query/:datasetId/samples')
       .get((req, res) => {

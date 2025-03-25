@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import {
@@ -35,6 +35,7 @@ import {
     ],
     providers: [
         TersectBackendService
-    ]
+    ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class TersectDistancePlotModule { }
