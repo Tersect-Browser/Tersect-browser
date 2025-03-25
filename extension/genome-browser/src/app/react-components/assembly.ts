@@ -1,5 +1,5 @@
 export default {
-    name: 'GRCh38',
+    /*name: 'GRCh38',
     sequence: {
       type: 'ReferenceSequenceTrack',
       trackId: 'GRCh38-ReferenceSequenceTrack',
@@ -28,5 +28,36 @@ export default {
           locationType: 'UriLocation',
         },
       },
-    },
+    }, */
+    
+      /*"assembly": [ 
+        { */
+                   "name": "SL2.50",
+                    "sequence": {
+                      "type": "ReferenceSequenceTrack",
+                      "trackId": "SL2.50-ReferenceSequenceTrack",
+                      "adapter": {
+                        "type": "IndexedFastaAdapter",
+                        "fastaLocation": {
+                          "uri": "http://localhost:8000/SL2.50.fa",
+                          "locationType": "UriLocation"
+                        },
+                        "faiLocation": {
+                          "uri": "http://localhost:8000/SL2.50.fa.fai",
+                          "locationType": "UriLocation"
+                        }
+                      }
+                    }
+        /*}
+      ],*/
+      /*
+      "configuration": {},
+      "connections": [],
+      "defaultSession": {
+        "name": "New Session"
+      },
+      "tracks": []
+      */
+    
   }
+  
