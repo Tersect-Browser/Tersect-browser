@@ -39,11 +39,11 @@ export default {
                       "adapter": {
                         "type": "IndexedFastaAdapter",
                         "fastaLocation": {
-                          "uri": "http://localhost:8000/SL2.50.fa",
+                          "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//SL2.50.fa",
                           "locationType": "UriLocation"
                         },
                         "faiLocation": {
-                          "uri": "http://localhost:8000/SL2.50.fa.fai",
+                          "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//SL2.50.fa.fai",
                           "locationType": "UriLocation"
                         }
                       }

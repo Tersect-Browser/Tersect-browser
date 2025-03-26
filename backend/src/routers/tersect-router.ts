@@ -57,6 +57,8 @@ const access = util.promisify(fs.access);
 
 // Recursive function to find the file by name
 async function findFileRecursive(dir, targetFileName) {
+    console.log(dir, targetFileName);
+    
     let entries;
     try {
         entries = await readdir(dir);
@@ -150,6 +152,8 @@ router.use('/query/:datasetId', (req, res, next) => {
         const searchRoot = path.join(localDbLocation, 'gp_data_copy');
     
         try {
+            console.log('lorem ran the route at least');
+            
             const foundFilePath = await findFileRecursive(searchRoot, fileName);
     
             if (!foundFilePath) {
