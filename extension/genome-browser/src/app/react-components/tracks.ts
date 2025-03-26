@@ -135,12 +135,12 @@ export default [
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "http://localhost:8000/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz",
+          "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "http://localhost:8000/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz.tbi",
+            "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
