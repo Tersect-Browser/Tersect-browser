@@ -64,7 +64,7 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
-<jbrowser-wrapper *ngIf="displayButton" name="Hello from AngularJS"></jbrowser-wrapper>
+<jbrowser-wrapper  bind-props="{location : '2'}"></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot

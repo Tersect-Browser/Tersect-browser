@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ReactComponentDirective } from '@ngeenx/ngx-react';
 import JbrowseWrapper from './react-components/JbrowseWrapper';
 
@@ -14,8 +14,7 @@ import JbrowseWrapper from './react-components/JbrowseWrapper';
   imports: [ReactComponentDirective],
 })
 export class AppComponent {
+  @Input() props: any;
+
   public JbrowseWrapper: typeof JbrowseWrapper = JbrowseWrapper;
-  public props = {
-    name: "Some Value"
-  }
 }
