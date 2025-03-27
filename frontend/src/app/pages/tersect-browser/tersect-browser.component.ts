@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import {
@@ -37,6 +37,8 @@ import {
 import {
     PlotZoomService
 } from './services/plot-zoom.service';
+import { PlotCreatorService } from '../../components/tersect-distance-plot/services/plot-creator.service';
+import { TreeDrawService } from '../../services/tree-draw.service';
 
 @Component({
     selector: 'app-tersect-browser',
@@ -47,13 +49,21 @@ import {
     ],
     providers: [
         PlotStateService,
-        PlotZoomService
+        PlotZoomService,
+        TreeDrawService,
     ]
 })
 export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_BINSIZE = 50000;
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     static readonly DEFAULT_ZOOM_LEVEL = 100;
+    zoomLevel: number = 0;
+    binSize: number = this.plotState.binsize;
+    
+   
+    private zoomSub: Subscription;
+    private binSizeSub: Subscription;
+    private accessionSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -75,6 +85,7 @@ export class TersectBrowserComponent implements OnInit {
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotZoom: PlotZoomService,
                 private readonly tersectBackendService: TersectBackendService,
+                private readonly treeDrawService: TreeDrawService,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
 
@@ -83,6 +94,17 @@ export class TersectBrowserComponent implements OnInit {
     }
 
     ngOnInit() {
+
+        console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
+
+        this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
+            this.zoomLevel = level;
+          });
+
+        this.binSizeSub =  this.plotState.binsize$.subscribe(value => {
+            this.binSize = value
+        });
+  
         const settings$ = this.route.paramMap.pipe(
             switchMap(params => {
                 return this.tersectBackendService
@@ -112,6 +134,15 @@ export class TersectBrowserComponent implements OnInit {
         customElements.whenDefined('jbrowser-wrapper').then(() => {
             this.isJbrowserReady = true;
         });
+    }
+
+    ngOnDestroy() {
+        if (this.zoomSub) {
+          this.zoomSub.unsubscribe();
+        }
+        if (this.binSizeSub){
+            this.binSizeSub.unsubscribe()
+        }
     }
 
     isDownloadReady(): boolean {
