@@ -84,6 +84,10 @@ export class PlotClickMenuComponent {
                         this.removeAccession.emit(targetAccession.accession);
                         this.hide();
                     }
+                },
+                {
+                    label: 'View in browser',
+                    icon: 'fa fa-binoculars',
                 }
             ]
         };

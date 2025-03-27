@@ -6,6 +6,10 @@
             icon="fa fa-database"
             (click)="displaySidebar = true" >
         </button>
+        <button pButton class="tb-square-button"
+        icon="fa fa-binoculars"
+        (click)="displayButton = !displayButton" >
+        </button>
     </div>
 
     <div class="p-col tb-toolbar-control">
@@ -60,7 +64,7 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
-<jbrowser-wrapper *ngIf="isJbrowserReady" name="Hello from AngularJS"></jbrowser-wrapper>
+<jbrowser-wrapper *ngIf="displayButton" name="Hello from AngularJS"></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot
