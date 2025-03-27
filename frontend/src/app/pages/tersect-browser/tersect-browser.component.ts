@@ -67,6 +67,7 @@ export class TersectBrowserComponent implements OnInit {
     accessionGroups: AccessionGroup[];
     chromosomes: Chromosome[];
     displaySidebar = false;
+    displayButton = false;
     selectedAccessions: string[];
 
     // ✅ NEW: flag to track when the custom element is ready
