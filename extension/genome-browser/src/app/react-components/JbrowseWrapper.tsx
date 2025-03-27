@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { reaction } from "mobx";  
 import {
   createViewState,
   JBrowseLinearGenomeView,
@@ -8,14 +9,42 @@ import assembly from './assembly';
 import tracks from './tracks';
 
 
+const JbrowseWithState = ({state} : {state: ViewModel}) => {
+  return <JBrowseLinearGenomeView
+  viewState={state} />
+}
+
 
 
 function JbrowserWrapper(props: any) {
 
+
+
+
+    
+    
+  
     const state = createViewState({
         assembly,
         tracks,
-        location: '1:100,987,269..100,987,368',
+        defaultSession: {
+          name: 'default session',
+          view: {
+            type: 'LinearGenomeView',
+            id: '1',
+            bpPerPx: props.location.binSize,
+            offsetPx: 0,
+            displayedRegions: [
+              {
+                assemblyName: assembly.name,
+                start: props.location.start,
+                end: props.location.end,
+                refName: tracks[0].name,
+              },
+            ],
+          },
+        },
+     
         configuration: {
           "theme": {
             "palette": {
@@ -33,10 +62,44 @@ function JbrowserWrapper(props: any) {
               }
             }
       
-          }
-        }
+          },
+        
+        },
+        
+
       })
-  return <JBrowseLinearGenomeView   viewState={state} />
+
+    
+
+
+
+      state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+        console.log(data?.refNameAliases, 'awaited assembly');
+        state.session.addView('LinearGenomeView', {
+          type: 'LinearGenomeView',
+          id: '1',
+          bpPerPx: ((props.location.binSize) * (100 /props.location.zoomLevel)),
+          offsetPx: 0,
+          displayedRegions: [
+            {
+              assemblyName: assembly.name,
+              start: props.location.start,
+              end: props.location.end,
+              refName: Object.keys(data?.refNameAliases!)[0],
+            },
+          ],
+        })
+        console.log('added view', state.session.views.length);
+        // state.session.views[0]?.showTrack(tracks[0].trackId)
+        tracks.slice(0, 3).forEach(each => {
+          state.session.views[0].horizontalScroll(-10)
+          state.session.views[0]?.setHideHeader(true)
+          // state.session.views[0]?.scrollTo(50000, 900000)
+          state.session.views[0]?.showTrack(each.trackId)
+        })
+      })
+    //@ts-ignore
+  return <JbrowseWithState state={state} />
 }
 
 export default JbrowserWrapper

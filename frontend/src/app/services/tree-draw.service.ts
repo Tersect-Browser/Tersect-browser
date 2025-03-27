@@ -20,6 +20,7 @@ import {
     getAccessionLabel,
     isNullOrUndefined
 } from '../utils/utils';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -34,6 +35,13 @@ export class TreeDrawService {
     static readonly TREE_LINE_DASH_STYLE = 'rgba(0, 0, 0, 0.2)';
     static readonly TREE_LINE_DASH_WIDTH = 0.1;
     static readonly TREE_LINE_WIDTH = 0.1;
+    treeContainerWidth$: Observable<number>;
+
+    treeContainerSource = new BehaviorSubject(20);
+
+    constructor(){
+        this.treeContainerWidth$ = this.treeContainerSource.asObservable() as Observable<number>;
+    }
 
     draw(treeView: AccessionTreeView, offsetX: number, offsetY: number,
          targetCanvas?: HTMLCanvasElement) {
@@ -44,6 +52,7 @@ export class TreeDrawService {
         if (!isNullOrUndefined(targetCanvas)) {
             targetCanvas.height = treeView.containerSize.height;
             targetCanvas.width = treeView.offscreenCanvas.width;
+            this.treeContainerWidth$ = of(treeView.offscreenCanvas.width);
 
             const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
             ctx.clearRect(0, 0, treeView.offscreenCanvas.width,

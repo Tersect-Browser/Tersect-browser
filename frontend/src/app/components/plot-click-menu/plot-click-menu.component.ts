@@ -11,6 +11,7 @@ import {
 import {
     formatPosition
 } from '../../utils/utils';
+import { ModalService } from '../../pages/tersect-browser/services/modal.service';
 
 @Component({
     selector: 'app-plot-click-menu',
@@ -26,7 +27,7 @@ export class PlotClickMenuComponent {
 
     menuItems: MenuItem[] = [];
 
-    constructor(private readonly el: ElementRef) { }
+    constructor(private readonly el: ElementRef, private modalService: ModalService) { }
 
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
