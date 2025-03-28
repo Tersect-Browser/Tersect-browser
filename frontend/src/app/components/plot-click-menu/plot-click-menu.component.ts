@@ -34,6 +34,24 @@ export class PlotClickMenuComponent {
         this.el.nativeElement.style.top = `${pos.y}px`;
     }
 
+    openCustomModal() {
+        this.modalService.openElementModal({
+          tagName: 'jbrowser-wrapper',
+          props: {
+            'bind-props': {
+              location: {
+                start: '0',
+                end: '98543444',
+                zoomLevel: 5,
+                pheneticWidth: 100,
+                binSize: 200
+              }
+            }
+          },
+          title: 'JBrowse Viewer'
+        });
+      }
+
     hide() {
         this.position = { x: 0, y: 0 };
         this.el.nativeElement.style.visibility = 'hidden';
@@ -89,6 +107,10 @@ export class PlotClickMenuComponent {
                 {
                     label: 'View in browser',
                     icon: 'fa fa-binoculars',
+                    command: () => {
+                        this.openCustomModal()
+                        this.hide();
+                    }
                 }
             ]
         };

@@ -17,13 +17,6 @@ const JbrowseWithState = ({state} : {state: ViewModel}) => {
 
 
 function JbrowserWrapper(props: any) {
-
-
-
-
-    
-    
-  
     const state = createViewState({
         assembly,
         tracks,
@@ -32,14 +25,14 @@ function JbrowserWrapper(props: any) {
           view: {
             type: 'LinearGenomeView',
             id: '1',
-            bpPerPx: props.location.binSize,
+            bpPerPx: props?.location?.binSize ?? 50000,
             offsetPx: 0,
             displayedRegions: [
               {
                 assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.end,
-                refName: tracks[0].name,
+                start: props?.location?.start ?? 1,
+                end: props?.location?.end ?? 9500000,
+                refName: props.location.ascs ? props.location.ascs : tracks[0].name,
               },
             ],
           },
@@ -74,7 +67,6 @@ function JbrowserWrapper(props: any) {
 
 
       state.assemblyManager.waitForAssembly(assembly.name).then(data => {
-        console.log(data?.refNameAliases, 'awaited assembly');
         state.session.addView('LinearGenomeView', {
           type: 'LinearGenomeView',
           id: '1',
@@ -89,7 +81,6 @@ function JbrowserWrapper(props: any) {
             },
           ],
         })
-        console.log('added view', state.session.views.length);
         // state.session.views[0]?.showTrack(tracks[0].trackId)
         tracks.slice(0, 3).forEach(each => {
           state.session.views[0].horizontalScroll(-10)
