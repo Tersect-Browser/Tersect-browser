@@ -31,12 +31,38 @@ function JbrowserWrapper(props: any) {
               "quaternary": {
                 "main": "#459e00"
               }
+            },
+            components: {
+              MuiPaper: {
+                styleOverrides: {
+                  root:{
+                    boxShadow: "none",
+                    // height: "200px",
+                    // overflow: "auto",
+                    // borderRadius: "0px",
+                    // padding: "0 !important",
+                    // margin: "0px"
+                  }
+                }
+              },
+              // MuiAppBar: {
+              //   styleOverrides: {
+              //     root: {
+              //       boxShadow: "none",
+              //       height: "45px"
+              //     }
+              //   }
+              // }
             }
       
           }
         }
       })
-  return <JBrowseLinearGenomeView   viewState={state} />
+  return (
+  <div style={{ height: '200px', overflow: 'auto' }}>
+    <JBrowseLinearGenomeView   viewState={state}/>
+  </div>
+  )
 }
 
 export default JbrowserWrapper
