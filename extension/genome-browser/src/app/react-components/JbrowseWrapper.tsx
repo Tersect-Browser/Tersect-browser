@@ -31,9 +31,19 @@ function JbrowserWrapper(props: any) {
               "quaternary": {
                 "main": "#459e00"
               }
+            },
+            components: {
+              MuiPaper: {
+                styleOverrides: {
+                  root:{
+                    boxShadow: "none"
+                  }
+                }
+              }
             }
       
           }
+
         }
       })
   return <JBrowseLinearGenomeView   viewState={state} />
