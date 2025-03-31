@@ -36,23 +36,10 @@ function JbrowserWrapper(props: any) {
               MuiPaper: {
                 styleOverrides: {
                   root:{
-                    boxShadow: "none",
-                    // height: "200px",
-                    // overflow: "auto",
-                    // borderRadius: "0px",
-                    // padding: "0 !important",
-                    // margin: "0px"
+                    boxShadow: "none"
                   }
                 }
-              },
-              // MuiAppBar: {
-              //   styleOverrides: {
-              //     root: {
-              //       boxShadow: "none",
-              //       height: "45px"
-              //     }
-              //   }
-              // }
+              }
             }
       
           }
