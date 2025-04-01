@@ -20,8 +20,9 @@ const accName = "S.lyc LA2838A";
 
 function JbrowserWrapper(props: any) {
   const accessionName = (props.location?.accession?.name || accName);
-  //const accessionName = false;
+  // const accessionName = false;
 
+    // Define default view state, with default pre-selected chromosome matching drop-down menu selected
     const state = createViewState({
         assembly,
         tracks,
@@ -36,8 +37,8 @@ function JbrowserWrapper(props: any) {
               {
                 assemblyName: assembly.name,
                 start: props.location.start,
-                end: props.location.end,
-                refName: tracks[0].name,
+                end: props.location.preselectedChromosome.size,
+                refName: props.location.preselectedChromosome.name,
               },
             ],
           },
@@ -69,10 +70,15 @@ function JbrowserWrapper(props: any) {
 
 
       if (accessionName){
-        console.log("accession name:", accessionName);
         // create view state
         state.assemblyManager.waitForAssembly(assembly.name).then(data => {
-          console.log(data?.refNameAliases, 'awaited assembly');
+
+          // remove previously loaded view states
+          if (state.session.views.length > 0) {
+            state.session.removeView();
+          }
+
+          // update view state
           state.session.addView('LinearGenomeView', {
             type: 'LinearGenomeView',
             id: '1',
@@ -82,14 +88,11 @@ function JbrowserWrapper(props: any) {
               {
                 assemblyName: assembly.name,
                 start: props.location.start,
-                end: props.location.end,
-                refName: props.location.chromosome.name, // need to add an initial chrom state, otherwise wont load properly
-                // refName: Object.keys(data?.refNameAliases!)[0],
+                end: props.location.chromosome.size,
+                refName: props.location.chromosome.name,
               },
             ],
           })
-          console.log('added view', state.session.views.length);
-          console.log('object.keys refName:', Object.keys(data?.refNameAliases!)[0]);
 
           const accessionTrack = tracks.find(track => track.trackId == accessionName);
           if (accessionTrack){
@@ -97,13 +100,17 @@ function JbrowserWrapper(props: any) {
             state.session.views[0]?.setHideHeader(true)
             // state.session.views[0]?.scrollTo(50000, 900000)
             state.session.views[0]?.showTrack(accessionTrack.trackId)
-            console.log("selected chrom", props.location.chromosome.name)
           }
-          
         })
       } else {
         state.assemblyManager.waitForAssembly(assembly.name).then(data => {
-          console.log(data?.refNameAliases, 'awaited assembly');
+
+          // remove previously loaded view states
+          if (state.session.views.length > 0) {
+            state.session.removeView();
+          }
+
+          // update view state with selected chromosome
           state.session.addView('LinearGenomeView', {
             type: 'LinearGenomeView',
             id: '1',
@@ -113,9 +120,8 @@ function JbrowserWrapper(props: any) {
               {
                 assemblyName: assembly.name,
                 start: props.location.start,
-                end: props.location.end,
-                refName: props.location.chromosome,
-                // refName: Object.keys(data?.refNameAliases!)[0],
+                end: props.location.chromosome.size,
+                refName: props.location.chromosome.name,
               },
             ],
           })
