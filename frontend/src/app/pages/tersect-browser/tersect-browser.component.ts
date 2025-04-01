@@ -80,8 +80,7 @@ export class TersectBrowserComponent implements OnInit {
     chromosomes: Chromosome[];
     displaySidebar = false;
     selectedAccessions: string[];
-
-    selectedChromosome: Chromosome;
+    preselectedChromosome: Chromosome;
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -111,11 +110,9 @@ export class TersectBrowserComponent implements OnInit {
 
         this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
             this.selectedChromosomeSub = chromosome;
-            console.log('what is selectedChromosomeSub:',this.selectedChromosomeSub);
         })
 
-        
-  
+
         const settings$ = this.route.paramMap.pipe(
             switchMap(params => {
                 return this.tersectBackendService
@@ -138,23 +135,13 @@ export class TersectBrowserComponent implements OnInit {
                 this.chromosomes = chromosomes;
                 this.accessionGroups = settings.accession_groups;
                 this.selectedAccessions = settings.selected_accessions;
-                this.selectedChromosome = settings.selected_chromosome;
+                this.preselectedChromosome = this.plotState.chromosome;
             });
 
-            console.log("here selected chromosome", this.selectedChromosome)
+            
             
         });
 
-        this.plotState.chromosome$.subscribe(chromosome => {
-            console.log("Updated selected chromosome:", chromosome);
-            // console.log("Updated selected chromosome name:", chromosome.name);
-            // this.passChromosomeToJBrowse(chromosome);
-            if (chromosome) {
-                console.log("Updated selected chromosome name:", chromosome.name);
-            } else {
-                console.log("Chromosome is null or undefined");
-            }
-        });
 
         // ✅ Wait for jbrowser-wrapper to be defined before rendering
         customElements.whenDefined('jbrowser-wrapper').then(() => {
