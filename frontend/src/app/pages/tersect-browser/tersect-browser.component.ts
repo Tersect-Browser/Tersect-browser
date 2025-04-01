@@ -59,11 +59,13 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
     binSize: number = this.plotState.binsize;
+    // selectedChromosome: Chromosome = this.plotState.chromosome;
     
    
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
     private accessionSub: Subscription;
+    private chromosomeSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -78,6 +80,8 @@ export class TersectBrowserComponent implements OnInit {
     chromosomes: Chromosome[];
     displaySidebar = false;
     selectedAccessions: string[];
+
+    selectedChromosome: Chromosome;
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -104,6 +108,12 @@ export class TersectBrowserComponent implements OnInit {
         this.binSizeSub =  this.plotState.binsize$.subscribe(value => {
             this.binSize = value
         });
+
+        // this.chromosomeSub = this.plotState.chromosome$.subscribe(value => {
+        //     this.selectedChromosome = value;
+        // })
+
+        
   
         const settings$ = this.route.paramMap.pipe(
             switchMap(params => {
@@ -127,7 +137,22 @@ export class TersectBrowserComponent implements OnInit {
                 this.chromosomes = chromosomes;
                 this.accessionGroups = settings.accession_groups;
                 this.selectedAccessions = settings.selected_accessions;
+                this.selectedChromosome = settings.selected_chromosome;
             });
+
+            console.log("here selected chromosome", this.selectedChromosome)
+            
+        });
+
+        this.plotState.chromosome$.subscribe(chromosome => {
+            console.log("Updated selected chromosome:", chromosome);
+            // console.log("Updated selected chromosome name:", chromosome.name);
+            // this.passChromosomeToJBrowse(chromosome);
+            if (chromosome) {
+                console.log("Updated selected chromosome name:", chromosome.name);
+            } else {
+                console.log("Chromosome is null or undefined");
+            }
         });
 
         // ✅ Wait for jbrowser-wrapper to be defined before rendering

@@ -83,11 +83,13 @@ function JbrowserWrapper(props: any) {
                 assemblyName: assembly.name,
                 start: props.location.start,
                 end: props.location.end,
-                refName: Object.keys(data?.refNameAliases!)[0],
+                refName: props.location.chromosome.name, // need to add an initial chrom state, otherwise wont load properly
+                // refName: Object.keys(data?.refNameAliases!)[0],
               },
             ],
           })
           console.log('added view', state.session.views.length);
+          console.log('object.keys refName:', Object.keys(data?.refNameAliases!)[0]);
 
           const accessionTrack = tracks.find(track => track.trackId == accessionName);
           if (accessionTrack){
@@ -95,6 +97,7 @@ function JbrowserWrapper(props: any) {
             state.session.views[0]?.setHideHeader(true)
             // state.session.views[0]?.scrollTo(50000, 900000)
             state.session.views[0]?.showTrack(accessionTrack.trackId)
+            console.log("selected chrom", props.location.chromosome.name)
           }
           
         })
@@ -111,7 +114,8 @@ function JbrowserWrapper(props: any) {
                 assemblyName: assembly.name,
                 start: props.location.start,
                 end: props.location.end,
-                refName: Object.keys(data?.refNameAliases!)[0],
+                refName: props.location.chromosome,
+                // refName: Object.keys(data?.refNameAliases!)[0],
               },
             ],
           })
