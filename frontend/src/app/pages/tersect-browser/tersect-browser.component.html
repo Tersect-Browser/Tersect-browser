@@ -6,6 +6,10 @@
             icon="fa fa-database"
             (click)="displaySidebar = true" >
         </button>
+        <button pButton class="tb-square-button"
+        icon="fa fa-binoculars"
+        (click)="displayButton = !displayButton" >
+        </button>
     </div>
 
     <div class="p-col tb-toolbar-control">
@@ -60,7 +64,7 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
-<jbrowser-wrapper  bind-props="{location : {start: '0', end: '98543444', zoomLevel: zoomLevel, pheneticWidth: pheneticWidth, binSize: binSize}}"></jbrowser-wrapper>
+<jbrowser-wrapper *ngIf="displayButton"  bind-props="{location : {start: '0', end: '98543444', zoomLevel: zoomLevel, pheneticWidth: pheneticWidth, binSize: binSize}}"></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot

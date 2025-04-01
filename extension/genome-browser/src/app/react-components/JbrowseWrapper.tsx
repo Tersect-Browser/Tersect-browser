@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { reaction } from "mobx";  
+import React from 'react';
 import {
   createViewState,
   JBrowseLinearGenomeView,
@@ -7,6 +6,7 @@ import {
 } from '@jbrowse/react-linear-genome-view'
 import assembly from './assembly';
 import tracks from './tracks';
+import {JbrowseWrapperProps} from '../../../../../common/JbrowseInterface'
 
 
 const JbrowseWithState = ({state} : {state: ViewModel}) => {
@@ -18,10 +18,12 @@ const JbrowseWithState = ({state} : {state: ViewModel}) => {
 const accName = "S.lyc LA2838A";
 
 
-function JbrowserWrapper(props: any) {
-  const accessionName = (props.location?.accession?.name || accName);
-  //const accessionName = false;
 
+
+function JbrowserWrapper(props: JbrowseWrapperProps) {
+  console.log('props', props);
+  
+  const accessionName = (props.location?.accession?.name || accName);
     const state = createViewState({
         assembly,
         tracks,
@@ -30,13 +32,13 @@ function JbrowserWrapper(props: any) {
           view: {
             type: 'LinearGenomeView',
             id: '1',
-            bpPerPx: props.location.binSize,
+            bpPerPx: props?.location?.binSize ?? 50000,
             offsetPx: 0,
             displayedRegions: [
               {
                 assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.end,
+                start: props?.location?.start ?? 1,
+                end: props?.location?.end ?? 9500000,
                 refName: tracks[0].name,
               },
             ],
@@ -76,7 +78,7 @@ function JbrowserWrapper(props: any) {
           state.session.addView('LinearGenomeView', {
             type: 'LinearGenomeView',
             id: '1',
-            bpPerPx: ((props.location.binSize) * (100 /props.location.zoomLevel)),
+            bpPerPx: (props?.location?.binSize || 0) * (100 / (props?.location?.zoomLevel || 100)),
             offsetPx: 0,
             displayedRegions: [
               {
@@ -104,7 +106,7 @@ function JbrowserWrapper(props: any) {
           state.session.addView('LinearGenomeView', {
             type: 'LinearGenomeView',
             id: '1',
-            bpPerPx: ((props.location.binSize) * (100 /props.location.zoomLevel)),
+            bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 100))),
             offsetPx: 0,
             displayedRegions: [
               {
