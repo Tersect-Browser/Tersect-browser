@@ -61,12 +61,8 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
                 "main": "#459e00"
               }
             }
-      
           },
-        
         },
-        
-
       })
 
 
