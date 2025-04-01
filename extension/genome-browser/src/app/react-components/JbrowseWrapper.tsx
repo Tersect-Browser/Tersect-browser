@@ -46,7 +46,11 @@ function JbrowserWrapper(props: any) {
 
         }
       })
-  return <JBrowseLinearGenomeView   viewState={state} />
+  return (
+  <div style={{ height: '200px', overflow: 'auto' }}>
+    <JBrowseLinearGenomeView   viewState={state}/>
+  </div>
+  )
 }
 
 export default JbrowserWrapper
