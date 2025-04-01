@@ -2,9 +2,11 @@
 
 <p-dialog
   *ngIf="isVisible"
-  minWidth="800px"
   [(visible)]="isVisible"  dismissableMask="true"
   [resizable]="false" modal="true" appendTo="body"
+  [style]="{ width: '80vw'}"
+  [position]="center"
+  [positionTop]="30"
   header="modalTitle">
   
   <jbrowser-wrapper 

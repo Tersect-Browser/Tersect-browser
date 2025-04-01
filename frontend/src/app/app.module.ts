@@ -22,7 +22,7 @@ import {
 } from './pages/tersect-browser/tersect-browser.component';
 
 import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
-import { GlobalModalComponent } from './components/global-modal/global-modal.component';
+import { GlobalModalComponent } from './components/global-jbrowse-modal/global-modal.component';
 import { DialogModule } from 'primeng/dialog';
 
 const appRoutes: Routes = [

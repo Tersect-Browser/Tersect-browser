@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { reaction } from "mobx";  
+import React from 'react';
 import {
   createViewState,
   JBrowseLinearGenomeView,
@@ -7,6 +6,7 @@ import {
 } from '@jbrowse/react-linear-genome-view'
 import assembly from './assembly';
 import tracks from './tracks';
+import {JbrowseWrapperProps} from '../../../../../common/JbrowseInterface'
 
 
 const JbrowseWithState = ({state} : {state: ViewModel}) => {
@@ -16,7 +16,9 @@ const JbrowseWithState = ({state} : {state: ViewModel}) => {
 
 
 
-function JbrowserWrapper(props: any) {
+
+
+function JbrowserWrapper(props: JbrowseWrapperProps) {
     const state = createViewState({
         assembly,
         tracks,
@@ -32,7 +34,7 @@ function JbrowserWrapper(props: any) {
                 assemblyName: assembly.name,
                 start: props?.location?.start ?? 1,
                 end: props?.location?.end ?? 9500000,
-                refName: props.location.ascs ? props.location.ascs : tracks[0].name,
+                refName: tracks[0].name,
               },
             ],
           },
