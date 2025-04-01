@@ -59,7 +59,7 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
     binSize: number = this.plotState.binsize;
-    // selectedChromosome: Chromosome = this.plotState.chromosome;
+    selectedChromosomeSub: Chromosome;
     
    
     private zoomSub: Subscription;
@@ -109,9 +109,10 @@ export class TersectBrowserComponent implements OnInit {
             this.binSize = value
         });
 
-        // this.chromosomeSub = this.plotState.chromosome$.subscribe(value => {
-        //     this.selectedChromosome = value;
-        // })
+        this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
+            this.selectedChromosomeSub = chromosome;
+            console.log('what is selectedChromosomeSub:',this.selectedChromosomeSub);
+        })
 
         
   
