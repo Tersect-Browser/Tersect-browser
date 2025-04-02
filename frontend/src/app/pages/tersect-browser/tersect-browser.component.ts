@@ -40,6 +40,8 @@ import {
 import { PlotCreatorService } from '../../components/tersect-distance-plot/services/plot-creator.service';
 import { TreeDrawService } from '../../services/tree-draw.service';
 
+import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
+
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -62,6 +64,8 @@ export class TersectBrowserComponent implements OnInit {
     selectedChromosomeSub: Chromosome;
     selectedInterval: number[];
     defaultInterval: number[];
+    // offsetWidth: TreePlotComponent;
+    offsetCanvas: number;
     
    
     private zoomSub: Subscription;
@@ -69,6 +73,7 @@ export class TersectBrowserComponent implements OnInit {
     private accessionSub: Subscription;
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
+    private offsetCanvasSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -92,16 +97,38 @@ export class TersectBrowserComponent implements OnInit {
                 private readonly plotZoom: PlotZoomService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
+                // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
 
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
+// // Method to handle the event and update the offsetCanvas value
+// onOffsetCanvasChange(updatedOffsetCanvas: number) {
+//     this.offsetCanvas = updatedOffsetCanvas;
+//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
+//   }
+// onOffsetCanvasChange(updatedOffsetCanvas: number) {
+//     this.offsetCanvas = updatedOffsetCanvas;
+//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
+//   }
 
     ngOnInit() {
 
         console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
+        // console.log('canvas width passed from tree-plot.component', this.offsetCanvasWidth);
+        // this.offsetWidth = this.offsetCanvasWidth;
+        // console.log('canvas width saved from tree-plot.component', this.offsetWidth);
+
+        // this.treePlotComponent.offsetCanvasChange.subscribe((newOffsetCanvas: number) => {
+        //     this.onOffsetCanvasChange(newOffsetCanvas);
+        //   });
+        
+      
+        
+
+        // this.offsetCanvas = this.offsetCanvasChange;
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;
@@ -118,6 +145,11 @@ export class TersectBrowserComponent implements OnInit {
         this.selectedIntervalSub = this.plotState.interval$.subscribe(value => {
             this.selectedInterval = value;
             console.log('tracking selectedInterval', this.selectedInterval);
+        })
+
+        this.offsetCanvasSub = this.plotState.offsetCanvas$.subscribe(value => {
+            this.offsetCanvas = value;
+            console.log('tracking offset', this.offsetCanvas);
         })
 
 

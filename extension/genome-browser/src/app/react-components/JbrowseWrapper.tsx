@@ -68,7 +68,12 @@ function JbrowserWrapper(props: any) {
               MuiPaper: {
                 styleOverrides: {
                   root:{
-                    boxShadow: "none"
+                    boxShadow: "none",
+                    // height: "200px", // currently, setting the height prevents tracks from loading properly!!
+                    // overflow: "auto",
+                    // borderRadius: "0px",
+                    // padding: "0 !important",
+                    // margin: "0px"
                   }
                 }
               }
@@ -86,6 +91,8 @@ function JbrowserWrapper(props: any) {
         // create view state
         state.assemblyManager.waitForAssembly(assembly.name).then(data => {
           console.log('passed selectedInterval', props.location.selectedInterval);
+          console.log('passed offsetCanvas', props.location.offsetCanvas);
+          // console.log('passed offsetWidth', props.location.offsetWidth);
 
           // remove previously loaded view states
           if (state.session.views.length > 0) {
@@ -110,7 +117,7 @@ function JbrowserWrapper(props: any) {
           // Add the variant tracks
           const accessionTrack = tracks.find(track => track.trackId == accessionName);
           if (accessionTrack){
-            state.session.views[0].horizontalScroll(-10)
+            state.session.views[0].horizontalScroll(-(props.location.offsetCanvas - 4)) //this.storedTreeView.offscreenCanvas.width - 4px
             state.session.views[0]?.setHideHeader(true)
             // state.session.views[0]?.scrollTo(50000, 900000)
             state.session.views[0]?.showTrack(accessionTrack.trackId)
