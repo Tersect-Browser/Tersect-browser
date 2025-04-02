@@ -10,7 +10,7 @@ import {
 
 @Injectable()
 export class PlotZoomService {
-    static readonly MAX_ZOOM_LEVEL = 100000;
+    static readonly MAX_ZOOM_LEVEL = 1000;
     static readonly MIN_ZOOM_LEVEL = 100;
     static readonly ZOOM_FACTOR = 1.3;
     static readonly ZOOM_ROUND_TO = 50;
