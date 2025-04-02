@@ -19,8 +19,8 @@ const accName = "S.lyc LA2838A";
 
 
 function JbrowserWrapper(props: any) {
-  const accessionName = (props.location?.accession?.name || accName);
-  // const accessionName = false;
+  // const accessionName = (props.location?.accession?.name || accName);
+  const accessionName = false;
 
     // Define default view state, with default pre-selected chromosome matching drop-down menu selected
     if (!props.location?.defaultInterval || !props.location?.offsetCanvas) {
@@ -67,7 +67,7 @@ function JbrowserWrapper(props: any) {
             components: {
               MuiPaper: {
                 styleOverrides: {
-                  root:{
+                  root: {
                     boxShadow: "none",
                     // height: "200px", // currently, setting the height prevents tracks from loading properly!!
                     // overflow: "auto",
@@ -150,11 +150,12 @@ function JbrowserWrapper(props: any) {
           console.log('added view', state.session.views.length);
           // state.session.views[0]?.showTrack(tracks[0].trackId)
           tracks.slice(0, 3).forEach(each => {
-            state.session.views[0].horizontalScroll(-10)
+            
             state.session.views[0]?.setHideHeader(true)
             // state.session.views[0]?.scrollTo(50000, 900000)
             state.session.views[0]?.showTrack(each.trackId)
           })
+          state.session.views[0].horizontalScroll(-(props.location.offsetCanvas - 4))
         })
       }
 
