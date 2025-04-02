@@ -19,8 +19,8 @@ const accName = "S.lyc LA2838A";
 
 
 function JbrowserWrapper(props: any) {
-  // const accessionName = (props.location?.accession?.name || accName);
-  const accessionName = false;
+  const accessionName = (props.location?.accession?.name || accName);
+  // const accessionName = false;
 
     // Define default view state, with default pre-selected chromosome matching drop-down menu selected
     if (!props.location?.defaultInterval) {
@@ -62,6 +62,15 @@ function JbrowserWrapper(props: any) {
               },
               "quaternary": {
                 "main": "#459e00"
+              }
+            },
+            components: {
+              MuiPaper: {
+                styleOverrides: {
+                  root:{
+                    boxShadow: "none"
+                  }
+                }
               }
             }
       
