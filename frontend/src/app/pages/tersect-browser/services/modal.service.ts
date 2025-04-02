@@ -17,7 +17,7 @@ export class ModalService {
   openElementModal(config: JbrowseWrapperProps) {
     this.modalVisible$.next(true);
     this.modalProps$.next(config);
-    this.modalTitle$.next('JBrowse');
+    this.modalTitle$.next(config.location.accession.name);
   }
 
   closeModal() {

@@ -28,7 +28,10 @@ export class GlobalModalComponent implements OnInit {
 
   ngOnInit() {
     this.modalService.visible$.subscribe(val => this.isVisible = val);
-    this.modalService.title$.subscribe(title => this.modalTitle = title);
+    this.modalService.title$.subscribe(title => {
+      console.log('title', title);
+      this.modalTitle = title
+    });
 
     this.modalService.customElement$.subscribe(config => {
 

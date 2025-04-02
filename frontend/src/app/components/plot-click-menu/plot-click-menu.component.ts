@@ -105,7 +105,7 @@ export class PlotClickMenuComponent {
                                     zoomLevel: this.plotStateService.zoomLevel,
                                     pheneticWidth: this.plotStateService.pheneticTree.root.length,
                                     binSize: this.plotStateService.binsize,
-                                    name: targetAccession.accession,
+                                    name: targetAccession.accessionLabel,
                                 }
                             }
                         });
