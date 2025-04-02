@@ -19,10 +19,14 @@ const accName = "S.lyc LA2838A";
 
 
 function JbrowserWrapper(props: any) {
-  const accessionName = (props.location?.accession?.name || accName);
-  // const accessionName = false;
+  // const accessionName = (props.location?.accession?.name || accName);
+  const accessionName = false;
 
     // Define default view state, with default pre-selected chromosome matching drop-down menu selected
+    if (!props.location?.defaultInterval) {
+      return <div>Loading...</div>; // Prevents state initialization
+    }
+
     const state = createViewState({
         assembly,
         tracks,
@@ -36,8 +40,8 @@ function JbrowserWrapper(props: any) {
             displayedRegions: [
               {
                 assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.preselectedChromosome.size,
+                start: props.location.defaultInterval[0],
+                end: props.location.defaultInterval[1],
                 refName: props.location.preselectedChromosome.name,
               },
             ],
@@ -72,6 +76,7 @@ function JbrowserWrapper(props: any) {
       if (accessionName){
         // create view state
         state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+          console.log('passed selectedInterval', props.location.selectedInterval);
 
           // remove previously loaded view states
           if (state.session.views.length > 0) {
@@ -87,13 +92,13 @@ function JbrowserWrapper(props: any) {
             displayedRegions: [
               {
                 assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.chromosome.size,
+                start: props.location.selectedInterval[0],
+                end: props.location.selectedInterval[1],
                 refName: props.location.chromosome.name,
               },
             ],
           })
-
+          // Add the variant tracks
           const accessionTrack = tracks.find(track => track.trackId == accessionName);
           if (accessionTrack){
             state.session.views[0].horizontalScroll(-10)
@@ -119,12 +124,13 @@ function JbrowserWrapper(props: any) {
             displayedRegions: [
               {
                 assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.chromosome.size,
+                start: props.location.selectedInterval[0],
+                end: props.location.selectedInterval[1],
                 refName: props.location.chromosome.name,
               },
             ],
           })
+          // Add the variant tracks
           console.log('added view', state.session.views.length);
           // state.session.views[0]?.showTrack(tracks[0].trackId)
           tracks.slice(0, 3).forEach(each => {

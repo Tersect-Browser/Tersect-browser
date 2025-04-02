@@ -60,12 +60,15 @@ export class TersectBrowserComponent implements OnInit {
     zoomLevel: number = 0;
     binSize: number = this.plotState.binsize;
     selectedChromosomeSub: Chromosome;
+    selectedInterval: number[];
+    defaultInterval: number[];
     
    
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
     private accessionSub: Subscription;
     private chromosomeSub: Subscription;
+    private selectedIntervalSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -110,6 +113,11 @@ export class TersectBrowserComponent implements OnInit {
 
         this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
             this.selectedChromosomeSub = chromosome;
+        })
+
+        this.selectedIntervalSub = this.plotState.interval$.subscribe(value => {
+            this.selectedInterval = value;
+            console.log('tracking selectedInterval', this.selectedInterval);
         })
 
 
@@ -257,6 +265,8 @@ export class TersectBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(settings.selected_interval)) {
             settings.selected_interval = [1, settings.selected_chromosome.size];
+            console.log('interval settings.selected_interval', settings.selected_interval);
+            this.defaultInterval = settings.selected_interval;
         }
         if (isNullOrUndefined(settings.accession_infos)) {
             settings.accession_infos = settings.selected_accessions.map(accId => ({
