@@ -23,7 +23,7 @@ function JbrowserWrapper(props: any) {
   // const accessionName = false;
 
     // Define default view state, with default pre-selected chromosome matching drop-down menu selected
-    if (!props.location?.defaultInterval) {
+    if (!props.location?.defaultInterval || !props.location?.offsetCanvas) {
       return <div>Loading...</div>; // Prevents state initialization
     }
 
