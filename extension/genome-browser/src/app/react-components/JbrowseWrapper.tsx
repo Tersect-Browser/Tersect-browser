@@ -6,168 +6,77 @@ import {
 } from '@jbrowse/react-linear-genome-view'
 import assembly from './assembly';
 import tracks from './tracks';
-import {JbrowseWrapperProps} from '../../../../../common/JbrowseInterface'
-
-
-const JbrowseWithState = ({state} : {state: ViewModel}) => {
-  return <JBrowseLinearGenomeView
-  viewState={state} />
-}
+import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface'
+import JbrowseWithAccessionName from './JbrowseWithAccession';
+import themeStyles from './jbrowseConfig';
 
 // Test trackID for tracks[1].trackID
 const accName = "S.lyc LA2838A";
 
 
-
-
 function JbrowserWrapper(props: JbrowseWrapperProps) {
-  console.log('props', props);
-  
-  const accessionName = (props.location?.accession?.name || accName);
-    const state = createViewState({
-        assembly,
-        tracks,
-        defaultSession: {
-          name: 'default session',
-          view: {
-            type: 'LinearGenomeView',
-            id: '1',
-            bpPerPx: props?.location?.binSize ?? 50000,
-            offsetPx: 0,
-            displayedRegions: [
-              {
-                assemblyName: assembly.name,
-                start: props?.location?.start ?? 1,
-                end: props?.location?.end ?? 9500000,
-                refName: tracks[0].name,
-              },
-            ],
-          },
-        },
-     
-        configuration: {
-          "theme": {
-            "palette": {
-              "primary": {
-                "main": "#459e00"
-              },
-              "secondary": {
-                "main": "#459e00"
-              },
-              "tertiary": {
-                "main": "#459e00"
-              },
-              "quaternary": {
-                "main": "#459e00"
-              }
-            }
-          },
-        },
-      })
-
-
-      if (accessionName){
-        const accessionState = createViewState({
-          assembly,
-          tracks,
-          defaultSession: {
-            name: 'default session',
-            view: {
-              type: 'LinearGenomeView',
-              id: '1',
-              bpPerPx: props?.location?.binSize ?? 50000,
-              offsetPx: 0,
-              displayedRegions: [
-                {
-                  assemblyName: assembly.name,
-                  start: props?.location?.start ?? 1,
-                  end: props?.location?.end ?? 9500000,
-                  refName: accessionName,
-                },
-              ],
-            },
-          },
-       
-          configuration: {
-            "theme": {
-              "palette": {
-                "primary": {
-                  "main": "#459e00"
-                },
-                "secondary": {
-                  "main": "#459e00"
-                },
-                "tertiary": {
-                  "main": "#459e00"
-                },
-                "quaternary": {
-                  "main": "#459e00"
-                }
-              }
-            },
-          },
-        })
-        console.log("accession name:", accessionName);
-        // create view state
-        accessionState.assemblyManager.waitForAssembly(assembly.name).then(data => {
-          console.log(data?.refNameAliases, 'awaited assembly');
-          accessionState.session.addView('LinearGenomeView', {
-            type: 'LinearGenomeView',
-            id: '1',
-            bpPerPx: props.location.accession?.binSize ?? 50000,
-            offsetPx: 0,
-            displayedRegions: [
-              {
-                assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.end,
-                refName: Object.keys(data?.refNameAliases!)[0],
-              },
-            ],
-          })
-          console.log('added view', state.session.views.length);
-
-          const accessionTrack = tracks.find(track => track.name == accessionName);
-          if (accessionTrack){
-            // state.session.views[0].horizontalScroll(-10)
-            // state.session.views[0]?.setHideHeader(true)
-            state.session.views[0]?.scrollTo(props.location.start)
-            accessionState.session.views[0]?.showTrack(accessionTrack.trackId)
-          }
+  const propsZoomLevel = props.location?.zoomLevel ?? 100;
+  if (props?.location?.accession?.name) return <JbrowseWithAccessionName accessionName={props.location?.accession?.name ?? accName} location={props.location} />
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession: {
+      name: 'default session',
+      view: {
+        type: 'LinearGenomeView',
+        id: '1',
+        bpPerPx: props?.location?.binSize ?? 50000,
+        displayedRegions:  tracks.slice(0, 1).map(each => ({
+          assemblyName: assembly.name,
+            start: props?.location?.start ?? 1,
+            end: props?.location?.end ?? 9500000,
+            refName: each.trackId,
           
-        })
-        return <JBrowseLinearGenomeView
-          viewState={accessionState} />
-      } else {
-        state.assemblyManager.waitForAssembly(assembly.name).then(data => {
-          console.log(data?.refNameAliases, 'awaited assembly');
-          state.session.addView('LinearGenomeView', {
-            type: 'LinearGenomeView',
-            id: '1',
-            bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 100))),
-            offsetPx: 0,
-            displayedRegions: [
-              {
-                assemblyName: assembly.name,
-                start: props.location.start,
-                end: props.location.end,
-                refName: Object.keys(data?.refNameAliases!)[0],
-              },
-            ],
-          })
-          console.log('added view', state.session.views.length);
-          // state.session.views[0]?.showTrack(tracks[0].trackId)
-          tracks.slice(0, 3).forEach(each => {
-            state.session.views[0].horizontalScroll(-10)
-            state.session.views[0]?.setHideHeader(true)
-            // state.session.views[0]?.scrollTo(50000, 900000)
-            state.session.views[0]?.showTrack(each.trackId)
-          })
-        })
-      }
+        }))
+      },
+    },
 
-    //@ts-ignore
-  return <JbrowseWithState state={state} />
+    configuration: themeStyles,
+  })
+
+
+  state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+    const propsBinSize = props.location?.binSize ?? 50000;
+    
+    const propsStart = props.location?.start ?? 1;
+    const propsEnd = props.location?.end ?? 9500000;
+    console.log('in react', {propsBinSize, propsZoomLevel, propsStart, propsEnd});
+    
+    if (state.session.views.length > 0) {
+      state.session.removeView();
+    }
+    state.session.addView('LinearGenomeView', {
+      type: 'LinearGenomeView',
+      id: '1',
+      bpPerPx: ((propsBinSize) * (100 /propsZoomLevel)),
+      displayedRegions: [
+        {
+          assemblyName: assembly.name,
+          start: propsStart,
+          end: propsEnd,
+          refName: tracks[0].name,
+        },
+      ],
+    })
+  
+      tracks.slice(0, 1).forEach(each => {
+        // state.session.views[0].horizontalScroll(-10)
+        // state.session.views[0]?.setHideHeader(true)
+        state.session.views[0]?.showTrack(each.trackId)
+      })
+  })
+
+
+  return (
+    // <div style={{ height: '200px', overflow: 'auto' }}>
+    <JBrowseLinearGenomeView key={propsZoomLevel}   viewState={state}/>
+  // </div>
+  )
 }
 
 export default JbrowserWrapper
