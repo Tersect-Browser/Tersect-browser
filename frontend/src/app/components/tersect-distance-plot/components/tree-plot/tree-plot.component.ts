@@ -71,6 +71,8 @@ export class TreePlotComponent extends CanvasPlotElement {
                                   this.canvas.nativeElement);
         this.plotCreator.guiMargins.left = this.storedTreeView.offscreenCanvas.width
                                            / this.plotCreator.zoomFactor;
+        console.log('gui margins left', this.plotCreator.guiMargins.left);
+        console.log('this.storedTreeView.offscreenCanvas.width', this.storedTreeView.offscreenCanvas.width);
     }
 
     protected dragAction(dragState: DragState): void {
