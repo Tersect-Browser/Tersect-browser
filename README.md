@@ -118,6 +118,27 @@ move it to the usr path
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.1.
 
+### To set up data for the Genome Browser extension
+This extension requires data for tracks to be hosted within the Tersect-browser project folder structure. Copy the reference sequence, index, and at least one of the VCF and corresponding TBI files (in this case 002) to the following folder:
+- `ls Tersect-browser/~/mongo-data/gp_data_copy/`
+  - SL2.50.fa
+  - SL2.50.fa.fai
+  - RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz
+  - RF_002_SZAXPI009284-57.vcf.gz.snpeff.tbi.vcf.gz
+
+Once downloaded, you should be able to deploy Tersect Browser and view these tracks. Deployment now takes an extra step, as the Genome Browser extension needs to be deployed separately to the main Browser:
+- `mongod --dbpath ~/mongo-data`
+- `cd {path-to}/Tersect-browser/extension/genome-browser`
+  - `nvm use 18`
+  - `source .tersect/bin/activate`
+  - `npm start`
+- `cd {path-to}/Tersect-browser`
+  - `nvm use 16`
+  - `source .tersect/bin/activate`
+  - `npm start`
+
+This should deploy the Tersect Browser and the Genome Browser component, which can be accessed by clicking on the binoculars button. Open the track selector of the Genome Browser, and select the reference genome and the accession that you downloaded the files for (in this case S.lyc LA2838A).
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
