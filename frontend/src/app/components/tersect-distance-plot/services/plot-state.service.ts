@@ -132,7 +132,7 @@ export class PlotStateService {
     private readonly accessionsSource = new BehaviorSubject<string[]>(undefined);
     private readonly referenceSource = new BehaviorSubject<string>(undefined);
     private readonly chromosomeSource = new BehaviorSubject<Chromosome>(undefined);
-    private readonly intervalSource = new BehaviorSubject<number[]>(undefined);
+    private readonly intervalSource = new BehaviorSubject<number[]>(undefined); 
     private readonly binsizeSource = new BehaviorSubject<number>(undefined);
     private readonly zoomLevelSource = new BehaviorSubject<number>(100);
     private readonly orderedAccessionsSource = new BehaviorSubject<string[]>(null);

@@ -68,6 +68,7 @@ export class TooltipComponent {
     }
 
     private formatIntervalTooltip(target: PlotSequenceInterval): string {
+        console.log(target);
         const startPos = formatPosition(target.startPosition);
         const endPos = formatPosition(target.endPosition);
         return `${startPos} - ${endPos}`;

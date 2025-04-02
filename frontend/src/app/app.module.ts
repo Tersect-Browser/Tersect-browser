@@ -22,6 +22,8 @@ import {
 } from './pages/tersect-browser/tersect-browser.component';
 
 import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
+import { GlobalModalComponent } from './components/global-jbrowse-modal/global-modal.component';
+import { DialogModule } from 'primeng/dialog';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: TersectBrowserComponent },
@@ -31,7 +33,8 @@ const appRoutes: Routes = [
 
 @NgModule({
     declarations: [
-        AppComponent
+        AppComponent,
+        GlobalModalComponent,
     ],
     imports: [
         BrowserAnimationsModule,
@@ -39,6 +42,7 @@ const appRoutes: Routes = [
         BrowserModule,
         IntroPageModule,
         TersectBrowserModule,
+        DialogModule,
         RouterModule.forRoot(appRoutes)
     ],
     providers: [
