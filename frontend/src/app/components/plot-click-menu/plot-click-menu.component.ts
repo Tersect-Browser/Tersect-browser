@@ -11,6 +11,8 @@ import {
 import {
     formatPosition
 } from '../../utils/utils';
+import { ModalService } from '../../pages/tersect-browser/services/modal.service';
+import { PlotStateService } from '../tersect-distance-plot/services/plot-state.service';
 
 @Component({
     selector: 'app-plot-click-menu',
@@ -26,12 +28,13 @@ export class PlotClickMenuComponent {
 
     menuItems: MenuItem[] = [];
 
-    constructor(private readonly el: ElementRef) { }
+    constructor(private readonly el: ElementRef, private modalService: ModalService, private plotStateService: PlotStateService) { }
 
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
         this.el.nativeElement.style.top = `${pos.y}px`;
     }
+
 
     hide() {
         this.position = { x: 0, y: 0 };
@@ -88,6 +91,26 @@ export class PlotClickMenuComponent {
                 {
                     label: 'View in browser',
                     icon: 'fa fa-binoculars',
+                    command: () => {
+                        this.modalService.openElementModal({
+                            location: {
+                                start: targetAccession.startPosition,
+                                end: targetAccession.endPosition,
+                                zoomLevel: this.plotStateService.zoomLevel,
+                                pheneticWidth: this.plotStateService.pheneticTree.root.length,
+                                binSize: this.plotStateService.binsize,
+                                accession: {
+                                    start: targetAccession.startPosition,
+                                    end: targetAccession.endPosition,
+                                    zoomLevel: this.plotStateService.zoomLevel,
+                                    pheneticWidth: this.plotStateService.pheneticTree.root.length,
+                                    binSize: this.plotStateService.binsize,
+                                    name: targetAccession.accessionLabel,
+                                }
+                            }
+                        });
+                        this.hide();
+                    }
                 }
             ]
         };

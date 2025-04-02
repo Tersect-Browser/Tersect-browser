@@ -65,6 +65,7 @@ export class TreePlotComponent extends CanvasPlotElement {
                                                         this.getContainerSize());
         }
         this.updateTreeView(this.storedTreeView);
+        
         this.treeDrawService.draw(this.storedTreeView,
                                   0, this.plotCreator.offsetY,
                                   this.canvas.nativeElement);

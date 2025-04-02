@@ -1,0 +1,16 @@
+
+
+<p-dialog
+  *ngIf="isVisible"
+  [(visible)]="isVisible"  dismissableMask="true"
+  [resizable]="false" modal="true" appendTo="body"
+  [style]="{ width: '80vw'}"
+  [position]="center"
+  [positionTop]="30"
+  header="modalTitle">
+  
+  <jbrowser-wrapper 
+  bind-props="jbrowseProps">
+  </jbrowser-wrapper>
+
+</p-dialog>

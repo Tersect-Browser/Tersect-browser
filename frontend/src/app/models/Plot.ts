@@ -5,6 +5,8 @@ export interface PlotArea {
 export interface PlotAccession extends PlotArea {
     accessionLabel: string;
     accession: string;
+    startPosition?: number;
+    endPosition?: number;
 }
 
 export interface PlotSequenceInterval extends PlotArea {
