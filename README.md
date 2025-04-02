@@ -25,6 +25,8 @@ Ensure you have nvm installed on your machine and perform the following steps;
   - Run `npm install` with no errors
 - Run `npm install -g turbo` to install turbo
 - Add a `tbconfig.json` with the following values (remove commented line)
+  - mongoHost relates to the local mongodb installation that is probably in this path: ~/mongo-data
+  - localDbPath is how we host the reference file and tbi + vcf files for each accession. These should be within your Tersect-browser project, at the path: Tersect-browser/~/mongo-data/gp_data_copy
 
 ```json
 {
@@ -32,7 +34,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
     "baseHref": "/TersectBrowserGP/",
     "mongoHost": "mongodb://localhost:27017", // adjust url to fit your local mongodb installation
     "dbName": "tersect_browser_gp",
-    "localDbPath": "/home/tbrowser/local_db",
+    "localDbPath": "/Users/user/Tersect-browser/~/mongo-data/gp_data_copy", // adjust url to fit your Tersect-browser path
     "indexPartitions": [
         100000000,
         50000000,
