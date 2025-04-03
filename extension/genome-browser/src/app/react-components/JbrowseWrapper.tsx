@@ -90,9 +90,6 @@ function JbrowserWrapper(props: any) {
       if (accessionName){
         // create view state
         state.assemblyManager.waitForAssembly(assembly.name).then(data => {
-          console.log('passed selectedInterval', props.location.selectedInterval);
-          console.log('passed offsetCanvas', props.location.offsetCanvas);
-          // console.log('passed offsetWidth', props.location.offsetWidth);
 
           // remove previously loaded view states
           if (state.session.views.length > 0) {
@@ -119,7 +116,6 @@ function JbrowserWrapper(props: any) {
           if (accessionTrack){
             state.session.views[0].horizontalScroll(-(props.location.offsetCanvas - 4)) //this.storedTreeView.offscreenCanvas.width - 4px
             state.session.views[0]?.setHideHeader(true)
-            // state.session.views[0]?.scrollTo(50000, 900000)
             state.session.views[0]?.showTrack(accessionTrack.trackId)
           }
         })
@@ -150,7 +146,6 @@ function JbrowserWrapper(props: any) {
           console.log('added view', state.session.views.length);
           // state.session.views[0]?.showTrack(tracks[0].trackId)
           tracks.slice(0, 3).forEach(each => {
-            
             state.session.views[0]?.setHideHeader(true)
             // state.session.views[0]?.scrollTo(50000, 900000)
             state.session.views[0]?.showTrack(each.trackId)

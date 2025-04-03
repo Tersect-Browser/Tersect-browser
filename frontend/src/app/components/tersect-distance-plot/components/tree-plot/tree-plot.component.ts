@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, Output, ViewChild, EventEmitter } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 
 import {
     AccessionTreeView
@@ -28,7 +28,7 @@ import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
-// import { EventEmitter } from 'events';
+
 
 @Component({
     selector: 'app-tree-plot',
@@ -38,9 +38,6 @@ import {
 export class TreePlotComponent extends CanvasPlotElement {
     private static readonly TREE_CONTAINER_PROPORTION = 0.5;
 
-    // @Output() offsetCanvasChange = new EventEmitter<number>();
-
-    offsetCanvas: number;
 
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
@@ -77,12 +74,7 @@ export class TreePlotComponent extends CanvasPlotElement {
         this.plotCreator.guiMargins.left = this.storedTreeView.offscreenCanvas.width
                                            / this.plotCreator.zoomFactor;
         
-        this.offsetCanvas = this.storedTreeView.offscreenCanvas.width;
-        console.log('this.offsetCanvas', this.offsetCanvas);
-
-        // this.offsetCanvasChange.emit(this.offsetCanvas);
-
-        // this.plotState.offsetCanvas$ = this.storedTreeView.offscreenCanvas.width;
+        //Pass the width of the canvas to be stored in PlotStateService
         this.plotState.offsetCanvasSource.next(this.storedTreeView.offscreenCanvas.width);
     }
 
