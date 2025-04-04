@@ -28,6 +28,7 @@ export class PlotClickMenuComponent {
 
     menuItems: MenuItem[] = [];
 
+
     constructor(private readonly el: ElementRef, private modalService: ModalService, private plotStateService: PlotStateService) { }
 
     private set position(pos: { x: number, y: number }) {
@@ -99,6 +100,10 @@ export class PlotClickMenuComponent {
                                 zoomLevel: this.plotStateService.zoomLevel,
                                 pheneticWidth: this.plotStateService.pheneticTree.root.length,
                                 binSize: this.plotStateService.binsize,
+                                selectedInterval: this.plotStateService.interval,
+                                chromosome: this.plotStateService.chromosome,
+                                defaultInterval: [1, this.plotStateService.chromosome.size],
+                                preselectedChromosome: this.plotStateService.chromosome,
                                 accession: {
                                     start: targetAccession.startPosition,
                                     end: targetAccession.endPosition,
@@ -106,6 +111,10 @@ export class PlotClickMenuComponent {
                                     pheneticWidth: this.plotStateService.pheneticTree.root.length,
                                     binSize: this.plotStateService.binsize,
                                     name: targetAccession.accessionLabel,
+                                    preselectedChromosome: this.plotStateService.chromosome,
+                                    chromosome: this.plotStateService.chromosome,
+                                    selectedInterval: this.plotStateService.interval,
+                                    defaultInterval: [1, this.plotStateService.chromosome.size],
                                 }
                             }
                         });

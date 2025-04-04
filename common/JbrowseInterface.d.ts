@@ -1,17 +1,5 @@
+import { Chromosome } from "../frontend/src/app/models/Chromosome";
+
 export interface JbrowseWrapperProps {
-    location: {
-      start: number;
-      end: number;
-      zoomLevel?: number;
-      pheneticWidth?: number;
-      binSize?: number;
-      accession?: {
-        start: number;
-        end: number;
-        zoomLevel: number;
-        pheneticWidth: number;
-        binSize: number;
-        name: string;
-      }
-    }
+    location?: any
   }
