@@ -40,6 +40,8 @@ import {
 import { PlotCreatorService } from '../../components/tersect-distance-plot/services/plot-creator.service';
 import { TreeDrawService } from '../../services/tree-draw.service';
 
+import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
+
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -59,11 +61,19 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
     binSize: number = this.plotState.binsize;
+    selectedChromosomeSub: Chromosome;
+    selectedInterval: number[];
+    defaultInterval: number[];
+    // offsetWidth: TreePlotComponent;
+    offsetCanvas: number;
     
    
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
     private accessionSub: Subscription;
+    private chromosomeSub: Subscription;
+    private selectedIntervalSub: Subscription;
+    private offsetCanvasSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -79,6 +89,7 @@ export class TersectBrowserComponent implements OnInit {
     displaySidebar = false;
     displayButton = false;
     selectedAccessions: string[];
+    preselectedChromosome: Chromosome;
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -87,16 +98,38 @@ export class TersectBrowserComponent implements OnInit {
                 private readonly plotZoom: PlotZoomService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
+                // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
 
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
+// // Method to handle the event and update the offsetCanvas value
+// onOffsetCanvasChange(updatedOffsetCanvas: number) {
+//     this.offsetCanvas = updatedOffsetCanvas;
+//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
+//   }
+// onOffsetCanvasChange(updatedOffsetCanvas: number) {
+//     this.offsetCanvas = updatedOffsetCanvas;
+//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
+//   }
 
     ngOnInit() {
 
         console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
+        // console.log('canvas width passed from tree-plot.component', this.offsetCanvasWidth);
+        // this.offsetWidth = this.offsetCanvasWidth;
+        // console.log('canvas width saved from tree-plot.component', this.offsetWidth);
+
+        // this.treePlotComponent.offsetCanvasChange.subscribe((newOffsetCanvas: number) => {
+        //     this.onOffsetCanvasChange(newOffsetCanvas);
+        //   });
+        
+      
+        
+
+        // this.offsetCanvas = this.offsetCanvasChange;
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;
@@ -105,7 +138,22 @@ export class TersectBrowserComponent implements OnInit {
         this.binSizeSub =  this.plotState.binsize$.subscribe(value => {
             this.binSize = value
         });
-  
+
+        this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
+            this.selectedChromosomeSub = chromosome;
+        })
+
+        this.selectedIntervalSub = this.plotState.interval$.subscribe(value => {
+            this.selectedInterval = value;
+            console.log('tracking selectedInterval', this.selectedInterval);
+        })
+
+        this.offsetCanvasSub = this.plotState.offsetCanvas$.subscribe(value => {
+            this.offsetCanvas = value;
+            console.log('tracking offset', this.offsetCanvas);
+        })
+
+
         const settings$ = this.route.paramMap.pipe(
             switchMap(params => {
                 return this.tersectBackendService
@@ -128,8 +176,13 @@ export class TersectBrowserComponent implements OnInit {
                 this.chromosomes = chromosomes;
                 this.accessionGroups = settings.accession_groups;
                 this.selectedAccessions = settings.selected_accessions;
+                this.preselectedChromosome = this.plotState.chromosome;
             });
+
+            
+            
         });
+
 
         // ✅ Wait for jbrowser-wrapper to be defined before rendering
         customElements.whenDefined('jbrowser-wrapper').then(() => {
@@ -245,6 +298,8 @@ export class TersectBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(settings.selected_interval)) {
             settings.selected_interval = [1, settings.selected_chromosome.size];
+            console.log('interval settings.selected_interval', settings.selected_interval);
+            this.defaultInterval = settings.selected_interval;
         }
         if (isNullOrUndefined(settings.accession_infos)) {
             settings.accession_infos = settings.selected_accessions.map(accId => ({
