@@ -6,17 +6,28 @@ import {
 } from '@jbrowse/react-linear-genome-view'
 import assembly from './assembly';
 import tracks from './tracks';
-import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface'
+import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
-import themeStyles from './jbrowseConfig';
+import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
 
-// Test trackID for tracks[1].trackID
-const accName = "S.lyc LA2838A";
 
+const JbrowseWithState = ({ state }: { state: ViewModel }) => {
+  return <JBrowseLinearGenomeView
+    viewState={state} />
+}
 
 function JbrowserWrapper(props: JbrowseWrapperProps) {
-  const propsZoomLevel = props.location?.zoomLevel ?? 100;
-  if (props?.location?.accession?.name) return <JbrowseWithAccessionName accessionName={props.location?.accession?.name ?? accName} location={props.location} />
+  if(props?.location?.accession?.name) {
+    return <JbrowseWithAccessionName accessionName={props.location.accession.name} location={props.location}  />
+  }
+
+  // Define default view state, with default pre-selected chromosome matching drop-down menu selected
+  if (!props.location?.defaultInterval || !props.location?.offsetCanvas) {
+    return <div>Loading...</div>; // Prevents state initialization
+  }
+
+
+
   const state = createViewState({
     assembly,
     tracks,
@@ -25,58 +36,61 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       view: {
         type: 'LinearGenomeView',
         id: '1',
-        bpPerPx: props?.location?.binSize ?? 50000,
-        displayedRegions:  tracks.slice(0, 1).map(each => ({
-          assemblyName: assembly.name,
-            start: props?.location?.start ?? 1,
-            end: props?.location?.end ?? 9500000,
-            refName: each.trackId,
-          
-        }))
+        bpPerPx: props.location?.binSize ?? 1,
+        offsetPx: 0,
+        displayedRegions: [
+          {
+            assemblyName: assembly.name,
+            start: props.location?.defaultInterval?.[0] ?? 0,
+            end: props.location?.defaultInterval?.[1] ?? 0,
+            refName: props.location?.preselectedChromosome?.name ?? '',
+          },
+        ],
       },
     },
 
-    configuration: themeStyles,
+    configuration: config
   })
+
 
 
   state.assemblyManager.waitForAssembly(assembly.name).then(data => {
-    const propsBinSize = props.location?.binSize ?? 50000;
-    
-    const propsStart = props.location?.start ?? 1;
-    const propsEnd = props.location?.end ?? 9500000;
-    console.log('in react', {propsBinSize, propsZoomLevel, propsStart, propsEnd});
-    
+
+    // remove previously loaded view states
     if (state.session.views.length > 0) {
       state.session.removeView();
     }
+
+    // update view state with selected chromosome
     state.session.addView('LinearGenomeView', {
       type: 'LinearGenomeView',
       id: '1',
-      bpPerPx: ((propsBinSize) * (100 /propsZoomLevel)),
+      bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1))),
+      offsetPx: 0,
       displayedRegions: [
         {
           assemblyName: assembly.name,
-          start: propsStart,
-          end: propsEnd,
-          refName: tracks[0].name,
+          start: props.location?.selectedInterval?.[0] ?? 0,
+          end: props.location?.selectedInterval?.[1] ?? 0,
+          refName: props.location?.chromosome?.name ?? '',
         },
       ],
     })
-  
-      tracks.slice(0, 1).forEach(each => {
-        // state.session.views[0].horizontalScroll(-10)
-        // state.session.views[0]?.setHideHeader(true)
-        state.session.views[0]?.showTrack(each.trackId)
-      })
+    // Add the variant tracks
+    console.log('added view', state.session.views.length);
+    // state.session.views[0]?.showTrack(tracks[0].trackId)
+    tracks.slice(0, 3).forEach(each => {
+
+      state.session.views[0]?.setHideHeader(true)
+      // state.session.views[0]?.scrollTo(50000, 900000)
+      state.session.views[0]?.showTrack(each.trackId)
+    })
+    state.session.views[0].horizontalScroll(-(props.location.offsetCanvas - 4))
   })
 
 
-  return (
-    // <div style={{ height: '200px', overflow: 'auto' }}>
-    <JBrowseLinearGenomeView key={propsZoomLevel}   viewState={state}/>
-  // </div>
-  )
+  //@ts-ignore
+  return <JbrowseWithState key={props?.location.zoomLevel} state={state} />
 }
 
 export default JbrowserWrapper

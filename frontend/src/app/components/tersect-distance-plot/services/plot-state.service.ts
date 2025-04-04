@@ -38,6 +38,11 @@ export class PlotStateService {
     settings$: Observable<BrowserSettings>;
 
     /**
+     * Left-hand canvas offset
+     */
+    offsetCanvas$: Observable<number>;
+
+    /**
      * Identifier of the dataset open in the distance plot.
      */
     datasetId$: Observable<string>;
@@ -140,6 +145,7 @@ export class PlotStateService {
         x: 0,
         y: 0
     });
+    public readonly offsetCanvasSource = new BehaviorSubject<number>(undefined);
 
     /**
      * Genetic distance bins between reference and other accessions for
@@ -163,6 +169,7 @@ export class PlotStateService {
         this.orderedAccessions$ = this.orderedAccessionsSource.asObservable();
         this.plotPosition$ = this.plotPositionSource.asObservable();
         this.distanceBins$ = this.distanceBinsSource.asObservable();
+        this.offsetCanvas$ = this.offsetCanvasSource.asObservable();
     }
 
     get plotPosition(): PlotPosition {
