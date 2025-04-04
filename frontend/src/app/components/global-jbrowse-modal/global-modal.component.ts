@@ -36,6 +36,15 @@ export class GlobalModalComponent implements OnInit {
     this.modalService.customElement$.subscribe(config => {
 
       this.jbrowseProps = config;
+      if(config) {
+        if (config.location) {
+          if (config.location.accession) {
+            if (config.location.accession.name) {
+              this.modalTitle = config.location.accession.name;
+            }
+          }
+        }
+      }
     });
   }
 }
