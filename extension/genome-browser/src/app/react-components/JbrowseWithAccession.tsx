@@ -70,6 +70,7 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
     const targetTrack = tracks.find((track) => track.trackId === accessionName);
     if (targetTrack) {
       state.session.views[0]?.showTrack(targetTrack.trackId)
+      state.session.views[0]?.showTrack(tracks[0].trackId);
     } else {
     tracks.slice(0, 3).forEach(each => {
 
