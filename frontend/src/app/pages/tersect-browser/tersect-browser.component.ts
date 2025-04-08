@@ -42,6 +42,11 @@ import { TreeDrawService } from '../../services/tree-draw.service';
 
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
 
+import { BinDrawService } from '../../services/bin-draw.service';
+
+// import { DistanceBinView } from '../../models/DistanceBinView';
+
+
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -53,9 +58,11 @@ import {TreePlotComponent} from '../../components/tersect-distance-plot/componen
         PlotStateService,
         PlotZoomService,
         TreeDrawService,
+        BinDrawService,
     ]
 })
 export class TersectBrowserComponent implements OnInit {
+
     static readonly DEFAULT_BINSIZE = 50000;
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     static readonly DEFAULT_ZOOM_LEVEL = 100;
@@ -88,6 +95,7 @@ export class TersectBrowserComponent implements OnInit {
     chromosomes: Chromosome[];
     displaySidebar = false;
     displayButton = false;
+    binsHighlighted = false;
     selectedAccessions: string[];
     preselectedChromosome: Chromosome;
 
@@ -96,24 +104,17 @@ export class TersectBrowserComponent implements OnInit {
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotZoom: PlotZoomService,
+                private readonly drawBin: BinDrawService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
+                
 
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
-// // Method to handle the event and update the offsetCanvas value
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
 
     ngOnInit() {
 
@@ -264,6 +265,11 @@ export class TersectBrowserComponent implements OnInit {
 
     zoomOut() {
         this.plotZoom.zoomOut();
+    }
+
+    highlightLuminance() {
+        this.drawBin.highlightLuminance(!this.binsHighlighted);
+        this.binsHighlighted = !this.binsHighlighted
     }
 
     /**

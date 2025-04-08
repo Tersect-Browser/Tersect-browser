@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import {
-    DistancePalette, GreyscalePalette
+    DistancePalette, GreyscalePalette, RedPalette, BlueToRedPalette
 } from '../components/tersect-distance-plot/DistancePalette';
 import {
     PlotCreatorService
@@ -25,14 +25,28 @@ import {
     providedIn: 'root'
 })
 export class BinDrawService {
+
+    public redBins: DistanceBinView;
+    public targetCanvas: HTMLCanvasElement;
+    public offsetX: number;
+    public offsetY: number;
+    public bins: DistanceBinView;
+
+
+
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
          targetCanvas?: HTMLCanvasElement) {
         if (binView.redrawRequired) {
+            this.redBins = this.highlightBins(binView)
+            this.bins = binView;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.generatePlotArray(binView);
         }
 
         if (!isNullOrUndefined(targetCanvas)) {
             this.updateCanvas(binView, targetCanvas);
+            this.targetCanvas = targetCanvas;
             const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
             ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
             const visibleImage = this.extractVisibleImage(binView,
@@ -199,6 +213,93 @@ export class BinDrawService {
         } else {
             targetCanvas.width = binView.containerSize.width;
             targetCanvas.height = binView.containerSize.height;
+        }
+    }
+
+    highlightBins(binView: DistanceBinView) {
+        const palette: DistancePalette = GreyscalePalette;
+        const colorPalette: DistancePalette = RedPalette;
+
+         // First dimension (rows) are accessions, second (cols) are bins.
+         const binMatrix: number[][] = binView.orderedAccessions.map(
+            accession => binView.distanceBins.bins[accession]
+        );
+
+        const binMaxDistances = this.getMaxDistances(binMatrix);
+
+        const rowNum = binView.rowNum;
+        const colNum = binView.colNum;
+        binView.imageArray = new Uint8ClampedArray(4 * rowNum * colNum);
+
+        const relativeLuminance = (rgb: Array<number>) => {
+            const [r, g, b] = rgb.map(value => {
+              const normalizedValue = value / 255;
+              return normalizedValue <= 0.03928
+                ? normalizedValue / 12.92
+                : ((normalizedValue + 0.055) / 1.055) ** 2.4;
+            });
+           
+            const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            return luminance;
+          };
+
+        for (let row = 0; row < rowNum; row++) {
+            const rowOffset = colNum * row;
+            for (let col = 0; col < colNum; col++) {
+                const color = palette.getDistanceColor(binMatrix[row][col],
+                                                       binMaxDistances[col]);
+
+                const brightColor = colorPalette.getDistanceColor(binMatrix[row][col],
+                                                        binMaxDistances[col]);
+                
+                const rgb = Array.from(color.data.slice(0,3));
+
+                const luminance = relativeLuminance(rgb);
+
+                if (luminance < 0.05){
+                    const pos = 4 * (col + rowOffset);
+                    binView.imageArray[pos] = brightColor.data[0];
+                    binView.imageArray[pos + 1] = brightColor.data[1];
+                    binView.imageArray[pos + 2] = brightColor.data[2];
+                    binView.imageArray[pos + 3] = brightColor.data[3];
+                } else {
+                    const pos = 4 * (col + rowOffset);
+                    binView.imageArray[pos] = color.data[0];
+                    binView.imageArray[pos + 1] = color.data[1];
+                    binView.imageArray[pos + 2] = color.data[2];
+                    binView.imageArray[pos + 3] = color.data[3];
+                }
+            }
+        }
+
+        if (!isNullOrUndefined(binView.sequenceGaps) &&
+            !isNullOrUndefined(binView.interval)) {
+            this.addPlotGaps(binView);
+        }
+
+        binView.redrawRequired = false;
+        return binView;
+    }
+
+    highlightLuminance(notHighlighted: boolean){
+
+        if(notHighlighted){
+            this.highlightBins(this.bins);
+            
+        }else {
+            this.generatePlotArray(this.bins)
+        }
+
+        if (!isNullOrUndefined(this.targetCanvas)) {
+            console.log('valid canvas reached++++++++++')
+            this.updateCanvas(this.bins, this.targetCanvas);
+            const targetCanvas = this.targetCanvas;
+            const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            const visibleImage = this.extractVisibleImage(this.bins,
+                                                          this.offsetX, this.offsetY,
+                                                          targetCanvas);
+            ctx.putImageData(visibleImage, this.offsetX, this.offsetY);
         }
     }
 }
