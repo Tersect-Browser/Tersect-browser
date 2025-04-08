@@ -30,7 +30,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
 {
     "serverPort": 4300,
     "baseHref": "/TersectBrowserGP/",
-    "mongoHost": "mongodb://localhost:27017", // adjust url to fit your local mongodb installation
+    "mongoHost": "mongodb://0.0.0.0:27017", // adjust url to fit your local mongodb installation
     "dbName": "tersect_browser_gp",
     "localDbPath": "/home/tbrowser/local_db",
     "indexPartitions": [
@@ -118,7 +118,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `ng serve` for a dev server. Navigate to `http://0.0.0.0:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 

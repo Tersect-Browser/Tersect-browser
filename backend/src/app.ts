@@ -9,13 +9,20 @@ import { router as tbRouter } from './routers/tersect-router';
 import { router as tgrcRouter } from './routers/tgrc-router';
 import { cleanDatabase } from './utils/dbutils';
 
-const mongoUrl = `${tbConfig.mongoHost}/${tbConfig.dbName}`;
+const mongoUrl = `${tbConfig.mongoHost}/${tbConfig.dbName}?directConnection=true`;
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
-mongoose.connect(mongoUrl);
+mongoose.connect(mongoUrl).then(() => {
+    console.log('Mongo connected!');
+    // Safely clean DB only after connection is established:
+    cleanDatabase();
 
-cleanDatabase();
+    // Now continue with Express setup, app.listen, etc.
+  })
+  .catch(err => {
+    console.error('Connection error:', err);
+  });
 
 export const app = express();
 

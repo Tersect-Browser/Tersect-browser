@@ -1,0 +1,14 @@
+FROM node:16
+
+WORKDIR /app
+COPY ./frontend /app/frontend
+COPY ./common /app/common
+COPY ./backend /app/backend
+COPY ./tbconfig.json /app/
+WORKDIR /app/frontend
+
+RUN npm install
+RUN npm run build  # or your build command
+
+EXPOSE 4200
+CMD ["npm", "start"]
