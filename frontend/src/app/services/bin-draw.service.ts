@@ -26,7 +26,7 @@ import {
 })
 export class BinDrawService {
 
-    public redBins: DistanceBinView;
+    // public redBins: DistanceBinView;
     public targetCanvas: HTMLCanvasElement;
     public offsetX: number;
     public offsetY: number;
@@ -37,7 +37,7 @@ export class BinDrawService {
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
          targetCanvas?: HTMLCanvasElement) {
         if (binView.redrawRequired) {
-            this.redBins = this.highlightBins(binView)
+            // this.redBins = this.highlightBins(binView)
             this.bins = binView;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
@@ -287,7 +287,7 @@ export class BinDrawService {
             this.highlightBins(this.bins);
             
         }else {
-            this.generatePlotArray(this.bins)
+            this.generatePlotArray(this.bins);
         }
 
         if (!isNullOrUndefined(this.targetCanvas)) {
