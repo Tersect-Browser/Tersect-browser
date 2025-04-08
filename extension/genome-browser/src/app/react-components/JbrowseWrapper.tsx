@@ -8,7 +8,11 @@ import assembly from './assembly';
 import tracks from './tracks';
 import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
-import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
+
+
+export interface JbrowseWrapperProps {
+  location?: any
+}
 
 
 const JbrowseWithState = ({ state }: { state: ViewModel }) => {

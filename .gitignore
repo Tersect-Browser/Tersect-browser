@@ -59,6 +59,6 @@ test/
 .turbo/
 
 tbconfig.json
-~/mongo-data 
+db-data/ 
 .tersect
 gp_data
