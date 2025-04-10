@@ -30,6 +30,7 @@
         <app-binsize-selector></app-binsize-selector>
     </div>
 
+
     <div class="p-col zoom-selector tb-toolbar-control">
         <button pButton icon="fa fa-search-minus"
             [disabled]="isZoomMin()"
@@ -39,6 +40,9 @@
             [disabled]="isZoomMax()"
             (click)="zoomIn()">
         </button>
+    </div>
+    <div>
+        <gene-search></gene-search>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
