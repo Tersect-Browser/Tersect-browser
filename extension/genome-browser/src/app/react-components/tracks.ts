@@ -1,4 +1,26 @@
 export default [
+    {
+        "type": "FeatureTrack",
+        "trackId": "ITAG2.4 Gene Models",
+        "name": "ITAG2.4 Gene Models",
+        "adapter": {
+          "type": "Gff3TabixAdapter",
+          "gffGzLocation": {
+            "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz",
+            "locationType": "UriLocation"
+          },
+          "index": {
+            "location": {
+              "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz.tbi",
+              "locationType": "UriLocation"
+            },
+            "indexType": "TBI"
+          }
+        },
+        "assemblyNames": [
+          "SL2.50"
+        ]
+      },
       {
           "type": "VariantTrack",
           "trackId": "S.lyc LA2706",
