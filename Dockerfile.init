@@ -20,8 +20,7 @@ COPY add_example_dataset.sh /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN chmod u+x add_example_dataset.sh
 # Add wait-for script
-COPY wait-for.sh /app/
-RUN chmod +x /app/wait-for.sh
+
 ARG CACHE_BUST=1
 RUN ./add_example_dataset.sh
 # Wait for MongoDB to be ready before running the script

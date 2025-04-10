@@ -12,7 +12,7 @@ const argv = yargs.options({
     'host': {
         type: 'string',
         description: 'development server host',
-        default: '0.0.0.0'
+        default: '127.0.0.1'
     },
     'config': {
         alias: 'c',
