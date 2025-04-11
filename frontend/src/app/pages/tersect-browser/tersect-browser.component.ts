@@ -23,7 +23,8 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    PlotMouseClickEvent
+    PlotMouseClickEvent,
+    PlotPosition
 } from '../../models/Plot';
 import {
     TersectBackendService
@@ -66,6 +67,7 @@ export class TersectBrowserComponent implements OnInit {
     defaultInterval: number[];
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
+    plotPositionX: PlotPosition;
     
    
     private zoomSub: Subscription;
@@ -74,6 +76,7 @@ export class TersectBrowserComponent implements OnInit {
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
     private offsetCanvasSub: Subscription;
+    private plotPositionXSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -130,6 +133,10 @@ export class TersectBrowserComponent implements OnInit {
         
 
         // this.offsetCanvas = this.offsetCanvasChange;
+
+        this.plotPositionXSub = this.plotState.plotPosition$.subscribe(value => {
+            this.plotPositionX = value;
+        });
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;

@@ -61,4 +61,6 @@ test/
 tbconfig.json
 ~/mongo-data 
 .tersect
-gp_data
+tbconfig.json
+db-data/ 
+gp_data/
