@@ -4,12 +4,15 @@ import {
   JBrowseLinearGenomeView,
   ViewModel
 } from '@jbrowse/react-linear-genome-view'
+import { autorun } from 'mobx';
 import assembly from './assembly';
 import tracks from './tracks';
 import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
 import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
-
+//export interface JbrowseWrapperProps {
+//  location?: any
+//}
 
 const JbrowseWithState = ({ state }: { state: ViewModel }) => {
   return <JBrowseLinearGenomeView
@@ -55,6 +58,17 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
 
   state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+
+    autorun(() => {
+      // Check if the view is initialized before accessing ⁠ centerLineInfo ⁠
+      if (!state?.session?.view) {
+        console.log('View not initialized yet');
+        return; // exit early if the view is not initialized
+      }
+
+      const locStr = state.session.view.centerLineInfo;
+      console.log('navigated to new zoom', locStr);
+    });
 
     // remove previously loaded view states
     if (state.session.views.length > 0) {
