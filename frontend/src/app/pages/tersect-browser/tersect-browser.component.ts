@@ -56,6 +56,14 @@ import {TreePlotComponent} from '../../components/tersect-distance-plot/componen
         TreeDrawService,
     ]
 })
+
+interface SyncedScaleView {
+    binSize: number;
+    bpPerPixel: number;
+    start: number;
+    end: number;
+    scrollOffset: number;
+  }
 export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_BINSIZE = 50000;
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
@@ -68,7 +76,7 @@ export class TersectBrowserComponent implements OnInit {
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
     plotPositionX: PlotPosition;
-    // syncedScaleView: SyncedScaleVew;
+    syncedScaleView: SyncedScaleView;
     accessionGroups: AccessionGroup[];
     chromosomes: Chromosome[];
     displaySidebar = false;
@@ -96,12 +104,7 @@ export class TersectBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
     private readonly plotClickMenu: PlotClickMenuComponent;
 
-    accessionGroups: AccessionGroup[];
-    chromosomes: Chromosome[];
-    displaySidebar = false;
-    displayButton = false;
-    selectedAccessions: string[];
-    preselectedChromosome: Chromosome;
+
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
