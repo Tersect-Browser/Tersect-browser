@@ -2,40 +2,6 @@ version: '3.9'
 
 services:
 
-  # mongo:
-  #   image: mongo:8.0.5
-  #   volumes:
-  #     - ./tersect-browser/db-data/mongo-data:/data/db
-  #   ports:
-  #     - "27017:27017"
-  #   networks:
-  #     - app-net
-
-
-  # backend:
-  #   network_mode: host
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "4300:4300"
-  #   command: npm run start
-
-
-  # initdb:
-  #   network_mode: host
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.init
-  #   networks:
-  #     - app-net
-  #   # Add health check or wait-for script
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "mongo", "27017"]
-  #     interval: 5s
-  #     timeout: 30s
-  #     retries: 5
-
   extension:
     build:
       context: ./extension/genome-browser
