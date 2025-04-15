@@ -21,6 +21,14 @@ interface ScaleTick {
     unit?: 'Mbp' | 'kbp';
 }
 
+interface SyncedScaleView {
+    binSize: number;
+    bpPerPixel: number;
+    start: number;
+    end: number;
+    scrollOffset: number;
+  }
+
 @Injectable({
     providedIn: 'root'
 })
@@ -49,6 +57,22 @@ export class ScaleDrawService {
         this.updateCanvas(scaleView, targetCanvas);
         this.drawPositionScale(scaleView, offsetX, offsetY, targetCanvas);
     }
+
+    getSyncedScaleView(scaleView: ScaleView): SyncedScaleView {
+        const binSize = scaleView.binsize;
+        const bpPerPixel = scaleView.bpPerPixel;
+        const start = scaleView.interval[0];
+        const end = scaleView.interval[1];
+        const scrollOffset = this.getPlotScrollOffsetX(scaleView);
+    
+        return {
+          binSize,
+          bpPerPixel,
+          start,
+          end,
+          scrollOffset,
+        };
+      }
 
     getImageData(scaleView: ScaleView): ImageData {
         const offscreenCanvas = document.createElement('canvas');
