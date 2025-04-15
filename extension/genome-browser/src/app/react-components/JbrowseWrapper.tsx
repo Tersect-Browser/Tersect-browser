@@ -133,6 +133,56 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
     props?.location?.offsetCanvas,
 
   ]);
+
+  useEffect(() => {
+    if(!stateRef?.current) return;
+    const session = stateRef?.current?.session;
+    const state = stateRef?.current;
+    console.log()
+    state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+  
+      // remove previously loaded view states
+      if (state.session.views.length > 0) {
+        state.session.removeView();
+      }
+  
+      // update view state with selected chromosome
+      state.session.addView('LinearGenomeView', {
+        type: 'LinearGenomeView',
+        id: `linear-genome-view-${props.location?.chromosome?.name}`,
+        bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1))),
+        offsetPx: 0,
+        displayedRegions: [
+          {
+            assemblyName: assembly.name,
+            start: props.location?.selectedInterval?.[0] ?? 0,
+            end: props.location?.selectedInterval?.[1] ?? 0,
+            refName: props.location?.chromosome?.name ?? '',
+          },
+        ],
+      })
+
+      const view = state.session.views.find(each => each.id === `linear-genome-view-${props.location?.chromosome?.name}`);
+      view?.setHideHeader(true)
+      console.log(view, 'set hide header after')
+      console.log('added view', state.session.views.length);
+        // state.session.views[0]?.showTrack(tracks[0].trackId)
+        tracks.slice(0, 3).forEach(each => {
+
+          view?.setHideHeader(true)
+          console.log(each, 'each track after switching chromosomes')
+          // view?.scrollTo(50000, 900000)
+          view?.showTrack(each.trackId)
+          
+        })
+        view?.horizontalScroll(-(props.location.offsetCanvas - 4))
+   
+
+      
+    })
+  }, [props?.location?.chromosome?.name])
+
+  console.log(props.location.chromosome)
   if(props?.location?.accession?.name) {
     return <JbrowseWithAccessionName accessionName={props.location.accession.name} location={props.location}  />
   }
@@ -147,7 +197,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
 
   //@ts-ignore
-  return <JbrowseWithState   state={stateRef.current} />
+  return <JbrowseWithState key={props.location.chromosome}   state={stateRef.current} />
 }
 
 export default JbrowserWrapper
