@@ -43,6 +43,7 @@ import { TreeDrawService } from '../../services/tree-draw.service';
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
 
 import { BinDrawService } from '../../services/bin-draw.service';
+import { DistanceBins } from '../../../../../common/DistanceBins';
 
 // import { DistanceBinView } from '../../models/DistanceBinView';
 
@@ -73,6 +74,7 @@ export class TersectBrowserComponent implements OnInit {
     defaultInterval: number[];
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
+    distBins: DistanceBins;
     
    
     private zoomSub: Subscription;
@@ -81,6 +83,7 @@ export class TersectBrowserComponent implements OnInit {
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
     private offsetCanvasSub: Subscription;
+    private distBinsSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -153,6 +156,15 @@ export class TersectBrowserComponent implements OnInit {
             this.offsetCanvas = value;
             console.log('tracking offset', this.offsetCanvas);
         })
+
+        this.distBinsSub = this.plotState.distanceBins$.subscribe(value => {
+            this.distBins = value;
+            console.log('tracking distbins', this.distBins);
+        })
+
+
+        console.log('distance bins value ------',this.plotState.distanceBins)
+        console.log('distance bins observable ------',this.plotState.distanceBins$)
 
 
         const settings$ = this.route.paramMap.pipe(
@@ -270,6 +282,31 @@ export class TersectBrowserComponent implements OnInit {
     highlightLuminance() {
         this.drawBin.highlightLuminance(!this.binsHighlighted);
         this.binsHighlighted = !this.binsHighlighted
+    }
+
+    printAcessionNames(){
+        // Function to determine bin index position, given a fixed chromosome position
+        function getBinIndexFromPosition(position: number, intervalStart: number, binsize: number): number {
+            return Math.floor((position - intervalStart) / binsize);
+        }
+
+        const position = 200001;
+
+        const binIndex = getBinIndexFromPosition(position, this.selectedInterval[0], this.binSize)
+
+        console.log('calculated binINdex inside tersect-browser component----------', binIndex)
+
+
+        const names = ['S_lyc_B_TS-174', 'S_lyc_B_TS-80', 'S_lyc_B_TS-179']
+
+
+        // pass on array of accession names and bin index to bin-draw.service.ts
+        this.drawBin.setIndices(names);
+        this.drawBin.setBinIndex(binIndex);
+
+
+        
+
     }
 
     /**

@@ -20,6 +20,7 @@ import {
     floorTo,
     isNullOrUndefined
 } from '../utils/utils';
+import { DistanceBins } from '../../../../common/DistanceBins';
 
 @Injectable({
     providedIn: 'root'
@@ -31,17 +32,23 @@ export class BinDrawService {
     public offsetX: number;
     public offsetY: number;
     public bins: DistanceBinView;
+    public distBins: DistanceBins;
+    public indices: string[];
+    public binIndex: number;
+
 
 
 
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
-         targetCanvas?: HTMLCanvasElement) {
+         targetCanvas?: HTMLCanvasElement, distBins?: DistanceBins) {
         if (binView.redrawRequired) {
             // this.redBins = this.highlightBins(binView)
             this.bins = binView;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.generatePlotArray(binView);
+            // this.distBins = distBins;
+            // console.log('saveed distBins', this.distBins);
         }
 
         if (!isNullOrUndefined(targetCanvas)) {
@@ -284,7 +291,13 @@ export class BinDrawService {
     highlightLuminance(notHighlighted: boolean){
 
         if(notHighlighted){
-            this.highlightBins(this.bins);
+            // this.highlightBins(this.bins);
+
+            setTimeout(()=>{
+                this.printIndices(this.indices, this.binIndex,this.bins);
+            }, 30)
+            
+            // this.printIndices(this.indices, this.binIndex,this.bins);
             
         }else {
             this.generatePlotArray(this.bins);
@@ -301,5 +314,99 @@ export class BinDrawService {
                                                           targetCanvas);
             ctx.putImageData(visibleImage, this.offsetX, this.offsetY);
         }
+
+    }
+
+
+    setIndices(value: string[]){
+        this.indices = value;
+        console.log('index passed to bin-draw-service')
+    }
+
+    getIndices(){
+        return this.indices;
+    }
+
+    setBinIndex(value: number){
+        this.binIndex = value;
+    }
+
+    getBinIndex(){
+        return this.binIndex;
+    }
+
+    printIndices(indices: string[], binIndex: number, binView: DistanceBinView){
+        console.log('indices injected to bin-draw.service', indices);
+
+        console.log('calculated binIndex passed to bin-draw.servies', binIndex);
+
+        // TODO - find accession name index in binView.orderedAccessions
+        let accessionIndices: Array<number> = [];
+
+        for (let n = 0; n < indices.length; n++){
+            binView.orderedAccessions.forEach((accession, index) =>{
+                     if (accession == indices[n]){
+                         console.log(accession)
+                         console.log('position', index)
+                         accessionIndices.push(index)
+                   }
+                 })
+        }
+
+        console.log('accessionINdices,', accessionIndices)
+
+        console.log('binview here ------', binView)
+        console.log('binview container size',binView.containerSize)
+
+        const palette: DistancePalette = GreyscalePalette;
+        // const colorPalette: DistancePalette = RedPalette;
+
+         // First dimension (rows) are accessions, second (cols) are bins.
+         const binMatrix: number[][] = binView.orderedAccessions.map(
+            accession => binView.distanceBins.bins[accession]
+        );
+
+
+        const binMaxDistances = this.getMaxDistances(binMatrix);
+
+        const rowNum = binView.rowNum;
+        const colNum = binView.colNum;
+        binView.imageArray = new Uint8ClampedArray(4 * rowNum * colNum);
+
+        // Colour canvas in greyscale 
+
+        for (let row = 0; row < rowNum; row++) {
+            const rowOffset = colNum * row;
+            for (let col = 0; col < colNum; col++) {
+                const color = palette.getDistanceColor(binMatrix[row][col],
+                                                       binMaxDistances[col]);
+                const pos = 4 * (col + rowOffset);
+                binView.imageArray[pos] = color.data[0];
+                binView.imageArray[pos + 1] = color.data[1];
+                binView.imageArray[pos + 2] = color.data[2];
+                binView.imageArray[pos + 3] = color.data[3];
+            }
+        }
+
+        if (!isNullOrUndefined(binView.sequenceGaps) &&
+            !isNullOrUndefined(binView.interval)) {
+            this.addPlotGaps(binView);
+        }
+
+        // Colour specified bins red
+
+        for (let i = 0; i < accessionIndices.length; i ++){
+            let row = accessionIndices[i]; // set row as the index defined in indices
+            const rowOffset = colNum * row;
+            const col = binIndex;
+            const pos = 4 * (col + rowOffset); // to colour col 1
+            binView.imageArray[pos] = 255;
+                    binView.imageArray[pos + 1] = 0;
+                    binView.imageArray[pos + 2] = 0;
+                    binView.imageArray[pos + 3] = 255;
+        }
+
+        binView.redrawRequired = false;
+        return binView;
     }
 }
