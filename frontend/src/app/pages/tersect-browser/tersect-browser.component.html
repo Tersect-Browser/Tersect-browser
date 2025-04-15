@@ -68,11 +68,20 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
-<jbrowser-wrapper  *ngIf="displayButton"   bind-props="{location : {start: '0', end: '98543444', 
-zoomLevel: zoomLevel, binSize: binSize, 
-chromosome: selectedChromosomeSub, preselectedChromosome: preselectedChromosome,
-selectedInterval: selectedInterval, defaultInterval: defaultInterval,
-offsetCanvas: offsetCanvas}}"></jbrowser-wrapper>
+<jbrowser-wrapper *ngIf="displayButton" bind-props="{location : {
+    start: '0', 
+    end: '98543444', 
+    zoomLevel: zoomLevel, 
+    binSize: binSize, 
+    chromosome: selectedChromosomeSub, 
+    preselectedChromosome: preselectedChromosome,
+    selectedInterval: selectedInterval, 
+    defaultInterval: defaultInterval,
+    offsetCanvas: offsetCanvas, 
+    plotPositionX: plotPositionX
+}
+}"
+></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot
