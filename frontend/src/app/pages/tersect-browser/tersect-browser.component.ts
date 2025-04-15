@@ -42,7 +42,16 @@ import { PlotCreatorService } from '../../components/tersect-distance-plot/servi
 import { TreeDrawService } from '../../services/tree-draw.service';
 
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
+import { ScaleDrawService } from '../../services/scale-draw.service';
+import { ScaleViewStateService } from '../../components/tersect-distance-plot/services/scale-view-state-service';
 
+interface SyncedScaleView {
+    binSize: number;
+    bpPerPixel: number;
+    start: number;
+    end: number;
+    scrollOffset: number;
+  }
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -54,16 +63,10 @@ import {TreePlotComponent} from '../../components/tersect-distance-plot/componen
         PlotStateService,
         PlotZoomService,
         TreeDrawService,
+        ScaleDrawService,
+        ScaleViewStateService,
     ]
 })
-
-interface SyncedScaleView {
-    binSize: number;
-    bpPerPixel: number;
-    start: number;
-    end: number;
-    scrollOffset: number;
-  }
 export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_BINSIZE = 50000;
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
@@ -87,6 +90,7 @@ export class TersectBrowserComponent implements OnInit {
    
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
+    private syncedScaleViewSub: Subscription;
     private accessionSub: Subscription;
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
@@ -96,15 +100,13 @@ export class TersectBrowserComponent implements OnInit {
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
 
-    
-
     @ViewChild(TooltipComponent, { static: true })
     readonly tooltip: TooltipComponent;
 
     @ViewChild(PlotClickMenuComponent, { static: true })
     private readonly plotClickMenu: PlotClickMenuComponent;
 
-
+  
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -113,6 +115,8 @@ export class TersectBrowserComponent implements OnInit {
                 private readonly plotZoom: PlotZoomService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
+                private readonly scaleDrawService: ScaleDrawService,
+                private readonly scaleViewState: ScaleViewStateService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
@@ -121,7 +125,23 @@ export class TersectBrowserComponent implements OnInit {
         return this.plotState.settings;
     }
 
+
     ngOnInit() {
+
+        console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
+      
+        
+
+        // this.offsetCanvas = this.offsetCanvasChange;
+
+        this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
+            console.log('syncedScaleViewSub', scaleView);
+            if (scaleView) {
+                // Use updated ScaleView here
+                this.syncedScaleView = this.scaleDrawService.getSyncedScaleView(scaleView);
+                console.log('syncedScaleView', this.syncedScaleView);
+            }
+        });
 
         this.plotPositionXSub = this.plotState.plotPosition$.subscribe(value => {
             this.plotPositionX = value;
