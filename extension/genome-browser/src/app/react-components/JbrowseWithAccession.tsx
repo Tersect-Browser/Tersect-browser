@@ -15,6 +15,7 @@ const JbrowseWithState = ({ state }: { state: ViewModel }) => {
 }
 
 const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: string, location: any}) => {
+  console.log(accessionName, 'accessionName')
 
   const state = createViewState({
     assembly,
@@ -65,10 +66,10 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
       ],
     })
     // Add the variant tracks
-    console.log('added view', state.session.views.length);
+    console.log('added view', location?.accession?.chromosome?.name);
     // state.session.views[0]?.showTrack(tracks[0].trackId)
     const targetTrack = tracks.find((track) => track.trackId === accessionName);
-    if (targetTrack) {
+    if (targetTrack && state.session.views[0]?.initialized) {
       state.session.views[0]?.showTrack(tracks[0].trackId);
       state.session.views[0]?.showTrack(targetTrack.trackId)
     } else {
@@ -78,13 +79,13 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
       // state.session.views[0]?.scrollTo(50000, 900000)
       state.session.views[0]?.showTrack(each.trackId)
     })
-    state.session.views[0].horizontalScroll(-(location.offsetCanvas - 4))
+    // state.session.views[0].horizontalScroll(-(location.offsetCanvas - 4))
   }
   })
 
 
   //@ts-ignore
-  return <JbrowseWithState state={state} />
+  return <JbrowseWithState key={location?.accession?.chromosome?.name} state={state} />
   
 }
 
