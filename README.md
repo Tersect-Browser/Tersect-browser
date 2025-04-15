@@ -25,6 +25,8 @@ Ensure you have nvm installed on your machine and perform the following steps;
   - Run `npm install` with no errors
 - Run `npm install -g turbo` to install turbo
 - Add a `tbconfig.json` with the following values (remove commented line)
+  - mongoHost relates to the local mongodb installation that is probably in this path: ~/mongo-data
+  - localDbPath is how we host the reference file and tbi + vcf files for each accession. These should be within your Tersect-browser project, at the path: Tersect-browser/~/mongo-data/gp_data_copy
 
 ```json
 {
@@ -32,7 +34,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
     "baseHref": "/TersectBrowserGP/",
     "mongoHost": "mongodb://127.0.0.1:27017", // adjust url to fit your local mongodb installation
     "dbName": "tersect_browser_gp",
-    "localDbPath": "/home/tbrowser/local_db",
+    "localDbPath": "/Users/user/Tersect-browser/~/mongo-data/gp_data_copy", // adjust url to fit your Tersect-browser path
     "indexPartitions": [
         100000000,
         50000000,
@@ -74,12 +76,16 @@ Activate the virtual environment
 
 Install the dependencies in the requirements.txt file
 `pip3 install -r /path/to/requirements.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
+- If errors in install here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
 
 Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
 
 Give the `add_example_dataset.sh` script write access by running `chmod u+x add_example_dataset.sh`.
 
 Run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
+
+If seeing errors about python version such as: `env: python3\r: No such file or directory` , then it might be a unix line encoding error in the python scripts. Run the following dos2unix command, and just make sure you *don't* commit the changes to these scripts (will show up as unstaged .py scripts in git status).
+- `find {path_to}/Tersect-browser -type f \( -name "*.sh" -o -name "*.py" \) -exec dos2unix {} + `
 
 ### Additional Requirement For Running The Browser
 [RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood, git clone the repository, and run make in the root.
@@ -115,6 +121,27 @@ move it to the usr path
 
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.1.
+
+### To set up data for the Genome Browser extension
+This extension requires data for tracks to be hosted within the Tersect-browser project folder structure. Copy the reference sequence, index, and at least one of the VCF and corresponding TBI files (in this case 002) to the following folder:
+- `ls Tersect-browser/~/mongo-data/gp_data_copy/`
+  - SL2.50.fa
+  - SL2.50.fa.fai
+  - RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz
+  - RF_002_SZAXPI009284-57.vcf.gz.snpeff.tbi.vcf.gz
+
+Once downloaded, you should be able to deploy Tersect Browser and view these tracks. Deployment now takes an extra step, as the Genome Browser extension needs to be deployed separately to the main Browser:
+- `mongod --dbpath ~/mongo-data`
+- `cd {path-to}/Tersect-browser/extension/genome-browser`
+  - `nvm use 18`
+  - `source .tersect/bin/activate`
+  - `npm start`
+- `cd {path-to}/Tersect-browser`
+  - `nvm use 16`
+  - `source .tersect/bin/activate`
+  - `npm start`
+
+This should deploy the Tersect Browser and the Genome Browser component, which can be accessed by clicking on the binoculars button. Open the track selector of the Genome Browser, and select the reference genome and the accession that you downloaded the files for (in this case S.lyc LA2838A).
 
 ## Development server
 
