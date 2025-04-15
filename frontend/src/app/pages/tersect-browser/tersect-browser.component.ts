@@ -23,7 +23,8 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    PlotMouseClickEvent
+    PlotMouseClickEvent,
+    PlotPosition
 } from '../../models/Plot';
 import {
     TersectBackendService
@@ -66,6 +67,7 @@ export class TersectBrowserComponent implements OnInit {
     defaultInterval: number[];
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
+    plotPositionX: PlotPosition;
     
    
     private zoomSub: Subscription;
@@ -74,9 +76,12 @@ export class TersectBrowserComponent implements OnInit {
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
     private offsetCanvasSub: Subscription;
+    private plotPositionXSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
+
+    
 
     @ViewChild(TooltipComponent, { static: true })
     readonly tooltip: TooltipComponent;
@@ -105,31 +110,12 @@ export class TersectBrowserComponent implements OnInit {
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
-// // Method to handle the event and update the offsetCanvas value
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
 
     ngOnInit() {
 
-        console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
-        // console.log('canvas width passed from tree-plot.component', this.offsetCanvasWidth);
-        // this.offsetWidth = this.offsetCanvasWidth;
-        // console.log('canvas width saved from tree-plot.component', this.offsetWidth);
-
-        // this.treePlotComponent.offsetCanvasChange.subscribe((newOffsetCanvas: number) => {
-        //     this.onOffsetCanvasChange(newOffsetCanvas);
-        //   });
-        
-      
-        
-
-        // this.offsetCanvas = this.offsetCanvasChange;
+        this.plotPositionXSub = this.plotState.plotPosition$.subscribe(value => {
+            this.plotPositionX = value;
+        });
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;
