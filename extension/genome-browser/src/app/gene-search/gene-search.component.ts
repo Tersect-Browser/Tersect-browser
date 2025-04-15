@@ -4,6 +4,7 @@ import { ButtonModule } from 'primeng/button'
 import { AutoCompleteModule } from 'primeng/autocomplete'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
 import { FormsModule } from '@angular/forms'
+import { PrimeNG } from 'primeng/config';
 
 import { searchGene } from './searchGene'
 import { CommonModule } from '@angular/common'
@@ -12,7 +13,6 @@ import { CommonModule } from '@angular/common'
 @Component({
   selector: 'gene-search',
   templateUrl: './gene-search.component.html',
-  styleUrls: ['./gene-search.component.css'],
   standalone: true,
   imports: [
     // Add any necessary Angular modules or components here
@@ -34,7 +34,7 @@ export class GeneSearchComponent {
 
   private input$ = new Subject<string>()
 
-  constructor() {
+  constructor(private primeng: PrimeNG) {
     // Auto-suggestion handling
     this.input$.pipe(debounceTime(200)).subscribe((value) => {
       this.suggest(value)
