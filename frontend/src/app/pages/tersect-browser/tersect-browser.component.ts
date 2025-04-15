@@ -68,6 +68,13 @@ export class TersectBrowserComponent implements OnInit {
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
     plotPositionX: PlotPosition;
+    // syncedScaleView: SyncedScaleVew;
+    accessionGroups: AccessionGroup[];
+    chromosomes: Chromosome[];
+    displaySidebar = false;
+    displayButton = false;
+    selectedAccessions: string[];
+    preselectedChromosome: Chromosome;
     
    
     private zoomSub: Subscription;
