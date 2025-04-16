@@ -273,7 +273,16 @@ export class TersectBrowserComponent implements OnInit {
         this.plotZoom.zoomOut();
     }
 
-    callHighlightBins(){
+    callbackFunction = (position: number) =>{
+        console.log('calling callback')
+        
+        // const position = this.startGenePosition;
+        console.log('position', position);
+        this.callHighlightBins(position);
+        // this.drawBin.binsHighlighted = true;
+    }
+
+    callHighlightBins = (position: number) =>{
         console.log('callHighlightBins called');
         
         // Function to determine bin index position, given a fixed chromosome position
@@ -281,8 +290,10 @@ export class TersectBrowserComponent implements OnInit {
             return Math.floor((position - intervalStart) / binsize);
         }
 
-        // Define position based on startGenePosition passed from gene-search feature
-        let position = this.startGenePosition;
+        // check what is being defined
+        console.log('position', position);
+        console.log('this.selectedInterval[0]',this.selectedInterval[0]);
+        console.log('this.binSize', this.binSize);
 
         // Calculate the binIndex
         const binIndex = getBinIndexFromPosition(position, this.selectedInterval[0], this.binSize)
@@ -294,6 +305,9 @@ export class TersectBrowserComponent implements OnInit {
         // Pass the array of accession names and binIndex to bin-draw.service.ts to highlight bins
         this.drawBin.setAccessions(names);
         this.drawBin.setBinIndex(binIndex);
+
+        // call the function to highlight bins after variables have been inserted
+        this.drawBin.highlightBins();
     }
 
     testCallback(){

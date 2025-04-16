@@ -289,6 +289,10 @@ export class BinDrawService {
 
         const rowNum = binView.rowNum;
         const colNum = binView.colNum;
+
+        console.log(rowNum, 'rowNum');
+        console.log(colNum, 'colNum')
+        
         binView.imageArray = new Uint8ClampedArray(4 * rowNum * colNum);
 
         // Colour canvas in greyscale 
