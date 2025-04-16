@@ -42,7 +42,9 @@
     </div>
 
     <div>
-        <gene-search [callback]="testCallback"></gene-search>
+        <gene-search 
+        [callback]="callbackFunction"
+        (genePositionChanged)="callbackFunction($event)"></gene-search>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">

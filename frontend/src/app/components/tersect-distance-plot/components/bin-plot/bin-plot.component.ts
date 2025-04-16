@@ -72,6 +72,7 @@ export class BinPlotComponent extends CanvasPlotElement
         this.highlightUpdate = this.plotCreator
                                    .highlightSource.subscribe(() => {
             this.updateHighlight();
+            
         });
     }
 
@@ -90,6 +91,16 @@ export class BinPlotComponent extends CanvasPlotElement
                                  this.plotCreator.guiMargins.left, 0,
                                  this.canvas.nativeElement);
         this.updateHighlight();
+        this.binDrawService.binsHighlighted$.subscribe(value => {
+            console.log('value is', value)
+            if (value === true){
+                console.log('value is true, highlighting bins', value)
+                this.binDrawService.highlightBins();
+                this.binDrawService.binsHighlightedSource.next(false);
+            } else {
+                console.log('value is false', value)
+            }
+        })
     }
 
     protected dragAction(dragState: DragState): void {

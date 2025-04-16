@@ -34,6 +34,8 @@ import {
 import {
     PlotStateService
 } from './services/plot-state.service';
+import { BinDrawService } from '../../services/bin-draw.service';
+import { take } from 'rxjs/operators';
 
 export interface ContainerSize {
     height: number;
@@ -45,7 +47,8 @@ export interface ContainerSize {
     templateUrl: './tersect-distance-plot.component.html',
     styleUrls: ['./tersect-distance-plot.component.css'],
     providers: [
-        PlotCreatorService
+        PlotCreatorService,
+        BinDrawService,
     ]
 })
 export class TersectDistancePlotComponent implements OnInit, OnDestroy {
@@ -65,6 +68,7 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
     private fullRedraw: Subscription;
 
     constructor(private readonly plotState: PlotStateService,
+                private readonly drawBin: BinDrawService,
                 private readonly plotCreator: PlotCreatorService) { }
 
     get plotLoadMessage() {
@@ -83,6 +87,10 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
         ).subscribe(() => {
             this.redrawPlot();
             this.plotCreator.stopLoading();
+            console.log('loading has stopped')
+
+            
+
         });
     }
 
@@ -118,6 +126,22 @@ export class TersectDistancePlotComponent implements OnInit, OnDestroy {
         this.treePlot.draw();
         this.scaleBar.draw();
         this.binPlot.draw();
+     
+        // this.drawBin.binsHighlighted$.subscribe(value => {
+        //     console.log('value is', value)
+        //     if (value === true){
+        //         console.log('value is true, highlighting bins', value)
+        //         this.drawBin.highlightBins();
+        //         this.drawBin.binsHighlightedSource.next(false);
+        //     } else {
+        //         console.log('value is false', value)
+        //         // this.drawBin.binsHighlightedSource.next(true);
+        //         // this.drawBin.binsHighlighted$.subscribe(value => {
+        //         //     console.log('value immediately after wrong value shown', value, 'lets see')
+        //         // })
+
+        //     }
+        // })
     }
 
     @HostListener('window:orientationchange', ['$event'])

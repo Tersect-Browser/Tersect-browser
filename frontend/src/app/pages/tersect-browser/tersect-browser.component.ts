@@ -43,6 +43,7 @@ import { TreeDrawService } from '../../services/tree-draw.service';
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
 
 import { BinDrawService } from '../../services/bin-draw.service';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-tersect-browser',
@@ -273,16 +274,42 @@ export class TersectBrowserComponent implements OnInit {
         this.plotZoom.zoomOut();
     }
 
-    callHighlightBins(){
+    callbackFunction = (position: number) =>{
+        console.log('calling callback')
+        
+        
+        // const position = this.startGenePosition;
+        console.log('position', position);
+        this.callHighlightBins(position);
+        this.drawBin.binsHighlighted = true;
+    }
+
+    callHighlightBins = (position: number) => {
         console.log('callHighlightBins called');
+
+        // changed view to match searched chrom
+        const changeChromsome: Chromosome = {
+            name: 'SL2.50ch01',
+            size:  98543444
+        }
+
+        const changeInterval: number[] = [];
+        changeInterval[0] = 1;
+        changeInterval[1] = changeChromsome.size;
+
+
         
         // Function to determine bin index position, given a fixed chromosome position
         function getBinIndexFromPosition(position: number, intervalStart: number, binsize: number): number {
             return Math.floor((position - intervalStart) / binsize);
         }
 
-        // Define position based on startGenePosition passed from gene-search feature
-        let position = this.startGenePosition;
+
+
+        // check what is being defined
+        console.log('position', position);
+        console.log('this.selectedInterval[0]',this.selectedInterval[0]);
+        console.log('this.binSize', this.binSize);
 
         // Calculate the binIndex
         const binIndex = getBinIndexFromPosition(position, this.selectedInterval[0], this.binSize)
@@ -294,38 +321,41 @@ export class TersectBrowserComponent implements OnInit {
         // Pass the array of accession names and binIndex to bin-draw.service.ts to highlight bins
         this.drawBin.setAccessions(names);
         this.drawBin.setBinIndex(binIndex);
+        console.log(binIndex, 'BINindex-----')
+
+
+        // set the boolean observer to true
+        // this.drawBin.binsHighlightedSource.next(true);
+        localStorage.setItem('TerectPaint', "HAS_SET");
+
+
+  
+       
+        
+       
+
+        // // set binsHighlighted to true
+        // this.drawBin.binsHighlighted = true;
+        // console.log('set binsHighlighted to:', this.drawBin.binsHighlighted);
+
+        // trigger the highlight
+        // this.drawBin.setBinsHighlighted(true);
+        // this.drawBin.highlightRequest$
+        // .pipe(take(1))
+        // .subscribe(() => {
+        //     this.drawBin.highlightBins();
+        // });
+        // this.drawBin.requestHighlight();
+
+        // Call the function to highlight bins after variables have been injected
+        // this.drawBin.highlightBins(); // set highlight bins property in bin-draw.service to true in order to trigger highlightung
+
+        // this.plotState.chromosomeSource.next(changeChromsome);
+        // this.plotState.intervalSource.next(changeInterval);
+
     }
 
-    testCallback(){
-        console.log('callback function called---------')
-        console.log('start gene position injected', this.startGenePosition)
-        console.log('geneChrom injected', this.geneChrom);
-        // console.log('browser settings??', this.plotState.settings.selected_chromosome);
-        // console.log('trying to find chromosome', this.chromosomes);
-        // console.log(this.tersectBackendService.getChromosomes(this.geneChrom), 'get chromosome here ----')
-        // this.plotState.chromosomeSource.next(this.geneChrom);
-
-        // console.log('chromosomeArray', this.chromosomeArray)
-        // const selectedChromosome = this.chromosomeArray.find(
-        //     (chrom) => chrom.name === this.geneChrom
-        //   );
-
-        // console.log('selectedChromosome', selectedChromosome);
-          
-        //   if (selectedChromosome) {
-        //     // Push it to the observable
-        //     this.plotState.chromosomeSource.next(selectedChromosome);
-        //   } else {
-        //     console.warn(`Chromosome '${this.geneChrom}' not found in chromosomeArray`);
-        //   }
-
-        const changeChromsome: Chromosome = {
-            name: this.geneChrom,
-            size:  98543444
-        }
-
-        this.plotState.chromosomeSource.next(changeChromsome);
-    }
+  
 
     //this.plotState.offsetCanvasSource.next(this.storedTreeView.offscreenCanvas.width);
 

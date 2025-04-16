@@ -25,7 +25,7 @@ import { EventEmitter } from '@angular/core'
   ],
 })
 export class GeneSearchComponent {
-  @Input() callback!: () => void;
+  @Input() callback!: (position: number) => void;
   @Output() genePositionChanged: EventEmitter<number> = new EventEmitter<number>();
   @Output() geneChromChanged: EventEmitter<string> = new EventEmitter<string>();
 
@@ -34,8 +34,8 @@ export class GeneSearchComponent {
 
 
   callParentFunction() {
-    if (this.callback) {
-      this.callback();
+    if (this.callback && this.startGenePosition !== undefined) {
+      this.callback(this.startGenePosition); // ✅ pass the position value
     }
   }
 
@@ -220,6 +220,7 @@ export class GeneSearchComponent {
       this.geneChromChanged.emit(this.geneChrom);
     }
 
-    this.callback?.(); 
+    // this.callback?.(); 
+    this.callParentFunction();
   }
 }

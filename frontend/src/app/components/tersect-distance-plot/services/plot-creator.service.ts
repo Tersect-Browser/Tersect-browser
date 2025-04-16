@@ -184,6 +184,7 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     private getGaps$(): Observable<SequenceInterval[]> {
+        console.log('getgaps - has canvas reloaded????????????????????')
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.chromosome$
@@ -198,6 +199,7 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     private getPheneticTree$(): Observable<NewickTree> {
+        console.log('getphenetictree - has canvas reloaded????????????????????')
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.chromosome$,
@@ -244,6 +246,7 @@ export class PlotCreatorService implements OnDestroy {
     }
 
     private getDistanceBins$(): Observable<DistanceBins> {
+        console.log('getdistancebins - has canvas reloaded????????????????????')
         return combineLatest([
             this.plotState.datasetId$,
             this.plotState.reference$,

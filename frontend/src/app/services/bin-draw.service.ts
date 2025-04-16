@@ -20,11 +20,42 @@ import {
     floorTo,
     isNullOrUndefined
 } from '../utils/utils';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
 })
 export class BinDrawService {
+
+    // set up a boolean observer
+    binsHighlighted$: Observable<boolean>;
+    public readonly binsHighlightedSource = new BehaviorSubject<boolean>(false);
+
+    constructor(){
+        this.binsHighlighted$ = this.binsHighlightedSource.asObservable();
+
+    }
+
+    set binsHighlighted(variable: boolean){
+        console.log('attempted to change', variable)
+        this.binsHighlightedSource.next(variable);
+        this.binsHighlighted$.subscribe(value => {
+            console.log('value immediately after subscribe', value, 'lets see')
+        })
+    }
+
+
+    // // set up canvas render observer to observe whenever canvas is redrawn
+    // public canvasRenderedSource = new Subject<void>();
+    // public canvasRendered$ = this.canvasRenderedSource.asObservable();
+
+    // // set up observer to control when bins should be highlighted
+    // private highlightRequestSource = new Subject<void>();
+    // public highlightRequest$ = this.highlightRequestSource.asObservable();
+
+    // // set up an observer for the boolean property
+    // private binsHighlightedSource = new BehaviorSubject<boolean>(false);
+    // public binsHighlighted$ = this.binsHighlightedSource.asObservable();
 
     public targetCanvas: HTMLCanvasElement;
     public offsetX: number;
@@ -33,14 +64,27 @@ export class BinDrawService {
     public accessions: string[];
     public binIndex: number;
 
+    // public binsHighlighted: boolean = false;
+
+    // requestHighlight() {
+    //     this.highlightRequestSource.next();
+    //   }
+
+    //   // Use this to set true/false from any component
+    // setBinsHighlighted(value: boolean) {
+    //     this.binsHighlightedSource.next(value);
+    // }
 
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
          targetCanvas?: HTMLCanvasElement) {
+
+            console.log('canvas redrawn --------------------', this.binsHighlighted$)
         if (binView.redrawRequired) {
             this.bins = binView;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.generatePlotArray(binView);
+            console.log('redraw required ++++')
         }
 
         if (!isNullOrUndefined(targetCanvas)) {
@@ -52,7 +96,13 @@ export class BinDrawService {
                                                           offsetX, offsetY,
                                                           targetCanvas);
             ctx.putImageData(visibleImage, offsetX, offsetY);
+            console.log(localStorage.getItem('TerectPaint'), localStorage.getItem('TerectPaint') === 'HAS_SET', 'from local storage')
+            if(localStorage.getItem('TerectPaint') === 'HAS_SET'){
+                this.highlightBins()
+            }
+            console.log('canvas is null or undefined +++++')
         }
+        // this.canvasRenderedSource.next();
     }
 
     getImageData(binView: DistanceBinView): ImageData {
@@ -218,7 +268,14 @@ export class BinDrawService {
     // Define function to redraw canvas to highlight feature bins
 
     highlightBins(){
+        // only highlight bins if property is true
+        // if (highlighted){
+        //     this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
+        //     console.log('bins highlighted')
+        // }
         this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
+        console.log('bins highlighted')
+        
 
         if (!isNullOrUndefined(this.targetCanvas)) {
             console.log('valid canvas reached++++++++++')
