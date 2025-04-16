@@ -1,0 +1,27 @@
+FROM python:3.7-slim
+
+# Install dependencies including netcat for health checking
+RUN apt-get update && apt-get install -y \
+    gcc \
+    build-essential \
+    python3-dev \
+    netcat-openbsd \ 
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY backend/src/scripts /app/scripts
+COPY backend/src/scripts/requirements.txt /app
+COPY ./backend /app/backend
+COPY ./tbconfig.json /app/
+COPY gp_data /app/gp_data
+COPY add_example_dataset.sh /app/
+
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN chmod u+x add_example_dataset.sh
+# Add wait-for script
+
+ARG CACHE_BUST=1
+RUN ./add_example_dataset.sh
+# Wait for MongoDB to be ready before running the script
+# CMD ["/bin/bash", "-c", "/app/wait-for.sh mongo:27017 -- /app/add_example_dataset.sh"]

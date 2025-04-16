@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/genome-browser",
+            "outputPath": "../../dist/frontend/genome-browser",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -25,9 +25,6 @@
                 "glob": "**/*",
                 "input": "public"
               }
-            ],
-            "styles": [
-              "src/styles.css"
             ],
             "scripts": []
           },

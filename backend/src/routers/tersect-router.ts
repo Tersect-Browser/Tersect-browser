@@ -159,9 +159,10 @@ router.use('/query/:datasetId', (req, res, next) => {
             if (!foundFilePath) {
                 return res.status(404).send('File not found');
             }
-    
+            res.type('application/octet-stream'); // Or whatever the actual file type is
+
             await access(foundFilePath, fs.constants.R_OK);
-    
+   
             res.sendFile(foundFilePath, (err) => {
                 if (err) {
                     if (err.message === 'EACCES') {
