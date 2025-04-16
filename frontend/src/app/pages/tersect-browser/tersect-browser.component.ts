@@ -42,6 +42,8 @@ import { TreeDrawService } from '../../services/tree-draw.service';
 
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
 
+import { BinDrawService } from '../../services/bin-draw.service';
+
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -53,6 +55,7 @@ import {TreePlotComponent} from '../../components/tersect-distance-plot/componen
         PlotStateService,
         PlotZoomService,
         TreeDrawService,
+        BinDrawService,
     ]
 })
 export class TersectBrowserComponent implements OnInit {
@@ -98,6 +101,7 @@ export class TersectBrowserComponent implements OnInit {
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotZoom: PlotZoomService,
+                private readonly drawBin: BinDrawService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
@@ -267,6 +271,29 @@ export class TersectBrowserComponent implements OnInit {
 
     zoomOut() {
         this.plotZoom.zoomOut();
+    }
+
+    callHighlightBins(){
+        console.log('callHighlightBins called');
+        
+        // Function to determine bin index position, given a fixed chromosome position
+        function getBinIndexFromPosition(position: number, intervalStart: number, binsize: number): number {
+            return Math.floor((position - intervalStart) / binsize);
+        }
+
+        // Define position based on startGenePosition passed from gene-search feature
+        let position = this.startGenePosition;
+
+        // Calculate the binIndex
+        const binIndex = getBinIndexFromPosition(position, this.selectedInterval[0], this.binSize)
+
+        // TODO - Accept a list of accession names passed from gene-search feature
+        // Currently, static list of accession names used
+        const names = ['S_lyc_B_TS-174', 'S_lyc_B_TS-80', 'S_lyc_B_TS-179']
+
+        // Pass the array of accession names and binIndex to bin-draw.service.ts to highlight bins
+        this.drawBin.setAccessions(names);
+        this.drawBin.setBinIndex(binIndex);
     }
 
     testCallback(){
