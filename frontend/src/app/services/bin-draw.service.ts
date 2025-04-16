@@ -293,11 +293,11 @@ export class BinDrawService {
         if(notHighlighted){
             // this.highlightBins(this.bins);
 
-            setTimeout(()=>{
-                this.printIndices(this.indices, this.binIndex,this.bins);
-            }, 30)
+            // setTimeout(()=>{
+            //     this.printIndices(this.indices, this.binIndex,this.bins);
+            // }, 30)
             
-            // this.printIndices(this.indices, this.binIndex,this.bins);
+            this.printIndices(this.indices, this.binIndex,this.bins);
             
         }else {
             this.generatePlotArray(this.bins);

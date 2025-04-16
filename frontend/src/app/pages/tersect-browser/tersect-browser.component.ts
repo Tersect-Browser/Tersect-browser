@@ -280,6 +280,7 @@ export class TersectBrowserComponent implements OnInit {
     }
 
     highlightLuminance() {
+        this.printAcessionNames();
         this.drawBin.highlightLuminance(!this.binsHighlighted);
         this.binsHighlighted = !this.binsHighlighted
     }
