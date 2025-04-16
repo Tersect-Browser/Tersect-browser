@@ -29,6 +29,7 @@ import {
     CanvasPlotElement,
     DragState
 } from '../CanvasPlotElement';
+import { ScaleViewStateService } from '../../services/scale-view-state-service';
 
 @Component({
     selector: 'app-scale-bar',
@@ -39,11 +40,10 @@ export class ScaleBarComponent extends CanvasPlotElement {
     @ViewChild('canvas', { static: true })
     private readonly canvas: ElementRef;
 
-    private storedScaleView: ScaleView;
-
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotCreator: PlotCreatorService,
                 private readonly scaleDrawService: ScaleDrawService,
+                private readonly scaleViewState: ScaleViewStateService,
                 private readonly renderer: Renderer2) {
         super();
         this.hoverState.hoverDelay = 0;
@@ -55,15 +55,19 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        if (isNullOrUndefined(this.storedScaleView)) {
-            this.storedScaleView = new ScaleView(this.plotState.interval,
+        console.log('Drawing scale bar');
+        let scaleView = this.scaleViewState.currentScaleView;
+        if (isNullOrUndefined(scaleView)) {
+            scaleView = new ScaleView(this.plotState.interval,
                                                  this.plotState.binsize,
                                                  this.plotCreator.binWidth,
                                                  this.guiMargins.top,
                                                  this.getContainerSize());
+            this.scaleViewState.updateScaleView(scaleView);
         }
-        this.updateScaleView(this.storedScaleView);
-        this.scaleDrawService.draw(this.storedScaleView,
+        this.updateScaleView(scaleView);
+        
+        this.scaleDrawService.draw(scaleView,
                                    this.plotCreator.treePlotWidth, 0,
                                    this.canvas.nativeElement);
     }
@@ -202,5 +206,6 @@ export class ScaleBarComponent extends CanvasPlotElement {
         scaleView.binWidth = this.plotCreator.binWidth;
         scaleView.containerSize = this.getContainerSize();
         scaleView.plotPosition = this.plotState.plotPosition;
+        this.scaleViewState.updateScaleView(scaleView);
     }
 }

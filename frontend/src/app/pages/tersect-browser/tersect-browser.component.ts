@@ -23,7 +23,8 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    PlotMouseClickEvent
+    PlotMouseClickEvent,
+    PlotPosition
 } from '../../models/Plot';
 import {
     TersectBackendService
@@ -41,7 +42,16 @@ import { PlotCreatorService } from '../../components/tersect-distance-plot/servi
 import { TreeDrawService } from '../../services/tree-draw.service';
 
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
+import { ScaleDrawService } from '../../services/scale-draw.service';
+import { ScaleViewStateService } from '../../components/tersect-distance-plot/services/scale-view-state-service';
 
+interface SyncedScaleView {
+    binSize: number;
+    bpPerPixel: number;
+    start: number;
+    end: number;
+    scrollOffset: number;
+  }
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -53,6 +63,8 @@ import {TreePlotComponent} from '../../components/tersect-distance-plot/componen
         PlotStateService,
         PlotZoomService,
         TreeDrawService,
+        ScaleDrawService,
+        ScaleViewStateService,
     ]
 })
 export class TersectBrowserComponent implements OnInit {
@@ -66,14 +78,24 @@ export class TersectBrowserComponent implements OnInit {
     defaultInterval: number[];
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
+    plotPositionX: PlotPosition;
+    syncedScaleView: SyncedScaleView;
+    accessionGroups: AccessionGroup[];
+    chromosomes: Chromosome[];
+    displaySidebar = false;
+    displayButton = false;
+    selectedAccessions: string[];
+    preselectedChromosome: Chromosome;
     
    
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
+    private syncedScaleViewSub: Subscription;
     private accessionSub: Subscription;
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
     private offsetCanvasSub: Subscription;
+    private plotPositionXSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -84,12 +106,7 @@ export class TersectBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
     private readonly plotClickMenu: PlotClickMenuComponent;
 
-    accessionGroups: AccessionGroup[];
-    chromosomes: Chromosome[];
-    displaySidebar = false;
-    displayButton = false;
-    selectedAccessions: string[];
-    preselectedChromosome: Chromosome;
+  
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -98,6 +115,8 @@ export class TersectBrowserComponent implements OnInit {
                 private readonly plotZoom: PlotZoomService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
+                private readonly scaleDrawService: ScaleDrawService,
+                private readonly scaleViewState: ScaleViewStateService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
                 private readonly route: ActivatedRoute) { }
@@ -105,31 +124,28 @@ export class TersectBrowserComponent implements OnInit {
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
-// // Method to handle the event and update the offsetCanvas value
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
+
 
     ngOnInit() {
 
         console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
-        // console.log('canvas width passed from tree-plot.component', this.offsetCanvasWidth);
-        // this.offsetWidth = this.offsetCanvasWidth;
-        // console.log('canvas width saved from tree-plot.component', this.offsetWidth);
-
-        // this.treePlotComponent.offsetCanvasChange.subscribe((newOffsetCanvas: number) => {
-        //     this.onOffsetCanvasChange(newOffsetCanvas);
-        //   });
-        
       
         
 
         // this.offsetCanvas = this.offsetCanvasChange;
+
+        this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
+            console.log('syncedScaleViewSub', scaleView);
+            if (scaleView) {
+                // Use updated ScaleView here
+                this.syncedScaleView = this.scaleDrawService.getSyncedScaleView(scaleView);
+                console.log('syncedScaleView', this.syncedScaleView);
+            }
+        });
+
+        this.plotPositionXSub = this.plotState.plotPosition$.subscribe(value => {
+            this.plotPositionX = value;
+        });
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;
