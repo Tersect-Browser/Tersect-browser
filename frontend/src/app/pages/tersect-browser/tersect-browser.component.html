@@ -42,7 +42,7 @@
     </div>
 
     <div>
-        <gene-search [callback]="testCallback"></gene-search>
+        <gene-search [callback]="callHighlightBins" bind-props="{selectedInterval: selectedInterval}"></gene-search>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
