@@ -66,6 +66,8 @@ export class TersectBrowserComponent implements OnInit {
     defaultInterval: number[];
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
+
+    chromosomeArray: Chromosome[] = [];
     
    
     private zoomSub: Subscription;
@@ -141,6 +143,7 @@ export class TersectBrowserComponent implements OnInit {
 
         this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
             this.selectedChromosomeSub = chromosome;
+            console.log('what is a chromosome', this.selectedChromosomeSub);
         })
 
         this.selectedIntervalSub = this.plotState.interval$.subscribe(value => {
@@ -266,6 +269,52 @@ export class TersectBrowserComponent implements OnInit {
         this.plotZoom.zoomOut();
     }
 
+    testCallback(){
+        console.log('callback function called---------')
+        console.log('start gene position injected', this.startGenePosition)
+        console.log('geneChrom injected', this.geneChrom);
+        // console.log('browser settings??', this.plotState.settings.selected_chromosome);
+        // console.log('trying to find chromosome', this.chromosomes);
+        // console.log(this.tersectBackendService.getChromosomes(this.geneChrom), 'get chromosome here ----')
+        // this.plotState.chromosomeSource.next(this.geneChrom);
+
+        // console.log('chromosomeArray', this.chromosomeArray)
+        // const selectedChromosome = this.chromosomeArray.find(
+        //     (chrom) => chrom.name === this.geneChrom
+        //   );
+
+        // console.log('selectedChromosome', selectedChromosome);
+          
+        //   if (selectedChromosome) {
+        //     // Push it to the observable
+        //     this.plotState.chromosomeSource.next(selectedChromosome);
+        //   } else {
+        //     console.warn(`Chromosome '${this.geneChrom}' not found in chromosomeArray`);
+        //   }
+
+        const changeChromsome: Chromosome = {
+            name: this.geneChrom,
+            size:  98543444
+        }
+
+        this.plotState.chromosomeSource.next(changeChromsome);
+    }
+
+    //this.plotState.offsetCanvasSource.next(this.storedTreeView.offscreenCanvas.width);
+
+    startGenePosition: number | null = null; // Variable to hold the gene position from the child
+    geneChrom: string | undefined = undefined;
+
+    // This function is called when the event is emitted from the child
+    handleGenePositionChanged(startGenePosition: number) {
+        this.startGenePosition = startGenePosition;
+        console.log('Received gene start position in parent:', this.startGenePosition);
+    }
+    
+    handleGeneChromChanged(geneChrom: string){
+        this.geneChrom = geneChrom;
+    }
+
     /**
      * Load default values for missing settings.
      */
@@ -288,6 +337,9 @@ export class TersectBrowserComponent implements OnInit {
             settings.selected_binsize = TersectBrowserComponent.DEFAULT_BINSIZE;
         }
         if (isNullOrUndefined(settings.selected_chromosome)) {
+            console.log('chromosomes here ----------', chromosomes)
+            this.chromosomeArray = chromosomes;
+            console.log('saved chromosomes', this.chromosomeArray)
             const largestChrom = chromosomes.reduce((prev, current) =>
                 current.size > prev.size ? current : prev
             );
