@@ -111,31 +111,9 @@ export class TersectBrowserComponent implements OnInit {
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
-// // Method to handle the event and update the offsetCanvas value
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
-// onOffsetCanvasChange(updatedOffsetCanvas: number) {
-//     this.offsetCanvas = updatedOffsetCanvas;
-//     console.log('Updated offsetCanvas in parent:', this.offsetCanvas);
-//   }
 
     ngOnInit() {
 
-        console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
-        // console.log('canvas width passed from tree-plot.component', this.offsetCanvasWidth);
-        // this.offsetWidth = this.offsetCanvasWidth;
-        // console.log('canvas width saved from tree-plot.component', this.offsetWidth);
-
-        // this.treePlotComponent.offsetCanvasChange.subscribe((newOffsetCanvas: number) => {
-        //     this.onOffsetCanvasChange(newOffsetCanvas);
-        //   });
-        
-      
-        
-
-        // this.offsetCanvas = this.offsetCanvasChange;
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;
@@ -273,7 +251,7 @@ export class TersectBrowserComponent implements OnInit {
         this.plotZoom.zoomOut();
     }
 
-    callHighlightBins(){
+    callHighlightBins(start:number, chromosome:string){
         console.log('callHighlightBins called');
         
         // Function to determine bin index position, given a fixed chromosome position
@@ -282,7 +260,7 @@ export class TersectBrowserComponent implements OnInit {
         }
 
         // Define position based on startGenePosition passed from gene-search feature
-        let position = this.startGenePosition;
+        let position = start;
 
         // Calculate the binIndex
         const binIndex = getBinIndexFromPosition(position, this.selectedInterval[0], this.binSize)
@@ -294,38 +272,14 @@ export class TersectBrowserComponent implements OnInit {
         // Pass the array of accession names and binIndex to bin-draw.service.ts to highlight bins
         this.drawBin.setAccessions(names);
         this.drawBin.setBinIndex(binIndex);
-    }
-
-    testCallback(){
-        console.log('callback function called---------')
-        console.log('start gene position injected', this.startGenePosition)
-        console.log('geneChrom injected', this.geneChrom);
-        // console.log('browser settings??', this.plotState.settings.selected_chromosome);
-        // console.log('trying to find chromosome', this.chromosomes);
-        // console.log(this.tersectBackendService.getChromosomes(this.geneChrom), 'get chromosome here ----')
-        // this.plotState.chromosomeSource.next(this.geneChrom);
-
-        // console.log('chromosomeArray', this.chromosomeArray)
-        // const selectedChromosome = this.chromosomeArray.find(
-        //     (chrom) => chrom.name === this.geneChrom
-        //   );
-
-        // console.log('selectedChromosome', selectedChromosome);
-          
-        //   if (selectedChromosome) {
-        //     // Push it to the observable
-        //     this.plotState.chromosomeSource.next(selectedChromosome);
-        //   } else {
-        //     console.warn(`Chromosome '${this.geneChrom}' not found in chromosomeArray`);
-        //   }
-
         const changeChromsome: Chromosome = {
-            name: this.geneChrom,
+            name: chromosome,
             size:  98543444
         }
 
         this.plotState.chromosomeSource.next(changeChromsome);
     }
+
 
     //this.plotState.offsetCanvasSource.next(this.storedTreeView.offscreenCanvas.width);
 
