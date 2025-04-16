@@ -7,7 +7,7 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura'; // or whichever theme preset
 
 import { AppComponent } from './app/app.component';
-import { GeneSearchComponent } from './app/gene-search/gene-search.component';
+import {GeneSearchComponent} from './app/gene-search/gene-search.component';
 
 (async () => {
   const app = await createApplication({
