@@ -5,14 +5,21 @@ import { getConf } from '@jbrowse/core/configuration'
 
 import { Feature } from '@jbrowse/core/util'
 
+
+export enum Options {
+  HIGH= "HIGH",
+  MODERATE="MODERATE",
+  LOW="LOW"
+}
+
 // ------------------------------------------------------------------
 // 1) A function to search for a gene by name using Trix
 // ------------------------------------------------------------------
 
-export async function searchGene(term: string, session:any) {
+export async function searchGene(term: string, session:any, options: Options[] = [Options.HIGH]) {
   console.log('called session', session)
 
-  const hits = await findHighImpactInGene(session, term)
+  const hits = await findHighImpactInGene(session, term, options)
 
   // Each "result" typically has refName, start, end, etc.
   // But depends on how you generated the Trix file.
@@ -105,7 +112,7 @@ function isHighImpactVariant(feature:any) {
   // or "UTR_3_PRIME(MODIFIER|...|gene|...)"
   for (const effString of effArray) {
     // Check if it says HIGH in parentheses
-    if (effString.includes('HIGH')) {
+    if (effString.includes('MODERATE')) {
       return true
     }
   }
@@ -128,6 +135,16 @@ function filterLowImpact(features: Feature[]) {
     const info = f.get('INFO')
     // Example check: if "IMPACT" field is "LOW"
     return info?.IMPACT === 'LOW'
+  })
+}
+
+function filterModerateImpact(features: Feature[]) {
+  return features.filter(f => {
+    // For VCF features, the "INFO" field is often in f.get('INFO')
+    // Or f.get('info'), or something similar, depending on your setup
+    const info = f.get('INFO')
+    // Example check: if "IMPACT" field is "LOW"
+    return info?.IMPACT === 'MODERATE'
   })
 }
 
@@ -180,7 +197,7 @@ const parseTrixSearchMeta = (meta: string) => {
 //    VCF track, filter by "high impact", and return results
 // ------------------------------------------------------------------
 
-export async function findHighImpactInGene(session: any, geneName: string) {
+export async function findHighImpactInGene(session: any, geneName: string, options: Options[]) {
   // 1) Look up the gene by name
   const geneMatches = await internalSearchGene(geneName, session)
 
@@ -227,20 +244,3 @@ export async function findHighImpactInGene(session: any, geneName: string) {
   console.log('Final results', finalResults)
   return finalResults
 }
-
-// ------------------------------------------------------------------
-// 6) Example usage (if running in a custom environment):
-// ------------------------------------------------------------------
-
-/*
-(async () => {
-  // Suppose you have a reference to the JBrowse session object:
-  const session = getMyJBrowseSessionSomehow()
-
-  const geneToSearch = 'MY_GENE'
-  const hits = await findHighImpactInGene(session, geneToSearch)
-
-  console.log('High-impact variants for gene', geneToSearch)
-  console.log(JSON.stringify(hits, null, 2))
-})()
-*/
