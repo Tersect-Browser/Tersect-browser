@@ -1,14 +1,16 @@
 import tracks from '../../react-components/tracks'
 import assembly from '../../react-components/assembly'
 import config from '../../react-components/jbrowseConfig'
-import 'primereact/resources/themes/lara-light-indigo/theme.css'; //theme
-import 'primereact/resources/primereact.min.css'; //core css             // core styles
+import 'primereact/resources/themes/saga-green/theme.css'; //theme
+import 'primereact/resources/primereact.min.css'; //core css
+import './geneSearchStyles.css';
+import 'primeflex/primeflex.css';
 
 import { PrimeReactProvider } from 'primereact/api';
 import {
     createViewState,
 } from '@jbrowse/react-linear-genome-view'
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -23,6 +25,7 @@ function GeneSearch(props:any) {
 
   const [selectedImpacts, setSelectedImpacts] = useState<Options[]>([]);
   const [loading, setLoading] = useState(false);
+  const triggerRef = useRef(null);
 
   // checkbox values
   const impacts = [Options.HIGH, Options.LOW, Options.MODERATE];
@@ -117,22 +120,34 @@ function GeneSearch(props:any) {
     };
 
     return (
-      <div className="p-inputgroup" style={{ position: "relative" }}>
+        <div className="relative inline-block" ref={triggerRef}>
         {/* Trigger Button */}
         <Button
           label="Open Variant Search"
+          style={{
+            backgroundColor: '#459e00',
+            borderRadius: '4px',
+            padding: '2px',
+            color: 'white',
+            fontSize: '16px',
+            paddingRight: '10px',
+            paddingLeft: '10px',
+            borderColor: '#327e04'
+          }}
           onClick={() => setShowDialog(true)}
           outlined
         />
 
-        {/* Search Dialog */}
+        {/* Search Dialog anchored to button */}
         <Dialog
           header="Variant Search"
           visible={showDialog}
-          style={{ width: "30rem" }}
-          modal={true}
+          style={{ width: "50rem", top: "100px" }}
+          modal={true}           /* no page‑blocking overlay */
           onHide={() => setShowDialog(false)}
-          position="top" // renders right below trigger button
+          position="top-right"      /* opens below */
+          appendTo={triggerRef.current} /* keep it right under the button */
+          draggable={false}
         >
           {/* Search input */}
           <div className="p-fluid mb-3">
@@ -143,13 +158,14 @@ function GeneSearch(props:any) {
               id="geneSearchInput"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for a gene..."
+              placeholder="Search for a gene…"
             />
           </div>
 
           {/* Checkbox group */}
           <div className="mb-3">
             <label className="block mb-2 font-semibold">Choose Impact</label>
+            <div style={{display: 'flex', gap: '8px'}}>
             {impacts.map((level) => (
               <div key={level} className="flex items-center gap-2 mb-2">
                 <Checkbox
@@ -157,16 +173,17 @@ function GeneSearch(props:any) {
                   checked={selectedImpacts.includes(level)}
                   onChange={() => toggleImpact(level)}
                 />
-                <label htmlFor={`impact-${level}`}>{level}</label>
+                <label style={{marginLeft: '5px'}} htmlFor={`impact-${level}`}>{level}</label>
               </div>
             ))}
+            </div>
           </div>
 
           {/* Search button with loader */}
           <Button
-            label={loading ? "Searching..." : "Search for variants"}
+            label={loading ? "Searching…" : "Search for variants"}
             icon={loading ? "pi pi-spin pi-spinner" : undefined}
-            loading={loading} // PrimeReact v9 supports this prop; if older, icon+disabled fallback works
+            loading={loading}
             disabled={loading}
             className="w-full"
             onClick={handleSearch}

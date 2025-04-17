@@ -7,7 +7,7 @@
         "main": "#459e00"
       },
       "tertiary": {
-        "main": "#459e00"
+        "main": "#327e04"
       },
       "quaternary": {
         "main": "#459e00"
