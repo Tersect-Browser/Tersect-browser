@@ -42,7 +42,7 @@
         </button>
     </div>
     <div>
-        <gene-search></gene-search>
+        <gene-search *ngIf="!!selectedInterval && !!binSize" bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins}" ></gene-search>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
