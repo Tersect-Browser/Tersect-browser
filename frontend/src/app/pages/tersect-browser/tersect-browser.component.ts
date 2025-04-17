@@ -219,6 +219,11 @@ export class TersectBrowserComponent implements OnInit {
             this.binSizeSub.unsubscribe()
         }
     }
+    refreshBin(){
+
+       this.drawBin.refreshBin()
+    
+    }
 
     isDownloadReady(): boolean {
         return this.plotState.plotLoadMessage !== ''
@@ -306,6 +311,8 @@ export class TersectBrowserComponent implements OnInit {
     handleGeneChromChanged(geneChrom: string){
         this.geneChrom = geneChrom;
     }
+
+
 
     /**
      * Load default values for missing settings.

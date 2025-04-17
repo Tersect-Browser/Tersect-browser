@@ -41,8 +41,11 @@
             (click)="zoomIn()">
         </button>
     </div>
-    <div>
-        <gene-search *ngIf="!!selectedInterval && !!binSize" bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins}" ></gene-search>
+    <div class="p-grid zoom-selector pt-1  align-items-start gap-2 vertical-align-top tb-toolbar-control">
+        <gene-search class="col-120 h-2" *ngIf="!!selectedInterval && !!binSize" bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins}" ></gene-search>
+        <button class="col-10 mt-0 " pButton  icon="fa fa-refresh"
+            (click)="refreshBin()">
+        </button>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">

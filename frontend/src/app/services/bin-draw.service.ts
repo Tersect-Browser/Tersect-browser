@@ -35,6 +35,21 @@ export class BinDrawService {
     public accessions: string[];
     public binIndex: number;
 
+      refreshBin(){
+            this.generatePlotArray(this.bins);
+            if (!isNullOrUndefined(this.targetCanvas)) {
+                this.updateCanvas(this.bins, this.targetCanvas);
+                const targetCanvas = this.targetCanvas;
+                const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
+                ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+                const visibleImage = this.extractVisibleImage(this.bins,
+                                                              this.offsetX, this.offsetY,
+                                                              targetCanvas);
+                ctx.putImageData(visibleImage, this.offsetX, this.offsetY);
+            }
+        
+        }
+
 
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
         targetCanvas?: HTMLCanvasElement) {
@@ -58,7 +73,6 @@ export class BinDrawService {
     }
 
     getImageData(binView: DistanceBinView): ImageData {
-        console.log(binView, 'binView');
         if (binView.redrawRequired) {
             this.generatePlotArray(binView);
         }
@@ -156,9 +170,7 @@ export class BinDrawService {
     }
 
     private generatePlotArray(binView: DistanceBinView) {
-        console.log(binView, 'binView');
         const palette: DistancePalette = GreyscalePalette;
-        console.log(binView.orderedAccessions)
 
         // First dimension (rows) are accessions, second (cols) are bins.
         const binMatrix: number[][] = binView.orderedAccessions.map(
@@ -226,7 +238,9 @@ export class BinDrawService {
     // Define function to redraw canvas to highlight feature bins
 
     highlightBins(intervalStart, binsize, orderedAccessions, searchedAccessions) {
-        console.log(this.accessions, searchedAccessions[0].trackName)
+        if(searchedAccessions.length < 1){
+            this.refreshBin()
+        }
         const searchAccessionData = searchedAccessions.map(each => findAccessionMatch(each.trackName, orderedAccessions));
         searchAccessionData.forEach((eachAccession, i) => {
             searchedAccessions[i].highImpactVariants.forEach((highImpact) => {
@@ -239,7 +253,6 @@ export class BinDrawService {
         // this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
 
         if (!isNullOrUndefined(this.targetCanvas)) {
-            console.log('valid canvas reached++++++++++')
             this.updateCanvas(this.bins, this.targetCanvas);
             const targetCanvas = this.targetCanvas;
             const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
@@ -254,7 +267,6 @@ export class BinDrawService {
     // Define setters and getters to get data passed from tersect-browser.component.ts
     setAccessions(value: string[]) {
         this.accessions = value;
-        console.log('accession names passed to bin-draw-service');
     }
 
     getAccessions() {
@@ -272,27 +284,18 @@ export class BinDrawService {
     // Define function to highlight feature bins
 
     highlightFeatureBins(accessions: string[], binIndex: number, binView: DistanceBinView) {
-        console.log('indices injected to bin-draw.service', accessions);
-
-        console.log('calculated binIndex passed to bin-draw.servies', binIndex);
-
         // TODO - find accession name index in binView.orderedAccessions
         let accessionIndices: Array<number> = [];
 
         for (let n = 0; n < accessions.length; n++) {
             binView.orderedAccessions.forEach((accession, index) => {
                 if (accession == accessions[n]) {
-                    console.log(accession)
-                    console.log('position', index)
                     accessionIndices.push(index)
                 }
             })
         }
 
-        console.log('accessionINdices,', accessionIndices)
 
-        console.log('binview here ------', binView)
-        console.log('binview container size', binView.containerSize)
 
         const palette: DistancePalette = GreyscalePalette;
         // const colorPalette: DistancePalette = RedPalette;
