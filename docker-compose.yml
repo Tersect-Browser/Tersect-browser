@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+
+  extension:
+    build:
+      context: ./extension/genome-browser
+    ports:
+      - "3200:3200"
+    # depends_on:
+      # - backend
+    networks:
+      - app-net
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "4200:4200"
+    networks:
+      - app-net
+    depends_on:
+      # - backend
+      - extension
+
+networks:
+  app-net:
+    driver: bridge

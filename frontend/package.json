@@ -4,7 +4,7 @@
     "license": "MIT",
     "scripts": {
         "ng": "ng",
-        "start": "node scripts/serve.js --port 4200",
+        "start": "node scripts/serve.js --host 127.0.0.1 --port 4200",
         "build": "node scripts/build.js",
         "clean": "rimraf dist/ node_modules/",
         "lint": "ng lint"

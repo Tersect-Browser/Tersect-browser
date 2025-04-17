@@ -23,7 +23,8 @@ import {
     Chromosome
 } from '../../models/Chromosome';
 import {
-    PlotMouseClickEvent
+    PlotMouseClickEvent,
+    PlotPosition
 } from '../../models/Plot';
 import {
     TersectBackendService
@@ -41,9 +42,18 @@ import { PlotCreatorService } from '../../components/tersect-distance-plot/servi
 import { TreeDrawService } from '../../services/tree-draw.service';
 
 import {TreePlotComponent} from '../../components/tersect-distance-plot/components/tree-plot/tree-plot.component';
+import { ScaleDrawService } from '../../services/scale-draw.service';
+import { ScaleViewStateService } from '../../components/tersect-distance-plot/services/scale-view-state-service';
 
 import { BinDrawService } from '../../services/bin-draw.service';
 
+interface SyncedScaleView {
+    binSize: number;
+    bpPerPixel: number;
+    start: number;
+    end: number;
+    scrollOffset: number;
+  }
 @Component({
     selector: 'app-tersect-browser',
     templateUrl: './tersect-browser.component.html',
@@ -56,6 +66,8 @@ import { BinDrawService } from '../../services/bin-draw.service';
         PlotZoomService,
         TreeDrawService,
         BinDrawService,
+        ScaleDrawService,
+        ScaleViewStateService,
     ]
 })
 export class TersectBrowserComponent implements OnInit {
@@ -63,7 +75,7 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
-    binSize: number = this.plotState.binsize;
+    binSize: number = 0;
     selectedChromosomeSub: Chromosome;
     selectedInterval: number[];
     defaultInterval: number[];
@@ -71,14 +83,24 @@ export class TersectBrowserComponent implements OnInit {
     offsetCanvas: number;
 
     chromosomeArray: Chromosome[] = [];
+    plotPositionX: PlotPosition;
+    syncedScaleView: SyncedScaleView;
+    accessionGroups: AccessionGroup[];
+    chromosomes: Chromosome[];
+    displaySidebar = false;
+    displayButton = false;
+    selectedAccessions: string[];
+    preselectedChromosome: Chromosome;
     
    
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
+    private syncedScaleViewSub: Subscription;
     private accessionSub: Subscription;
     private chromosomeSub: Subscription;
     private selectedIntervalSub: Subscription;
     private offsetCanvasSub: Subscription;
+    private plotPositionXSub: Subscription;
 
     @ViewChild(TersectDistancePlotComponent, { static: true })
     readonly distancePlot: TersectDistancePlotComponent;
@@ -89,12 +111,7 @@ export class TersectBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
     private readonly plotClickMenu: PlotClickMenuComponent;
 
-    accessionGroups: AccessionGroup[];
-    chromosomes: Chromosome[];
-    displaySidebar = false;
-    displayButton = false;
-    selectedAccessions: string[];
-    preselectedChromosome: Chromosome;
+  
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -104,16 +121,34 @@ export class TersectBrowserComponent implements OnInit {
                 private readonly drawBin: BinDrawService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
+                private readonly scaleDrawService: ScaleDrawService,
+                private readonly scaleViewState: ScaleViewStateService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
-                private readonly route: ActivatedRoute) { }
+                private readonly route: ActivatedRoute) { 
+                    this.selectedInterval = this.plotState.interval
+                    this.callHighlightBins = this.callHighlightBins.bind(this);
+                }
 
     get settings(): BrowserSettings {
         return this.plotState.settings;
     }
 
+
     ngOnInit() {
 
+        this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
+            console.log('syncedScaleViewSub', scaleView);
+            if (scaleView) {
+                // Use updated ScaleView here
+                this.syncedScaleView = this.scaleDrawService.getSyncedScaleView(scaleView);
+                console.log('syncedScaleView', this.syncedScaleView);
+            }
+        });
+
+        this.plotPositionXSub = this.plotState.plotPosition$.subscribe(value => {
+            this.plotPositionX = value;
+        });
 
         this.zoomSub = this.plotState.zoomLevel$.subscribe(level => {
             this.zoomLevel = level;
@@ -132,6 +167,7 @@ export class TersectBrowserComponent implements OnInit {
             this.selectedInterval = value;
             console.log('tracking selectedInterval', this.selectedInterval);
         })
+
 
         this.offsetCanvasSub = this.plotState.offsetCanvas$.subscribe(value => {
             this.offsetCanvas = value;
@@ -251,33 +287,8 @@ export class TersectBrowserComponent implements OnInit {
         this.plotZoom.zoomOut();
     }
 
-    callHighlightBins(start:number, chromosome:string){
-        console.log('callHighlightBins called');
-        
-        // Function to determine bin index position, given a fixed chromosome position
-        function getBinIndexFromPosition(position: number, intervalStart: number, binsize: number): number {
-            return Math.floor((position - intervalStart) / binsize);
-        }
-
-        // Define position based on startGenePosition passed from gene-search feature
-        let position = start;
-
-        // Calculate the binIndex
-        const binIndex = getBinIndexFromPosition(position, this.selectedInterval[0], this.binSize)
-
-        // TODO - Accept a list of accession names passed from gene-search feature
-        // Currently, static list of accession names used
-        const names = ['S_lyc_B_TS-174', 'S_lyc_B_TS-80', 'S_lyc_B_TS-179']
-
-        // Pass the array of accession names and binIndex to bin-draw.service.ts to highlight bins
-        this.drawBin.setAccessions(names);
-        this.drawBin.setBinIndex(binIndex);
-        const changeChromsome: Chromosome = {
-            name: chromosome,
-            size:  98543444
-        }
-
-        this.plotState.chromosomeSource.next(changeChromsome);
+    callHighlightBins(searchedAcessions){
+        this.drawBin.highlightBins(this.selectedInterval[0], this.binSize, this.plotState.orderedAccessions, searchedAcessions)
     }
 
 
@@ -331,7 +342,6 @@ export class TersectBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(settings.selected_interval)) {
             settings.selected_interval = [1, settings.selected_chromosome.size];
-            console.log('interval settings.selected_interval', settings.selected_interval);
             this.defaultInterval = settings.selected_interval;
         }
         if (isNullOrUndefined(settings.accession_infos)) {

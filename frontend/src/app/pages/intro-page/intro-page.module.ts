@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
@@ -24,6 +24,7 @@ import { IntroPageComponent } from './intro-page.component';
     ],
     providers: [
         TersectBackendService
-    ]
+    ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class IntroPageModule { }

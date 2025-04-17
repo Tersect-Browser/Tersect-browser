@@ -10,6 +10,6 @@ app.use('*', frontend);
 
 const port = process.env.PORT || tbConfig.serverPort;
 app.set('port', port);
-app.listen(port, () => {
+app.listen(port as number, '127.0.0.1', () => {
     console.log(`Server started on port ${port}`);
-})
+});

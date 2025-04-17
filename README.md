@@ -32,7 +32,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
 {
     "serverPort": 4300,
     "baseHref": "/TersectBrowserGP/",
-    "mongoHost": "mongodb://localhost:27017", // adjust url to fit your local mongodb installation
+    "mongoHost": "mongodb://127.0.0.1:27017", // adjust url to fit your local mongodb installation
     "dbName": "tersect_browser_gp",
     "localDbPath": "/Users/user/Tersect-browser/~/mongo-data/gp_data_copy", // adjust url to fit your Tersect-browser path
     "indexPartitions": [
@@ -145,7 +145,7 @@ This should deploy the Tersect Browser and the Genome Browser component, which c
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `ng serve` for a dev server. Navigate to `http://127.0.0.1:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
