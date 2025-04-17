@@ -25,6 +25,7 @@
     "@ngeenx/ngx-react": "^2.0.0",
     "@primeng/themes": "^18.0.0",
     "generic-filehandle2": "^1.0.0",
+    "primeflex": "^4.0.0",
     "primeng": "^18.0.0",
     "primereact": "^10.9.4",
     "react": "^18.3.1",
