@@ -17,8 +17,6 @@ export enum Options {
 // ------------------------------------------------------------------
 
 export async function searchGene(term: string, session:any, options: Options[] = [Options.HIGH]) {
-  console.log('called session', session)
-
   const hits = await findHighImpactInGene(session, term, options)
 
   // Each "result" typically has refName, start, end, etc.
@@ -99,7 +97,7 @@ async function fetchVariantsForRegion(
 // 4) Example filter for "high impact" variants
 //    Adjust to match your actual VCF annotation scheme
 // ------------------------------------------------------------------
-function isHighImpactVariant(feature:any) {
+function isSpecifiedImpact(feature:any, impact: Options) {
   const info = feature.get('INFO')
   // The EFF field is typically an array of strings
   const effArray = info?.EFF
@@ -112,7 +110,7 @@ function isHighImpactVariant(feature:any) {
   // or "UTR_3_PRIME(MODIFIER|...|gene|...)"
   for (const effString of effArray) {
     // Check if it says HIGH in parentheses
-    if (effString.includes('MODERATE')) {
+    if (effString.includes(impact)) {
       return true
     }
   }
@@ -124,27 +122,19 @@ function filterHighImpact(features: Feature[]) {
   return features.filter(f => {
     // For VCF features, the "INFO" field is often in f.get('INFO')
     // Or f.get('info'), or something similar, depending on your setup
-    return isHighImpactVariant(f)
+    return isSpecifiedImpact(f, Options.HIGH)
   })
 }
 
 function filterLowImpact(features: Feature[]) {
   return features.filter(f => {
-    // For VCF features, the "INFO" field is often in f.get('INFO')
-    // Or f.get('info'), or something similar, depending on your setup
-    const info = f.get('INFO')
-    // Example check: if "IMPACT" field is "LOW"
-    return info?.IMPACT === 'LOW'
+    return isSpecifiedImpact(f, Options.LOW)
   })
 }
 
 function filterModerateImpact(features: Feature[]) {
   return features.filter(f => {
-    // For VCF features, the "INFO" field is often in f.get('INFO')
-    // Or f.get('info'), or something similar, depending on your setup
-    const info = f.get('INFO')
-    // Example check: if "IMPACT" field is "LOW"
-    return info?.IMPACT === 'MODERATE'
+    return isSpecifiedImpact(f, Options.MODERATE)
   })
 }
 
@@ -205,17 +195,15 @@ export async function findHighImpactInGene(session: any, geneName: string, optio
   const vcfTracks = getAllVcfTrackConfigs(session)
 
   // This array will collect the final results
-  const finalResults = []
+  const finalResults:any = []
 
   // 3) For each gene match (some genes have multiple isoforms/locations)
 
     //use @Tanya parsing function here
     const payload = parseTrixSearchMeta(geneMatches[1][1])
-    console.log('parsed trix data', payload)
 
     // 4) For each VCF track, fetch the variants in that region
     for (const trackConfig of vcfTracks) {
-      console.log(trackConfig, 'each track config')
       const allVariants = await fetchVariantsForRegion(
         session,
         trackConfig,
@@ -224,23 +212,49 @@ export async function findHighImpactInGene(session: any, geneName: string, optio
         payload?.end ?? 0,
       )
 
-      console.log(allVariants, payload);
+      options.forEach((level) => {
+        if(level == Options.HIGH){
+          const highImpact = filterHighImpact(allVariants)
+          if (highImpact.length > 0) {
+            finalResults.push({
+              trackId: trackConfig.trackId,
+              trackName: trackConfig.name,
+              chrom: payload?.chrom ?? '',
+              highImpactVariants: highImpact,
+            })
+          }
+        }
+
+        if(level == Options.LOW){
+          const lowImpact = filterLowImpact(allVariants)
+          if (lowImpact.length > 0) {
+            finalResults.push({
+              trackId: trackConfig.trackId,
+              trackName: trackConfig.name,
+              chrom: payload?.chrom ?? '',
+              highImpactVariants: lowImpact,
+            })
+          }
+        }
+
+        if(level == Options.MODERATE){
+          const moderateImpact = filterModerateImpact(allVariants)
+          if (moderateImpact.length > 0) {
+            finalResults.push({
+              trackId: trackConfig.trackId,
+              trackName: trackConfig.name,
+              chrom: payload?.chrom ?? '',
+              highImpactVariants: moderateImpact,
+            })
+          }
+        }
+      })
+
+
 
       // 5) Filter for "high impact"
-      const highImpact = filterHighImpact(allVariants)
-      if (highImpact.length > 0) {
-        finalResults.push({
-          trackId: trackConfig.trackId,
-          trackName: trackConfig.name,
-          chrom: payload?.chrom ?? '',
-          highImpactVariants: highImpact,
-        })
-      }
+      
     }
   
-
-  // Return an array of results. Each entry:
-  // { trackId, trackName, gene, highImpactVariants[] }
-  console.log('Final results', finalResults)
   return finalResults
 }

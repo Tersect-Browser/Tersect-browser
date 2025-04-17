@@ -19,7 +19,6 @@ import { searchGene, Options } from '../searchGene';
 
 
 function GeneSearch(props:any) {
-    console.log(props, 'from angular')
     const [query, setQuery] = useState('');
     const [showDialog, setShowDialog] = useState(false);
 
@@ -46,8 +45,8 @@ function GeneSearch(props:any) {
     } finally {
       setLoading(false);
       setShowDialog(false);
-      setQuery("");
-      setSelectedImpacts([]);
+    //   setQuery("");
+    //   setSelectedImpacts([]);
     }
   };
 
@@ -105,19 +104,6 @@ function GeneSearch(props:any) {
         // view?.scrollTo(50000, 900000)
         view?.showTrack(each.trackId)
     })
-
-    /**
-     * Called by the search button or onSelect from the AutoComplete.
-     * Replace this with your actual search.
-     */
-    const search = async (query: string) => {
-        console.log('ran the search', query)
-        if (!query) return;
-
-        const testResults = await searchGene(query, state.session)
-
-        props.callback(testResults);
-    };
 
     return (
         <div className="relative inline-block" ref={triggerRef}>
