@@ -28,12 +28,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -50,12 +50,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -72,12 +72,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_003_SZAXPI009285-62.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_003_SZAXPI009285-62.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_003_SZAXPI009285-62.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_003_SZAXPI009285-62.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -94,12 +94,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_004_SZAXPI009286-74.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_004_SZAXPI009286-74.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_004_SZAXPI009286-74.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_004_SZAXPI009286-74.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -116,12 +116,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_005_SZAXPI009287-75.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_005_SZAXPI009287-75.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_005_SZAXPI009287-75.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_005_SZAXPI009287-75.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -138,12 +138,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_006_SZAXPI009288-79.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_006_SZAXPI009288-79.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_006_SZAXPI009288-79.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_006_SZAXPI009288-79.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -160,12 +160,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_007_SZAXPI009289-84.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_007_SZAXPI009289-84.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_007_SZAXPI009289-84.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_007_SZAXPI009289-84.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -182,12 +182,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_008_SZAXPI009290-87.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_008_SZAXPI009290-87.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_008_SZAXPI009290-87.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_008_SZAXPI009290-87.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -204,12 +204,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_011_SZAXPI009291-88.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_011_SZAXPI009291-88.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_011_SZAXPI009291-88.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_011_SZAXPI009291-88.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -226,12 +226,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_012_SZAXPI009292-89.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_012_SZAXPI009292-89.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_012_SZAXPI009292-89.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_012_SZAXPI009292-89.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -248,12 +248,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_013_SZAXPI009293-90.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_013_SZAXPI009293-90.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_013_SZAXPI009293-90.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_013_SZAXPI009293-90.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -270,12 +270,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_014_SZAXPI009294-93.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_014_SZAXPI009294-93.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_014_SZAXPI009294-93.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_014_SZAXPI009294-93.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -292,12 +292,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_015_SZAXPI009295-94.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_015_SZAXPI009295-94.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_015_SZAXPI009295-94.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_015_SZAXPI009295-94.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -314,12 +314,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_016_SZAXPI009296-95.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_016_SZAXPI009296-95.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_016_SZAXPI009296-95.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_016_SZAXPI009296-95.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -336,12 +336,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_017_SZAXPI009297-102.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_017_SZAXPI009297-102.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_017_SZAXPI009297-102.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_017_SZAXPI009297-102.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -358,12 +358,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_018_SZAXPI009298-108.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_018_SZAXPI009298-108.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_018_SZAXPI009298-108.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_018_SZAXPI009298-108.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -380,12 +380,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_019_SZAXPI009299-109.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_019_SZAXPI009299-109.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_019_SZAXPI009299-109.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_019_SZAXPI009299-109.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -402,12 +402,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_020_SZAXPI009300-113.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_020_SZAXPI009300-113.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_020_SZAXPI009300-113.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_020_SZAXPI009300-113.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -424,12 +424,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_021_SZAXPI009301-123.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_021_SZAXPI009301-123.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_021_SZAXPI009301-123.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_021_SZAXPI009301-123.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -446,12 +446,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_022_SZAXPI009302-129.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_022_SZAXPI009302-129.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_022_SZAXPI009302-129.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_022_SZAXPI009302-129.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -468,12 +468,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_023_SZAXPI009303-133.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_023_SZAXPI009303-133.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_023_SZAXPI009303-133.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_023_SZAXPI009303-133.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -490,12 +490,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_024_SZAXPI009304-136.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_024_SZAXPI009304-136.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_024_SZAXPI009304-136.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_024_SZAXPI009304-136.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -512,12 +512,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_025_SZAXPI009305-140.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_025_SZAXPI009305-140.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_025_SZAXPI009305-140.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_025_SZAXPI009305-140.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -534,12 +534,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_026_SZAXPI009306-142.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_026_SZAXPI009306-142.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_026_SZAXPI009306-142.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_026_SZAXPI009306-142.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -556,12 +556,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_027_SZAXPI009307-158.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_027_SZAXPI009307-158.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_027_SZAXPI009307-158.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_027_SZAXPI009307-158.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -578,12 +578,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_028_SZAXPI009308-166.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_028_SZAXPI009308-166.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_028_SZAXPI009308-166.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_028_SZAXPI009308-166.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -600,12 +600,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_029_SZAXPI009309-169.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_029_SZAXPI009309-169.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_029_SZAXPI009309-169.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_029_SZAXPI009309-169.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -622,12 +622,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_030_SZAXPI009310-62.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_030_SZAXPI009310-62.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_030_SZAXPI009310-62.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_030_SZAXPI009310-62.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -644,12 +644,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_031_SZAXPI009311-74.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_031_SZAXPI009311-74.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_031_SZAXPI009311-74.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_031_SZAXPI009311-74.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -666,12 +666,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_032_SZAXPI009312-75.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_032_SZAXPI009312-75.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_032_SZAXPI009312-75.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_032_SZAXPI009312-75.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -688,12 +688,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_033_SZAXPI009313-79.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_033_SZAXPI009313-79.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_033_SZAXPI009313-79.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_033_SZAXPI009313-79.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -710,12 +710,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_034_SZAXPI009314-84.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_034_SZAXPI009314-84.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_034_SZAXPI009314-84.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_034_SZAXPI009314-84.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -732,12 +732,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_035_SZAXPI009315-87.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_035_SZAXPI009315-87.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_035_SZAXPI009315-87.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_035_SZAXPI009315-87.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -754,12 +754,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_036_SZAXPI009316-88.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_036_SZAXPI009316-88.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_036_SZAXPI009316-88.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_036_SZAXPI009316-88.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -776,12 +776,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_037_SZAXPI008747-46.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_037_SZAXPI008747-46.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_037_SZAXPI008747-46.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_037_SZAXPI008747-46.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -798,12 +798,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_038_SZAXPI009317-89.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_038_SZAXPI009317-89.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_038_SZAXPI009317-89.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_038_SZAXPI009317-89.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -820,12 +820,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_039_SZAXPI009318-90.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_039_SZAXPI009318-90.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_039_SZAXPI009318-90.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_039_SZAXPI009318-90.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -842,12 +842,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_040_SZAXPI009319-93.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_040_SZAXPI009319-93.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_040_SZAXPI009319-93.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_040_SZAXPI009319-93.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -864,12 +864,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_041_SZAXPI009320-94.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_041_SZAXPI009320-94.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_041_SZAXPI009320-94.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_041_SZAXPI009320-94.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -886,12 +886,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_042_SZAXPI009321-95.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_042_SZAXPI009321-95.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_042_SZAXPI009321-95.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_042_SZAXPI009321-95.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -908,12 +908,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_043_SZAXPI009322-102.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_043_SZAXPI009322-102.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_043_SZAXPI009322-102.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_043_SZAXPI009322-102.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -930,12 +930,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_044_SZAXPI009323-108.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_044_SZAXPI009323-108.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_044_SZAXPI009323-108.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_044_SZAXPI009323-108.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -952,12 +952,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_045_SZAXPI009324-109.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_045_SZAXPI009324-109.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_045_SZAXPI009324-109.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_045_SZAXPI009324-109.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -974,12 +974,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_046_SZAXPI008748-47.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_046_SZAXPI008748-47.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_046_SZAXPI008748-47.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_046_SZAXPI008748-47.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -996,12 +996,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_047_SZAXPI009326-113.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_047_SZAXPI009326-113.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_047_SZAXPI009326-113.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_047_SZAXPI009326-113.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1018,12 +1018,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_049_SZAXPI009327-123.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_049_SZAXPI009327-123.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_049_SZAXPI009327-123.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_049_SZAXPI009327-123.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1040,12 +1040,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_051_SZAXPI009328-129.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_051_SZAXPI009328-129.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_051_SZAXPI009328-129.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_051_SZAXPI009328-129.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1062,12 +1062,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_052_SZAXPI009329-133.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_052_SZAXPI009329-133.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_052_SZAXPI009329-133.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_052_SZAXPI009329-133.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1084,12 +1084,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_053_SZAXPI009330-136.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_053_SZAXPI009330-136.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_053_SZAXPI009330-136.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_053_SZAXPI009330-136.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1106,12 +1106,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_054_SZAXPI009331-140.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_054_SZAXPI009331-140.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_054_SZAXPI009331-140.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_054_SZAXPI009331-140.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1128,12 +1128,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_055_SZAXPI009332-142.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_055_SZAXPI009332-142.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_055_SZAXPI009332-142.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_055_SZAXPI009332-142.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1150,12 +1150,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_056_SZAXPI009333-158.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_056_SZAXPI009333-158.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_056_SZAXPI009333-158.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_056_SZAXPI009333-158.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1172,12 +1172,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_057_SZAXPI009334-166.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_057_SZAXPI009334-166.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_057_SZAXPI009334-166.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_057_SZAXPI009334-166.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1194,12 +1194,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_058_SZAXPI009359-46.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_058_SZAXPI009359-46.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_058_SZAXPI009359-46.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_058_SZAXPI009359-46.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1216,12 +1216,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_059_SZAXPI009335-169.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_059_SZAXPI009335-169.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_059_SZAXPI009335-169.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_059_SZAXPI009335-169.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1238,12 +1238,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_060_SZAXPI009336-14.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_060_SZAXPI009336-14.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_060_SZAXPI009336-14.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_060_SZAXPI009336-14.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1260,12 +1260,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_062_SZAXPI009337-15.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_062_SZAXPI009337-15.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_062_SZAXPI009337-15.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_062_SZAXPI009337-15.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1282,12 +1282,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_063_SZAXPI009338-16-2.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_063_SZAXPI009338-16-2.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_063_SZAXPI009338-16-2.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_063_SZAXPI009338-16-2.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1304,12 +1304,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_064_SZAXPI009339-17-2.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_064_SZAXPI009339-17-2.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_064_SZAXPI009339-17-2.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_064_SZAXPI009339-17-2.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1326,12 +1326,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_065_SZAXPI009340-18.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_065_SZAXPI009340-18.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_065_SZAXPI009340-18.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_065_SZAXPI009340-18.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1348,12 +1348,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_066_SZAXPI009341-19.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_066_SZAXPI009341-19.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_066_SZAXPI009341-19.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_066_SZAXPI009341-19.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1370,12 +1370,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_067_SZAXPI009342-21.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_067_SZAXPI009342-21.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_067_SZAXPI009342-21.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_067_SZAXPI009342-21.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1392,12 +1392,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_068_SZAXPI009343-22-2.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_068_SZAXPI009343-22-2.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_068_SZAXPI009343-22-2.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_068_SZAXPI009343-22-2.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1414,12 +1414,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_069_SZAXPI009344-23.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_069_SZAXPI009344-23.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_069_SZAXPI009344-23.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_069_SZAXPI009344-23.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1436,12 +1436,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_070_SZAXPI008749-56.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_070_SZAXPI008749-56.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_070_SZAXPI008749-56.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_070_SZAXPI008749-56.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1458,12 +1458,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_071_SZAXPI009345-24.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_071_SZAXPI009345-24.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_071_SZAXPI009345-24.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_071_SZAXPI009345-24.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1480,12 +1480,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_072_SZAXPI008752-75.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_072_SZAXPI008752-75.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_072_SZAXPI008752-75.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_072_SZAXPI008752-75.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1502,12 +1502,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_073_SZAXPI009346-25.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_073_SZAXPI009346-25.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_073_SZAXPI009346-25.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_073_SZAXPI009346-25.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1524,12 +1524,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_074_SZAXPI008753-79.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_074_SZAXPI008753-79.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_074_SZAXPI008753-79.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_074_SZAXPI008753-79.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1546,12 +1546,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_075_SZAXPI009347-26.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_075_SZAXPI009347-26.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_075_SZAXPI009347-26.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_075_SZAXPI009347-26.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1568,12 +1568,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_077_SZAXPI009348-27.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_077_SZAXPI009348-27.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_077_SZAXPI009348-27.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_077_SZAXPI009348-27.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1590,12 +1590,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_078_SZAXPI009349-30.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_078_SZAXPI009349-30.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_078_SZAXPI009349-30.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_078_SZAXPI009349-30.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1612,12 +1612,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_088_SZAXPI009350-31.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_088_SZAXPI009350-31.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_088_SZAXPI009350-31.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_088_SZAXPI009350-31.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1634,12 +1634,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_089_SZAXPI009351-32.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_089_SZAXPI009351-32.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_089_SZAXPI009351-32.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_089_SZAXPI009351-32.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1656,12 +1656,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_090_SZAXPI009352-35.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_090_SZAXPI009352-35.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_090_SZAXPI009352-35.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_090_SZAXPI009352-35.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1678,12 +1678,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_091_SZAXPI009325-56.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_091_SZAXPI009325-56.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_091_SZAXPI009325-56.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_091_SZAXPI009325-56.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1700,12 +1700,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_093_SZAXPI009353-36.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_093_SZAXPI009353-36.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_093_SZAXPI009353-36.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_093_SZAXPI009353-36.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1722,12 +1722,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_094_SZAXPI008750-57.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_094_SZAXPI008750-57.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_094_SZAXPI008750-57.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_094_SZAXPI008750-57.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1744,12 +1744,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_096_SZAXPI009354-37.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_096_SZAXPI009354-37.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_096_SZAXPI009354-37.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_096_SZAXPI009354-37.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1766,12 +1766,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_097_SZAXPI009355-39.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_097_SZAXPI009355-39.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_097_SZAXPI009355-39.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_097_SZAXPI009355-39.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1788,12 +1788,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_102_SZAXPI009356-41.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_102_SZAXPI009356-41.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_102_SZAXPI009356-41.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_102_SZAXPI009356-41.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1810,12 +1810,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_103_SZAXPI009357-44.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_103_SZAXPI009357-44.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_103_SZAXPI009357-44.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_103_SZAXPI009357-44.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1832,12 +1832,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_104_SZAXPI008751-74.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_104_SZAXPI008751-74.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_104_SZAXPI008751-74.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_104_SZAXPI008751-74.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"
@@ -1854,12 +1854,12 @@ export default [
           "adapter": {
               "type": "VcfTabixAdapter",
               "vcfGzLocation": {
-                  "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_105_SZAXPI009358-45.vcf.gz.snpeff.vcf.gz",
+                  "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_105_SZAXPI009358-45.vcf.gz.snpeff.vcf.gz",
                   "locationType": "UriLocation"
               },
               "index": {
                   "location": {
-                      "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_105_SZAXPI009358-45.vcf.gz.snpeff.vcf.gz.tbi",
+                      "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_105_SZAXPI009358-45.vcf.gz.snpeff.vcf.gz.tbi",
                       "locationType": "UriLocation"
                   },
                   "indexType": "TBI"

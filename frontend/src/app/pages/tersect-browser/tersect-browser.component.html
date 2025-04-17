@@ -30,6 +30,7 @@
         <app-binsize-selector></app-binsize-selector>
     </div>
 
+
     <div class="p-col zoom-selector tb-toolbar-control">
         <button pButton icon="fa fa-search-minus"
             [disabled]="isZoomMin()"
@@ -40,9 +41,8 @@
             (click)="zoomIn()">
         </button>
     </div>
-
     <div>
-        <gene-search [callback]="callHighlightBins" bind-props="{selectedInterval: selectedInterval}"></gene-search>
+        <gene-search *ngIf="!!selectedInterval && !!binSize" bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins}" ></gene-search>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
@@ -68,11 +68,22 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
-<jbrowser-wrapper  *ngIf="displayButton"   bind-props="{location : {start: '0', end: '98543444', 
-zoomLevel: zoomLevel, binSize: binSize, 
-chromosome: selectedChromosomeSub, preselectedChromosome: preselectedChromosome,
-selectedInterval: selectedInterval, defaultInterval: defaultInterval,
-offsetCanvas: offsetCanvas}}"></jbrowser-wrapper>
+<jbrowser-wrapper *ngIf="displayButton" bind-props="{location : {
+    start: '0', 
+    end: '98543444', 
+    zoomLevel: zoomLevel, 
+    binSize: binSize, 
+    chromosome: selectedChromosomeSub, 
+    preselectedChromosome: preselectedChromosome,
+    selectedInterval: selectedInterval, 
+    defaultInterval: defaultInterval,
+    offsetCanvas: offsetCanvas, 
+    plotPositionX: plotPositionX
+},
+scaleView: this.syncedScaleView,
+displayed: this.displayButton
+}"
+></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot
