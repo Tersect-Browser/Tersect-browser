@@ -1,71 +1,56 @@
 import tracks from '../../react-components/tracks'
 import assembly from '../../react-components/assembly'
 import config from '../../react-components/jbrowseConfig'
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
+import 'primereact/resources/themes/lara-light-indigo/theme.css'; //theme
+import 'primereact/resources/primereact.min.css'; //core css             // core styles
+
+import { PrimeReactProvider } from 'primereact/api';
 import {
     createViewState,
-    createModel,
-    JBrowseLinearGenomeView,
-    ViewModel
 } from '@jbrowse/react-linear-genome-view'
-import React, { useState, useEffect, useRef } from 'react';
-import { AutoComplete } from 'primereact/autocomplete';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { searchGene } from '../searchGene';
+import React, { useState } from 'react';
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { Checkbox } from "primereact/checkbox";
+import { searchGene, Options } from '../searchGene';
 
-// If you have your searchGene function in a separate file, import it:
-// import { searchGene } from './searchGene';
 
-export default function GeneSearch(props:any) {
+function GeneSearch(props:any) {
     console.log(props, 'from angular')
     const [query, setQuery] = useState('');
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [results, setResults] = useState<any[]>([]);
-    const [showPopup, setShowPopup] = useState(false);
+    const [showDialog, setShowDialog] = useState(false);
 
-    // Fake local terms; you can replace this with a fetch or a real function
-    const possibleTerms = ['BRCA1', 'TP53', 'MYC', 'EGFR', 'CDKN2A'];
+  const [selectedImpacts, setSelectedImpacts] = useState<Options[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    /**
-     * Called by <AutoComplete> whenever it needs fresh suggestions.
-     * 'event.query' has the current input text.
-     */
-    const handleComplete = (event: { query: string }) => {
-        const filtered = possibleTerms.filter((term) =>
-            term.toLowerCase().startsWith(event.query.toLowerCase())
-        );
-        setSuggestions(filtered);
-    };
+  // checkbox values
+  const impacts = [Options.HIGH, Options.LOW, Options.MODERATE];
 
-    /**
-     * Basic parse function from your sample code
-     * (You can remove it if you’re not actually using this logic.)
-     */
-    const parseResult = (result: any) => {
-        const [id, raw] = result;
-        try {
-            const decoded = decodeURIComponent(raw)
-                .replace(/^\[|\]$/g, '') // remove brackets
-                .split('|');
-            const [location, source, name, type] = decoded;
-            return {
-                id,
-                location,
-                source,
-                name,
-                type: type?.split('%3A')[0] || 'feature',
-            };
-        } catch (e) {
-            return {
-                id,
-                location: 'unknown',
-                source: 'unknown',
-                type: 'unknown',
-            };
-        }
-    };
+  const toggleImpact = (value:Options) => {
+    setSelectedImpacts((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
+
+  const handleSearch = async () => {
+    if (!query.trim()) return; // ignore empty search
+    setLoading(true);
+    try {
+      const results  = await searchGene(query, state.session, selectedImpacts);
+      // optional external callback (if still needed)
+      props?.callback?.(results);
+    } finally {
+      setLoading(false);
+      setShowDialog(false);
+      setQuery("");
+      setSelectedImpacts([]);
+    }
+  };
+
+
+
+
 
 
 
@@ -132,33 +117,69 @@ export default function GeneSearch(props:any) {
     };
 
     return (
-        <PrimeReactProvider>
-            <div className="p-inputgroup" style={{ position: 'relative' }}>
-                <InputText
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search for a gene..."
-                />
-                <Button label="Search" onClick={() => search(query)} />
+      <div className="p-inputgroup" style={{ position: "relative" }}>
+        {/* Trigger Button */}
+        <Button
+          label="Open Variant Search"
+          onClick={() => setShowDialog(true)}
+          outlined
+        />
 
-                <Dialog
-                    header="Search Results"
-                    visible={showPopup}
-                    style={{ width: '30rem' }}
-                    onHide={() => setShowPopup(false)}
-                >
-                    {results.length > 0 ? (
-                        results.map((r, idx) => {
-                            const parsed = parseResult(r);
-                            return <div onClick={() => {
-                                props?.callback()
-                            }} key={idx}>{parsed.name ?? r[0]}</div>;
-                        })
-                    ) : (
-                        <i>No results found</i>
-                    )}
-                </Dialog>
-            </div>
+        {/* Search Dialog */}
+        <Dialog
+          header="Variant Search"
+          visible={showDialog}
+          style={{ width: "30rem" }}
+          modal={true}
+          onHide={() => setShowDialog(false)}
+          position="top" // renders right below trigger button
+        >
+          {/* Search input */}
+          <div className="p-fluid mb-3">
+            <label htmlFor="geneSearchInput" className="block mb-1">
+              Gene ID
+            </label>
+            <InputText
+              id="geneSearchInput"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search for a gene..."
+            />
+          </div>
+
+          {/* Checkbox group */}
+          <div className="mb-3">
+            <label className="block mb-2 font-semibold">Choose Impact</label>
+            {impacts.map((level) => (
+              <div key={level} className="flex items-center gap-2 mb-2">
+                <Checkbox
+                  inputId={`impact-${level}`}
+                  checked={selectedImpacts.includes(level)}
+                  onChange={() => toggleImpact(level)}
+                />
+                <label htmlFor={`impact-${level}`}>{level}</label>
+              </div>
+            ))}
+          </div>
+
+          {/* Search button with loader */}
+          <Button
+            label={loading ? "Searching..." : "Search for variants"}
+            icon={loading ? "pi pi-spin pi-spinner" : undefined}
+            loading={loading} // PrimeReact v9 supports this prop; if older, icon+disabled fallback works
+            disabled={loading}
+            className="w-full"
+            onClick={handleSearch}
+          />
+        </Dialog>
+      </div>
+    );
+}
+
+export default function WrappedApp (props: any) {
+    return (
+        <PrimeReactProvider>
+            <GeneSearch {...props} />
         </PrimeReactProvider>
     );
 }
