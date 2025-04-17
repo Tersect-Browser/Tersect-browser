@@ -45,6 +45,8 @@ import {TreePlotComponent} from '../../components/tersect-distance-plot/componen
 import { ScaleDrawService } from '../../services/scale-draw.service';
 import { ScaleViewStateService } from '../../components/tersect-distance-plot/services/scale-view-state-service';
 
+import { BinDrawService } from '../../services/bin-draw.service';
+
 interface SyncedScaleView {
     binSize: number;
     bpPerPixel: number;
@@ -63,6 +65,7 @@ interface SyncedScaleView {
         PlotStateService,
         PlotZoomService,
         TreeDrawService,
+        BinDrawService,
         ScaleDrawService,
         ScaleViewStateService,
     ]
@@ -72,12 +75,14 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_DISPLAY_STYLE: AccessionDisplayStyle = 'labels';
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
-    binSize: number = this.plotState.binsize;
+    binSize: number = 0;
     selectedChromosomeSub: Chromosome;
     selectedInterval: number[];
     defaultInterval: number[];
     // offsetWidth: TreePlotComponent;
     offsetCanvas: number;
+
+    chromosomeArray: Chromosome[] = [];
     plotPositionX: PlotPosition;
     syncedScaleView: SyncedScaleView;
     accessionGroups: AccessionGroup[];
@@ -113,13 +118,17 @@ export class TersectBrowserComponent implements OnInit {
 
     constructor(private readonly plotState: PlotStateService,
                 private readonly plotZoom: PlotZoomService,
+                private readonly drawBin: BinDrawService,
                 private readonly tersectBackendService: TersectBackendService,
                 private readonly treeDrawService: TreeDrawService,
                 private readonly scaleDrawService: ScaleDrawService,
                 private readonly scaleViewState: ScaleViewStateService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
-                private readonly route: ActivatedRoute) { }
+                private readonly route: ActivatedRoute) { 
+                    this.selectedInterval = this.plotState.interval
+                    this.callHighlightBins = this.callHighlightBins.bind(this);
+                }
 
     get settings(): BrowserSettings {
         return this.plotState.settings;
@@ -127,12 +136,6 @@ export class TersectBrowserComponent implements OnInit {
 
 
     ngOnInit() {
-
-        console.log(this.treeDrawService.treeContainerWidth$, 'here container width')
-      
-        
-
-        // this.offsetCanvas = this.offsetCanvasChange;
 
         this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
             console.log('syncedScaleViewSub', scaleView);
@@ -157,12 +160,14 @@ export class TersectBrowserComponent implements OnInit {
 
         this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
             this.selectedChromosomeSub = chromosome;
+            console.log('what is a chromosome', this.selectedChromosomeSub);
         })
 
         this.selectedIntervalSub = this.plotState.interval$.subscribe(value => {
             this.selectedInterval = value;
             console.log('tracking selectedInterval', this.selectedInterval);
         })
+
 
         this.offsetCanvasSub = this.plotState.offsetCanvas$.subscribe(value => {
             this.offsetCanvas = value;
@@ -282,6 +287,26 @@ export class TersectBrowserComponent implements OnInit {
         this.plotZoom.zoomOut();
     }
 
+    callHighlightBins(searchedAcessions){
+        this.drawBin.highlightBins(this.selectedInterval[0], this.binSize, this.plotState.orderedAccessions, searchedAcessions)
+    }
+
+
+    //this.plotState.offsetCanvasSource.next(this.storedTreeView.offscreenCanvas.width);
+
+    startGenePosition: number | null = null; // Variable to hold the gene position from the child
+    geneChrom: string | undefined = undefined;
+
+    // This function is called when the event is emitted from the child
+    handleGenePositionChanged(startGenePosition: number) {
+        this.startGenePosition = startGenePosition;
+        console.log('Received gene start position in parent:', this.startGenePosition);
+    }
+    
+    handleGeneChromChanged(geneChrom: string){
+        this.geneChrom = geneChrom;
+    }
+
     /**
      * Load default values for missing settings.
      */
@@ -304,6 +329,9 @@ export class TersectBrowserComponent implements OnInit {
             settings.selected_binsize = TersectBrowserComponent.DEFAULT_BINSIZE;
         }
         if (isNullOrUndefined(settings.selected_chromosome)) {
+            console.log('chromosomes here ----------', chromosomes)
+            this.chromosomeArray = chromosomes;
+            console.log('saved chromosomes', this.chromosomeArray)
             const largestChrom = chromosomes.reduce((prev, current) =>
                 current.size > prev.size ? current : prev
             );
@@ -314,7 +342,6 @@ export class TersectBrowserComponent implements OnInit {
         }
         if (isNullOrUndefined(settings.selected_interval)) {
             settings.selected_interval = [1, settings.selected_chromosome.size];
-            console.log('interval settings.selected_interval', settings.selected_interval);
             this.defaultInterval = settings.selected_interval;
         }
         if (isNullOrUndefined(settings.accession_infos)) {

@@ -20,29 +20,45 @@ import {
     floorTo,
     isNullOrUndefined
 } from '../utils/utils';
+import testHighImpactAccessions from '../pages/tersect-browser/testHighImpactAccessions';
+import { findAccessionMatch, getBinIndexFromPosition } from './accessionUtils';
 
 @Injectable({
     providedIn: 'root'
 })
 export class BinDrawService {
+
+    public targetCanvas: HTMLCanvasElement;
+    public offsetX: number;
+    public offsetY: number;
+    public bins: DistanceBinView;
+    public accessions: string[];
+    public binIndex: number;
+
+
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
-         targetCanvas?: HTMLCanvasElement) {
+        targetCanvas?: HTMLCanvasElement) {
         if (binView.redrawRequired) {
+            this.bins = binView;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.generatePlotArray(binView);
         }
 
         if (!isNullOrUndefined(targetCanvas)) {
             this.updateCanvas(binView, targetCanvas);
+            this.targetCanvas = targetCanvas;
             const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
             ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
             const visibleImage = this.extractVisibleImage(binView,
-                                                          offsetX, offsetY,
-                                                          targetCanvas);
+                offsetX, offsetY,
+                targetCanvas);
             ctx.putImageData(visibleImage, offsetX, offsetY);
         }
     }
 
     getImageData(binView: DistanceBinView): ImageData {
+        console.log(binView, 'binView');
         if (binView.redrawRequired) {
             this.generatePlotArray(binView);
         }
@@ -52,11 +68,11 @@ export class BinDrawService {
         const ctx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         ctx.putImageData(new ImageData(binView.imageArray, binView.colNum,
-                                       binView.rowNum), 0, 0);
+            binView.rowNum), 0, 0);
         ctx.scale(binView.binWidth, binView.binHeight);
         ctx.drawImage(offscreenCanvas, 0, 0);
         return ctx.getImageData(0, 0, offscreenCanvas.width,
-                                offscreenCanvas.height);
+            offscreenCanvas.height);
     }
 
     getImageSize(binView: DistanceBinView): ContainerSize {
@@ -73,13 +89,13 @@ export class BinDrawService {
         const startPos = gap.start > interval[0] ? gap.start : interval[0];
         const endPos = gap.end < interval[1] ? gap.end : interval[1];
         const binStart = ceilTo(startPos - interval[0], binView.binsize)
-                         / binView.binsize;
+            / binView.binsize;
         // NOTE: binEnd index is exclusive while gap.end position is inclusive
         const binEnd = floorTo(endPos - interval[0] + 1, binView.binsize)
-                       / binView.binsize;
+            / binView.binsize;
         for (let accessionIndex = 0;
-                 accessionIndex < rowNum;
-                 accessionIndex++) {
+            accessionIndex < rowNum;
+            accessionIndex++) {
             for (let binIndex = binStart; binIndex < binEnd; binIndex++) {
                 const pos = 4 * (binIndex + colNum * accessionIndex);
                 binView.imageArray[pos] = PlotCreatorService.GAP_COLOR[0];
@@ -102,8 +118,8 @@ export class BinDrawService {
     }
 
     private extractVisibleImage(binView: DistanceBinView,
-                                offsetX: number, offsetY: number,
-                                targetCanvas: HTMLCanvasElement): ImageData {
+        offsetX: number, offsetY: number,
+        targetCanvas: HTMLCanvasElement): ImageData {
         if (isNullOrUndefined(offsetX)) {
             offsetX = 0;
         }
@@ -115,7 +131,7 @@ export class BinDrawService {
         const colNum = binView.colNum;
 
         let visibleCols = Math.ceil(targetCanvas.width / binView.binWidth)
-                          - offsetX;
+            - offsetX;
         if (visibleCols > colNum + pos.x) {
             // More visible area than available columns
             visibleCols = colNum + pos.x;
@@ -125,27 +141,32 @@ export class BinDrawService {
         }
 
         const visibleRows = Math.ceil(targetCanvas.height / binView.binHeight)
-                            - offsetY;
+            - offsetY;
 
         const visibleArray = new Uint8ClampedArray(4 * visibleRows
-                                                   * visibleCols);
+            * visibleCols);
 
         for (let i = 0; i < visibleRows; i++) {
             const rowStart = 4 * (colNum * (i - pos.y) - pos.x);
             visibleArray.set(binView.imageArray
-                                    .slice(rowStart, rowStart + 4 * visibleCols),
-                             4 * i * visibleCols);
+                .slice(rowStart, rowStart + 4 * visibleCols),
+                4 * i * visibleCols);
         }
         return new ImageData(visibleArray, visibleCols, visibleRows);
     }
 
     private generatePlotArray(binView: DistanceBinView) {
+        console.log(binView, 'binView');
         const palette: DistancePalette = GreyscalePalette;
+        console.log(binView.orderedAccessions)
 
         // First dimension (rows) are accessions, second (cols) are bins.
         const binMatrix: number[][] = binView.orderedAccessions.map(
             accession => binView.distanceBins.bins[accession]
         );
+
+
+        
 
         const binMaxDistances = this.getMaxDistances(binMatrix);
 
@@ -157,7 +178,7 @@ export class BinDrawService {
             const rowOffset = colNum * row;
             for (let col = 0; col < colNum; col++) {
                 const color = palette.getDistanceColor(binMatrix[row][col],
-                                                       binMaxDistances[col]);
+                    binMaxDistances[col]);
                 const pos = 4 * (col + rowOffset);
                 binView.imageArray[pos] = color.data[0];
                 binView.imageArray[pos + 1] = color.data[1];
@@ -190,7 +211,7 @@ export class BinDrawService {
     }
 
     private updateCanvas(binView: DistanceBinView,
-                         targetCanvas: HTMLCanvasElement) {
+        targetCanvas: HTMLCanvasElement) {
         targetCanvas.style.width = `${binView.binWidth * 100}%`;
         targetCanvas.style.height = `${binView.binHeight * 100}%`;
         if (isNullOrUndefined(binView.containerSize)) {
@@ -200,5 +221,124 @@ export class BinDrawService {
             targetCanvas.width = binView.containerSize.width;
             targetCanvas.height = binView.containerSize.height;
         }
+    }
+
+    // Define function to redraw canvas to highlight feature bins
+
+    highlightBins(intervalStart, binsize, orderedAccessions, searchedAccessions) {
+        console.log(this.accessions, searchedAccessions[0].trackName)
+        const searchAccessionData = searchedAccessions.map(each => findAccessionMatch(each.trackName, orderedAccessions));
+        searchAccessionData.forEach((eachAccession, i) => {
+            const binIndex = getBinIndexFromPosition(searchedAccessions[i].highImpactVariants[0].data.POS, intervalStart, binsize)
+            this.highlightFeatureBins(searchAccessionData, binIndex, this.bins)
+        })
+        // this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
+
+        if (!isNullOrUndefined(this.targetCanvas)) {
+            console.log('valid canvas reached++++++++++')
+            this.updateCanvas(this.bins, this.targetCanvas);
+            const targetCanvas = this.targetCanvas;
+            const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            const visibleImage = this.extractVisibleImage(this.bins,
+                this.offsetX, this.offsetY,
+                targetCanvas);
+            ctx.putImageData(visibleImage, this.offsetX, this.offsetY);
+        }
+    }
+
+    // Define setters and getters to get data passed from tersect-browser.component.ts
+    setAccessions(value: string[]) {
+        this.accessions = value;
+        console.log('accession names passed to bin-draw-service');
+    }
+
+    getAccessions() {
+        return this.accessions;
+    }
+
+    setBinIndex(value: number) {
+        this.binIndex = value;
+    }
+
+    getBinIndex() {
+        return this.binIndex;
+    }
+
+    // Define function to highlight feature bins
+
+    highlightFeatureBins(accessions: string[], binIndex: number, binView: DistanceBinView) {
+        console.log('indices injected to bin-draw.service', accessions);
+
+        console.log('calculated binIndex passed to bin-draw.servies', binIndex);
+
+        // TODO - find accession name index in binView.orderedAccessions
+        let accessionIndices: Array<number> = [];
+
+        for (let n = 0; n < accessions.length; n++) {
+            binView.orderedAccessions.forEach((accession, index) => {
+                if (accession == accessions[n]) {
+                    console.log(accession)
+                    console.log('position', index)
+                    accessionIndices.push(index)
+                }
+            })
+        }
+
+        console.log('accessionINdices,', accessionIndices)
+
+        console.log('binview here ------', binView)
+        console.log('binview container size', binView.containerSize)
+
+        const palette: DistancePalette = GreyscalePalette;
+        // const colorPalette: DistancePalette = RedPalette;
+
+        // First dimension (rows) are accessions, second (cols) are bins.
+        const binMatrix: number[][] = binView.orderedAccessions.map(
+            accession => binView.distanceBins.bins[accession]
+        );
+
+
+        const binMaxDistances = this.getMaxDistances(binMatrix);
+
+        const rowNum = binView.rowNum;
+        const colNum = binView.colNum;
+        binView.imageArray = new Uint8ClampedArray(4 * rowNum * colNum);
+
+        // Colour canvas in greyscale 
+
+        for (let row = 0; row < rowNum; row++) {
+            const rowOffset = colNum * row;
+            for (let col = 0; col < colNum; col++) {
+                const color = palette.getDistanceColor(binMatrix[row][col],
+                    binMaxDistances[col]);
+                const pos = 4 * (col + rowOffset);
+                binView.imageArray[pos] = color.data[0];
+                binView.imageArray[pos + 1] = color.data[1];
+                binView.imageArray[pos + 2] = color.data[2];
+                binView.imageArray[pos + 3] = color.data[3];
+            }
+        }
+
+        if (!isNullOrUndefined(binView.sequenceGaps) &&
+            !isNullOrUndefined(binView.interval)) {
+            this.addPlotGaps(binView);
+        }
+
+        // Colour specified bins red
+
+        for (let i = 0; i < accessionIndices.length; i++) {
+            let row = accessionIndices[i]; // set row as the index defined in indices
+            const rowOffset = colNum * row;
+            const col = binIndex;
+            const pos = 4 * (col + rowOffset); // to colour col 1
+            binView.imageArray[pos] = 255;
+            binView.imageArray[pos + 1] = 0;
+            binView.imageArray[pos + 2] = 0;
+            binView.imageArray[pos + 3] = 255;
+        }
+
+        binView.redrawRequired = false;
+        return binView;
     }
 }

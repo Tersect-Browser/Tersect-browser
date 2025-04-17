@@ -112,15 +112,6 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
     if(view?.initialized){
 
       view.setNewView?.(bpPerPx,  start / bpPerPx);
-      // view.setDisplayedRegions?.([
-      //   {
-      //     assemblyName: assembly.name,
-      //     refName: props?.location.chromosome.name,
-      //     start: start,
-      //     end: end,
-
-      //   },
-      // ]);
       view.horizontalScroll(-(props?.location?.offsetCanvas - 4));
     };
   }, [
@@ -161,7 +152,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
           },
         ],
       })
-
+    
       const view = state.session.views.find(each => each.id === `linear-genome-view-${props.location?.chromosome?.name}`);
       view?.setHideHeader(true)
       console.log(view, 'set hide header after')
