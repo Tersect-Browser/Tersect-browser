@@ -1,6 +1,7 @@
 import tracks from '../../react-components/tracks'
 import assembly from '../../react-components/assembly'
 import config from '../../react-components/jbrowseConfig'
+import {initializeWorker} from '@jbrowse/product-core'
 import 'primereact/resources/themes/saga-green/theme.css'; //theme
 import 'primereact/resources/primereact.min.css'; //core css
 import './geneSearchStyles.css';
@@ -9,54 +10,26 @@ import 'primeflex/primeflex.css';
 import { PrimeReactProvider } from 'primereact/api';
 import {
     createViewState,
+    ViewModel,
 } from '@jbrowse/react-linear-genome-view'
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Checkbox } from "primereact/checkbox";
-import { searchGene, Options } from '../searchGene';
+import { searchGene, ImpactLevel } from '../searchGene';
 
 
 function GeneSearch(props:any) {
     const [query, setQuery] = useState('');
     const [showDialog, setShowDialog] = useState(false);
+    const [viewState, setViewState] = useState<ViewModel>()
 
-  const [selectedImpacts, setSelectedImpacts] = useState<Options[]>([]);
+  const [selectedImpacts, setSelectedImpacts] = useState<ImpactLevel[]>([]);
   const [loading, setLoading] = useState(false);
   const triggerRef = useRef(null);
 
-  // checkbox values
-  const impacts = [Options.HIGH, Options.LOW, Options.MODERATE];
-
-  const toggleImpact = (value:Options) => {
-    setSelectedImpacts((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
-  };
-
-  const handleSearch = async () => {
-    if (!query.trim()) return; // ignore empty search
-    setLoading(true);
-    try {
-      const results  = await searchGene(query, state.session, selectedImpacts);
-      // optional external callback (if still needed)
-      props?.callback?.(results);
-    } finally {
-      setLoading(false);
-      setShowDialog(false);
-    //   setQuery("");
-    //   setSelectedImpacts([]);
-    }
-  };
-
-
-
-
-
-
-
-
+  useEffect(() => {
     const state = createViewState({
         assembly,
         tracks,
@@ -77,8 +50,8 @@ function GeneSearch(props:any) {
                 ],
             },
         },
-        
-        configuration: config
+        configuration: config,
+       
     })
 
     
@@ -104,6 +77,42 @@ function GeneSearch(props:any) {
         // view?.scrollTo(50000, 900000)
         view?.showTrack(each.trackId)
     })
+   
+    setViewState(state)
+  }, [])
+
+  // checkbox values
+  const impacts = [ImpactLevel.HIGH, ImpactLevel.LOW, ImpactLevel.MODERATE];
+
+  const toggleImpact = (value:ImpactLevel) => {
+    setSelectedImpacts((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
+
+  const handleSearch = async () => {
+    if (!query.trim()) return; // ignore empty search
+    setLoading(true);
+    try {
+      const results  = await searchGene(query, viewState?.session, selectedImpacts);
+      // optional external callback (if still needed)
+      props?.callback?.(results);
+    } finally {
+      setLoading(false);
+      setShowDialog(false);
+    //   setQuery("");
+    //   setSelectedImpacts([]);
+    }
+  };
+
+
+
+
+
+
+
+
+   
 
     return (
         <div className="relative inline-block" ref={triggerRef}>

@@ -24,8 +24,9 @@
     }
   },
   rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
+    defaultDriver: 'WebWorkerRpcDriver',
   },
+
   };
 
   export default config;

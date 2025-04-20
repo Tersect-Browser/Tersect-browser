@@ -6,7 +6,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
 
 
-export enum Options {
+export enum ImpactLevel {
   HIGH= "HIGH",
   MODERATE="MODERATE",
   LOW="LOW"
@@ -16,7 +16,7 @@ export enum Options {
 // 1) A function to search for a gene by name using Trix
 // ------------------------------------------------------------------
 
-export async function searchGene(term: string, session:any, options: Options[] = [Options.HIGH]) {
+export async function searchGene(term: string, session:any, options: ImpactLevel[] = [ImpactLevel.HIGH]) {
   const hits = await findHighImpactInGene(session, term, options)
 
   // Each "result" typically has refName, start, end, etc.
@@ -25,18 +25,7 @@ export async function searchGene(term: string, session:any, options: Options[] =
 }
 
 async function internalSearchGene(term: string, session:any) {
-  // Example: your Trix index files (adjust paths as needed)
-  const ixFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.ix')
-  const ixxFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.ixx')
-  const metaFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.meta.json')
-
-  const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 30)
-  const results = await adapter.search(term, {
-    signal: new AbortController().signal,
-  })
-
-  // Each "result" typically has refName, start, end, etc.
-  // But depends on how you generated the Trix file.
+  const results = findHighImpactInGene(session, '', [ImpactLevel.HIGH])
   return results
 }
 
@@ -97,7 +86,7 @@ async function fetchVariantsForRegion(
 // 4) Example filter for "high impact" variants
 //    Adjust to match your actual VCF annotation scheme
 // ------------------------------------------------------------------
-function isSpecifiedImpact(feature:any, impact: Options) {
+function isSpecifiedImpact(feature:any, impact: ImpactLevel) {
   const info = feature.get('INFO')
   // The EFF field is typically an array of strings
   const effArray = info?.EFF
@@ -122,19 +111,19 @@ function filterHighImpact(features: Feature[]) {
   return features.filter(f => {
     // For VCF features, the "INFO" field is often in f.get('INFO')
     // Or f.get('info'), or something similar, depending on your setup
-    return isSpecifiedImpact(f, Options.HIGH)
+    return isSpecifiedImpact(f, ImpactLevel.HIGH)
   })
 }
 
 function filterLowImpact(features: Feature[]) {
   return features.filter(f => {
-    return isSpecifiedImpact(f, Options.LOW)
+    return isSpecifiedImpact(f, ImpactLevel.LOW)
   })
 }
 
 function filterModerateImpact(features: Feature[]) {
   return features.filter(f => {
-    return isSpecifiedImpact(f, Options.MODERATE)
+    return isSpecifiedImpact(f, ImpactLevel.MODERATE)
   })
 }
 
@@ -187,74 +176,78 @@ const parseTrixSearchMeta = (meta: string) => {
 //    VCF track, filter by "high impact", and return results
 // ------------------------------------------------------------------
 
-export async function findHighImpactInGene(session: any, geneName: string, options: Options[]) {
-  // 1) Look up the gene by name
-  const geneMatches = await internalSearchGene(geneName, session)
+export interface GenomicInterval {
+  refName: string   // e.g. “chr7”
+  start: number     // 0‑based
+  end: number       // half‑open
+}
 
-  // 2) Gather all VCF track configs (no track ID needed)
-  const vcfTracks = getAllVcfTrackConfigs(session)
+function jexlForImpact(levels: ImpactLevel[]): string {
+  // The first EFF string looks like
+  //   missense_variant(MODERATE|…)
+  // so a plain substring check on the first record is
+  // usually fast enough and avoids the extra split/parsing
+  const tests = levels.map(
+    lvl => `INFO.EFF && includes(INFO.EFF[0], '${lvl}')`,
+  )
+  return tests.length === 1 ? tests[0] : `(${tests.join(' || ')})`
+}
 
-  // This array will collect the final results
-  const finalResults:any = []
+async function fetchVariants(
+  session: any,
+  trackConfig: any,
+  region: GenomicInterval,
+  desiredImpacts: ImpactLevel[],
+) {
+  const adapterConfig = getConf(trackConfig, 'adapter')
 
-  // 3) For each gene match (some genes have multiple isoforms/locations)
+  const asyncGen: AsyncGenerator<Feature> = await session.rpcManager.call(
+    session.id,
+    'CoreGetFeatures',
+    {
+      sessionId      : session.id,
+      adapterConfig,
+      regions        : [region],
+      // <-- NEW in JBrowse ≥ 2.11: array of JEXL strings
+      filters        : [ jexlForImpact(desiredImpacts) ],
+      rpcDriverName  : 'MainThreadRpcDriver',
+    },
+  )
 
-    //use @Tanya parsing function here
-    const payload = parseTrixSearchMeta(geneMatches[1][1])
+  const feats: Feature[] = []
+  for await (const f of asyncGen) feats.push(f)
+  return feats
+}
 
-    // 4) For each VCF track, fetch the variants in that region
-    for (const trackConfig of vcfTracks) {
-      const allVariants = await fetchVariantsForRegion(
-        session,
-        trackConfig,
-        payload?.chrom ?? '',
-        payload?.start ?? 0,
-        payload?.end ?? 0,
-      )
-
-      options.forEach((level) => {
-        if(level == Options.HIGH){
-          const highImpact = filterHighImpact(allVariants)
-          if (highImpact.length > 0) {
-            finalResults.push({
-              trackId: trackConfig.trackId,
-              trackName: trackConfig.name,
-              chrom: payload?.chrom ?? '',
-              highImpactVariants: highImpact,
-            })
-          }
-        }
-
-        if(level == Options.LOW){
-          const lowImpact = filterLowImpact(allVariants)
-          if (lowImpact.length > 0) {
-            finalResults.push({
-              trackId: trackConfig.trackId,
-              trackName: trackConfig.name,
-              chrom: payload?.chrom ?? '',
-              highImpactVariants: lowImpact,
-            })
-          }
-        }
-
-        if(level == Options.MODERATE){
-          const moderateImpact = filterModerateImpact(allVariants)
-          if (moderateImpact.length > 0) {
-            finalResults.push({
-              trackId: trackConfig.trackId,
-              trackName: trackConfig.name,
-              chrom: payload?.chrom ?? '',
-              highImpactVariants: moderateImpact,
-            })
-          }
-        }
+export async function findVariantsInInterval(
+  session: any,
+  interval: GenomicInterval,
+  impacts: ImpactLevel[] = [ImpactLevel.HIGH],
+) {
+  const results: any[] = []
+  for (const track of getAllVcfTrackConfigs(session)) {
+    const vars = await fetchVariants(session, track, interval, impacts)
+    if (vars.length)
+      results.push({
+        trackId   : track.trackId,
+        trackName : track.name,
+        refName   : interval.refName,
+        impact    : impacts.join(','),
+        variants  : vars,
       })
+  }
+  return results
+}
 
+export async function findHighImpactInGene(session: any, geneName: string, options: ImpactLevel[]) {
 
+  const results = await findVariantsInInterval(session, {
+    start: 1,
+    end: 13615066,
+    refName: 'SL2.50ch01'
+  }, [ImpactLevel.HIGH])
 
-      // 5) Filter for "high impact"
-      
-    }
-  
-  return finalResults
+  console.log(results)
+
+  return []
 }
