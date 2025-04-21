@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port=3200",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "build": "ng build  && npx rollup -c && cp dist/genome-browser/genome-browser.min.js ../../frontend/public/",
+    "watch": "ng build --watch --configuration production",
     "test": "ng test"
   },
   "private": true,
@@ -24,13 +24,16 @@
     "@jbrowse/react-linear-genome-view": "^3.1.0",
     "@ngeenx/ngx-react": "^2.0.0",
     "@primeng/themes": "^18.0.0",
+    "css-loader": "^7.1.2",
     "generic-filehandle2": "^1.0.0",
+    "ngx-build-plus": "^18.0.0",
     "primeflex": "^4.0.0",
     "primeng": "^18.0.0",
     "primereact": "^10.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rxjs": "~7.8.0",
+    "to-string-loader": "^1.2.0",
     "tslib": "^2.3.0",
     "zone.js": "^0.14.10"
   },
@@ -38,6 +41,9 @@
     "@angular-devkit/build-angular": "^18.0.1",
     "@angular/cli": "^18.0.1",
     "@angular/compiler-cli": "^18.0.0",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/jasmine": "~5.1.0",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
@@ -47,6 +53,11 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "rollup": "^4.40.0",
+    "rollup-plugin-esbuild": "^6.2.1",
+    "rollup-plugin-polyfill-node": "^0.13.0",
+    "rollup-plugin-visualizer": "^5.14.0",
     "typescript": "~5.4.2"
-  }
+  },
+  "type": "module"
 }

@@ -1,6 +1,7 @@
 import TrixTextSearchAdapter  from '@gmod/trix'
 import { fromUrl,open  } from 'generic-filehandle2'
 import { getConf } from '@jbrowse/core/configuration'
+import { environment } from '../../environments/environment';
 
 
 import { Feature } from '@jbrowse/core/util'
@@ -26,9 +27,9 @@ export async function searchGene(term: string, session:any, options: Options[] =
 
 async function internalSearchGene(term: string, session:any) {
   // Example: your Trix index files (adjust paths as needed)
-  const ixFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.ix')
-  const ixxFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.ixx')
-  const metaFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.meta.json')
+  const ixFile = fromUrl(environment.ixFile)
+  const ixxFile = fromUrl(environment.ixxFile)
+  const metaFile = fromUrl(environment.metaFile)
 
   const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 30)
   const results = await adapter.search(term, {

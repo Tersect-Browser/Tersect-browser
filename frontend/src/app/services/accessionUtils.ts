@@ -3,7 +3,7 @@ const normalize = (value: string): string =>
 
 export function findAccessionMatch(
     accession: string,
-    candidates: string[]
+    candidates: any[]
   ): string | undefined {
     const target = normalize(accession);
     return candidates.find(c => normalize(c) === target);

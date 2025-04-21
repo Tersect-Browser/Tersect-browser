@@ -29,7 +29,9 @@
               "src/assets/icons/tbicons.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+        "src/assets/genome-browser.min.js"
+      ]
           },
           "configurations": {
             "production": {

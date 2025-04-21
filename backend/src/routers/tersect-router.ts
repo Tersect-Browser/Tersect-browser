@@ -371,6 +371,7 @@ router.route('/query/:datasetId/tree')
             NewickTree.findOne(dbQuery)
                       .exec((err, result: NewickTree) => {
                 if (err) {
+                    console.log(err)
                     return res.status(500).send('Tree creation failed');
                 } else if (!result) {
                     // Generating new tree
@@ -382,6 +383,7 @@ router.route('/query/:datasetId/tree')
                         status: 'Collating data...'
                     }).save(saveErr => {
                         if (saveErr) {
+                            console.error(saveErr)
                             return res.status(500).send('Tree creation failed');
                         }
                         generateTree(tsiLocation, treeQuery, dbQuery);
