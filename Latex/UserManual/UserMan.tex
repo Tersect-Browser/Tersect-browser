@@ -1,0 +1,198 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{soul}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm]{geometry}
+
+\title{
+{\includegraphics[width=3cm, height=2.5cm]{Cran.jpg}}
+\\
+\includegraphics[width=7cm, height=1cm]{TB.jpg}
+\\
+{User Manual for TersectBrowser+}
+}
+
+
+
+\author{David Oluwasusi, Tanya Stead, Gregory Lupton, Gabrielle Baumberg \\ Supervised by: Dr. Tomasz Kurowski}
+
+\begin{document}
+\sloppy % allows line spacing stretch to justify the text
+
+\maketitle
+
+\section{Overview}
+
+\section{Admin setup of browser}
+The Admin is defined as an individual with bioinformatics and software design knowledge, background comprehension for all sections of this Technical Documentation, and acting to facilitate the use of a deployed TersectBrowser+ by the plant breeder main user of the software. When a new dataset is requested for deployment on TersectBrowser+, the admin will need to follow the below steps.
+
+\subsection{Download of required material}
+\begin{enumerate}
+    \item Collect background context from the user.
+\begin{itemize}
+    \item Size and chromosome number of the reference genome.
+    \item Size and diversity of the resequenced dataset. Any metadata associated with different accessions in the dataset, such as wild variety vs domesticated variety.
+    \item Whether there are prior identified introgressions known to be functionally relevant for the species. These can be used to 'check' the ability of TersectBrowser+ to identify introgressed regions for the specified dataset.
+\end{itemize}
+    \item Clone the GitHub repository of TersectBrowser+ to the local machine. Follow the README from \hyperlink {https://github.com/Tersect-Browser/Tersect-browser.git}{Tersect GitHub} for issues with install.
+    \item Download relevant files to to the specified location within the repository: \textit{Tersect-browser/\(\sim \)/mongo-data/gp\_data\_copy/}
+    \begin{itemize}
+        \item Download all VCF files in the resequenced dataset. Run tabix on these files to create .tbi index files.
+        \item Download the reference genome FASTA file. Run SAMtools faidx to create .fai index file.
+        \item Download (or generate) an annotation GFF file for the resequenced dataset using SNPeff. If not using SNPeff, ensure that variant impact levels are categorised into 'High', 'Medium', and 'Low' impact. Index the GFF file. Run tabix on this file to create a .tbi index file.
+    \end{itemize}
+    \item Use JBrowse CLI text-index tool to generate Trix text searching files (.ix, .ixx, and .meta.json) from the GFF annotation file.
+    \item Run the script \verb+add_config_tracks.py+ using these downloaded files. This will use a set of jbrowse arguments to load the datafiles as tracks in the Variant Browser component.
+    \item Run the script \verb+change_dataset_files.py+ using these downloaded files as CLI arguments, in order to update the references to these data files in the project.
+    \item Run the script \verb+add_example_dataset.sh+ to prepare the dataset.
+\end{enumerate}
+
+\section{Config file generation}
+There are multiple extensions incorporated within TersectBrowser+, and all config files must be correctly generated for full functionality of the browser. However, each extension has different config requirements and may allow limited functionality before the generation of all config files.
+
+\subsection{Variant Browser Pane}
+A config.json file containing a/the genome assembly is first generated. 
+\paragraph{Using JBrowse CLI}\mbox{}
+\\\\
+The fasta file must first be indexed as follows (this step can be omitted if a .fai file already exists):
+\lstset{
+  language=bash,
+  basicstyle=\ttfamily
+}
+\begin{lstlisting}
+    $ cd Tersect-browser/~mongo-data/gp_data_copy/
+    $ samtools faidx genome.fa 
+\end{lstlisting}
+The config.json file is created and the genome assembly added to it via the following command:
+\begin{lstlisting}
+    $ jbrowse add-assembly <genome.fa> --load copy --out config.json
+\end{lstlisting}
+The variant tracks can then be added to the \verb+config.json+ file via the following commands. Jbrowse CLI expects the VCFs to be compressed with bgzip and indexed using tabix. 
+\begin{lstlisting}
+    $ bgzip file.vcf 
+    $ tabix file.vcf.gz 
+    $ jbrowse add-track file.vcf.gz --load copy --out config.json 
+\end{lstlisting}
+The generated config file will contain both the \verb+assembly[]+ and the \verb+tracks[]+. These can then be manually copied and pasted into their respective assembly.ts and tracks.ts files - the reference genome fasta will be added to the \textit{extension/genome-browser/src/app/react-components/assembly.ts} file, while the GFF file and all accession VCF tracks will be added to the \textit{extension/genome-browser/src/app/react-components/tracks.ts} file.
+
+Correct config specifications for the reference genome assembly can be found \textunderscore{\hyperlink{https://jbrowse.org/jb2/docs/config_guides/assemblies/}{here}}. 
+
+\paragraph{Manual Generation}\mbox{}
+\\\\
+If Jbrowse CLI is not compatible with the machine, the assembly config can be generated by adding the following text, and \hl{changing the parameters trackID, name, and URI where necessary}. 
+
+\begin{lstlisting}
+    $ cd extension/genome-browser/src/app/react-components/
+    $ nano config.json
+
+    "name": "SL2.50", 
+    "sequence": { 
+      "type": "ReferenceSequenceTrack", 
+      "trackId": "SL2.50-ReferenceSequenceTrack", 
+      "adapter": { 
+        "type": "IndexedFastaAdapter", 
+        "fastaLocation": { 
+          "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//SL2.50.fa", 
+          "locationType": "UriLocation" 
+        }, 
+        "faiLocation": { 
+          "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//SL2.50.fa.fai", 
+          "locationType": "UriLocation" 
+        } } } 
+\end{lstlisting}
+
+The track config can also be generated by adding the following text, and \hl{changing the parameters trackID, name, and uri where necessary}. 
+
+\begin{lstlisting}
+    { 
+    "type": "VariantTrack", 
+    "trackId": "S.lyc LA2706", 
+    "name": "S.lyc LA2706", 
+    "adapter": { 
+        "type": "VcfTabixAdapter", 
+        "vcfGzLocation": { 
+            "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz", 
+            "locationType": "UriLocation" 
+        }, 
+        "index": { 
+            "location": { 
+                "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz.tbi", 
+                "locationType": "UriLocation" 
+            }, 
+            "indexType": "TBI" 
+        } 
+    }, 
+    "assemblyNames": [ 
+        "SL2.50" 
+    ]      } 
+\end{lstlisting}
+
+A script to automate this process (the tracks will be more numerous than assemblies) can be found on \hl{Elvis} at \textit{gp\_data\_copy/scripts/generate\_track\_config.py}, and  a script to generate tbi files for all VCF files, \textit{generate\_tbi.sh}, is also present in this folder. 
+
+\subsection{Gene Model Track}
+\paragraph{Using JBrowse CLI}\mbox{}
+\\\\
+Once a \verb+config.json+ file for the main reference assembly has been created, run the following commands to sort the GFF3 file, create the .tbi file, and add the config files to the \verb+config.json+ using these Jbrowse commands:
+\lstset{
+  language=bash,
+  basicstyle=\ttfamily
+}
+\begin{lstlisting}
+    $ jbrowse sort-gff <yourfile.gff> | 
+        bgzip > <yourfile.sorted.gff.gz>
+    $ tabix <yourfile.sorted.gff.gz>
+    $ jbrowse add-track <yourfile.sorted.gff.gz> --load copy
+\end{lstlisting}
+This will create a \verb+FeatureTrack+ under the \verb+tracks[]+ section in the \verb+config.json+. Then copy and paste the \verb+FeatureTrack+ to the \textit{extension/genome-browser/src/app/react-components/tracks.ts} file.
+
+
+Note: the Jbrowse "sort-gff" command just automates the following shell command 
+\begin{lstlisting}
+    $ (grep "^#" in.gff; grep -v "^#" in.gff | 
+        sort -t"`printf '\t'`" -k1,1 -k4,4n)  
+        > sorted.gff; 
+\end{lstlisting}
+
+\paragraph{Manual Generation}\mbox{}
+\\\\
+If Jbrowse CLI cannot be accessed, the \verb+FeatureTrack+ can be generated by adding the following text, replacing trackID, name, and uri with the respective inputs:
+\begin{lstlisting}
+    { 
+        "type": "FeatureTrack", 
+        "trackId": "ITAG2.4 Gene Models", 
+        "name": "ITAG2.4 Gene Models", 
+        "adapter": { 
+          "type": "Gff3TabixAdapter", 
+          "gffGzLocation": { 
+            "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz", 
+            "locationType": "UriLocation" 
+          }, 
+          "index": { 
+            "location": { 
+              "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz.tbi", 
+              "locationType": "UriLocation" 
+            }, 
+            "indexType": "TBI" 
+          } 
+        }, 
+        "assemblyNames": [ 
+          "SL2.50" 
+        ] } 
+\end{lstlisting}
+
+\subsection{Feature Search}
+
+
+
+\subsection{Barcode Generation}
+
+
+\section{User access of browser}
+
+
+
+
+\end{document}
