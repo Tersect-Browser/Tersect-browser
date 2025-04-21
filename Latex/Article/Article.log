@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.17)  21 APR 2025 11:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.17)  21 APR 2025 14:03
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex
-(/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex
+**/Users/kptv575/Documents/Cranfield/GROUP/Tersect-browser/Latex/Article/Article.tex
+(/Users/kptv575/Documents/Cranfield/GROUP/Tersect-browser/Latex/Article/Article.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-03-26>
 (./oup-authoring-template.cls
@@ -649,393 +649,104 @@ File: l3backend-pdftex.def 2025-03-14 L3 backend support: PDF output (pdfTeX)
 LaTeX Warning: Unused global option(s):
     [unnumsec,webpdf,contemporary,large].
 
-No file Article.aux.
+(./Article.aux)
 \openout1 = `Article.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 65.
-LaTeX Font Info:    ... okay on input line 65.
-(/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 64.
+LaTeX Font Info:    ... okay on input line 64.
+ (/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-Package crop Info: requested driver: `' on input line 65.
-Package crop Info: detected driver: `pdftex' on input line 65.
-Package crop Info: using `pdftex' graphics driver on input line 65.
+Package crop Info: requested driver: `' on input line 64.
+Package crop Info: detected driver: `pdftex' on input line 64.
+Package crop Info: using `pdftex' graphics driver on input line 64.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: hyperref package is loaded.
 Package caption Info: listings package is loaded.
 Package caption Info: rotating package is loaded.
 Package caption Info: wrapfig package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Redeclaring symbol font `AMSa' on input line 65.
+LaTeX Font Info:    Redeclaring symbol font `AMSa' on input line 64.
 LaTeX Font Info:    Overwriting symbol font `AMSa' in version `normal'
-(Font)                  U/msa/m/n --> U/msa/m/n on input line 65.
+(Font)                  U/msa/m/n --> U/msa/m/n on input line 64.
 LaTeX Font Info:    Overwriting symbol font `AMSa' in version `bold'
-(Font)                  U/msa/m/n --> U/msa/m/n on input line 65.
+(Font)                  U/msa/m/n --> U/msa/m/n on input line 64.
 \c@lstlisting=\count364
-Package hyperref Info: Link coloring OFF on input line 65.
+Package hyperref Info: Link coloring OFF on input line 64.
+ (./Article.out) (./Article.out)
 \@outlinefile=\write4
 \openout4 = `Article.out'.
 
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:67: Undefined control sequence.
-l.67 \addbibresource
-                    {custom.bib}
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
-
-
-
-
-
-
-Overfull \hbox (253.25pt too wide) has occurred while \output is active
-[][][] 
- []
-
-
-Overfull \vbox (1.0pt too high) has occurred while \output is active []
-
- [1
-Non-PDF special ignored!
-<special> ps: [{ThisPage} << /CropBox [0 0 595.26013 782.33696] >> /PUT pdf...
-{/Users/kptv575/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-
-]
-LaTeX Font Info:    Calculating math sizes for size <13.04874> on input line 122.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 122.
+LaTeX Font Info:    Calculating math sizes for size <13.04874> on input line 120.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 120.
  (/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 122.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 120.
  (/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+rsfs on input line 122.
+LaTeX Font Info:    Trying to load font information for U+rsfs on input line 120.
  (/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/jknapltx/ursfs.fd
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 )
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/13.04874=rsfs10 at 13.04874pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
+LaTeX Font Info:    Calculating math sizes for size <9.13406> on input line 120.
+LaTeX Font Info:    Calculating math sizes for size <7.52812> on input line 120.
+LaTeX Font Info:    Calculating math sizes for size <6.52437> on input line 120.
+LaTeX Font Info:    Calculating math sizes for size <4.56703> on input line 120.
 
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/12=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/9.13406=rsfs10 at 9.13406pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/9=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/6.52437=rsfs7 at 6.52437pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/7=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-LaTeX Font Info:    Calculating math sizes for size <9.13406> on input line 122.
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/6.39381=rsfs5 at 6.39381pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/6=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/4.56703=rsfs5 at 4.56703pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-LaTeX Font Info:    Calculating math sizes for size <7.52812> on input line 122.
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/7.52812=rsfs10 at 7.52812pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/8=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5.26965=rsfs5 at 5.26965pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/3.76405=rsfs5 at 3.76405pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-LaTeX Font Info:    Calculating math sizes for size <6.52437> on input line 122.
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/3.26218=rsfs5 at 3.26218pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-LaTeX Font Info:    Calculating math sizes for size <4.56703> on input line 122.
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/3.1969=rsfs5 at 3.1969pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/2.28351=rsfs5 at 2.28351pt not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:122: Font U/rsfs/m/n/5=nullfont not loadable: Metric (TFM) file not found.
-<to be read again> 
-                   relax 
-l.122 
-      
-I wasn't able to read the size data for this font,
-so I will ignore the font specification.
-[Wizards can fix TFM files using TFtoPL/PLtoTF.]
-You might try inserting a different font spec;
-e.g., type `I\font<same font id>=<substitute font name>'.
-
-
-Package natbib Warning: Citation `RN7' on page 2 undefined on input line 128.
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-
-
-Underfull \hbox (badness 1436) in paragraph at lines 136--137
+Underfull \hbox (badness 1436) in paragraph at lines 132--133
 \OT1/cmr/m/n/7.52812 genomic data, a wide range of bioinformatic tools have
  []
 
 
-Underfull \hbox (badness 3815) in paragraph at lines 136--137
+Underfull \hbox (badness 3815) in paragraph at lines 132--133
 \OT1/cmr/m/n/7.52812 Browser continue to support annotation, variant effect
  []
 
 
-Underfull \hbox (badness 1194) in paragraph at lines 138--139
+
+
+Underfull \hbox (badness 1194) in paragraph at lines 134--135
 \OT1/cmr/m/n/7.52812 et al., 2014), have markedly improved the resolution of
  []
 
 
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:140: LaTeX Error: Unicode character ​ (U+200B)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.140 ...il composition, and disease resilience​
-                                                  . Tools such as SoyFGB v2....
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-Underfull \hbox (badness 6526) in paragraph at lines 140--141
+Underfull \hbox (badness 6526) in paragraph at lines 136--137
 \OT1/cmr/m/n/7.52812 valuable cross-crop insights. Studies have shown how
  []
 
 
-Underfull \hbox (badness 1163) in paragraph at lines 140--141
+Underfull \hbox (badness 1163) in paragraph at lines 136--137
 \OT1/cmr/m/n/7.52812 introgressed genomic regions from wild Glycine soja into
  []
 
 
-Underfull \hbox (badness 2521) in paragraph at lines 140--141
+Underfull \hbox (badness 2521) in paragraph at lines 136--137
 \OT1/cmr/m/n/7.52812 platforms that may serve as models for tomato-specific
  []
 
 
-Underfull \hbox (badness 2856) in paragraph at lines 140--141
+Underfull \hbox (badness 2856) in paragraph at lines 136--137
 \OT1/cmr/m/n/7.52812 models are emerging as promising directions for future
  []
 
@@ -1044,39 +755,32 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[2
+[1
 Non-PDF special ignored!
 <special> ps: [{ThisPage} << /CropBox [0 0 595.26013 782.33696] >> /PUT pdf...
 
+{/Users/kptv575/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
 
 ]
-Underfull \hbox (badness 1648) in paragraph at lines 142--144
+Underfull \hbox (badness 1648) in paragraph at lines 138--140
 []\OT1/cmr/m/n/7.52812 Together, these advances paint a dynamic picture of
  []
 
 
-Underfull \hbox (badness 1348) in paragraph at lines 142--144
+Underfull \hbox (badness 1348) in paragraph at lines 138--140
 \OT1/cmr/m/n/7.52812 tomato genomics: one where introgression is not only a
  []
 
 
-Underfull \hbox (badness 2735) in paragraph at lines 142--144
+Underfull \hbox (badness 2735) in paragraph at lines 138--140
 \OT1/cmr/m/n/7.52812 against threats such as climate change. The fusion of
  []
 
 
-Underfull \hbox (badness 2512) in paragraph at lines 142--144
+Underfull \hbox (badness 2512) in paragraph at lines 138--140
 \OT1/cmr/m/n/7.52812 specialized tools enables researchers to explore tomato's
  []
-
-/Users/kptv575/Documents/Cranfield/GROUP/Latex/Article/Article.tex:178: Undefined control sequence.
-l.178 \printbibliography
-                        
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
 
 
 
@@ -1090,50 +794,31 @@ Overfull \hbox (253.25pt too wide) has occurred while \output is active
 
 Overfull \vbox (1.0pt too high) has occurred while \output is active []
 
- [3
+ [2
 Non-PDF special ignored!
 <special> ps: [{ThisPage} << /CropBox [0 0 595.26013 782.33696] >> /PUT pdf...
 
-]
-
-Package natbib Warning: There were undefined citations.
-
-(./Article.aux
-
-Package natbib Warning: Citation(s) may have changed.
-(natbib)                Rerun to get citations correct.
-
-)
+] (./Article.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-03-26>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `Article.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `Article.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  285A24B9C3823733B7A70DBE825AA98B;3415.
+Package rerunfilecheck Info: File `Article.out' has not changed.
+(rerunfilecheck)             Checksum: 285A24B9C3823733B7A70DBE825AA98B;3415.
  ) 
 Here is how much of TeX's memory you used:
- 25333 strings out of 471607
- 470039 string characters out of 5520537
- 849036 words of memory out of 5000000
- 51418 multiletter control sequences out of 15000+600000
- 655199 words of font info for 146 fonts, out of 8000000 for 9000
+ 25353 strings out of 471607
+ 470375 string characters out of 5520537
+ 857621 words of memory out of 5000000
+ 51434 multiletter control sequences out of 15000+600000
+ 656698 words of font info for 156 fonts, out of 8000000 for 9000
  18 hyphenation exceptions out of 8191
- 99i,11n,101p,17405b,858s stack positions out of 10000i,1000n,20000p,200000b,200000s
- </Users/kptv575/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0600.650pk></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx6.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
-Output written on Article.pdf (3 pages, 223391 bytes).
+ 99i,11n,101p,17421b,860s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ </Users/kptv575/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0600.650pk></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx6.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></Users/kptv575/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
+Output written on Article.pdf (2 pages, 215968 bytes).
 PDF statistics:
- 166 PDF objects out of 1000 (max. 8388607)
- 122 compressed objects within 2 object streams
- 36 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 203 PDF objects out of 1000 (max. 8388607)
+ 162 compressed objects within 2 object streams
+ 35 named destinations out of 1000 (max. 500000)
+ 133 words of extra memory for PDF output out of 10000 (max. 10000000)
 

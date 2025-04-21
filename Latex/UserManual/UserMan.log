@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.17)  21 APR 2025 11:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.17)  21 APR 2025 12:01
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/Users/kptv575/Documents/Cranfield/GROUP/Latex/UserManual/UserMan.tex
-(/Users/kptv575/Documents/Cranfield/GROUP/Latex/UserManual/UserMan.tex
+**/Users/kptv575/Documents/Cranfield/GROUP/Tersect-browser/Latex/UserManual/UserMan.tex
+(/Users/kptv575/Documents/Cranfield/GROUP/Tersect-browser/Latex/UserManual/UserMan.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-03-26>
 (/Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
@@ -435,12 +435,12 @@ Package rerunfilecheck Info: File `UserMan.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  11296 strings out of 471607
- 173032 string characters out of 5520537
+ 173080 string characters out of 5520537
  788097 words of memory out of 5000000
  37634 multiletter control sequences out of 15000+600000
  633456 words of font info for 62 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,6n,79p,560b,1882s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,6n,79p,576b,1882s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 pdfTeX warning (dest): name{https://jbrowse.org/jb2/docs/config_guides/assemblies/} has been referenced but does not exist, replaced by a fixed one
 

@@ -41,7 +41,6 @@
 %\usepackage{showframe}
 \usepackage{anyfontsize}
 \usepackage{multirow}
-\usepackage{natbib}
 \graphicspath{{doc/Images/}} % will allow Latex to find the images folder
 \usepackage{graphicx}
 \sloppy % allows line spacing stretch to justify the text
@@ -63,8 +62,7 @@
 \newtheorem{definition}{Definition}
 
 \begin{document}
-\bibliographystyle{plain}
-\addbibresource{custom.bib}
+
 
 \journaltitle{Journal Title Here}
 \DOI{DOI HERE}
@@ -119,13 +117,11 @@
 % \end{itemize}}
 
 \maketitle
-
-
 \section{Introduction}
 
 \section{Expanding landscape of plant genomic studies}\label{sec2}
 
-The field of tomato genomics has continued to evolve rapidly, with a growing emphasis on mapping introgressions — segments of DNA from wild tomato species that have been incorporated into cultivated lines. Foundational work such as that by Aflitos et al. (2014) \citet{RN7}, which sequenced 84 tomato accessions and wild relatives, exposed severe genetic bottlenecks in cultivated tomatoes and laid the groundwork for modern introgression analysis. 
+The field of tomato genomics has continued to evolve rapidly, with a growing emphasis on mapping introgressions — segments of DNA from wild tomato species that have been incorporated into cultivated lines. Foundational work such as that by Aflitos et al. (2014) , which sequenced 84 tomato accessions and wild relatives, exposed severe genetic bottlenecks in cultivated tomatoes and laid the groundwork for modern introgression analysis. 
 
 Recent studies have expanded on this base with increasingly sophisticated tools and datasets. Notably, Liu et al. (2023) used tomato pan-genomes built from hundreds of accessions to uncover regions of structural variation and introgression hotspots, many of which affect key traits like fruit size, shape, disease resistance, and flavour. The construction of these pan-genomes enables researchers to observe variation absent in the reference genome, improving trait mapping and introgression detection. 
 
@@ -137,7 +133,7 @@ To manage and interpret the expanding complexity of genomic data, a wide range o
 
 Meanwhile, long-read sequencing technologies (e.g., PacBio, Hi-C, and optical mapping) as applied in SL4.0 (Hosmani et al., 2019), and innovations in in situ hybridization (Shearer et al., 2014), have markedly improved the resolution of reference genomes—critical for detecting subtle and ancient introgressions. 
 
-Beyond tomato, research in soybean introgression offers valuable cross-crop insights. Studies have shown how introgressed genomic regions from wild Glycine soja into Glycine max improve traits like drought resistance, seed oil composition, and disease resilience​. Tools such as SoyFGB v2.0\footnote{\url{https://sfgb.rmbreeding.cn/index}}, SoyBase\footnote{\url{https://www.soybase.org/}}, and SoyKB\footnote{\url{http://soykb.org/}} provide functional genomics platforms that may serve as models for tomato-specific resources. Graph genome approaches and machine learning models are emerging as promising directions for future introgression prediction and trait association.  
+Beyond tomato, research in soybean introgression offers valuable cross-crop insights. Studies have shown how introgressed genomic regions from wild Glycine soja into Glycine max improve traits like drought resistance, seed oil composition, and disease resilience. Tools such as SoyFGB v2.0 \footnote{\url{https://sfgb.rmbreeding.cn/index}}, SoyBase\footnote{\url{https://www.soybase.org/}}, and SoyKB\footnote{\url{http://soykb.org/}} provide functional genomics platforms that may serve as models for tomato-specific resources. Graph genome approaches and machine learning models are emerging as promising directions for future introgression prediction and trait association.
 
 Together, these advances paint a dynamic picture of tomato genomics: one where introgression is not only a window into domestication and evolutionary history but also a powerful mechanism for ongoing improvement, including against threats such as climate change. The fusion of high-resolution genomic data, computational methods, and specialized tools enables researchers to explore tomato’s genetic landscape with increasing clarity and sophistication.  
 (Introgression hybridisation is an important factor in crop improvement. Biologists need to determine introgressions and identify donor species through visualising genetic distance and phylogenetic relationships based on the whole genome variant data. However, existing software is not suitable for full exploitation of the large publicly available data sets. Tersect Browser is a Web Application that is optimised for generating such visualisations.)
@@ -174,8 +170,6 @@ The technical documentation is available at XX. The source code for the project 
 \section{Author contributions statement}
 
 \section{Acknowledgments}
-
-\printbibliography
 
 \begin{thebibliography}{10}
 \bibitem{bahdanau2014neural}

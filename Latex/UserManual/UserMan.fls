@@ -1,8 +1,8 @@
-PWD /Users/kptv575/Documents/Cranfield/GROUP/Latex/UserManual
+PWD /Users/kptv575/Documents/Cranfield/GROUP/Tersect-browser/Latex/UserManual
 INPUT /Users/kptv575/Library/TinyTeX/texmf.cnf
 INPUT /Users/kptv575/Library/TinyTeX/texmf-dist/web2c/texmf.cnf
 INPUT /Users/kptv575/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/kptv575/Documents/Cranfield/GROUP/Latex/UserManual/UserMan.tex
+INPUT /Users/kptv575/Documents/Cranfield/GROUP/Tersect-browser/Latex/UserManual/UserMan.tex
 OUTPUT UserMan.log
 INPUT /Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
 INPUT /Users/kptv575/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
