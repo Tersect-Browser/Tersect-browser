@@ -25,6 +25,45 @@
 \maketitle
 
 \section{Overview}
+TersectBrowser+ is designed to be useful to a range of Users. Hosting features within the same browser allows the conducting of full analyses within the same page, benefitting both a more experienced researcher as well as a novice to the field. 
+
+\section{Use Cases - Video transcript}
+
+\subsection{Example 1:} A tomato genetics researcher wishes to identify differences between a domestic tomato genome and a large number of resequenced genomes of wild relatives. 
+
+\paragraph{User profile:} Extensive knowledge of introgression genetics and in particular the tomato genome and different species. Lacks knowledge of software development and the different file types involved in setting up the software. 
+
+\begin{enumerate}
+  \item The researcher reaches out to administration or informatics support to set up an instance of TersectBrowser+ that contains the large resequenced dataset and relevant GTF files, Reference genomes, and Metadata (e.g. geographic location of species) annotations for the difference accessions. 
+  \item The researcher uses a Local Host Web Address to access TersectBrowser+. The default view is a list of all accessions in the dataset, with one chromosome view selected and a set bin size and zoom level. 
+  \subitem  At this stage, the researcher can see a heatmap of SNP density across the different accessions, and gain a brief overview of which accessions differ most from the selected reference sequence. The researcher also can see which locations on the chromosome contain the most variation in SNP density. 
+  \item The researcher is particularly interested in a dark section of the heatmap (I.e. high density of SNPs relative to the selected reference accession), that lies across a chromosomal region containing genes involved in heat stress regulation. The researcher uses the click and select feature along the scale bar to bring up a popup message with further options, and selects the "Set as interval" feature. 
+  \subitem At this stage the researcher understands that the view will change so that the selected chromosomal region (containing high density SNPs in certain accessions) will be zoomed to in some way.  
+  \subitem The researcher sees that TersectBrowser+ view zooms to the selected region. The variation in grey bin highlighting is more obvious in this view. The accession names are also zoomed in, and therefore easier to read.
+  \item The researcher now sees that a particular set of 5 accessions are the darkest on the heatmap. The researcher would like to know if any key genes cover the dark regions for these 5 accessions. They understand that the gene browser containing gene models and the reference genome is accessible by clicking the binoculars button.  
+  \subitem The researcher sees a new view with the heatmap shifted down so there is a panel of the gene browser at the top of the page. The default view of the gene browser panel is the gene models track, and the first two accession vcf files in the resequenced dataset. The researcher clicks the track selecter button to search for the names of the 5 particular accessions. 
+  \subitem The researcher finds that the zoom on the heatmap has a minimum level past which the scroll zoom no longer works. However, the gene browser panel can be zoomed further than this by selecting a region on the scale bar and clicking "Zoom to region". 
+  \subitem This then zooms to a view where the gene models are visible alongside the variants specific to each accession.  
+  \item The researcher finds a gene model that they know to be important for heat stress. Upon clicking this gene in the browser \hl{panel,}
+\end{enumerate}
+
+\subsection{Example 2:} A plant breeder intends to gain intellectual property (IP) recognition for a particular trait of their Soybean plant breed, and wants to find quantitative evidence to support their application using the genome of this breed. 
+
+\paragraph{User profile:} High familiarity with phenotypic traits of different Soybean plant breeds, as well as history of intended Soybean introgressions by different plant breeders. Lacks knowledge of statistical generation of phenetic trees using pairwise relationships, as well as how the data in the TersectBrowser+ is set up to view the whole dataset. 
+
+The breeder opens up the phenetic tree view, in order to view a summary of pairwise differences between the different accessions. 
+
+The breeder uses the barcode search function to identify whether the sequence within the identified introgression in their plant breed can be used to uniquely identify that breed relative to the rest of the resequenced dataset. 
+
+The breeder exports the results of the barcode search to use in their application for IP recognition of their breed. 
+
+\subsection{Example 3:} A bioinformatics expert intends to learn more about what introgression means in practice as relating to differences between genomes of similar species. 
+
+\paragraph{User profile:} Expert knowledge in GUI Web-app design, as well as  
+
+The bioinformatician can zoom in the view using the plus/minus buttons on the home bar, or using the mouse zoom scroll (up and down). 
+
+The bioinformatician uses the introgression prediction tool to identify which high SNP density regions meet the threshold requirements for high likelihood of introgression from a wild cultivar into the domestic cultivar. 
 
 \section{Admin setup of browser}
 The Admin is defined as an individual with bioinformatics and software design knowledge, background comprehension for all sections of this Technical Documentation, and acting to facilitate the use of a deployed TersectBrowser+ by the plant breeder main user of the software. When a new dataset is requested for deployment on TersectBrowser+, the admin will need to follow the below steps.
