@@ -1,4 +1,6 @@
 import 'zone.js';
+import '@angular/compiler'; // ✅ JIT compiler must be explicitly imported!
+
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 import { provideZoneChangeDetection } from '@angular/core';

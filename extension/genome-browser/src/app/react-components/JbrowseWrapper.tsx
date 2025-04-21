@@ -1,19 +1,22 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   createViewState,
   JBrowseLinearGenomeView,
   ViewModel
 } from '@jbrowse/react-linear-genome-view'
-import { autorun } from 'mobx';
 import assembly from './assembly';
 import tracks from './tracks';
 import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
+import MyNoHScrollPlugin from './BlockHorizontalScrollPlugin';
+import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
+
 
 
 export interface JbrowseWrapperProps {
   location?: any
 }
+
 
 
 const JbrowseWithState = ({ state }: { state: ViewModel }) => {
@@ -24,10 +27,7 @@ const JbrowseWithState = ({ state }: { state: ViewModel }) => {
 type ViewState = ReturnType<typeof createViewState>
 
 function JbrowserWrapper(props: JbrowseWrapperProps) {
-  const stateRef = useRef<null | ViewState>(null);
-  const [isInitialised, setIsInitialized] = useState(false);
-
-  useLayoutEffect(() => {
+  const [state] = useState<ViewState>(() => {
     const state = createViewState({
       assembly,
       tracks,
@@ -50,7 +50,8 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       },
       
   
-      configuration: config
+      configuration: config,
+      plugins: [LinearGenomeViewPlugin, MyNoHScrollPlugin]
     })
   
   
@@ -66,21 +67,19 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       state.session.addView('LinearGenomeView', {
         type: 'LinearGenomeView',
         id: '1',
-        bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1))),
+        bpPerPx: ((props?.location?.binSize ?? 1) * (100 / (props?.location?.zoomLevel ?? 100))),
         offsetPx: 0,
         displayedRegions: [
           {
             assemblyName: assembly.name,
             start: props.location?.selectedInterval?.[0] ?? 0,
-            end: props.location?.selectedInterval?.[1] ?? 0,
-            refName: props.location?.chromosome?.name ?? '',
+            end: props?.location?.selectedInterval?.[1] ?? 0,
+            refName: props?.location?.chromosome?.name ?? '',
           },
         ],
       })
 
       const view = state.session.views[0];
-      stateRef.current = state
-      setIsInitialized(true);
    
       // Add the variant tracks
       console.log('added view', state.session.views.length);
@@ -92,20 +91,26 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
         view?.showTrack(each.trackId)
         
       })
-      view.horizontalScroll(-(props.location.offsetCanvas - 4))
+      if(view.initialized){
+        view.horizontalScroll(-(props?.location?.offsetCanvas - 4))
+      }
       
     })
-  }, [])
+
+    return state;
+  })
+
+
 
   useEffect(() => {
-    if(!stateRef?.current) return;
-    const session = stateRef?.current?.session;
+    if(!state) return;
+    const session = state.session;
     const view = session?.views[0];
-    if (!session || !props?.location.chromosome?.name) return;
+    if (!session || !props?.location?.chromosome?.name) return;
 
 
 
-    const bpPerPx = ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1)));
+    const bpPerPx = ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 100)));
     const start = ((-(props?.location?.plotPositionX.x * (props?.location.zoomLevel/100)) * (((props?.location?.binSize ?? 1) * (100 / (props?.location?.zoomLevel ?? 1))))) + props?.location?.selectedInterval?.[0]) 
     const end = props?.location?.selectedInterval?.[1] ?? 0;
 
@@ -115,20 +120,19 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       view.horizontalScroll(-(props?.location?.offsetCanvas - 4));
     };
   }, [
-    props?.location.chromosome?.name,
-    props?.location.zoomLevel,
-    props?.location.plotPositionX?.x,
-    props?.location.offsetCanvas,
-    props?.location.selectedInterval,
-    props?.location.binSize,
+    props?.location?.chromosome?.name,
+    props?.location?.zoomLevel,
+    props?.location?.plotPositionX?.x,
+    props?.location?.offsetCanvas,
+    props?.location?.selectedInterval,
+    props?.location?.binSize,
     props?.location?.offsetCanvas,
 
   ]);
 
   useEffect(() => {
-    if(!stateRef?.current) return;
-    const session = stateRef?.current?.session;
-    const state = stateRef?.current;
+    if(!state) return;
+    const session = state.session;
     console.log()
     state.assemblyManager.waitForAssembly(assembly.name).then(data => {
   
@@ -141,7 +145,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       state.session.addView('LinearGenomeView', {
         type: 'LinearGenomeView',
         id: `linear-genome-view-${props.location?.chromosome?.name}`,
-        bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1))),
+        bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 100))),
         offsetPx: 0,
         displayedRegions: [
           {
@@ -166,29 +170,41 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
           view?.showTrack(each.trackId)
           
         })
-        view?.horizontalScroll(-(props.location.offsetCanvas - 4))
-   
+      if(view?.initialized){
+        view?.horizontalScroll(-(props?.location?.offsetCanvas - 4))
+        console.log('ran chrom effect')
+      }
 
       
     })
   }, [props?.location?.chromosome?.name])
 
-  console.log(props.location.chromosome)
   if(props?.location?.accession?.name) {
     return <JbrowseWithAccessionName accessionName={props.location.accession.name} location={props.location}  />
   }
 
   // Define default view state, with default pre-selected chromosome matching drop-down menu selected
-  if (!props.location?.defaultInterval || !props.location?.offsetCanvas) {
+  if (!props.location) {
     return <div>Loading...</div>; // Prevents state initialization
   }
 
 
-  if(!stateRef.current || !isInitialised) return <div>Loading...</div>
+  if(!state) return <div>Loading...</div>
 
 
   //@ts-ignore
-  return <JbrowseWithState key={props.location.chromosome}   state={stateRef.current} />
+  return <JbrowseWithState key={props.location.chromosome}   state={state} />
 }
+
+
+// class JbrowseWidget extends HTMLElement {
+//   connectedCallback() {
+//     const mountPoint = document.createElement('div');
+//     this.appendChild(mountPoint);
+//     createRoot(mountPoint).render(<JbrowserWrapper />);
+//   }
+// }
+
+// customElements.define('gene-search', JbrowseWidget);
 
 export default JbrowserWrapper

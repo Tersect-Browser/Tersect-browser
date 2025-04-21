@@ -15,9 +15,8 @@
           "options": {
             "outputPath": "./dist/genome-browser",
             "index": "src/index.html",
-            "polyfills": [
-              "zone.js"
-            ],
+            "main": "src/main.ts",
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -26,20 +25,24 @@
                 "output": "."
               }
             ],
+            "styles": ["src/styles.css"],
             "scripts": [],
-            "main": "src/main.ts",
             "singleBundle": true,
             "outputHashing": "none",
-             "extraWebpackConfig": "webpack.extra.cjs"
+            "extraWebpackConfig": "webpack.extra.cjs"
           },
           "configurations": {
             "production": {
                "optimization": true,
                 "aot": true,
                 "buildOptimizer": true,
-                "extraWebpackConfig": "webpack.extra.cjs",
                 "singleBundle": true,
                 "outputHashing": "none",
+                  "namedChunks": false,
+                  "extractLicenses": false,
+                  "vendorChunk": false,
+                  "commonChunk": false,
+                  "sourceMap": false,
                  "fileReplacements": [
                     {
                       "replace": "src/environments/environment.ts",

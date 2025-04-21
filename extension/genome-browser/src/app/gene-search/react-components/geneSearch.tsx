@@ -3,7 +3,6 @@ import assembly from '../../react-components/assembly'
 import config from '../../react-components/jbrowseConfig'
 import 'primereact/resources/themes/saga-green/theme.css'; //theme
 import 'primereact/resources/primereact.min.css'; //core css
-import './geneSearchStyles.css';
 import 'primeflex/primeflex.css';
 
 import { PrimeReactProvider } from 'primereact/api';
@@ -16,6 +15,7 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Checkbox } from "primereact/checkbox";
 import { searchGene, Options } from '../searchGene';
+import { createRoot } from 'react-dom/client';
 
 
 function GeneSearch(props:any) {
@@ -54,10 +54,8 @@ function GeneSearch(props:any) {
 
 
 
-
-
-
-    const state = createViewState({
+  const [state] = useState(() => {
+       const state = createViewState({
         assembly,
         tracks,
         defaultSession: {
@@ -105,6 +103,13 @@ function GeneSearch(props:any) {
         view?.showTrack(each.trackId)
     })
 
+    return state;
+
+  })
+
+
+ 
+
     return (
         <div className="relative inline-block" ref={triggerRef}>
         {/* Trigger Button */}
@@ -138,7 +143,7 @@ function GeneSearch(props:any) {
           {/* Search input */}
           <div className="p-fluid mb-3">
             <label htmlFor="geneSearchInput" className="block mb-1">
-              Gene ID
+              Gene IDX
             </label>
             <InputText
               id="geneSearchInput"
@@ -186,3 +191,14 @@ export default function WrappedApp (props: any) {
         </PrimeReactProvider>
     );
 }
+
+// Register as custom element
+// class GeneSearchWidget extends HTMLElement {
+//   connectedCallback() {
+//     const mountPoint = document.createElement('div');
+//     this.appendChild(mountPoint);
+//     createRoot(mountPoint).render(<WrappedApp />);
+//   }
+// }
+
+// customElements.define('gene-search', GeneSearchWidget);
