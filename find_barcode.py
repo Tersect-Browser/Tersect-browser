@@ -1,7 +1,7 @@
 import argparse
 from Bio import SeqIO
+import datetime
 
-### DOUBLE CHECK BARCODE DOES NOT MATCH TO OTHER ACCESSIONS - OTHER ACCESSIONS' VARIANTS SHOULD ALSO BE CONSIDERED!!
 
 # parse tersect output to get dict of variants (original base, alternate base) based on seq position
 def load_variant_file(filepath):
@@ -45,7 +45,7 @@ def remove_overlapping_variants(unique_vars, union_vars):
 
 
 # using a sliding window, if the accession sequence does not match the ref seq, create a barcode for that window
-def find_barcode_windows(personal_seq, ref_seq, ref_start, window_size=50, step=1):
+def find_barcode_windows(personal_seq, ref_seq, ref_start, window_size, step=1):
     barcodes = []
     for i in range(0, len(personal_seq) - window_size + 1, step):
         win_start = ref_start + i
@@ -60,7 +60,7 @@ def find_barcode_windows(personal_seq, ref_seq, ref_start, window_size=50, step=
 
 # count how many unique variants fall within the barcode length, and their relative position within the barcode
 def count_variant_number(barcode_start, barcode_end, variants):
-    results = []
+    # results = ""
     variant_positions = []
     count = 0
     for position, variant in variants.items():
@@ -68,8 +68,8 @@ def count_variant_number(barcode_start, barcode_end, variants):
             count += 1
             pos = position - barcode_start
             variant_positions.append(pos)
-    results.append((count, variant_positions))
-    return results
+    # results.append((count, variant_positions))
+    return count, variant_positions
     
 
 # Calculate repeat content in a barcode using a sliding window of 2 bp
@@ -81,7 +81,10 @@ def find_dinucleotide_repeats_custom(sequence):
     - Returns a list of (unit, count, start, end) for each repeat found
     """
     i = 0
-    results = []
+    results_repeat = ""
+    results_multi = ""
+    results_start_end = ""
+
  
     while i < len(sequence) - 3:
         first = sequence[i:i+2] # pos i and i+1 (b1 and b2)
@@ -94,12 +97,25 @@ def find_dinucleotide_repeats_custom(sequence):
                 count += 1
                 j += 2
             if count > 2:
-                results.append((first, count, i, j))
+                results_repeat = results_repeat + "(" + first + ")"
+                results_multi = results_multi + "(" + str(count) + ")"
+                results_start_end = results_start_end + "(" + str(i) + ',' + str(j) + ")"
             i = j  # Skip past the whole repeat
         else:
             i += 1  # No repeat, move one position right
  
-    return results
+    return results_repeat, results_multi, results_start_end
+
+# highlight variant position in barcode with square brackets
+def highlight_positions(seq, positions):
+    highlighted = ''
+    for i, base in enumerate(seq):
+        if i in positions:
+            highlighted += "[" + base + "]"
+        else:
+            highlighted += base
+    return highlighted
+
 
 # calculate gc content per barcode
 def calculate_gc_content(barcode):
@@ -117,6 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("--chrom", required=True)
     parser.add_argument("--start", type=int, required=True)
     parser.add_argument("--end", type=int, required=True)
+    parser.add_argument("--size", type=int, required=True) ### ADD CHECK
     parser.add_argument("--unique_variants", required=True)
     parser.add_argument("--union_variants", required=True)
     args = parser.parse_args()
@@ -136,20 +153,58 @@ if __name__ == "__main__":
     unique_seq = apply_variants_to_sequence(ref_window, args.start, new_unique_vars)
 
     # Find truly unique barcode windows
-    barcodes = find_barcode_windows(unique_seq, ref_window, args.start)
+    barcodes = find_barcode_windows(unique_seq, ref_window, args.start, args.size)
     # print(barcodes)
+    # barcodes = [(1496, 2511, 'ATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTSATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTSATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTSATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTS')]
 
-    # create file to hold output results
-    f = open("barcode_output.tsv", "w")
-    f.write('testing line 1')
-    f.write('testing line 2')
 
-    # calculate repeat content in barcodes
-    for s,e,seq in barcodes:
-        # count = find_dinucleotide_repeats_custom(seq)
-        # print(count)
-        var = count_variant_number(s, e, new_unique_vars)
-        print(var)
+    # # find system date and time
+    ct = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+
+    # # create file to hold output results
+    filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
+    with open(filename, "w") as f:
+    # f = open("barcode_output.tsv", "w")
+
+        # # write system date and time  to the file
+        f.write(ct + 'TersectBrowser+, Cranfield University (c)' + '\n')
+
+        # # Output the parameters to the file
+        f.write('\n')
+        f.write('Accession\tChromosome\tInterval Start\tInterval End\tBarcode Size\n')
+        f.write('\t'.join([str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
+        f.write('\n')
+        
+        # calculate variant number, repeat content,  and gc content in barcodes and save to output file
+        f.write("Sequence\tBarcode Start\tBarcode End\tVariant Count\tVariant Position\tRepeats\tRepeat Multiplier\tRepeat Start-End\tGC Content\n")
+        for s,e,seq in barcodes:
+            # calculate variant number stats
+            var = count_variant_number(s, e, new_unique_vars)
+
+            # highlight variant within barcode
+            highlighted_barcode = highlight_positions(seq, var[1])
+
+            # highlighted_barcode = seq[:var[1]] + "[" + seq[var[1]] + "]" + seq[var[1]+1:]
+
+            # print barcode stats
+            f.write('\t'.join([str(highlighted_barcode), str(s), str(e)]) + '\t')
+
+            # print variant number stats
+            f.write(str(var[0]) + '\t')
+            f.write(str(var[1]) + '\t')
+
+
+            # f.write('\t'.join([str(var[0]), str(var[1])]) + '\t')
+            
+            # print repeat region stats
+            count = find_dinucleotide_repeats_custom(seq)
+
+            f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
+
+
+            # print gc content
+            gc = calculate_gc_content(seq)
+            f.write(str(gc) + '\n')
     
 
 
