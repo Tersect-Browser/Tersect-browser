@@ -58,6 +58,20 @@ def find_barcode_windows(personal_seq, ref_seq, ref_start, window_size=50, step=
                 barcodes.append((win_start, win_end, win_seq))
     return barcodes
 
+# count how many unique variants fall within the barcode length, and their relative position within the barcode
+def count_variant_number(barcode_start, barcode_end, variants):
+    results = []
+    variant_positions = []
+    count = 0
+    for position, variant in variants.items():
+        if barcode_start <= position <= barcode_end:
+            count += 1
+            pos = position - barcode_start
+            variant_positions.append(pos)
+    results.append((count, variant_positions))
+    return results
+    
+
 # Calculate repeat content in a barcode using a sliding window of 2 bp
 def find_dinucleotide_repeats_custom(sequence):
     """
@@ -86,6 +100,15 @@ def find_dinucleotide_repeats_custom(sequence):
             i += 1  # No repeat, move one position right
  
     return results
+
+# calculate gc content per barcode
+def calculate_gc_content(barcode):
+    length = len(barcode)
+    c_count = barcode.count("C")
+    g_count = barcode.count("G")
+    gc_count = ((c_count + g_count)/length)*100
+    return round(gc_count,6)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -116,10 +139,19 @@ if __name__ == "__main__":
     barcodes = find_barcode_windows(unique_seq, ref_window, args.start)
     # print(barcodes)
 
+    # create file to hold output results
+    f = open("barcode_output.tsv", "w")
+    f.write('testing line 1')
+    f.write('testing line 2')
+
     # calculate repeat content in barcodes
     for s,e,seq in barcodes:
-        count = find_dinucleotide_repeats_custom(seq)
-        print(count)
+        # count = find_dinucleotide_repeats_custom(seq)
+        # print(count)
+        var = count_variant_number(s, e, new_unique_vars)
+        print(var)
+    
+
 
  
 
