@@ -13,6 +13,11 @@ multi_sample_vcf = None
 vcf_dir = None
 
 def usage():
+    print("\nTersectBrowser+: Script to add a new dataset to browser deployment")
+    print("This script will take in your input dataset files, create index files if needed, build a Tersect index to summarise SNP differences across the dataset, and add your files to the database ready for deployment.")
+    print("The script assumes that:")
+    print("- You have Tersect CLI and dependencies installed in a virtual environment named .tersect")
+    print("- You have cloned the TersectBrowser+ repository and are working in the root Tersect-browser/ directory")
     print("\nUsage:")
     print("python setup_new_tbrowser_dataset.py -f <input.fasta> -g <input.gff> -v <input1.vcf.gz,input2.vcf.gz,...> -V <vcf_directory> -m <multi_sample_vcf>")
     print("-f <input.fasta>: the input FASTA file, resulting from a Multiple Sequence Alignment.")
@@ -119,7 +124,7 @@ def ensure_bgzip_compression(file_path):
             subprocess.run(["bgzip", "-f", file_path], check=True)
         print(f"BGZIP of {base_name} worked.")
         return base_name + ".gz"
-    return file_path                           
+    return file_path  
 
 def ensure_fasta_index(fasta_path):
     fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped
@@ -200,114 +205,172 @@ def copy_files(fasta, gff_file, vcf_files, workdir):
         if os.path.exists(vcf_index):
             shutil.copy2(vcf_index, destination_dir)
 
+def convert_line_endings():
+    """
+    Converts line endings of shell and Python scripts to Unix format using dos2unix.
+    """
+    try:
+        result = subprocess.run(["find", "./", "-type", "f", "-name", "*.sh", "-o", "-name", "*.py", "-exec", "dos2unix", "{}", "+"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            print(f"Error during conversion: {result.stderr}")
+            return False
+        print("All scripts converted to Unix line endings.")
+        return True
+    except Exception as e:
+        print(f"Exception during line ending conversion: {e}")
+        return False
 
-# Check installations and modules
-check_install("samtools", "SAMtools")
-check_install("bcftools", "BCFtools")
-check_install("tabix", "htslib")
+def add_example_dataset():
+    """
+    Activates the virtual environment and runs the add_example_dataset.sh script.
+    """
+    # Path to the external script
+    external_script = "./venv_run.sh"
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hf:g:v:V:m:", ["help", "fasta=", "gff=", "vcfs=", "dir=", "multi-sample-vcf="])
-except getopt.GetoptError as err:
-    print(str(err))
-    usage()
-    sys.exit(2)
+    # Ensure the script exists
+    if not os.path.exists(external_script):
+        print(f"Script {external_script} not found.")
+        sys.exit(1)
 
-dataset_name = None
-reference_name = None
-reference = None
+    # Ensure the shell script is executable
+    os.chmod(external_script, 0o755)
 
-for o, a in opts:
-    if o in ("-f", "--fasta"):
-        fasta = a
-        reference_name = os.path.splitext(os.path.basename(fasta))[0]  # Extract reference name from fasta filename
-    elif o in ("-g", "--gff"):
-        gff_file = a
-    elif o in ("-v", "--vcfs"):
-        vcf_files = a.split(',')
-    elif o in ("-V", "--dir"):
-        vcf_dir = a
-        dataset_name = os.path.basename(vcf_dir)  # Use vcf directory name as dataset name
-    elif o in ("-m", "--multi-sample-vcf"):
-        multi_sample_vcf = a
-    elif o in ("-h", "--help"):
+    try:
+        # Attempt to run the external shell script
+        subprocess.run(["bash", external_script], check=True)
+        print("Dataset generation started successfully.")
+  
+    except subprocess.CalledProcessError as e:
+        print(f"Error detected: {e}")
+        if "python3" in str(e) or "No such file or directory" in str(e) or "env" in str(e):
+            # Handle potential Unix line encoding errors
+            print("Unix line encoding error detected. Converting line endings...")
+            if not convert_line_endings():
+                print("Failed to convert line endings.")
+                sys.exit(1)
+
+            # Retry running the shell script after conversion
+            try:
+                subprocess.run(["bash", external_script], check=True)
+                print("Dataset generation started successfully after fixing line encodings.")
+            except subprocess.CalledProcessError as retry_error:
+                print(f"Error during script execution after encoding fix: {retry_error}")
+                sys.exit(1)
+        else:
+            print(f"Unhandled error during script execution: {e}")
+            sys.exit(1)
+
+
+# Main script execution
+if __name__ == "__main__":
+    # Check installations and modules
+    check_install("samtools", "SAMtools")
+    check_install("bcftools", "BCFtools")
+    check_install("tabix", "htslib")
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hf:g:v:V:m:", ["help", "fasta=", "gff=", "vcfs=", "dir=", "multi-sample-vcf="])
+    except getopt.GetoptError as err:
+        print(str(err))
+        usage()
+        sys.exit(2)
+
+    dataset_name = None
+    reference_name = None
+    reference = None
+
+    for o, a in opts:
+        if o in ("-f", "--fasta"):
+            fasta = a
+            reference_name = os.path.splitext(os.path.basename(fasta))[0]  # Extract reference name from fasta filename
+        elif o in ("-g", "--gff"):
+            gff_file = a
+        elif o in ("-v", "--vcfs"):
+            vcf_files = a.split(',')
+        elif o in ("-V", "--dir"):
+            vcf_dir = a
+            dataset_name = os.path.basename(vcf_dir)  # Use vcf directory name as dataset name
+        elif o in ("-m", "--multi-sample-vcf"):
+            multi_sample_vcf = a
+        elif o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        else:
+            assert False, "Unhandled option"
+
+    if fasta is None:
+        print("Please provide a FASTA file as input (option -f).")
         usage()
         sys.exit()
-    else:
-        assert False, "Unhandled option"
 
-if fasta is None:
-    print("Please provide a FASTA file as input (option -f).")
-    usage()
-    sys.exit()
-
-if gff_file is None:
-    print("Please provide a GFF file as input (option -g).")
-    usage()
-    sys.exit()
-
-if vcf_dir:
-    if not os.path.isdir(vcf_dir):
-        print(f"{vcf_dir} is not a valid directory!")
-        sys.exit()
-    vcf_files.extend([os.path.join(vcf_dir, f) for f in os.listdir(vcf_dir) if f.endswith(".vcf.gz")])
-
-if multi_sample_vcf:
-    if not os.path.exists(multi_sample_vcf):
-        print(f"{multi_sample_vcf} does not exist!\n")
-        sys.exit()
-    
-    # Splitting the multi-sample VCF file
-    workdir = os.path.dirname(multi_sample_vcf)
-    accessions_list_file = os.path.join(workdir, "accessions.txt")
-    if os.path.exists(accessions_list_file):
-        with open(accessions_list_file) as accessions:
-            for sample in accessions:
-                sample = sample.strip()
-                print(f"Extracting {sample}...")
-                output_vcf = f"{sample}.vcf.gz"
-                run_with_retry(["bcftools", "view", "-c1", "-Oz", "--threads", "10", "-s", sample, "-o", output_vcf, multi_sample_vcf], module_name="BCFtools")
-                vcf_files.append(output_vcf)
-    else:
-        print(f"{accessions_list_file} does not exist. Cannot split VCF file.")
+    if gff_file is None:
+        print("Please provide a GFF file as input (option -g).")
+        usage()
         sys.exit()
 
-if not vcf_files:
-    print("Please provide at least one VCF file as input (option -v), a directory of VCF files (option -V), or a multi-sample VCF file (option -m).")
-    usage()
-    sys.exit()
+    if vcf_dir:
+        if not os.path.isdir(vcf_dir):
+            print(f"{vcf_dir} is not a valid directory!")
+            sys.exit()
+        vcf_files.extend([os.path.join(vcf_dir, f) for f in os.listdir(vcf_dir) if f.endswith(".vcf.gz")])
 
-if not os.path.exists(fasta):
-    print(f"{fasta} does not exist!\n")
-    sys.exit()
+    if multi_sample_vcf:
+        if not os.path.exists(multi_sample_vcf):
+            print(f"{multi_sample_vcf} does not exist!\n")
+            sys.exit()
+  
+        # Splitting the multi-sample VCF file
+        workdir = os.path.dirname(multi_sample_vcf)
+        accessions_list_file = os.path.join(workdir, "accessions.txt")
+        if os.path.exists(accessions_list_file):
+            with open(accessions_list_file) as accessions:
+                for sample in accessions:
+                    sample = sample.strip()
+                    print(f"Extracting {sample}...")
+                    output_vcf = f"{sample}.vcf.gz"
+                    run_with_retry(["bcftools", "view", "-c1", "-Oz", "--threads", "10", "-s", sample, "-o", output_vcf, multi_sample_vcf], module_name="BCFtools")
+                    vcf_files.append(output_vcf)
+        else:
+            print(f"{accessions_list_file} does not exist. Cannot split VCF file.")
+            sys.exit()
 
-if not os.path.exists(gff_file):
-    print(f"{gff_file} does not exist!\n")
-    sys.exit()
-
-for vcf in vcf_files:
-    if not os.path.exists(vcf):
-        print(f"{vcf} does not exist!\n")
+    if not vcf_files:
+        print("Please provide at least one VCF file as input (option -v), a directory of VCF files (option -V), or a multi-sample VCF file (option -m).")
+        usage()
         sys.exit()
 
-# Ensure the FASTA, GFF, and VCF files are properly indexed
-ensure_fasta_index(fasta)
-ensure_gff_index(gff_file)
-for vcf in vcf_files:
-    ensure_vcf_index(vcf)
+    if not os.path.exists(fasta):
+        print(f"{fasta} does not exist!\n")
+        sys.exit()
 
-# Run Tersect to build the index from VCF files
-print("Building Tersect index...")
-run_with_retry(["tersect", "build -f", "{dataset_name}.tsi"] + vcf_files)
+    if not os.path.exists(gff_file):
+        print(f"{gff_file} does not exist!\n")
+        sys.exit()
 
-print("Tersect index created successfully.")
+    for vcf in vcf_files:
+        if not os.path.exists(vcf):
+            print(f"{vcf} does not exist!\n")
+            sys.exit()
 
-if not (dataset_name and reference_name):
-    print("Required parameters missing for shell script creation.")
-    sys.exit()
+    # Ensure the FASTA, GFF, and VCF files are properly indexed
+    ensure_fasta_index(fasta)
+    ensure_gff_index(gff_file)
+    for vcf in vcf_files:
+        ensure_vcf_index(vcf)
 
-# Call the function to write the data to the shell script
-write_to_shell_script(dataset_name, reference_name)
+    # Run Tersect to build the index from VCF files
+    print("Building Tersect index...")
+    run_with_retry(["tersect", "build", "-f", f"{dataset_name}.tsi"] + vcf_files)
 
-# Copy the necessary files at the end
-copy_files(fasta, gff_file, vcf_files, os.path.dirname(fasta))
+    print("Tersect index created successfully.")
+
+    if not (dataset_name and reference_name):
+        print("Required parameters missing for shell script creation.")
+        sys.exit()
+    # Call the function to write the data to the shell script
+    write_to_shell_script(dataset_name, reference_name)
+
+    # Copy the necessary files at the end
+    copy_files(fasta, gff_file, vcf_files, os.path.dirname(fasta))  
+    add_example_dataset()
