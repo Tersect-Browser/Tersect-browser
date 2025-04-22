@@ -138,6 +138,11 @@ if __name__ == "__main__":
     parser.add_argument("--union_variants", required=True)
     args = parser.parse_args()
 
+    # Check if user-inputted barcode size is less than the interval
+    interval = args.end - args.start
+    if args.size >= interval:
+        print('Barcode size too large!')
+    
     # Load reference genome and window
     ref = SeqIO.to_dict(SeqIO.parse(args.fasta, "fasta"))[args.chrom].seq
     ref_window = ref[args.start - 1:args.end]  # 1-based inclusive
@@ -154,15 +159,12 @@ if __name__ == "__main__":
 
     # Find truly unique barcode windows
     barcodes = find_barcode_windows(unique_seq, ref_window, args.start, args.size)
-    # print(barcodes)
-    # barcodes = [(1496, 2511, 'ATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTSATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTSATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTSATATATATATAATATATATATATATNSOIHSDUHBAOIHTHTHTHTHTHTHTHTHTHTHTHTHTHTHBAJBDUAGDUQBWDUSTSTSTSTSTSTSTSTSTSTSTS')]
-
 
     # # find system date and time
     ct = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     # # create file to hold output results
-    filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
+    filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.txt'
     with open(filename, "w") as f:
     # f = open("barcode_output.tsv", "w")
 
@@ -184,8 +186,6 @@ if __name__ == "__main__":
             # highlight variant within barcode
             highlighted_barcode = highlight_positions(seq, var[1])
 
-            # highlighted_barcode = seq[:var[1]] + "[" + seq[var[1]] + "]" + seq[var[1]+1:]
-
             # print barcode stats
             f.write('\t'.join([str(highlighted_barcode), str(s), str(e)]) + '\t')
 
@@ -193,30 +193,13 @@ if __name__ == "__main__":
             f.write(str(var[0]) + '\t')
             f.write(str(var[1]) + '\t')
 
-
-            # f.write('\t'.join([str(var[0]), str(var[1])]) + '\t')
-            
             # print repeat region stats
             count = find_dinucleotide_repeats_custom(seq)
-
             f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
-
 
             # print gc content
             gc = calculate_gc_content(seq)
             f.write(str(gc) + '\n')
     
-
-
- 
-
-    # Output results
-    # if not barcodes:
-    #     print(f"❌ No unique barcodes found for {args.accession} in {args.chrom}:{args.start}-{args.end}")
-    # else:
-    #     print(f"✅ Unique barcodes for {args.accession}:\n")
-    #     print(unique_vars)
-    #     for s, e, seq in barcodes:
-    #         print(f"{args.chrom}:{s}-{e} -> {seq}")
 
 
