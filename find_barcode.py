@@ -58,6 +58,35 @@ def find_barcode_windows(personal_seq, ref_seq, ref_start, window_size=50, step=
                 barcodes.append((win_start, win_end, win_seq))
     return barcodes
 
+# Calculate repeat content in a barcode using a sliding window of 2 bp
+def find_dinucleotide_repeats_custom(sequence):
+    """
+    Scans the sequence for 2-character repeats using your custom logic:
+    - If position i==i+2 and i+1==i+3 (i.e., two 2-character chunks match)
+    - Count how many times the same 2-bp pattern repeats in tandem
+    - Returns a list of (unit, count, start, end) for each repeat found
+    """
+    i = 0
+    results = []
+ 
+    while i < len(sequence) - 3:
+        first = sequence[i:i+2] # pos i and i+1 (b1 and b2)
+        second = sequence[i+2:i+4] # pos i+2 and i+3 (b3 and b4)
+ 
+        if first == second:
+            count = 2
+            j = i + 4 # pos i+4 (b5)
+            while j + 1 < len(sequence) and sequence[j:j+2] == first:
+                count += 1
+                j += 2
+            if count > 2:
+                results.append((first, count, i, j))
+            i = j  # Skip past the whole repeat
+        else:
+            i += 1  # No repeat, move one position right
+ 
+    return results
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--accession", required=True)
@@ -85,19 +114,22 @@ if __name__ == "__main__":
 
     # Find truly unique barcode windows
     barcodes = find_barcode_windows(unique_seq, ref_window, args.start)
+    # print(barcodes)
+
+    # calculate repeat content in barcodes
+    for s,e,seq in barcodes:
+        count = find_dinucleotide_repeats_custom(seq)
+        print(count)
+
+ 
 
     # Output results
-    if not barcodes:
-        print(f"❌ No unique barcodes found for {args.accession} in {args.chrom}:{args.start}-{args.end}")
-    else:
-        print(f"✅ Unique barcodes for {args.accession}:\n")
-        print(unique_vars)
-        for s, e, seq in barcodes:
-            print(f"{args.chrom}:{s}-{e} -> {seq}")
+    # if not barcodes:
+    #     print(f"❌ No unique barcodes found for {args.accession} in {args.chrom}:{args.start}-{args.end}")
+    # else:
+    #     print(f"✅ Unique barcodes for {args.accession}:\n")
+    #     print(unique_vars)
+    #     for s, e, seq in barcodes:
+    #         print(f"{args.chrom}:{s}-{e} -> {seq}")
 
 
-# ATAT ------
-# ATATAT ------
-
-# 1. are there repeat regions?
-# 2. How long are the repeat regions?
