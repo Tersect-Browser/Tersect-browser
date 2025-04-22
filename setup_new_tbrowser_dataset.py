@@ -1,16 +1,11 @@
-import sys
 import os
 import subprocess
+import sys
 import platform
 import getopt
 import shutil
 from Bio import SeqIO
 
-fasta = None
-gff_file = None
-vcf_files = []
-multi_sample_vcf = None
-vcf_dir = None
 
 def usage():
     print("\nTersectBrowser+: Script to add a new dataset to browser deployment")
@@ -108,6 +103,23 @@ def is_bgzipped(file_path):
     except subprocess.CalledProcessError:
         return False
 
+def is_gzipped(file_path):
+    """Check if a file is gzip compressed."""
+    return file_path.endswith('.gz') and not is_bgzipped(file_path)
+
+def handle_vcf_file(vcf_file):
+    """Handle VCF files based on their compression type."""
+    if vcf_file.endswith(".vcf"):
+        # Plain VCF - no need to decompress for building, compress afterwards
+        return vcf_file, False
+    elif vcf_file.endswith(".vcf.gz"):
+        # zipped VCF
+        decompressed_file = vcf_file[:-3]  # Assuming it ends with '.gz'
+        print(f"Decompressing {vcf_file} using gzcat...")
+        with open(decompressed_file, 'w') as output_file:
+            subprocess.run(["gzcat", vcf_file], stdout=output_file)
+        return decompressed_file, True
+
 def ensure_bgzip_compression(file_path):
     """Ensure the file is bgzipped. Decompress and recompress with bgzip if necessary."""
     # Determine the base name without extension for any .gz suffix
@@ -126,8 +138,18 @@ def ensure_bgzip_compression(file_path):
         return base_name + ".gz"
     return file_path  
 
+def build_tersect_index(dataset_name, vcf_files):
+    """Create Tersect index from VCF files."""
+    # Assume all files are decompressed now
+    command = ["tersect", "build", "-f", f"{dataset_name}.tsi"] + vcf_files
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    if result.returncode != 0:
+        print("Error building Tersect Index:", result.stderr.decode())
+        sys.exit(1)
+
 def ensure_fasta_index(fasta_path):
-    fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped
+    fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped if necessary
     fasta_index = fasta_path + ".fai"
     if not os.path.exists(fasta_index):
         print(f"Index for {fasta_path} not found. Creating...")
@@ -141,15 +163,25 @@ def ensure_gff_index(gff_path):
         run_with_retry(["tabix", "-p", "gff", gff_path], module_name="htslib")
 
 def ensure_vcf_index(vcf_path):
-    vcf_path = ensure_bgzip_compression(vcf_path)  # Ensure vcf is bgzipped
-    vcf_index = vcf_path + ".tbi"
+    """Ensure VCF file is BGZF-compressed and indexed."""
+    # Compress with BGZF if needed
+    if not is_bgzipped(vcf_path + ".gz"):
+        print(f"Compressing {vcf_path} with BGZF...")
+        subprocess.run(["bgzip", "-f", vcf_path], check=True)
+    
+    bgzipped_vcf = vcf_path + ".gz"
+    vcf_index = bgzipped_vcf + ".tbi"
+    
     if not os.path.exists(vcf_index):
-        print(f"Index for {vcf_path} not found. Creating...")
-        run_with_retry(["tabix", "-p", "vcf", vcf_path], module_name="htslib")
+        print(f"Indexing {bgzipped_vcf} with tabix...")
+        run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
 
-def write_to_shell_script(dataset_name, reference_name):
+def write_to_shell_script(dataset_name, reference_path):
     """
     Writes the required command to the add_example_dataset.sh script.
+    NB: the data.tsi file points to the root dir location
+    NB: the reference file should also now be in the root dir location
+    
     """
     script_content = f"""#!/bin/bash
 # This script will add a dataset with the
@@ -157,9 +189,9 @@ def write_to_shell_script(dataset_name, reference_name):
 SCRIPT="./backend/src/scripts/add_dataset.py"
 CONFIG_FILE="./tbconfig.json"
 DATASET_NAME="{dataset_name}"
-TSI_FILE="./~/mongo-data/gp_data_copy/{dataset_name}.tsi"
-REFERENCE_NAME="{reference_name}"
-REFERENCE="./~/mongo-data/gp_data_copy/{reference_name}"
+TSI_FILE="./{dataset_name}.tsi"  
+REFERENCE_NAME="{os.path.basename(reference_path)}"
+REFERENCE="./{os.path.basename(reference_path)}"
 
 $SCRIPT $CONFIG_FILE -f \\
 "$DATASET_NAME" "$TSI_FILE" \\
@@ -211,7 +243,7 @@ def convert_line_endings():
     """
     try:
         result = subprocess.run(["find", "./", "-type", "f", "-name", "*.sh", "-o", "-name", "*.py", "-exec", "dos2unix", "{}", "+"],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if result.returncode != 0:
             print(f"Error during conversion: {result.stderr}")
             return False
@@ -219,7 +251,6 @@ def convert_line_endings():
         return True
     except Exception as e:
         print(f"Exception during line ending conversion: {e}")
-        return False
 
 def add_example_dataset():
     """
@@ -239,7 +270,7 @@ def add_example_dataset():
     try:
         # Attempt to run the external shell script
         subprocess.run(["bash", external_script], check=True)
-        print("Dataset generation started successfully.")
+        print("Dataset generation completed successfully.")
   
     except subprocess.CalledProcessError as e:
         print(f"Error detected: {e}")
@@ -262,13 +293,19 @@ def add_example_dataset():
             sys.exit(1)
 
 
-# Main script execution
-if __name__ == "__main__":
+def main():
+    fasta = None
+    gff_file = None
+    vcf_files = []
+    multi_sample_vcf = None
+    vcf_dir = None
+
     # Check installations and modules
     check_install("samtools", "SAMtools")
     check_install("bcftools", "BCFtools")
     check_install("tabix", "htslib")
-
+    
+    
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hf:g:v:V:m:", ["help", "fasta=", "gff=", "vcfs=", "dir=", "multi-sample-vcf="])
     except getopt.GetoptError as err:
@@ -277,13 +314,11 @@ if __name__ == "__main__":
         sys.exit(2)
 
     dataset_name = None
-    reference_name = None
-    reference = None
 
     for o, a in opts:
         if o in ("-f", "--fasta"):
             fasta = a
-            reference_name = os.path.splitext(os.path.basename(fasta))[0]  # Extract reference name from fasta filename
+            # No need to set reference_name here since it'll depend on the actual file we write
         elif o in ("-g", "--gff"):
             gff_file = a
         elif o in ("-v", "--vcfs"):
@@ -353,24 +388,44 @@ if __name__ == "__main__":
             print(f"{vcf} does not exist!\n")
             sys.exit()
 
-    # Ensure the FASTA, GFF, and VCF files are properly indexed
-    ensure_fasta_index(fasta)
-    ensure_gff_index(gff_file)
-    for vcf in vcf_files:
-        ensure_vcf_index(vcf)
 
-    # Run Tersect to build the index from VCF files
+    # Prepare VCF files for Tersect build
+    tmp_vcf_files = []
+    for vcf_file in vcf_files:
+        decompressed_file, needs_recompress = handle_vcf_file(vcf_file)
+        tmp_vcf_files.append(decompressed_file)
+
+    # Build Tersect index
     print("Building Tersect index...")
-    run_with_retry(["tersect", "build", "-f", f"{dataset_name}.tsi"] + vcf_files)
-
+    build_tersect_index(dataset_name, tmp_vcf_files)
     print("Tersect index created successfully.")
 
-    if not (dataset_name and reference_name):
+    # Recompress and index VCF files if needed
+    print("Indexing files...")
+    for vcf_file in tmp_vcf_files:
+        ensure_vcf_index(vcf_file)
+    # Ensure the FASTA and GFF files are properly indexed
+    ensure_fasta_index(fasta)
+    ensure_gff_index(gff_file)
+    print("Indexing completed successfully.")
+
+    print("Editing scripts...")
+    if not (dataset_name and fasta):
         print("Required parameters missing for shell script creation.")
         sys.exit()
-    # Call the function to write the data to the shell script
-    write_to_shell_script(dataset_name, reference_name)
+    # Use the current name of the FASTA file (in case it was gzipped or not)
 
+    write_to_shell_script(dataset_name, fasta)
+    print("Copying files for browser access...")
     # Copy the necessary files at the end
     copy_files(fasta, gff_file, vcf_files, os.path.dirname(fasta))  
+    # Copying reference fasta to root
+    destination_dir = os.path.expanduser("./")
+    shutil.copy2(fasta, destination_dir)
+    print("Loading final dataset...")
+    # Add dataset tsi file to tersect browser
     add_example_dataset()
+
+if __name__ == "__main__":
+    # Setup logging or other initialization if necessary...
+    main()
