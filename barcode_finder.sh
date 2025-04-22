@@ -6,8 +6,9 @@ ACCESSION="$1"
 CHROM="$2"
 START="$3"
 END="$4"
-FASTA="$5"
-TSI="$6"
+SIZE="$5"
+FASTA="$6"
+TSI="$7"
 
 REGION="${CHROM}:${START}-${END}"
 SAFE_ACC=$(echo "$ACCESSION" | sed "s/ /_/g")
@@ -26,5 +27,6 @@ python3 find_barcode.py \
   --chrom "$CHROM" \
   --start "$START" \
   --end "$END" \
+  --size "$SIZE" \
   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
   --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv
