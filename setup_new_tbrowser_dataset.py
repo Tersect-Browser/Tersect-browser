@@ -20,7 +20,6 @@ def main():
     check_install("bcftools", "BCFtools")
     check_install("tabix", "htslib")
     
-    
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hf:g:v:V:m:", ["help", "fasta=", "gff=", "vcfs=", "dir=", "multi-sample-vcf="])
     except getopt.GetoptError as err:
@@ -107,7 +106,7 @@ def main():
     # Prepare VCF files for Tersect build
     tmp_vcf_files = []
     for vcf_file in vcf_files:
-        decompressed_file, needs_recompress = handle_vcf_file(vcf_file)
+        decompressed_file, needs_recompress = decompress_file(vcf_file)
         tmp_vcf_files.append(decompressed_file)
 
     # Build Tersect index
@@ -119,28 +118,43 @@ def main():
     print("Indexing files...")
     for vcf_file in tmp_vcf_files:
         ensure_vcf_index(vcf_file)
-    # Ensure the FASTA and GFF files are properly indexed
+    # Ensure the FASTA file is indexed
     ensure_fasta_index(fasta)
-    ensure_gff_index(gff_file)
     print("Indexing completed successfully.")
+
+    print("Copying files for browser access...")
+    # Copy necessary files for access in browser
+    copy_files(fasta, gff_file, vcf_files, os.path.dirname(fasta))  
+    # Copying reference fasta to root
+    destination_dir = os.path.expanduser("./")
+    shutil.copy2(fasta, destination_dir)
 
     print("Editing scripts...")
     if not (dataset_name and fasta):
         print("Required parameters missing for shell script creation.")
         sys.exit()
-    # Use the current name of the FASTA file (in case it was gzipped or not)
-
     write_to_shell_script(dataset_name, fasta)
-    print("Copying files for browser access...")
-    # Copy the necessary files at the end
-    copy_files(fasta, gff_file, vcf_files, os.path.dirname(fasta))  
-    # Copying reference fasta to root
-    destination_dir = os.path.expanduser("./")
-    shutil.copy2(fasta, destination_dir)
-    print("Loading final dataset...")
+    print("Loading final tersect dataset...")
     # Add dataset tsi file to tersect browser
     add_example_dataset()
+    
+    # Add tracks to genome browser
+    # adding the assembly first creates the config
+    print("Creating Genome Browser config file...")
+    add_assembly(fasta)
+    print("Sorting GFF file...")
+    ensure_gff_index(gff_file)
+    print("Adding GFF file as track...")
+    add_track(gff_file)
+    print("Adding accessions as tracks...")
+    for vcf_file in vcf_files:
+        add_track(vcf_file)
+    # Adding to browser popup
+    print("Editing scripts...")
+    copy_json_tracks()
+    
+    print("Deploying on localhost...")
+   # deploy_browser()
 
 if __name__ == "__main__":
-    # Setup logging or other initialization if necessary...
     main()
