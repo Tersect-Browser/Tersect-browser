@@ -69,6 +69,7 @@ export class PlotClickMenuComponent {
         this.el.nativeElement.style.visibility = 'visible';
     }
 
+
     private getAccessionItem(targetAccession: PlotAccession): MenuItem {
         return {
             label: targetAccession.accessionLabel,
@@ -145,6 +146,49 @@ export class PlotClickMenuComponent {
                         this.setIntervalEnd.emit(bin.endPosition);
                         this.hide();
                     }
+                },
+                {
+                    label: 'Create barcode',
+                    icon: 'fa fa-barcode',
+                    command: () => {
+                        this.modalService.openBarcodeModal(bin.accessionLabel
+                        //     {
+                        //     location: {
+                        //         start: bin.startPosition,
+                        //         end: bin.endPosition,
+                        //         zoomLevel: this.plotStateService.zoomLevel,
+                        //         pheneticWidth: this.plotStateService.pheneticTree.root.length,
+                        //         binSize: this.plotStateService.binsize,
+                        //         selectedInterval: this.plotStateService.interval,
+                        //         chromosome: this.plotStateService.chromosome,
+                        //         defaultInterval: [1, this.plotStateService.chromosome.size],
+                        //         preselectedChromosome: this.plotStateService.chromosome,
+                        //         accession: {
+                        //             start: bin.startPosition,
+                        //             end: bin.endPosition,
+                        //             zoomLevel: this.plotStateService.zoomLevel,
+                        //             pheneticWidth: this.plotStateService.pheneticTree.root.length,
+                        //             binSize: this.plotStateService.binsize,
+                        //             name: bin.accessionLabel,
+                        //             preselectedChromosome: this.plotStateService.chromosome,
+                        //             chromosome: this.plotStateService.chromosome,
+                        //             selectedInterval: this.plotStateService.interval,
+                        //             defaultInterval: [1, this.plotStateService.chromosome.size],
+                        //         }
+                        //     }
+                        // }
+                    );
+
+                        
+                        console.log('barcode service opened')
+                        console.log('Accession:', bin.accessionLabel)
+                        console.log('chrom')
+                        console.log('start')
+                        console.log('end')
+                        
+                        this.hide();
+                    }
+
                 }
             ]
         };

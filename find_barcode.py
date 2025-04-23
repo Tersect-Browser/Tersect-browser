@@ -169,7 +169,7 @@ if __name__ == "__main__":
     # f = open("barcode_output.tsv", "w")
 
         # # write system date and time  to the file
-        f.write(ct + 'TersectBrowser+, Cranfield University (c)' + '\n')
+        f.write(ct + ' TersectBrowser+, Cranfield University (c)' + '\n')
 
         # # Output the parameters to the file
         f.write('\n')
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         f.write('\n')
         
         # calculate variant number, repeat content,  and gc content in barcodes and save to output file
-        f.write("Sequence\tBarcode Start\tBarcode End\tVariant Count\tVariant Position\tRepeats\tRepeat Multiplier\tRepeat Start-End\tGC Content\n")
+        f.write("Sequence\tBarcode_Start\tBarcode_End\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
         for s,e,seq in barcodes:
             # calculate variant number stats
             var = count_variant_number(s, e, new_unique_vars)
