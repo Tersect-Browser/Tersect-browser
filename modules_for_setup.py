@@ -4,6 +4,7 @@ import sys
 import platform
 import getopt
 import shutil
+import json
 from Bio import SeqIO
 
 def usage():
@@ -106,17 +107,17 @@ def is_gzipped(file_path):
     """Check if a file is gzip compressed."""
     return file_path.endswith('.gz') and not is_bgzipped(file_path)
 
-def handle_vcf_file(vcf_file):
+def decompress_file(file):
     """Handle VCF files based on their compression type."""
-    if vcf_file.endswith(".vcf"):
+    if file.endswith((".vcf", ".gff",".gff3",".fa",".fasta",".fna")):
         # Plain VCF - no need to decompress for building, compress afterwards
-        return vcf_file, False
-    elif vcf_file.endswith(".vcf.gz"):
+        return file, False
+    elif file.endswith(".gz"):
         # zipped VCF
-        decompressed_file = vcf_file[:-3]  # Assuming it ends with '.gz'
-        print(f"Decompressing {vcf_file} using gzcat...")
+        decompressed_file = file[:-3]  # Assuming it ends with '.gz'
+        print(f"Decompressing {file} using gzcat...")
         with open(decompressed_file, 'w') as output_file:
-            subprocess.run(["gzcat", vcf_file], stdout=output_file)
+            subprocess.run(["gzcat", file], stdout=output_file)
         return decompressed_file, True
 
 def ensure_bgzip_compression(file_path):
@@ -148,18 +149,14 @@ def build_tersect_index(dataset_name, vcf_files):
         sys.exit(1)
 
 def ensure_fasta_index(fasta_path):
+    #fasta_path= decompress_file(fasta_path)[0]
     fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped if necessary
     fasta_index = fasta_path + ".fai"
     if not os.path.exists(fasta_index):
         print(f"Index for {fasta_path} not found. Creating...")
         run_with_retry(["samtools", "faidx", fasta_path], module_name="SAMtools")
 
-def ensure_gff_index(gff_path):
-    gff_path = ensure_bgzip_compression(gff_path)  # Ensure gff is bgzipped
-    gff_index = gff_path + ".tbi"
-    if not os.path.exists(gff_index):
-        print(f"Index for {gff_path} not found. Creating...")
-        run_with_retry(["tabix", "-p", "gff", gff_path], module_name="htslib")
+
 
 def ensure_vcf_index(vcf_path):
     """Ensure VCF file is BGZF-compressed and indexed."""
@@ -291,3 +288,76 @@ def add_example_dataset():
             print(f"Unhandled error during script execution: {e}")
             sys.exit(1)
 
+def run_command_with_node(version, command):
+    script_path = "./nvm_change.sh"
+
+    if not os.path.exists(script_path):
+        raise FileNotFoundError(f"Script {script_path} not found.")
+
+    # Run the shell script with the specified Node.js version and command
+    try:
+        subprocess.run(["bash", script_path, version, command], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing command: {e}")
+    except Exception as e:
+        print(f"Exception during execution: {e}")
+
+def ensure_gff_index(gff_path):
+    try:
+        newgff = decompress_file(gff_path)[0]
+        gff_path= newgff
+        # Construct the shell command with piping and redirection to re compress
+        command = f"jbrowse sort-gff {gff_path} | bgzip > {gff_path}.sorted.gz"
+        # Run the command in shell
+        run_command_with_node("18", command)
+        #run_with_temp_node("22")
+        #subprocess.run(command, shell=True, check=True)
+        # get new sorted name file
+        gff_path= f"{gff_path}.sorted.gz"
+        gff_index = gff_path + ".tbi"
+        if not os.path.exists(gff_index):
+            print(f"Index for {gff_path} not found. Creating...")
+            run_with_retry(["tabix", "-p", "gff", gff_path], module_name="htslib")
+    except subprocess.CalledProcessError as e:
+        print(f"Exception during jbrowse sort-gff: {e}")
+
+def create_jbrowse_config(arg,file):
+    try:
+        #run_with_temp_node("22")
+        command=f"{arg} {file} --load copy --out config.json --force"
+        run_command_with_node("18", command)
+        #subprocess.run(command, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Exception during genome browser track setup: {e}")
+
+def add_track(file):
+    create_jbrowse_config("jbrowse add-track",file)
+def add_assembly(file):
+    create_jbrowse_config("jbrowse add-assembly",file)
+
+def copy_json_tracks():
+    # Load JSON config
+    with open("./config.json", 'r') as json_file:
+        config_data = json.load(json_file)
+    
+    # Extract assemblies and tracks
+    assemblies = config_data.get("assemblies", [])
+    tracks = config_data.get("tracks", [])
+    
+    # Prepare data for TypeScript files
+    ts_assembly_content = "export default " + json.dumps(assemblies[0], indent=2) + ";"
+    ts_tracks_content = "export default " + json.dumps(tracks, indent=2) + ";"
+    
+    # Write to assembly.ts
+    with open("extension/genome-browser/src/app/react-components/assembly.ts", 'w') as assembly_file:
+        assembly_file.write(ts_assembly_content)
+    # Write to tracks.ts
+    with open("extension/genome-browser/src/app/react-components/tracks.ts", 'w') as tracks_file:
+        tracks_file.write(ts_tracks_content)
+
+def deploy_browser():
+    run_command_with_node("16","npm start")
+    os.chdir("~/")  # Change to root directory
+    subprocess.run(["mongod", "--dbpath", "mongo-data"], check=True)
+    os.chdir("extension/genome-browser/")
+    run_command_with_node("22", "npm start")
