@@ -25,6 +25,7 @@ import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
 import { GlobalModalComponent } from './components/global-jbrowse-modal/global-modal.component';
 import { GlobalBarcodeComponent } from './components/global-barcode-modal/global-barcode.component';
 import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: TersectBrowserComponent },
@@ -45,7 +46,8 @@ const appRoutes: Routes = [
         IntroPageModule,
         TersectBrowserModule,
         DialogModule,
-        RouterModule.forRoot(appRoutes)
+        RouterModule.forRoot(appRoutes),
+        FormsModule
     ],
     providers: [
         HttpClient,

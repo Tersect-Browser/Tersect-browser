@@ -1,6 +1,7 @@
 import {
     exec,
-    spawn
+    spawn,
+    execFile
 } from 'child_process';
 import {
     Request,
@@ -356,6 +357,7 @@ function exportView(req: Request, res: Response) {
 
 router.route('/views/export')
       .post(exportView);
+      
 
 router.route('/query/:datasetId/tree')
       .post((req, res) => {
@@ -400,6 +402,28 @@ router.route('/query/:datasetId/tree')
         
 
 });
+
+router.route('/generate-barcodes').post((req, res) => {
+    const { accessionName, chrom, start, end, size } = req.body;
+
+    // define path to tsi and fasta
+    const tsi_file = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
+    const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
+
+    const args = [accessionName, chrom, start, end, size, fasta_file, tsi_file];
+
+    const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
+
+    execFile(scriptPath, args, (error, stdout, stderr) => {
+        if (error) {
+          console.error('Shell script error:', error);
+          return res.status(500).send('Error running barcode script');
+        }
+    
+        const outputFile = stdout.trim();
+        res.download(outputFile); // send file to client
+      });
+})
 
 function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
     const rapidnj = spawn('rapidnj', ['-a', 'jc', '-i', 'pd', phylipFile]);

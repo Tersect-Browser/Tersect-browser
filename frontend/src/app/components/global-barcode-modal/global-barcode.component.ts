@@ -1,6 +1,8 @@
 import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { ModalService } from '../../pages/tersect-browser/services/modal.service';
 import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
+import { TersectBackendService } from '../../services/tersect-backend.service';
+
 
 
 @Component({
@@ -11,6 +13,8 @@ import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
 export class GlobalBarcodeComponent implements OnInit {
   isVisible: boolean = false;
   modalTitle: string = 'Barcode Modal';
+
+  barcodeSize: number = 150;
 
   // jbrowseProps: JbrowseWrapperProps = {
   //   location: {
@@ -24,7 +28,9 @@ export class GlobalBarcodeComponent implements OnInit {
 
   @ViewChild('customElementContainer', { static: true }) containerRef!: ElementRef;
 
-  constructor(public modalService: ModalService) {}
+  constructor(public modalService: ModalService,
+    private readonly tersectBackendService: TersectBackendService
+  ) {}
 
   ngOnInit() {
     this.modalService.barcode$.subscribe(val => this.isVisible = val);
@@ -32,6 +38,8 @@ export class GlobalBarcodeComponent implements OnInit {
       console.log('title', title);
       this.modalTitle = title
     });
+
+
 
     // this.modalService.customElement$.subscribe(config => {
 
@@ -46,5 +54,17 @@ export class GlobalBarcodeComponent implements OnInit {
     //     }
     //   }
     // });
+    
   }
+  generateBarcode(){
+    console.log('Barcode size entered:', this.barcodeSize);
+      this.tersectBackendService.generateBarcodes('acc1', 'chr1', 0, 10000, 200)
+  .subscribe(blob => {
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'barcodes.txt';
+    link.click();
+  });
+  }
+
 }
