@@ -182,10 +182,10 @@ export class PlotClickMenuComponent {
                         
                         console.log('barcode service opened')
                         console.log('Accession:', bin.accessionLabel)
-                        console.log('chrom')
-                        console.log('start')
-                        console.log('end')
-                        
+                        console.log('chrom', this.plotStateService.chromosome)
+                        console.log('start', bin.startPosition)
+                        console.log('end', bin.endPosition)
+
                         this.hide();
                     }
 

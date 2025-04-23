@@ -9,8 +9,10 @@
   [positionTop]="30"
   [header]="modalTitle">
   
-  <label>Enter barcode size: </label>
-  <input type="number">
-  <button>Generate</button>
+  <div>
+    <label>Enter barcode size: </label>
+    <input type="number" [(ngModel)]="barcodeSize">
+    <button (click)="generateBarcode()">Generate</button>
+  </div>
 
 </p-dialog>
