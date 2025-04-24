@@ -9,10 +9,21 @@
   [positionTop]="30"
   [header]="modalTitle">
   
+  <div>Barcode Generator:</div>
+  <div>Generate accession specific barcodes</div>
+  <div></div>
   <div>
-    <label>Enter barcode size: </label>
-    <input type="number" [(ngModel)]="barcodeSize">
+    <label>Enter barcode size (bp): </label>
+    <input type="number" [(ngModel)]="barcodeSize" min="10" max="1000">
     <button (click)="generateBarcode()">Generate</button>
   </div>
-  <a href="downloadLink" download="proposed_file_name">Download</a>
+
+  <a
+  *ngIf="downloadUrl"
+  [href]="downloadUrl"
+  [target]="'_blank'"
+  class="p-button p-component"
+>
+  View in new tab
+</a>
 </p-dialog>
