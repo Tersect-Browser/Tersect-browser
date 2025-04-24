@@ -1,6 +1,7 @@
 import argparse
 from Bio import SeqIO
 import datetime
+import os
 
 
 # parse tersect output to get dict of variants (original base, alternate base) based on seq position
@@ -168,43 +169,58 @@ if __name__ == "__main__":
     ct = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     # # create file to hold output results
-    filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.txt'
-    with open(filename, "w") as f:
-    # f = open("barcode_output.tsv", "w")
+    try:
+        filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.txt'
+        print('created file name', filename)
+        outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
+        print('created output foler', outputFolder)
+        fullPath = os.path.join(outputFolder, filename)
+        print('created fullPath', fullPath)
 
-        # # write system date and time  to the file
-        f.write(ct + ' TersectBrowser+, Cranfield University (c)' + '\n')
+        os.makedirs(outputFolder, exist_ok=True)
 
-        # # Output the parameters to the file
-        f.write('\n')
-        f.write('Accession\tChromosome\tInterval Start\tInterval End\tBarcode Size\n')
-        f.write('\t'.join([str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
-        f.write('\n')
-        
-        # calculate variant number, repeat content,  and gc content in barcodes and save to output file
-        f.write("Sequence\tBarcode_Start\tBarcode_End\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
-        for s,e,seq in barcodes:
-            # calculate variant number stats
-            var = count_variant_number(s, e, new_unique_vars)
+    except IOError as e:
+        print(f"Error with file I/O: {e}")
 
-            # highlight variant within barcode
-            highlighted_barcode = highlight_positions(seq, var[1])
-
-            # print barcode stats
-            f.write('\t'.join([str(highlighted_barcode), str(s), str(e)]) + '\t')
-
-            # print variant number stats
-            f.write(str(var[0]) + '\t')
-            f.write(str(var[1]) + '\t')
-
-            # print repeat region stats
-            count = find_dinucleotide_repeats_custom(seq)
-            f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
-
-            # print gc content
-            gc = calculate_gc_content(seq)
-            f.write(str(gc) + '\n')
     
-    print('Python script finished!!')
+    try:
+        with open(fullPath, "w", encoding="utf-8") as f:
+        # f = open("barcode_output.tsv", "w")
+
+            # # write system date and time  to the file
+            f.write(ct + ' TersectBrowser+, Cranfield University (c)' + '\n')
+
+            # # Output the parameters to the file
+            f.write('\n')
+            f.write('Accession\tChromosome\tInterval Start\tInterval End\tBarcode Size\n')
+            f.write('\t'.join([str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
+            f.write('\n')
+            
+            # calculate variant number, repeat content,  and gc content in barcodes and save to output file
+            f.write("Sequence\tBarcode_Start\tBarcode_End\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
+            for s,e,seq in barcodes:
+                # calculate variant number stats
+                var = count_variant_number(s, e, new_unique_vars)
+
+                # highlight variant within barcode
+                highlighted_barcode = highlight_positions(seq, var[1])
+
+                # print barcode stats
+                f.write('\t'.join([str(highlighted_barcode), str(s), str(e)]) + '\t')
+
+                # print variant number stats
+                f.write(str(var[0]) + '\t')
+                f.write(str(var[1]) + '\t')
+
+                # print repeat region stats
+                count = find_dinucleotide_repeats_custom(seq)
+                f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
+
+                # print gc content
+                gc = calculate_gc_content(seq)
+                f.write(str(gc) + '\n')
+    except Exception as e:
+        print(f"Error with file I/O when writing to file: {e}")
+    
 
 

@@ -133,19 +133,32 @@ export class TersectBackendService {
         return this.http.post<string>(query, settings, httpOptions);
     }
 
-    generateBarcodes(
-        accessionName: string,
-        chrom: string,
-        start: number,
-        end: number,
-        size: number
-      ): Observable<Blob> {
+    // generateBarcodes(
+    //     accessionName: string,
+    //     chrom: string,
+    //     start: number,
+    //     end: number,
+    //     size: number
+    //   ): Observable<Blob> {
+    //     const payload = { accessionName, chrom, start, end, size };
+    //     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      
+    //     return this.http.post(`${this.apiUrl}/generate-barcodes`, payload, {
+    //       headers,
+    //       responseType: 'blob' // Important for file download
+    //     });
+    //   }
+    generateBarcodes(accessionName: string, chrom: string, start: number, end: number, size: number): Observable<{ downloadableURL: string }> {
+        // return this.http.post<{ downloadableURL: string }>(
+        //   '/generate-barcodes',
+        //   { accessionName, chrom, start, end, size } // body payload
+        // );
         const payload = { accessionName, chrom, start, end, size };
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
       
         return this.http.post(`${this.apiUrl}/generate-barcodes`, payload, {
           headers,
-          responseType: 'blob' // Important for file download
-        });
+          responseType: 'json' // Important for file download
+        }) as unknown as Observable<{ downloadableURL: string }>;
       }
 }
