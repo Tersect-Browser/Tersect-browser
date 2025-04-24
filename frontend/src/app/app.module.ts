@@ -3,6 +3,7 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import {
     IntroPageModule
@@ -47,7 +48,8 @@ const appRoutes: Routes = [
         TersectBrowserModule,
         DialogModule,
         RouterModule.forRoot(appRoutes),
-        FormsModule
+        FormsModule,
+        ProgressSpinnerModule
     ],
     providers: [
         HttpClient,

@@ -9,13 +9,20 @@
   [positionTop]="30"
   [header]="modalTitle">
   
-  <div>Barcode Generator:</div>
-  <div>Generate accession specific barcodes</div>
-  <div></div>
-  <div>
-    <label>Enter barcode size (bp): </label>
+  <div class="modal-title">Barcode Generator:</div>
+  <div class="modal-subtitle">Generate-accession specific barcodes</div>
+
+  <div class="spacer"></div>
+
+  <div class="input-container">
+    <label for="barcodeSize">Enter barcode size (bp): </label>
     <input type="number" [(ngModel)]="barcodeSize" min="10" max="1000">
     <button (click)="generateBarcode()">Generate</button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <p-progressSpinner styleClass="custom-spinner"></p-progressSpinner>
+    <div>Generating barcode, please wait...</div>
   </div>
 
   <a
