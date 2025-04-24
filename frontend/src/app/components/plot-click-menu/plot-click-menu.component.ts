@@ -151,38 +151,16 @@ export class PlotClickMenuComponent {
                     label: 'Create barcode',
                     icon: 'fa fa-barcode',
                     command: () => {
-                        this.modalService.openBarcodeModal(bin.accessionLabel
-                        //     {
-                        //     location: {
-                        //         start: bin.startPosition,
-                        //         end: bin.endPosition,
-                        //         zoomLevel: this.plotStateService.zoomLevel,
-                        //         pheneticWidth: this.plotStateService.pheneticTree.root.length,
-                        //         binSize: this.plotStateService.binsize,
-                        //         selectedInterval: this.plotStateService.interval,
-                        //         chromosome: this.plotStateService.chromosome,
-                        //         defaultInterval: [1, this.plotStateService.chromosome.size],
-                        //         preselectedChromosome: this.plotStateService.chromosome,
-                        //         accession: {
-                        //             start: bin.startPosition,
-                        //             end: bin.endPosition,
-                        //             zoomLevel: this.plotStateService.zoomLevel,
-                        //             pheneticWidth: this.plotStateService.pheneticTree.root.length,
-                        //             binSize: this.plotStateService.binsize,
-                        //             name: bin.accessionLabel,
-                        //             preselectedChromosome: this.plotStateService.chromosome,
-                        //             chromosome: this.plotStateService.chromosome,
-                        //             selectedInterval: this.plotStateService.interval,
-                        //             defaultInterval: [1, this.plotStateService.chromosome.size],
-                        //         }
-                        //     }
-                        // }
-                    );
+                        this.modalService.openBarcodeModal(bin.accessionLabel, 
+                            this.plotStateService.chromosome.name, 
+                            bin.startPosition, 
+                            bin.endPosition
+                        );
 
                         
                         console.log('barcode service opened')
                         console.log('Accession:', bin.accessionLabel)
-                        console.log('chrom', this.plotStateService.chromosome)
+                        console.log('chrom', this.plotStateService.chromosome.name)
                         console.log('start', bin.startPosition)
                         console.log('end', bin.endPosition)
 

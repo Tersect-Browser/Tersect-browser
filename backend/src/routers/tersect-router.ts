@@ -421,7 +421,9 @@ router.route('/generate-barcodes').post((req, res) => {
         }
     
         const outputFile = stdout.trim();
-        res.download(outputFile); // send file to client
+        const filename = path.basename(outputFile); // just the filename
+
+        res.download(outputFile, filename); // send file to client
       });
 })
 
