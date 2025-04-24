@@ -3,8 +3,8 @@
 
 SCRIPT="./backend/src/scripts/add_dataset.py"
 CONFIG_FILE="./tbconfig.json"
-DATASET_NAME="data"
-TSI_FILE="./data.tsi"  
+DATASET_NAME="HN-Soybean-data"
+TSI_FILE="./HN-Soybean-data.tsi"  
 REFERENCE_NAME="Soybean/glyma.Wm82.gnm2.DTC4.genome_main.fna"
 REFERENCE="./Soybean/glyma.Wm82.gnm2.DTC4.genome_main.fna"
 

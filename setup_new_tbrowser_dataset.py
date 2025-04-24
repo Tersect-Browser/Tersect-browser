@@ -104,15 +104,19 @@ def main():
 
 
     # Prepare VCF files for Tersect build
+    print("Preparing VCF files for Tersect...")
     tmp_vcf_files = []
     for vcf_file in vcf_files:
-        decompressed_file, needs_recompress = decompress_file(vcf_file)
+        decompressed_file = decompress_file(vcf_file)[0]  
         tmp_vcf_files.append(decompressed_file)
 
     # Build Tersect index
     print("Building Tersect index...")
+    print(tmp_vcf_files)
     build_tersect_index(dataset_name, tmp_vcf_files)
     print("Tersect index created successfully.")
+    # This will iterate over each file path and remove the temporary file
+    _ = [os.remove(file) for file in tmp_vcf_files if os.path.exists(file)]
 
     # Recompress and index VCF files if needed
     print("Indexing VCF files...")
@@ -135,10 +139,7 @@ def main():
     print("Loading final tersect dataset...")
     # Add dataset tsi file to tersect browser
     add_example_dataset()
-
-    print("Copying files for Genome Browser access...")
-    # Copy necessary files to gp_data_copy for access in browser
-    copy_files(fasta_path, gff_file, vcf_files, os.path.dirname(fasta_path))  
+    
     # Copying reference fasta to root as well
     #destination_dir = os.path.expanduser("./")
     #shutil.copy2(fasta_path, destination_dir)
@@ -149,7 +150,7 @@ def main():
     print("Creating config file with assembly track...")
     add_assembly(fasta_path)
     print("Sorting GFF file...")
-    gff_file = ensure_gff_index(gff_file)
+    gff_file = ensure_gff_index(gff_file, fasta_index)
     print("Adding GFF file as track...")
     add_track(gff_file)
     print("Adding accessions as tracks...")
@@ -158,6 +159,10 @@ def main():
     # Adding to browser popup
     print("Editing scripts...")
     copy_json_tracks()
+
+    print("Copying files for Genome Browser access...")
+    # Copy necessary files to gp_data_copy for access in browser
+    copy_files(fasta_path, gff_file, vcf_files, "./~/mongo-data/gp_data_copy/")  
     
     print("Deploying on localhost...")
    # deploy_browser()
