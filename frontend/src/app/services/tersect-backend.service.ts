@@ -143,7 +143,7 @@ export class TersectBackendService {
         const payload = { accessionName, chrom, start, end, size };
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
       
-        return this.http.post(`${this.apiUrl}/generate-barcode`, payload, {
+        return this.http.post(`${this.apiUrl}/generate-barcodes`, payload, {
           headers,
           responseType: 'blob' // Important for file download
         });
