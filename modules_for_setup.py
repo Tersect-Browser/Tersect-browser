@@ -143,34 +143,32 @@ def build_tersect_index(dataset_name, vcf_files):
     # Assume all files are decompressed now
     command = ["tersect", "build", "-f", f"{dataset_name}.tsi"] + vcf_files
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
     if result.returncode != 0:
         print("Error building Tersect Index:", result.stderr.decode())
         sys.exit(1)
 
 def ensure_fasta_index(fasta_path):
-    #fasta_path= decompress_file(fasta_path)[0]
-    fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped if necessary
+    fasta_path= decompress_file(fasta_path)[0]
+    #fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped if necessary
     fasta_index = fasta_path + ".fai"
+    
+    if not os.path.exists(fasta_path):
+        raise FileNotFoundError(f"Decompressed fasta file {fasta_path} does not exist")
+    
     if not os.path.exists(fasta_index):
         print(f"Index for {fasta_path} not found. Creating...")
         run_with_retry(["samtools", "faidx", fasta_path], module_name="SAMtools")
-
-
+    return fasta_path
 
 def ensure_vcf_index(vcf_path):
     """Ensure VCF file is BGZF-compressed and indexed."""
     # Compress with BGZF if needed
-    if not is_bgzipped(vcf_path + ".gz"):
-        print(f"Compressing {vcf_path} with BGZF...")
-        subprocess.run(["bgzip", "-f", vcf_path], check=True)
-    
-    bgzipped_vcf = vcf_path + ".gz"
+    bgzipped_vcf= ensure_bgzip_compression(vcf_path)
     vcf_index = bgzipped_vcf + ".tbi"
-    
     if not os.path.exists(vcf_index):
         print(f"Indexing {bgzipped_vcf} with tabix...")
         run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
+    return bgzipped_vcf
 
 def write_to_shell_script(dataset_name, reference_path):
     """
@@ -179,6 +177,9 @@ def write_to_shell_script(dataset_name, reference_path):
     NB: the reference file should also now be in the root dir location
     
     """
+    if not (dataset_name and reference_path):
+        print("Required parameters missing for shell script creation.")
+        sys.exit()
     script_content = f"""#!/bin/bash
 # This script will add a dataset with the
 
@@ -186,8 +187,8 @@ SCRIPT="./backend/src/scripts/add_dataset.py"
 CONFIG_FILE="./tbconfig.json"
 DATASET_NAME="{dataset_name}"
 TSI_FILE="./{dataset_name}.tsi"  
-REFERENCE_NAME="{os.path.basename(reference_path)}"
-REFERENCE="./{os.path.basename(reference_path)}"
+REFERENCE_NAME="{os.path.relpath(reference_path)}"
+REFERENCE="./{os.path.relpath(reference_path)}"
 
 $SCRIPT $CONFIG_FILE -f \\
 "$DATASET_NAME" "$TSI_FILE" \\
@@ -261,6 +262,7 @@ def add_example_dataset():
         sys.exit(1)
 
     # Ensure the shell script is executable
+    print("Ensure the shell script is executable")
     os.chmod(external_script, 0o755)
 
     try:
@@ -304,20 +306,21 @@ def run_command_with_node(version, command):
 
 def ensure_gff_index(gff_path):
     try:
-        newgff = decompress_file(gff_path)[0]
-        gff_path= newgff
+        # initial decompress to allow jbrowse sort-gff
+        gff_path = decompress_file(gff_path)[0]
         # Construct the shell command with piping and redirection to re compress
         command = f"jbrowse sort-gff {gff_path} | bgzip > {gff_path}.sorted.gz"
-        # Run the command in shell
+        # Run the jbrowse command in shell
         run_command_with_node("18", command)
-        #run_with_temp_node("22")
-        #subprocess.run(command, shell=True, check=True)
         # get new sorted name file
         gff_path= f"{gff_path}.sorted.gz"
+        print(gff_path)
         gff_index = gff_path + ".tbi"
+        print(gff_index)
         if not os.path.exists(gff_index):
             print(f"Index for {gff_path} not found. Creating...")
             run_with_retry(["tabix", "-p", "gff", gff_path], module_name="htslib")
+        return(gff_path)
     except subprocess.CalledProcessError as e:
         print(f"Exception during jbrowse sort-gff: {e}")
 
