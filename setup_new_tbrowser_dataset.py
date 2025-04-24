@@ -115,35 +115,41 @@ def main():
     print("Tersect index created successfully.")
 
     # Recompress and index VCF files if needed
-    print("Indexing files...")
-    for vcf_file in tmp_vcf_files:
-        ensure_vcf_index(vcf_file)
-    # Ensure the FASTA file is indexed
-    ensure_fasta_index(fasta)
+    print("Indexing VCF files...")
+    for vcf_file in vcf_files:
+        vcf_file = ensure_vcf_index(vcf_file)
+    
+    # Ensure the FASTA file is unzipped and indexed
+    fasta_path=ensure_fasta_index(fasta)
+    if not os.path.exists(fasta_path):
+        print(f"Decompressed FASTA file {fasta_path} does not exist or is invalid.")
+        sys.exit()
+    fasta_index = fasta_path + ".fai"
+    if not os.path.exists(fasta_index):
+        print(f"Indexed FASTA file {fasta_index} does not exist or is invalid.")
+        sys.exit()
     print("Indexing completed successfully.")
 
-    print("Copying files for browser access...")
-    # Copy necessary files for access in browser
-    copy_files(fasta, gff_file, vcf_files, os.path.dirname(fasta))  
-    # Copying reference fasta to root
-    destination_dir = os.path.expanduser("./")
-    shutil.copy2(fasta, destination_dir)
-
-    print("Editing scripts...")
-    if not (dataset_name and fasta):
-        print("Required parameters missing for shell script creation.")
-        sys.exit()
-    write_to_shell_script(dataset_name, fasta)
+    print("Editing backend dataset scripts...")
+    write_to_shell_script(dataset_name, fasta_path)
     print("Loading final tersect dataset...")
     # Add dataset tsi file to tersect browser
     add_example_dataset()
-    
+
+    print("Copying files for Genome Browser access...")
+    # Copy necessary files to gp_data_copy for access in browser
+    copy_files(fasta_path, gff_file, vcf_files, os.path.dirname(fasta_path))  
+    # Copying reference fasta to root as well
+    #destination_dir = os.path.expanduser("./")
+    #shutil.copy2(fasta_path, destination_dir)
+
     # Add tracks to genome browser
+    print("Setting up Genome Browser...")
     # adding the assembly first creates the config
-    print("Creating Genome Browser config file...")
-    add_assembly(fasta)
+    print("Creating config file with assembly track...")
+    add_assembly(fasta_path)
     print("Sorting GFF file...")
-    ensure_gff_index(gff_file)
+    gff_file = ensure_gff_index(gff_file)
     print("Adding GFF file as track...")
     add_track(gff_file)
     print("Adding accessions as tracks...")
