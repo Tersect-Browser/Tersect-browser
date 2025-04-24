@@ -138,6 +138,8 @@ if __name__ == "__main__":
     parser.add_argument("--union_variants", required=True)
     args = parser.parse_args()
 
+    print('Python script running')
+
     # Check if user-inputted barcode size is less than the interval
     interval = args.end - args.start
     if args.size >= interval:
@@ -159,6 +161,8 @@ if __name__ == "__main__":
 
     # Find truly unique barcode windows
     barcodes = find_barcode_windows(unique_seq, ref_window, args.start, args.size)
+
+    print('barcodes generated - now printing to file')
 
     # # find system date and time
     ct = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
@@ -201,5 +205,6 @@ if __name__ == "__main__":
             gc = calculate_gc_content(seq)
             f.write(str(gc) + '\n')
     
+    print('Python script finished!!')
 
 

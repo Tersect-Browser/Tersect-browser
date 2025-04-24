@@ -404,6 +404,7 @@ router.route('/query/:datasetId/tree')
 });
 
 router.route('/generate-barcodes').post((req, res) => {
+    console.log('Barcode scripts added')
     const { accessionName, chrom, start, end, size } = req.body;
 
     // define path to tsi and fasta
