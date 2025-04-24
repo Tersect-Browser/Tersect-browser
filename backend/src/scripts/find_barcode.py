@@ -188,16 +188,26 @@ if __name__ == "__main__":
         # f = open("barcode_output.tsv", "w")
 
             # # write system date and time  to the file
-            f.write(ct + ' TersectBrowser+, Cranfield University (c)' + '\n')
+            f.write('##' +ct + ' TersectBrowser+, Cranfield University (c)' + '\n')
 
             # # Output the parameters to the file
-            f.write('\n')
-            f.write('Accession\tChromosome\tInterval Start\tInterval End\tBarcode Size\n')
-            f.write('\t'.join([str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
-            f.write('\n')
+            f.write('##\n')
+            f.write('##Accession\tChromosome\tInterval_Start\tInterval_End\tBarcodeSize\n')
+            f.write('\t'.join(['##' + str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
+            f.write('##\n')
+            f.write('##Sequence="Full-length barcode sequence. SNVs are highlighted in the format: [original base/alternate base]."\n')
+            f.write('##Chromosome="Chromosomal position of the barcode."\n')
+            f.write('##Barcode_Start="Relative start position of the barcode within the chromosome."\n')
+            f.write('##Barcode_End="Relative end position of the barcode within the chromosome."\n')
+            f.write('##Variant_Count="Total number of accession-specific SNVs within the barcode sequence."\n')
+            f.write('##Variant_Position="Absolute positions of accession-specific SNVs within the barcode sequence."\n')
+            f.write('##Repeat_Sequence="Regions where a dinucleotide (2-base pair) sequence repeats consecutively three or more times."\n')
+            f.write('##Repeat_Multiplier="Number of consecutive repeats of a dinucleotide sequence."\n')
+            f.write('##Repeat_Start-End="Absolute start and end positions of the repeat region within the barcode."\n')
+            f.write('##GC_Content="GC Content of the barcode, rounded to six decimal places."\n')
             
             # calculate variant number, repeat content,  and gc content in barcodes and save to output file
-            f.write("Sequence\tBarcode_Start\tBarcode_End\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
+            f.write("#Sequence\tChromosome\tBarcode_Start\tBarcode_End\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
             for s,e,seq in barcodes:
                 # calculate variant number stats
                 var = count_variant_number(s, e, new_unique_vars)
@@ -206,7 +216,7 @@ if __name__ == "__main__":
                 highlighted_barcode = highlight_positions(seq, var[1])
 
                 # print barcode stats
-                f.write('\t'.join([str(highlighted_barcode), str(s), str(e)]) + '\t')
+                f.write('\t'.join([str(highlighted_barcode), str(args.chrom), str(s), str(e)]) + '\t')
 
                 # print variant number stats
                 f.write(str(var[0]) + '\t')
