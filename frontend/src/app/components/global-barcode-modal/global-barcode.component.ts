@@ -15,6 +15,9 @@ export class GlobalBarcodeComponent implements OnInit {
   modalTitle: string = 'Barcode Modal';
 
   barcodeSize: number = 150;
+  chromosome: string;
+  startPosition: number;
+  endPosition: number;
 
   // jbrowseProps: JbrowseWrapperProps = {
   //   location: {
@@ -38,27 +41,25 @@ export class GlobalBarcodeComponent implements OnInit {
       console.log('title', title);
       this.modalTitle = title
     });
-
-
-
-    // this.modalService.customElement$.subscribe(config => {
-
-    //   this.jbrowseProps = config;
-    //   if(config) {
-    //     if (config.location) {
-    //       if (config.location.accession) {
-    //         if (config.location.accession.name) {
-    //           this.modalTitle = config.location.accession.name;
-    //         }
-    //       }
-    //     }
-    //   }
-    // });
+    this.modalService.chrom$.subscribe(chrom => {
+      this.chromosome = chrom
+    });
+    this.modalService.start$.subscribe(val => {
+      this.startPosition = val
+    });
+    this.modalService.end$.subscribe(val => {
+      this.endPosition = val
+    })
     
   }
   generateBarcode(){
     console.log('Barcode size entered:', this.barcodeSize);
-      this.tersectBackendService.generateBarcodes('acc1', 'chr1', 0, 10000, 200)
+    console.log('Accession', this.modalTitle);
+    console.log('chrom', this.chromosome);
+    console.log('start', this.startPosition);
+    console.log('end', this.endPosition);
+
+      this.tersectBackendService.generateBarcodes(this.modalTitle, this.chromosome, this.startPosition, this.endPosition, this.barcodeSize)
   .subscribe(blob => {
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
