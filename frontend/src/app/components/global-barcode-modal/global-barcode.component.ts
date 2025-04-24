@@ -19,6 +19,8 @@ export class GlobalBarcodeComponent implements OnInit {
   startPosition: number;
   endPosition: number;
 
+  downloadLink: string;
+
   // jbrowseProps: JbrowseWrapperProps = {
   //   location: {
   //     start: 0,
@@ -61,11 +63,17 @@ export class GlobalBarcodeComponent implements OnInit {
 
       this.tersectBackendService.generateBarcodes(this.modalTitle, this.chromosome, this.startPosition, this.endPosition, this.barcodeSize)
   .subscribe(blob => {
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = 'barcodes.txt';
-    link.click();
+    console.log(blob, 'blob---')
+    // const link = document.createElement('a');
+    // link.href = window.URL.createObjectURL(blob);
+    // link.download = 'barcodes.txt';
+    // link.click();
   });
   }
+  // grab object and extract url and return url to server 
+  // set barcode to anchor link and set attribute to download
+  // <a href="path_to_file" download="proposed_file_name">Download</a>
+  // http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/
 
+  // here have attribite with download link --> will then set this with downloadable link
 }

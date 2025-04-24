@@ -36,5 +36,3 @@ python3 "$SCRIPT_DIR/find_barcode.py" \
   --size "$SIZE" \
   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
   --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv
-
-echo "python script called"
