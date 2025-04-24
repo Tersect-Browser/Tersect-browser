@@ -165,9 +165,8 @@ def ensure_vcf_index(vcf_path):
     # Compress with BGZF if needed
     bgzipped_vcf= ensure_bgzip_compression(vcf_path)
     vcf_index = bgzipped_vcf + ".tbi"
-    if not os.path.exists(vcf_index):
-        print(f"Indexing {bgzipped_vcf} with tabix...")
-        run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
+    print(f"Indexing {bgzipped_vcf} with tabix...")
+    run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
     return bgzipped_vcf
 
 def write_to_shell_script(dataset_name, reference_path):
@@ -200,37 +199,37 @@ $SCRIPT $CONFIG_FILE -f \\
     with open(shell_script_path, 'w') as file:
         file.write(script_content)
 
-def copy_files(fasta, gff_file, vcf_files, workdir):
+def copy_files(fasta, gff_file, vcf_files, destination):
     """
     Copy specified files to the target directory.
     """
-    destination_dir = os.path.expanduser("./~/mongo-data/gp_data_copy/")
+    destination_dir = os.path.expanduser(destination)
 
     # Ensure the destination directory exists
     os.makedirs(destination_dir, exist_ok=True)
 
     # Files to copy: FASTA and index
-    fasta_index = fasta + ".fai"
-    shutil.copy2(fasta, destination_dir)
+    fasta_index = os.path.basename(fasta) + ".fai"
+    shutil.copy2(os.path.basename(fasta), destination_dir)
     if os.path.exists(fasta_index):
         shutil.copy2(fasta_index, destination_dir)
 
     # Files to copy: GFF and index
-    gff_index = gff_file + ".tbi"
-    shutil.copy2(gff_file, destination_dir)
+    gff_index = os.path.basename(gff_file) + ".tbi"
+    shutil.copy2(os.path.basename(gff_file), destination_dir)
     if os.path.exists(gff_index):
         shutil.copy2(gff_index, destination_dir)
 
     # Files to copy: Dataset.tsi
-    tsi_file = os.path.join(workdir, "{dataset_name}.tsi")
+    tsi_file = "./{dataset_name}.tsi" # created in current dir
     if os.path.exists(tsi_file):
         shutil.copy2(tsi_file, destination_dir)
 
     # Files to copy: Only the first two VCF files and their indexes
     vcf_subset = vcf_files[:2]  # Select first two VCF files
     for vcf in vcf_subset:
-        vcf_index = vcf + ".tbi"
-        shutil.copy2(vcf, destination_dir)
+        vcf_index = os.path.basename(vcf) + ".tbi"
+        shutil.copy2(os.path.basename(vcf), destination_dir)
         if os.path.exists(vcf_index):
             shutil.copy2(vcf_index, destination_dir)
 
@@ -304,16 +303,46 @@ def run_command_with_node(version, command):
     except Exception as e:
         print(f"Exception during execution: {e}")
 
-def ensure_gff_index(gff_path):
+def rename_chromosomes_in_gff(gff_path, fasta_index):
+    # Create a mapping of GFF chromosomes to FASTA chromosomes based on contained names
+    chrom_map = {}
+    with open(fasta_index, 'r') as fai_file:
+        # get fasta index chromosome names
+        fai_chromosomes = [line.split('\t')[0] for line in fai_file]
+    # Temporary file path for writing the renamed GFF
+    temp_gff_path = gff_path + ".temp"
+    # open original decompressed gff file to get current chromosome names
+    # write the changes to a temporaru file
+    with open(gff_path, 'r') as gff_in, open(temp_gff_path, 'w') as gff_out:
+        for line in gff_in:
+            if line.startswith('#'): 
+                gff_out.write(line)  # Write comment lines unchanged
+            else:
+                fields = line.split('\t')
+                gff_chromosome = fields[0]
+                # Look for any FAI chromosome name that contains the GFF chromosome name
+                matching_fai_chromosome = next((fai_chrom for fai_chrom in fai_chromosomes if gff_chromosome in fai_chrom), None)
+                # If a matching FAI chromosome is found, replace the GFF chromosome name
+                if matching_fai_chromosome:
+                    fields[0] = matching_fai_chromosome
+                gff_out.write('\t'.join(fields))
+    # Replace the original GFF file with the modified file
+    import os
+    os.replace(temp_gff_path, gff_path)
+    return gff_path
+
+def ensure_gff_index(gff_path, fasta_index):
     try:
         # initial decompress to allow jbrowse sort-gff
         gff_path = decompress_file(gff_path)[0]
+        # Rename chromosomes using the fasta index chromosome names
+        gff_path = rename_chromosomes_in_gff(gff_path, fasta_index)
         # Construct the shell command with piping and redirection to re compress
-        command = f"jbrowse sort-gff {gff_path} | bgzip > {gff_path}.sorted.gz"
+        command = f"jbrowse sort-gff {gff_path} | bgzip > {gff_path}.sorted.gff.gz"
         # Run the jbrowse command in shell
         run_command_with_node("18", command)
         # get new sorted name file
-        gff_path= f"{gff_path}.sorted.gz"
+        gff_path= f"{gff_path}.sorted.gff.gz"
         print(gff_path)
         gff_index = gff_path + ".tbi"
         print(gff_index)
@@ -338,25 +367,103 @@ def add_track(file):
 def add_assembly(file):
     create_jbrowse_config("jbrowse add-assembly",file)
 
+import json
+import os
+
 def copy_json_tracks():
     # Load JSON config
     with open("./config.json", 'r') as json_file:
         config_data = json.load(json_file)
-    
+  
     # Extract assemblies and tracks
     assemblies = config_data.get("assemblies", [])
     tracks = config_data.get("tracks", [])
-    
-    # Prepare data for TypeScript files
-    ts_assembly_content = "export default " + json.dumps(assemblies[0], indent=2) + ";"
-    ts_tracks_content = "export default " + json.dumps(tracks, indent=2) + ";"
-    
-    # Write to assembly.ts
-    with open("extension/genome-browser/src/app/react-components/assembly.ts", 'w') as assembly_file:
-        assembly_file.write(ts_assembly_content)
-    # Write to tracks.ts
-    with open("extension/genome-browser/src/app/react-components/tracks.ts", 'w') as tracks_file:
-        tracks_file.write(ts_tracks_content)
+
+    if assemblies:
+        # Assume you want to modify the first assembly in the list
+        assembly = assemblies[0]
+        
+        # Modify the assembly information
+        new_assembly = {
+            "name": assembly.get("name", ""),
+            "sequence": {
+                "type": assembly.get("sequence", {}).get("type", ""),
+                "trackId": assembly.get("sequence", {}).get("trackId", "").replace(".fna", ""),
+                "adapter": {
+                    "type": "IndexedFastaAdapter",
+                    "fastaLocation": {
+                        "uri": (
+                            "http://127.0.0.1:4200/TersectBrowserGP/tbapi/"
+                            "datafiles//" + assembly.get("name", "")
+                        ),
+                        "locationType": "UriLocation"
+                    },
+                    "faiLocation": {
+                        "uri": (
+                            "http://127.0.0.1:4200/TersectBrowserGP/tbapi/"
+                            "datafiles//" + assembly.get("name", "").replace(".fna", ".fna.fai")
+                        ),
+                        "locationType": "UriLocation"
+                    }
+                }
+            }
+        }
+
+        # Prepare data for TypeScript files with updated URIs
+        ts_assembly_content = "export default " + json.dumps(new_assembly, indent=2) + ";"
+
+        # Write to assembly.ts
+        with open("extension/genome-browser/src/app/react-components/assembly.ts", 'w') as assembly_file:
+            assembly_file.write(ts_assembly_content)
+            print("Assembly data written to assembly.ts")
+    else:
+        print("Assembly not found in JSON config!")
+
+    if tracks:
+        # Modify the Track entries
+        new_tracks = []
+        for track in tracks:
+            # Update track name (remove file extension)
+            track["name"] = os.path.splitext(track["name"])[0]
+  
+            # Update URI locations for gffGzLocation and index location
+            if track["type"] == "VariantTrack":
+                adapter = track["adapter"]
+                if "vcfGzLocation" in adapter:
+                    adapter["vcfGzLocation"]["uri"] = (
+                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                        track["trackId"] + ".gz"
+                    )
+                if "index" in adapter and "location" in adapter["index"]:
+                    adapter["index"]["location"]["uri"] = (
+                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                        track["trackId"] + ".gz" + ".tbi"
+                    )
+            elif track["type"] == "FeatureTrack":
+                adapter = track["adapter"]
+                if "gffGzLocation" in adapter:
+                    adapter["gffGzLocation"]["uri"] = (
+                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                        track["trackId"] + ".gz"
+                    )
+                if "index" in adapter and "location" in adapter["index"]:
+                    adapter["index"]["location"]["uri"] = (
+                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                        track["trackId"] + ".gz"+ ".tbi"
+                    )
+            else:
+                print("Unable to change uris")
+            # Add to new tracks list
+            new_tracks.append(track)
+        # Prepare data for TypeScript files with updated URIs
+        ts_tracks_content = "export default " + json.dumps(new_tracks, indent=2) + ";"
+
+        # Write to tracks.ts
+        with open("extension/genome-browser/src/app/react-components/tracks.ts", 'w') as tracks_file:
+            tracks_file.write(ts_tracks_content)
+            print("Tracks data written to tracks.ts")
+    else:
+        print("Tracks not found in JSON config!")
 
 def deploy_browser():
     run_command_with_node("16","npm start")
