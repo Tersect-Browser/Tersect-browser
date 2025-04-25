@@ -65,6 +65,37 @@ button {
   margin-top: 10px;
 }
 
+button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button .button-text {
+  display: inline-block;
+  margin-right: 8px;  /* Space between text and spinner */
+}
+
+button .custom-spinner {
+  position: absolute;
+  right: 10px;  /* Position spinner to the right of the text */
+  width: 10px !important;  /* Force smaller width */
+  height: 10px !important;  /* Force smaller height */
+  display: inline-block;
+  top: 50%;
+  transform: translateY(-50%);  /* Center the spinner vertically */
+}
+
+.custom-spinner .p-progress-circle {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+button[disabled] {
+  cursor: not-allowed;
+}
+
 button:hover {
   background-color: #33b357;;
 }
@@ -84,11 +115,6 @@ a.p-button:hover {
   background-color: #33b357;;
 }
 
-/* Styling for loading spinner */
-.custom-spinner {
-  display: block;
-  margin: 20px auto;
-}
 
 .loading-msg {
   text-align: center;

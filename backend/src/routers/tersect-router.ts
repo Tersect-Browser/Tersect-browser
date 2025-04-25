@@ -445,27 +445,6 @@ router.route('/generate-barcodes').post((req, res) => {
     
 })
 
-router.route('/download-barcode/:filename').get((req, res) => {
-    const fileName = req.params.filename;
-    const filePath = path.join(__dirname, '../../../\~/mongo-data/gp_data_copy/barcodes', fileName);
-
-    // Check if file exists
-    if (fs.existsSync(filePath)) {
-        // Set headers to force download
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-        res.setHeader('Content-Type', 'application/octet-stream');
-        
-        // Download the file
-        res.download(filePath, fileName, (err) => {
-            if (err) {
-                console.error('Download failed:', err);
-                res.status(500).send('Error downloading the file');
-            }
-        });
-    } else {
-        res.status(404).send('File not found');
-    }
-});
 
 
 function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {

@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     # # create file to hold output results
     try:
-        filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.txt'
+        filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
         print('created file name', filename)
         outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
         print('created output foler', outputFolder)
@@ -212,7 +212,7 @@ if __name__ == "__main__":
             f.write('##Chromosome="Chromosomal position of the barcode."\n')
             f.write('##Barcode_Start="Relative start position of the barcode within the chromosome."\n')
             f.write('##Barcode_End="Relative end position of the barcode within the chromosome."\n')
-            f.write('##Length="Barcode length."') ######
+            f.write('##Length="Barcode length."') 
             f.write('##Variant_Count="Total number of accession-specific SNVs within the barcode sequence."\n')
             f.write('##Variant_Position="Absolute positions of accession-specific SNVs within the barcode sequence."\n')
             f.write('##Repeat_Sequence="Regions where a dinucleotide (2-base pair) sequence repeats consecutively three or more times."\n')
@@ -247,7 +247,7 @@ if __name__ == "__main__":
                         str(count[1]), 
                         str(count[2]),
                         str(gc)
-                    ]))
+                    ]) + '\n')
 
                     # # highlight variant within barcode
                     # highlighted_barcode = highlight_ref_alt_positions(seq, var[1], s, new_unique_vars)

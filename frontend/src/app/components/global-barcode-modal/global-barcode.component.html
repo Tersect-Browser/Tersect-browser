@@ -27,20 +27,20 @@
       <label for="maxVariants">Maximum number of variants allowed per barcode (optional):</label>
       <input type="number" [(ngModel)]="maxVariants">
     </div>
-    <button (click)="generateBarcode()">Generate</button>
+    <button (click)="generateBarcode()" [disabled]="isLoading">
+      <span class="button-text">
+        Generate
+      </span>
+      <p-progressSpinner *ngIf="isLoading" styleClass="custom-spinner" [diameter]="10"></p-progressSpinner>
+    </button>
   </div>
-
-  <div *ngIf="isLoading" class="loading-container">
-    <p-progressSpinner styleClass="custom-spinner"></p-progressSpinner>
-    <div>Generating barcode, please wait...</div>
-  </div>
-
+  
   <a
   *ngIf="downloadUrl"
   [href]="downloadUrl"
-  [target]="'_blank'"
+  [attr.download]="downloadFileName"
   class="p-button p-component"
   >
-    View in new tab
+    Download
   </a>
 </p-dialog>
