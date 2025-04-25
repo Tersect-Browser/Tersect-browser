@@ -104,19 +104,18 @@ def main():
 
 
     # Prepare VCF files for Tersect build
-    print("Preparing VCF files for Tersect...")
-    tmp_vcf_files = []
-    for vcf_file in vcf_files:
-        decompressed_file = decompress_file(vcf_file)[0]  
-        tmp_vcf_files.append(decompressed_file)
+    #print("Preparing VCF files for Tersect...")
+    #tmp_vcf_files = []
+    #for vcf_file in vcf_files:
+    #    decompressed_file = decompress_file(vcf_file)[0]  
+    #    tmp_vcf_files.append(decompressed_file)
 
     # Build Tersect index
-    print("Building Tersect index...")
-    print(tmp_vcf_files)
-    build_tersect_index(dataset_name, tmp_vcf_files)
-    print("Tersect index created successfully.")
+    #print("Building Tersect index...")
+    #build_tersect_index(dataset_name, tmp_vcf_files)
+    #print("Tersect index created successfully.")
     # This will iterate over each file path and remove the temporary file
-    _ = [os.remove(file) for file in tmp_vcf_files if os.path.exists(file)]
+    #_ = [os.remove(file) for file in tmp_vcf_files if os.path.exists(file)]
 
     # Recompress and index VCF files if needed
     print("Indexing VCF files...")
