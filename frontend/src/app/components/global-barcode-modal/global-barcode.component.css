@@ -2,20 +2,26 @@
 p-dialog {
   font-family: Arial, sans-serif;
   background-color: #f9f9f9;
+  max-width: 500px;
 }
 
 /* Title and Subtitle Styling (Bold and Spacing) */
 .modal-title{
   font-weight: bold;
   font-size: 20px;
+  margin-bottom: 20px;
 }
 .modal-subtitle {
   font-size: 16px;
   color: #333;
 }
+.modal-subtitle-2 {
+  font-size: 16px;
+  color: #333;
+}
 
 /* Add space between subtitle and the next section */
-.modal-subtitle {
+.modal-subtitle-2 {
   margin-top: 10px;
   margin-bottom: 20px; /* Increase space between subtitle and next section */
 }
@@ -95,4 +101,20 @@ a.p-button:hover {
   text-align: center;
   margin: 20px 0;
   color: #666;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.input-row label {
+  min-width: 200px; /* Adjust as needed */
+}
+.input-row input {
+  max-width: 200px;
+}
+.compact-row label {
+  flex: 0 0 100px;
 }

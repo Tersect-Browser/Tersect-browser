@@ -117,6 +117,18 @@ def highlight_positions(seq, positions):
             highlighted += base
     return highlighted
 
+# highlight variant position in barcode with square brackets and ref/alt
+def highlight_ref_alt_positions(seq, positions, barcode_start, variants):
+    highlighted = ''
+    for i, base in enumerate(seq):
+        abs_pos = barcode_start + i
+        if i in positions and abs_pos in variants:
+            ref_base, alt_base = variants[abs_pos]
+            highlighted += "[{}/{}]".format(ref_base, alt_base)
+        else:
+            highlighted += base
+    return highlighted
+
 
 # calculate gc content per barcode
 def calculate_gc_content(barcode):
@@ -137,6 +149,7 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=int, required=True) ### ADD CHECK
     parser.add_argument("--unique_variants", required=True)
     parser.add_argument("--union_variants", required=True)
+    parser.add_argument("--max_variants", type=int, required=False)
     args = parser.parse_args()
 
     print('Python script running')
@@ -199,36 +212,74 @@ if __name__ == "__main__":
             f.write('##Chromosome="Chromosomal position of the barcode."\n')
             f.write('##Barcode_Start="Relative start position of the barcode within the chromosome."\n')
             f.write('##Barcode_End="Relative end position of the barcode within the chromosome."\n')
+            f.write('##Length="Barcode length."') ######
             f.write('##Variant_Count="Total number of accession-specific SNVs within the barcode sequence."\n')
             f.write('##Variant_Position="Absolute positions of accession-specific SNVs within the barcode sequence."\n')
             f.write('##Repeat_Sequence="Regions where a dinucleotide (2-base pair) sequence repeats consecutively three or more times."\n')
             f.write('##Repeat_Multiplier="Number of consecutive repeats of a dinucleotide sequence."\n')
             f.write('##Repeat_Start-End="Absolute start and end positions of the repeat region within the barcode."\n')
-            f.write('##GC_Content="GC Content of the barcode, rounded to six decimal places."\n')
+            f.write('##GC_Content="Percentage GC in the barcode, rounded to six decimal places."\n')
+            f.write('##\n')
             
             # calculate variant number, repeat content,  and gc content in barcodes and save to output file
-            f.write("#Sequence\tChromosome\tBarcode_Start\tBarcode_End\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
+            f.write("#Sequence\tChromosome\tBarcode_Start\tBarcode_End\tLength\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
             for s,e,seq in barcodes:
                 # calculate variant number stats
                 var = count_variant_number(s, e, new_unique_vars)
 
-                # highlight variant within barcode
-                highlighted_barcode = highlight_positions(seq, var[1])
+                if args.max_variants is None or var[0] <= args.max_variants:
+                    # highlight variant within barcode
+                    highlighted_barcode = highlight_ref_alt_positions(seq, var[1], s, new_unique_vars)
+                    # calculate repetitive regions
+                    count = find_dinucleotide_repeats_custom(seq)
+                    # calculate gc content
+                    gc = calculate_gc_content(seq)
+                    # print stats to file
+                    f.write('\t'.join([
+                        str(highlighted_barcode), 
+                        str(args.chrom), 
+                        str(s), 
+                        str(e),
+                        str(args.size),
+                        str(var[0]),
+                        str(var[1]),
+                        str(count[0]), 
+                        str(count[1]), 
+                        str(count[2]),
+                        str(gc)
+                    ]))
 
-                # print barcode stats
-                f.write('\t'.join([str(highlighted_barcode), str(args.chrom), str(s), str(e)]) + '\t')
+                    # # highlight variant within barcode
+                    # highlighted_barcode = highlight_ref_alt_positions(seq, var[1], s, new_unique_vars)
 
-                # print variant number stats
-                f.write(str(var[0]) + '\t')
-                f.write(str(var[1]) + '\t')
+                    # # print barcode stats
+                    # f.write('\t'.join([str(highlighted_barcode), str(args.chrom), str(s), str(e)]) + '\t')
 
-                # print repeat region stats
-                count = find_dinucleotide_repeats_custom(seq)
-                f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
+                    # # print variant number stats
+                    # f.write(str(var[0]) + '\t')
+                    # f.write(str(var[1]) + '\t')
 
-                # print gc content
-                gc = calculate_gc_content(seq)
-                f.write(str(gc) + '\n')
+                    # # print repeat region stats
+                    # count = find_dinucleotide_repeats_custom(seq)
+                    # f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
+
+                    # # print gc content
+                    # gc = calculate_gc_content(seq)
+                    # f.write(str(gc) + '\n')
+
+                # f.write('\t'.join([
+                #     str(highlighted_barcode), 
+                #     str(args.chrom), 
+                #     str(s), 
+                #     str(e),
+                #     var[0],
+                #     var[1],
+                #     str(count[0]), 
+                #     str(count[1]), 
+                #     str(count[2]),
+                #     str(gc)
+                # ]))
+
     except Exception as e:
         print(f"Error with file I/O when writing to file: {e}")
     

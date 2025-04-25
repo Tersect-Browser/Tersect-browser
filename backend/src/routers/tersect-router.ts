@@ -406,13 +406,13 @@ router.route('/query/:datasetId/tree')
 router.route('/generate-barcodes').post((req, res) => {
     try{
         console.log('Barcode scripts added')
-    const { accessionName, chrom, start, end, size } = req.body;
+    const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
     const tsi_file = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
     const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
 
-    const args = [accessionName, chrom, start, end, size, fasta_file, tsi_file];
+    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsi_file];
 
     const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
 

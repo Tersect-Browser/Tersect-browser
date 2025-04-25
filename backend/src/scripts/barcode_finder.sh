@@ -10,8 +10,10 @@ CHROM="$2"
 START="$3"
 END="$4"
 SIZE="$5"
-FASTA="$6"
-TSI="$7"
+VAR="$6"
+FASTA="$7"
+TSI="$8"
+
 
 REGION="${CHROM}:${START}-${END}"
 SAFE_ACC=$(echo "$ACCESSION" | sed "s/ /_/g")
@@ -26,8 +28,23 @@ tersect view "$TSI" "u(*) ^ '$ACCESSION'" "$REGION" > tmp_outputs/${SAFE_ACC}_un
 
 echo "calling python script"
 
-# Run barcode finder
-python3 "$SCRIPT_DIR/find_barcode.py" \
+echo "here is passed max variants argument: ${VAR}"
+
+if [ "${VAR}" != "null" ]; then
+  echo "max variants is not null - will call python with var arg: ${VAR}"
+  python3 "$SCRIPT_DIR/find_barcode.py" \
+  --accession "$ACCESSION" \
+  --fasta "$FASTA" \
+  --chrom "$CHROM" \
+  --start "$START" \
+  --end "$END" \
+  --size "$SIZE" \
+  --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
+  --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv \
+  --max_variants "${VAR}"
+else
+  echo "max variants is null - will call python without var arg: ${VAR}"
+  python3 "$SCRIPT_DIR/find_barcode.py" \
   --accession "$ACCESSION" \
   --fasta "$FASTA" \
   --chrom "$CHROM" \
@@ -36,3 +53,16 @@ python3 "$SCRIPT_DIR/find_barcode.py" \
   --size "$SIZE" \
   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
   --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv
+fi
+
+# Run barcode finder
+# python3 "$SCRIPT_DIR/find_barcode.py" \
+#   --accession "$ACCESSION" \
+#   --fasta "$FASTA" \
+#   --chrom "$CHROM" \
+#   --start "$START" \
+#   --end "$END" \
+#   --size "$SIZE" \
+#   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
+#   --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv \
+#   --max_variants 4

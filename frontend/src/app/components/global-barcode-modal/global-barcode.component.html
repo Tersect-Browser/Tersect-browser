@@ -3,20 +3,30 @@
 <p-dialog
   *ngIf="isVisible"
   [(visible)]="isVisible"  dismissableMask="true"
+  (onHide)="resetModal()"
   [resizable]="false" modal="true" appendTo="body"
-  [style]="{ width: '80vw'}"
+  [style]="{ width: '40vw'}"
   [position]="center"
   [positionTop]="30"
   [header]="modalTitle">
   
   <div class="modal-title">Barcode Generator:</div>
-  <div class="modal-subtitle">Generate-accession specific barcodes</div>
+  <div class="modal-subtitle">Generate accession-specific barcodes to identify specified accession from all other accessions within the bin interval.
+    Customisable parameters include barcode length, and total number of accession-specific variants within the barcode (optional parameter).
+  </div>
+  <div class = "modal-subtitle-2">Statistical metrics calculated for each barcode include: number of variants, repeat content, GC content.</div>
 
   <div class="spacer"></div>
 
   <div class="input-container">
-    <label for="barcodeSize">Enter barcode size (bp): </label>
-    <input type="number" [(ngModel)]="barcodeSize" min="10" max="1000">
+    <div class="input-row">
+      <label for="barcodeSize">Enter barcode size (bp):</label>
+      <input type="number" [(ngModel)]="barcodeSize" min="10" max="1000">
+    </div>
+    <div class="input-row compact-row">
+      <label for="maxVariants">Maximum number of variants allowed per barcode (optional):</label>
+      <input type="number" [(ngModel)]="maxVariants">
+    </div>
     <button (click)="generateBarcode()">Generate</button>
   </div>
 
@@ -30,7 +40,7 @@
   [href]="downloadUrl"
   [target]="'_blank'"
   class="p-button p-component"
->
-  View in new tab
-</a>
+  >
+    View in new tab
+  </a>
 </p-dialog>
