@@ -19,6 +19,7 @@ export class GlobalBarcodeComponent implements OnInit {
   chromosome: string;
   startPosition: number;
   endPosition: number;
+  maxVariants: number | null = null;
 
   downloadLink: string;
 
@@ -52,6 +53,14 @@ export class GlobalBarcodeComponent implements OnInit {
 
   //  <a href="link.href" download="link.download">Download</a>
 
+  resetModal(): void {
+    this.barcodeSize = 150;
+    this.maxVariants = null;
+    this.downloadUrl = null;
+    this.downloadFileName = '';
+    this.isLoading = false;
+  }
+  
   generateBarcode() {
     this.isLoading = true;
     console.log('loading status - start', this.isLoading)
@@ -66,10 +75,10 @@ export class GlobalBarcodeComponent implements OnInit {
       this.chromosome,
       this.startPosition,
       this.endPosition,
-      this.barcodeSize
+      this.barcodeSize,
+      this.maxVariants
     ).subscribe({
       next: (response) => {
-
 
         const fileUrl = response.downloadableURL;
         const fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
@@ -83,6 +92,8 @@ export class GlobalBarcodeComponent implements OnInit {
       complete: () => {
         this.isLoading = false;
         console.log('loading status - finished', this.isLoading)
+        this.maxVariants = null;
+        this.barcodeSize = 150;
       }
 
       /**
