@@ -239,16 +239,15 @@ export class BinDrawService {
 
     highlightBins(intervalStart, binsize, orderedAccessions, searchedAccessions) {
         if(searchedAccessions.length < 1){
-            this.refreshBin()
+            this.refreshBin();
+            return;
         }
-        const searchAccessionData = searchedAccessions.map(each => findAccessionMatch(each.trackName, orderedAccessions));
-        searchAccessionData.forEach((eachAccession, i) => {
-            searchedAccessions[i].highImpactVariants.forEach((highImpact) => {
-                const binIndex = getBinIndexFromPosition(highImpact.data.POS, intervalStart, binsize)
-
-                this.highlightFeatureBins(searchAccessionData, binIndex, this.bins)
-            })
+        searchedAccessions.forEach((highImpact) => {
+            console.log('in tersect', highImpact);
             
+                const binIndex = getBinIndexFromPosition(highImpact.pos.start, intervalStart, binsize)
+
+                this.highlightFeatureBins(searchedAccessions.map(each => each.accession), binIndex, this.bins)
         })
         // this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
 

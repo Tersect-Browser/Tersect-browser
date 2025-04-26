@@ -76,6 +76,7 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
     binSize: number = 0;
+    settingsId: string = "";
     selectedChromosomeSub: Chromosome;
     selectedInterval: number[];
     defaultInterval: number[];
@@ -190,6 +191,7 @@ export class TersectBrowserComponent implements OnInit {
 
             const accessions$ = this.tersectBackendService.getAccessionNames(settings.dataset_id);
             const chromosomes$ = this.tersectBackendService.getChromosomes(settings.dataset_id);
+            this.settingsId = settings.dataset_id;
 
             forkJoin([accessions$, chromosomes$]).subscribe(([accessions, chromosomes]) => {
                 this.generateMissingSettings(settings, accessions, chromosomes);

@@ -2,6 +2,9 @@ import {
     exec,
     spawn
 } from 'child_process';
+import * as readline  from 'readline';
+import { once }    from 'events';
+import { cpus }    from 'os';
 import {
     Request,
     Response,
@@ -48,17 +51,23 @@ import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
 import { partitionQuery } from '../utils/partitioning';
 import { formatRegion } from '../utils/utils';
+import { Pool, tersectForKey } from '../utils/pool';
 
 const util = require('util');
 
 const readdir = util.promisify(fs.readdir);
 const stat = util.promisify(fs.stat);
 const access = util.promisify(fs.access);
+const DATA_DIR = `${tbConfig.localDbPath}/gp_data_copy/trix_indices`; 
+
+function isValidChrom(chr: string): boolean {
+  return /^SL2\.50ch(0[0-9]|1[0-2])$/.test(chr);
+}
+
+
 
 // Recursive function to find the file by name
 async function findFileRecursive(dir, targetFileName) {
-    console.log(dir, targetFileName);
-    
     let entries;
     try {
         entries = await readdir(dir);
@@ -119,11 +128,14 @@ function execPromise(command: string, options = {}) {
     });
 }
 
+
+
 // CORS middleware
 router.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
     next();
 });
 
@@ -152,8 +164,7 @@ router.use('/query/:datasetId', (req, res, next) => {
         const searchRoot = path.join(localDbLocation, 'gp_data_copy');
     
         try {
-            console.log('lorem ran the route at least');
-            
+
             const foundFilePath = await findFileRecursive(searchRoot, fileName);
     
             if (!foundFilePath) {
@@ -184,6 +195,10 @@ router.use('/query/:datasetId', (req, res, next) => {
         }
     });
 
+
+
+
+
 router.route('/query/:datasetId/samples')
       .get((req, res) => {
     const options = {
@@ -204,6 +219,81 @@ router.route('/query/:datasetId/samples')
     });
 });
 
+
+router.get('/query/:datasetId/variants/:chrom', async (req, res, next) => {
+  try {
+    const chrom = req.params.chrom;
+    const start = Number(req.query.start);
+    const end   = Number(req.query.end);
+    const filter   = req.query?.filter ?? 'HIGH';
+    const tsiLocation = res.locals.dataset.tsi_location;
+
+    /* validation */
+    if (!isValidChrom(chrom))
+      return res.status(400).json({ error: 'invalid chromosome' });
+
+    if (!Number.isInteger(start) || !Number.isInteger(end) ||
+        start < 1 || end < start)
+      return res.status(400).json({ error: 'invalid start/end' });
+     
+      
+
+    const vcfPath = path.join(DATA_DIR, 'all_samples.vcf.gz');
+   
+    if (!fs.existsSync(vcfPath))
+      return res.status(404).json({ error: 'VCF not found' });
+
+    const region = `${chrom}:${start}-${end}`;
+    console.log('region and filter', region, filter);
+    
+
+    /* 1. bcftools query (still one stream) */
+    const bcftools = spawn('bcftools', [
+      'query',
+      '-i', `INFO/EFF~"${filter}"`,
+      '-r', region,
+      '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
+      vcfPath
+    ]);
+    bcftools.stderr.on('data', c => console.error('[bcftools]', c.toString()));
+
+    const rlBcf = readline.createInterface({ input: bcftools.stdout });
+
+    res.type('text/plain');
+
+    const MAX_PARALLEL = Math.max(1, cpus().length - 1);   // leave 1 core free
+    const pool         = new Pool(MAX_PARALLEL);
+
+    const pending = [];        // keep promises so we can flush in order
+    let index = 0;
+
+    for await (const line of rlBcf) {          // rlBcf = readline over bcftools
+
+    if (!line) continue;
+
+    const tab = line.indexOf('\t');
+    const key  = line.slice(0, tab);
+    const eff  = line.slice(tab + 1);
+
+    pending.push(
+        pool.run(() => tersectForKey(key, tsiLocation))
+            .then(acc => `${key}\t${eff}\t${acc}`)
+    );
+    index++;
+    }
+
+    /* wait for *all* workers, preserving order ------------------------- */
+    for (const p of pending) res.write(await p + '\n');
+    res.end();
+
+    const [code] = await once(bcftools, 'close');
+    if (code !== 0) throw new Error('bcftools failed');
+
+    res.end();
+  } catch (err) {
+    next(err);
+  }
+});
 router.route('/query/:datasetId/chromosomes')
       .get((req, res) => {
     ChromosomeIndex.find({

@@ -2,13 +2,9 @@
     <div>
         <div class="input-label-small">Genomes</div>
         <app-accession-style-selector></app-accession-style-selector>
-        <button pButton class="tb-square-button"
-            icon="fa fa-database"
-            (click)="displaySidebar = true" >
+        <button pButton class="tb-square-button" icon="fa fa-database" (click)="displaySidebar = true">
         </button>
-        <button pButton class="tb-square-button"
-        icon="fa fa-binoculars"
-        (click)="displayButton = !displayButton" >
+        <button pButton class="tb-square-button" icon="fa fa-binoculars" (click)="displayButton = !displayButton">
         </button>
     </div>
 
@@ -17,8 +13,7 @@
     </div>
 
     <div class="p-col tb-toolbar-control">
-        <app-chromosome-selector
-            [chromosomes]="chromosomes">
+        <app-chromosome-selector [chromosomes]="chromosomes">
         </app-chromosome-selector>
     </div>
 
@@ -32,42 +27,38 @@
 
 
     <div class="p-col zoom-selector tb-toolbar-control">
-        <button pButton icon="fa fa-search-minus"
-            [disabled]="isZoomMin()"
-            (click)="zoomOut()">
+        <button pButton icon="fa fa-search-minus" [disabled]="isZoomMin()" (click)="zoomOut()">
         </button>
-        <button pButton icon="fa fa-search-plus"
-            [disabled]="isZoomMax()"
-            (click)="zoomIn()">
+        <button pButton icon="fa fa-search-plus" [disabled]="isZoomMax()" (click)="zoomIn()">
         </button>
     </div>
     <div class="p-grid zoom-selector pt-1  align-items-start gap-2 vertical-align-top tb-toolbar-control">
-        <gene-search class="col-120 h-2" *ngIf="!!selectedInterval && !!binSize" bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins}" ></gene-search>
-        <button class="col-10 mt-0 " pButton  icon="fa fa-refresh"
-            (click)="refreshBin()">
+        <gene-search class="col-120 h-2" *ngIf="!!binSize && settingsId"
+            bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins, chromosome: selectedChromosomeSub, 
+            preselectedChromosome: preselectedChromosome,
+            selectedInterval: selectedInterval,
+            datasetId: settingsId,
+             callback: callHighlightBins,
+            defaultInterval: defaultInterval}"></gene-search>
+        <button class="col-10 mt-0 " pButton icon="fa fa-refresh" (click)="refreshBin()">
         </button>
     </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
-        <button pButton label="Download" icon="fa fa-download"
-            [disabled]="isDownloadReady()"
+        <button pButton label="Download" icon="fa fa-download" [disabled]="isDownloadReady()"
             (click)="downloadDialog.show()">
         </button>
         <app-download-dialog #downloadDialog></app-download-dialog>
-        <button pButton label="Share" icon="fa fa-share-square-o"
-            (click)="shareMenu.toggle($event)">
+        <button pButton label="Share" icon="fa fa-share-square-o" (click)="shareMenu.toggle($event)">
         </button>
         <app-share-menu #shareMenu></app-share-menu>
     </div>
 </div>
 
-<p-sidebar [(visible)]="displaySidebar" position="left"
-           [style]="{width: '90vw', padding: 0, border: 0}"
-           (onHide)="updateAccessions()">
-    <app-accession-tab *ngIf="displaySidebar"
-        [importPlugins]="settings.plugins"
-        [accessionOptions]="settings.accession_infos"
-        [(accessionGroups)]="accessionGroups"
+<p-sidebar [(visible)]="displaySidebar" position="left" [style]="{width: '90vw', padding: 0, border: 0}"
+    (onHide)="updateAccessions()">
+    <app-accession-tab *ngIf="displaySidebar" [importPlugins]="settings.plugins"
+        [accessionOptions]="settings.accession_infos" [(accessionGroups)]="accessionGroups"
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
@@ -85,24 +76,16 @@
 },
 scaleView: this.syncedScaleView,
 displayed: this.displayButton
-}"
-></jbrowser-wrapper>
+}"></jbrowser-wrapper>
 
 <div class="plot-container animation-fade-in">
-    <app-tersect-distance-plot
-        (plotMouseClick)="plotClick($event)"
-        (plotMouseHover)="tooltip.show($event)"
-        (plotMouseMove)="tooltip.hide()"
-        (wheel)="scrollWheel($event)"
-        (mouseleave)="tooltip.hide()">
+    <app-tersect-distance-plot (plotMouseClick)="plotClick($event)" (plotMouseHover)="tooltip.show($event)"
+        (plotMouseMove)="tooltip.hide()" (wheel)="scrollWheel($event)" (mouseleave)="tooltip.hide()">
     </app-tersect-distance-plot>
 </div>
 
-<app-plot-click-menu appFitWindow
-    (setReference)="setReference($event)"
-    (removeAccession)="removeAccession($event)"
-    (setInterval)="setInterval($event)"
-    (setIntervalStart)="setIntervalStart($event)"
+<app-plot-click-menu appFitWindow (setReference)="setReference($event)" (removeAccession)="removeAccession($event)"
+    (setInterval)="setInterval($event)" (setIntervalStart)="setIntervalStart($event)"
     (setIntervalEnd)="setIntervalEnd($event)">
 </app-plot-click-menu>
 
