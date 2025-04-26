@@ -10,6 +10,7 @@ import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
 })
 export class GlobalModalComponent implements OnInit {
   isVisible: boolean = false;
+  
   modalTitle: string = 'Modal';
 
   jbrowseProps: JbrowseWrapperProps = {

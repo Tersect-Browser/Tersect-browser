@@ -23,9 +23,6 @@
       }
     }
   },
-  rpc: {
-    defaultDriver: 'WebWorkerRpcDriver',
-  },
 
   };
 

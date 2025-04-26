@@ -140,7 +140,7 @@ export default class VcfTrixAdapter extends BaseFeatureDataAdapter {
   }
 
   /* optional cleanup hook ---------------------------------------------- */
-  freeResources() {
+  override freeResources() {
     /* nothing to unload */
   }
 }
