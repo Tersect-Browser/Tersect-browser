@@ -89,19 +89,6 @@ export class PlotClickMenuComponent {
                         this.hide();
                     }
                 },
-                 {
-                    label: 'Search for variants',
-                    icon: 'fa fa-search',
-                    command: () => {
-                        window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
-                            interval: [targetAccession.startPosition, targetAccession.endPosition],
-                            waitTime: 40000
-                        } }));
-                        // this.setInterval.emit([int.startPosition,
-                        //                        int.endPosition]);
-                        this.hide();
-                    }
-                },
                 {
                     label: 'View in browser',
                     icon: 'fa fa-binoculars',
