@@ -145,6 +145,19 @@ export class PlotClickMenuComponent {
                         this.setIntervalEnd.emit(bin.endPosition);
                         this.hide();
                     }
+                },
+                 {
+                    label: 'Search for variants',
+                    icon: 'fa fa-search',
+                    command: () => {
+                        window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
+                            interval: [bin.startPosition, bin.endPosition],
+                            waitTime: 40000
+                        } }));
+                        // this.setInterval.emit([int.startPosition,
+                        //                        int.endPosition]);
+                        this.hide();
+                    }
                 }
             ]
         };
@@ -161,6 +174,19 @@ export class PlotClickMenuComponent {
                     command: () => {
                         this.setInterval.emit([int.startPosition,
                                                int.endPosition]);
+                        this.hide();
+                    }
+                },
+                {
+                    label: 'Search for variants',
+                    icon: 'fa fa-search',
+                    command: () => {
+                        window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
+                            interval: [int.startPosition, int.endPosition],
+                            waitTime: 40000
+                        } }));
+                        // this.setInterval.emit([int.startPosition,
+                        //                        int.endPosition]);
                         this.hide();
                     }
                 }

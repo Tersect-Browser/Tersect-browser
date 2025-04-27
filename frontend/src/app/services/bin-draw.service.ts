@@ -239,16 +239,13 @@ export class BinDrawService {
 
     highlightBins(intervalStart, binsize, orderedAccessions, searchedAccessions) {
         if(searchedAccessions.length < 1){
-            this.refreshBin()
+            this.refreshBin();
+            return;
         }
-        const searchAccessionData = searchedAccessions.map(each => findAccessionMatch(each.trackName, orderedAccessions));
-        searchAccessionData.forEach((eachAccession, i) => {
-            searchedAccessions[i].highImpactVariants.forEach((highImpact) => {
-                const binIndex = getBinIndexFromPosition(highImpact.data.POS, intervalStart, binsize)
+        searchedAccessions.variants.forEach((highImpact) => {
+                const binIndex = getBinIndexFromPosition(highImpact.pos.start, intervalStart, binsize)
 
-                this.highlightFeatureBins(searchAccessionData, binIndex, this.bins)
-            })
-            
+                this.highlightFeatureBins(searchedAccessions.totalAccessions, binIndex, this.bins)
         })
         // this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
 
@@ -287,13 +284,14 @@ export class BinDrawService {
         // TODO - find accession name index in binView.orderedAccessions
         let accessionIndices: Array<number> = [];
 
-        for (let n = 0; n < accessions.length; n++) {
-            binView.orderedAccessions.forEach((accession, index) => {
-                if (accession == accessions[n]) {
-                    accessionIndices.push(index)
+        accessions.forEach((eachSearchedAcc) => {
+            if(binView.orderedAccessions.includes(eachSearchedAcc)){
+                const targetIndex = binView.orderedAccessions.findIndex(each => each === eachSearchedAcc)
+                if(targetIndex){
+                    accessionIndices.push(targetIndex)
                 }
-            })
-        }
+            }
+        })
 
 
 

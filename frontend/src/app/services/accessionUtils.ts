@@ -11,5 +11,5 @@ export function findAccessionMatch(
 
 
 export function getBinIndexFromPosition(position: number, intervalStart: number, binsize: number): number {
-    return Math.floor((position - intervalStart) / binsize);
+    return Math.floor((position ) / binsize);
 }

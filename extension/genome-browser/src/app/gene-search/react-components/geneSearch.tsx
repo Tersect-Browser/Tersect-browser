@@ -1,204 +1,226 @@
 import tracks from '../../react-components/tracks'
 import assembly from '../../react-components/assembly'
 import config from '../../react-components/jbrowseConfig'
-import 'primereact/resources/themes/saga-green/theme.css'; //theme
-import 'primereact/resources/primereact.min.css'; //core css
-import 'primeflex/primeflex.css';
+import 'primereact/resources/themes/saga-green/theme.css' // theme
+import 'primereact/resources/primereact.min.css' // core css
+import './geneSearchStyles.css'
+import 'primeflex/primeflex.css'
 
-import { PrimeReactProvider } from 'primereact/api';
+import { PrimeReactProvider } from 'primereact/api'
 import {
-    createViewState,
+  createViewState,
+  ViewModel,
 } from '@jbrowse/react-linear-genome-view'
-import React, { useRef, useState } from 'react';
-import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { Checkbox } from "primereact/checkbox";
-import { searchGene, Options } from '../searchGene';
-import { createRoot } from 'react-dom/client';
+import React, { useEffect, useRef, useState } from 'react'
+import { AutoComplete } from 'primereact/autocomplete'
+import { Button } from 'primereact/button'
+import { Dialog } from 'primereact/dialog'
+import { Checkbox } from 'primereact/checkbox'
+import { Slider } from 'primereact/slider'
+import { Dropdown } from 'primereact/dropdown';
+import { InputNumber } from 'primereact/inputnumber'
+import { searchGene, ImpactLevel, getSuggestions } from '../searchGene'
 
-
-function GeneSearch(props:any) {
-    const [query, setQuery] = useState('');
-    const [showDialog, setShowDialog] = useState(false);
-
-  const [selectedImpacts, setSelectedImpacts] = useState<Options[]>([]);
-  const [loading, setLoading] = useState(false);
-  const triggerRef = useRef(null);
-
-  // checkbox values
-  const impacts = [Options.HIGH, Options.LOW, Options.MODERATE];
-
-  const toggleImpact = (value:Options) => {
-    setSelectedImpacts((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
-  };
-
-  const handleSearch = async () => {
-    if (!query.trim()) return; // ignore empty search
-    setLoading(true);
-    try {
-      const results  = await searchGene(query, state.session, selectedImpacts);
-      // optional external callback (if still needed)
-      props?.callback?.(results);
-    } finally {
-      setLoading(false);
-      setShowDialog(false);
-    //   setQuery("");
-    //   setSelectedImpacts([]);
-    }
-  };
-
-
-
-
-
-  const [state] = useState(() => {
-       const state = createViewState({
-        assembly,
-        tracks,
-        defaultSession: {
-            name: 'default session',
-            view: {
-                type: 'LinearGenomeView',
-                id: '1',
-                bpPerPx: 50000,
-                offsetPx: 0,
-                displayedRegions: [
-                    {
-                        assemblyName: assembly.name,
-                        start: 1,
-                        end: 9000000,
-                        refName: 'SL2.50ch01',
-                    },
-                ],
-            },
-        },
-        
-        configuration: config
-    })
-
-    
+/**
+ * Extends the original GeneSearch component by
+ * – replacing the free‑text input with a PrimeReact <AutoComplete>
+ * – adding a numeric range selector (PrimeReact <Slider range />) so callers can
+ *   constrain the genomic position (or any numeric field you need).
+ */
+function GeneSearch(props: any) {
+  console.log(props)
   
+    // ---------- JBrowse view ----------
 
-    state.session.addView('LinearGenomeView', {
-        type: 'LinearGenomeView',
-        id: '1',
-        bpPerPx: 50000,
-        offsetPx: 0,
-        displayedRegions: [
-            {
-                assemblyName: assembly.name,
-                start: 1,
-                end: 9000000,
-                refName: 'SL2.50ch01',
-            },
-        ],
-    });
-    const view = state.session.views[0];
-    tracks.forEach(each => {
-        view?.setHideHeader(true)
-        // view?.scrollTo(50000, 900000)
-        view?.showTrack(each.trackId)
-    })
+  const [query, setQuery] = useState<string>('')
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  // Replace 0/1 000 000 with a sensible default for your dataset
+  const [range, setRange] = useState<[number, number]>(props?.selectedInterval)
+  const [showDialog, setShowDialog] = useState<boolean>(false)
+  const [viewState, setViewState] = useState<ViewModel>()
 
-    return state;
+  const [selectedImpacts, setSelectedImpacts] = useState<ImpactLevel>(ImpactLevel.HIGH)
+  const [loading, setLoading] = useState<boolean>(false)
+  const triggerRef = useRef<HTMLDivElement | null>(null)
 
-  })
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ interval: [number, number] }>) => {
+      setRange(e.detail.interval);
+      setShowDialog(true);
+      handleSearch(e.detail.interval);
+    }
+   
+
+    // add
+    window.addEventListener("tersect-search-variants", handler as EventListener);
+    console.log('registered')
+
+    // clean up
+    return () =>
+      window.removeEventListener("tersect-search-variants", handler as EventListener);
+  },[])
+
+  // ---------- AutoComplete helper ----------
+  // Accept a list of gene IDs from the parent, otherwise keep an empty list.
+  const geneOptions: string[] =  []
+
+  const completeGeneId = async (e: { query: string }) => {
+    const q = e.query.trim().toLowerCase()
+    if (!q) {
+      setSuggestions([])
+      return
+    }
+    const result = await getSuggestions(q)
+    setSuggestions(
+       result// cap for performance
+    )
+  } 
 
 
- 
 
-    return (
-        <div className="relative inline-block" ref={triggerRef}>
-        {/* Trigger Button */}
-        <Button
-          label="Open Variant Search"
-          style={{
-            backgroundColor: '#459e00',
-            borderRadius: '4px',
-            padding: '2px',
-            color: 'white',
-            fontSize: '16px',
-            paddingRight: '10px',
-            paddingLeft: '10px',
-            borderColor: '#327e04'
-          }}
-          onClick={() => setShowDialog(true)}
-          outlined
-        />
+  // ---------- UI helpers ----------
+  const impacts = [ImpactLevel.HIGH]
+  // , ImpactLevel.LOW, ImpactLevel.MODERATE]
 
-        {/* Search Dialog anchored to button */}
-        <Dialog
-          header="Variant Search"
-          visible={showDialog}
-          style={{ width: "50rem", top: "100px" }}
-          modal={true}           /* no page‑blocking overlay */
-          onHide={() => setShowDialog(false)}
-          position="top-right"      /* opens below */
-          appendTo={triggerRef.current} /* keep it right under the button */
-          draggable={false}
-        >
-          {/* Search input */}
-          <div className="p-fluid mb-3">
-            <label htmlFor="geneSearchInput" className="block mb-1">
-              Gene IDX
-            </label>
-            <InputText
-              id="geneSearchInput"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for a gene…"
+  const toggleImpact = (value: ImpactLevel) => {
+    setSelectedImpacts(value)
+  }
+
+  const handleSearch = async (recentInterval?: [number, number]) => {
+    // if (!query.trim()) return
+    setLoading(true)
+    try {
+      const results = await searchGene(
+        query,
+        viewState?.session,
+        selectedImpacts,
+        props?.chromosome?.name,
+        recentInterval ?? range,
+        props?.datasetId
+      )
+      console.log(results);
+      
+      props?.callback?.(results)
+    } finally {
+      setLoading(false)
+      setShowDialog(false)
+    }
+  }
+
+  return (
+    <div className="relative inline-block" ref={triggerRef}>
+      {/* Trigger */}
+      <Button
+        label="Open Variant Search"
+        style={{
+          backgroundColor: '#459e00',
+          borderRadius: 4,
+          padding: 2,
+          color: 'white',
+          fontSize: 16,
+          paddingRight: 10,
+          paddingLeft: 10,
+          borderColor: '#327e04',
+        }}
+        onClick={() => setShowDialog(true)}
+        outlined
+      />
+
+      {/* Dialog */}
+      <Dialog
+        header="Variant Search"
+        visible={showDialog}
+        style={{ width: '50rem', top: '100px' }}
+        modal
+        onHide={() => setShowDialog(false)}
+        position="top-right"
+        appendTo={triggerRef.current as any}
+        draggable={false}
+      >
+        {/* Gene ID autocomplete */}
+        {/* <div className="p-fluid mb-3">
+          <label htmlFor="geneSearchAuto" className="block mb-1">
+            Gene ID
+          </label>
+          <AutoComplete
+            inputId="geneSearchAuto"
+            value={query}
+            suggestions={suggestions}
+            completeMethod={completeGeneId}
+            onChange={e => setQuery(e.value)}
+            placeholder="Start typing…"
+            forceSelection={false}
+            className="w-full"
+          />
+        </div> */}
+
+        {/* Range selector */}
+        <div className="mb-5">
+          <label className="block mb-2 font-semibold">Position range (bp)</label>
+          <Slider min={1} value={range} step={1} max={98543444} onChange={e => {
+            console.log(e.value)
+            setRange(e.value as [number, number])}}    range className="w-full" />
+          <div className="flex justify-between mt-2">
+            <InputNumber
+              value={range[0]}
+              onValueChange={e => setRange([e.value ?? 0, range[0]])}
+              min={1}
+              step={1}
+              max={98543444}
+              mode="decimal"
+              useGrouping={false}
+              inputClassName="w-full"
+            />
+            <span className="px-2">to</span>
+            <InputNumber
+              value={range[1]}
+              step={1}
+              onValueChange={e => setRange([range[0], e.value ?? range[1]])}
+              min={1}
+            max={98543444}
+              mode="decimal"
+              useGrouping={false}
+              inputClassName="w-full"
             />
           </div>
+        </div>
 
-          {/* Checkbox group */}
-          <div className="mb-3">
-            <label className="block mb-2 font-semibold">Choose Impact</label>
-            <div style={{display: 'flex', gap: '8px'}}>
-            {impacts.map((level) => (
-              <div key={level} className="flex items-center gap-2 mb-2">
-                <Checkbox
+        {/* Impact checkboxes */}
+        <div className="mb-4">
+          <label className="block mb-2 font-semibold">Choose Impact</label>
+          <div className="flex gap-3">
+            {impacts.map(level => (
+              <div key={level} className="flex items-center gap-2">
+                <Dropdown
                   inputId={`impact-${level}`}
-                  checked={selectedImpacts.includes(level)}
-                  onChange={() => toggleImpact(level)}
+                  value={selectedImpacts}
+                  onChange={(e) => toggleImpact(e.value)}
+                  options={[ImpactLevel.HIGH, ImpactLevel.MODERATE, ImpactLevel.LOW]}
                 />
-                <label style={{marginLeft: '5px'}} htmlFor={`impact-${level}`}>{level}</label>
               </div>
             ))}
-            </div>
           </div>
+        </div>
 
-          {/* Search button with loader */}
-          <Button
-            label={loading ? "Searching…" : "Search for variants"}
-            icon={loading ? "pi pi-spin pi-spinner" : undefined}
-            loading={loading}
-            disabled={loading}
-            className="w-full"
-            onClick={handleSearch}
-          />
-        </Dialog>
-      </div>
-    );
+        {/* Search */}
+        <Button
+          label={loading ? 'Searching…' : 'Search for variants'}
+          icon={loading ? 'pi pi-spin pi-spinner' : undefined}
+          loading={loading}
+          disabled={loading}
+          onClick={() => handleSearch()}
+          className="w-full"
+        />
+      </Dialog>
+    </div>
+  )
 }
 
-export default function WrappedApp (props: any) {
-    return (
-        <PrimeReactProvider>
-            <GeneSearch {...props} />
-        </PrimeReactProvider>
-    );
+export default function WrappedApp(props: any) {
+  return (
+    <PrimeReactProvider>
+      <GeneSearch {...props} />
+    </PrimeReactProvider>
+  )
 }
 
-// Register as custom element
-// class GeneSearchWidget extends HTMLElement {
-//   connectedCallback() {
-//     const mountPoint = document.createElement('div');
-//     this.appendChild(mountPoint);
-//     createRoot(mountPoint).render(<WrappedApp />);
-//   }
-// }
-
-// customElements.define('gene-search', GeneSearchWidget);

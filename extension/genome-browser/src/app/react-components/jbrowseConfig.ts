@@ -23,9 +23,7 @@
       }
     }
   },
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
-  },
+
   };
 
   export default config;
