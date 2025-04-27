@@ -78,7 +78,6 @@ export class TreePlotComponent extends CanvasPlotElement {
                                            / this.plotCreator.zoomFactor;
         
         this.offsetCanvas = this.storedTreeView.offscreenCanvas.width;
-        console.log('this.offsetCanvas', this.offsetCanvas);
 
         // this.offsetCanvasChange.emit(this.offsetCanvas);
 

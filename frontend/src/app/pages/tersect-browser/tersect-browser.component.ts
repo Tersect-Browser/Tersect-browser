@@ -139,11 +139,9 @@ export class TersectBrowserComponent implements OnInit {
     ngOnInit() {
 
         this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
-            console.log('syncedScaleViewSub', scaleView);
             if (scaleView) {
                 // Use updated ScaleView here
                 this.syncedScaleView = this.scaleDrawService.getSyncedScaleView(scaleView);
-                console.log('syncedScaleView', this.syncedScaleView);
             }
         });
 
@@ -172,7 +170,6 @@ export class TersectBrowserComponent implements OnInit {
 
         this.offsetCanvasSub = this.plotState.offsetCanvas$.subscribe(value => {
             this.offsetCanvas = value;
-            console.log('tracking offset', this.offsetCanvas);
         })
 
 
