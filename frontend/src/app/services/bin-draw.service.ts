@@ -242,12 +242,10 @@ export class BinDrawService {
             this.refreshBin();
             return;
         }
-        searchedAccessions.forEach((highImpact) => {
-            console.log('in tersect', highImpact);
-            
+        searchedAccessions.variants.forEach((highImpact) => {
                 const binIndex = getBinIndexFromPosition(highImpact.pos.start, intervalStart, binsize)
 
-                this.highlightFeatureBins(searchedAccessions.map(each => each.accession), binIndex, this.bins)
+                this.highlightFeatureBins(searchedAccessions.totalAccessions, binIndex, this.bins)
         })
         // this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
 
@@ -286,13 +284,14 @@ export class BinDrawService {
         // TODO - find accession name index in binView.orderedAccessions
         let accessionIndices: Array<number> = [];
 
-        for (let n = 0; n < accessions.length; n++) {
-            binView.orderedAccessions.forEach((accession, index) => {
-                if (accession == accessions[n]) {
-                    accessionIndices.push(index)
+        accessions.forEach((eachSearchedAcc) => {
+            if(binView.orderedAccessions.includes(eachSearchedAcc)){
+                const targetIndex = binView.orderedAccessions.findIndex(each => each === eachSearchedAcc)
+                if(targetIndex){
+                    accessionIndices.push(targetIndex)
                 }
-            })
-        }
+            }
+        })
 
 
 

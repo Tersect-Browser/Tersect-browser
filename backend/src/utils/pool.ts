@@ -21,7 +21,19 @@ export class Pool {
   }
 }
 
-export function tersectForKey(key, tsiLocation) {
+export function collectSampleNames(
+  data: [string, string][]
+): string[] {
+  return data.reduce<string[]>((acc, [, names]) => {
+    // split on 1 + spaces and push into the accumulator
+    names.split(/\s+/).forEach(name => {
+      if (name) acc.push(name);   // guard against empty strings
+    });
+    return acc;
+  }, []);
+}
+
+export function tersectForKey(key, tsiLocation): Promise<string> {
   return new Promise(res => {
     const p = spawn(
       'tersect', ['samples', tsiLocation, '-c', key],
@@ -35,8 +47,6 @@ export function tersectForKey(key, tsiLocation) {
     p.on('close', () => {
        
       const accessions = out.trim().split('\n').slice(1).join(' ')
-      console.log(accessions);
-      
       //  console.log(list, first), 'l | f';
       res(accessions || 'NA');
     });

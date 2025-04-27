@@ -2,9 +2,9 @@ import {
     exec,
     spawn
 } from 'child_process';
-import * as readline  from 'readline';
-import { once }    from 'events';
-import { cpus }    from 'os';
+import * as readline from 'readline';
+import { once } from 'events';
+
 import {
     Request,
     Response,
@@ -52,16 +52,17 @@ import { ViewSettings } from '../models/viewsettings';
 import { partitionQuery } from '../utils/partitioning';
 import { formatRegion } from '../utils/utils';
 import { Pool, tersectForKey } from '../utils/pool';
+import { Readable } from 'stream';
 
 const util = require('util');
 
 const readdir = util.promisify(fs.readdir);
 const stat = util.promisify(fs.stat);
 const access = util.promisify(fs.access);
-const DATA_DIR = `${tbConfig.localDbPath}/gp_data_copy/trix_indices`; 
+const DATA_DIR = `${tbConfig.localDbPath}/gp_data_copy/trix_indices`;
 
 function isValidChrom(chr: string): boolean {
-  return /^SL2\.50ch(0[0-9]|1[0-2])$/.test(chr);
+    return /^SL2\.50ch(0[0-9]|1[0-2])$/.test(chr);
 }
 
 
@@ -103,14 +104,14 @@ export const router = Router();
 async function writeAccessions(accessions: string[]): Promise<string> {
     try {
         const outputFile = fileSync();
-    await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
-    return outputFile.name;
+        await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
+        return outputFile.name;
     } catch (error) {
         console.log('Error writing accessions to file');
         console.log(error);
-        
+
     }
-    
+
 }
 
 function execPromise(command: string, options = {}) {
@@ -141,277 +142,324 @@ router.use((req, res, next) => {
 
 router.use('/query/:datasetId', (req, res, next) => {
     Dataset.findOne({ _id: req.params.datasetId })
-           .exec((err, dataset: Dataset) => {
-        if (err) {
-            res.send(err);
-            return;
-        } else if (!dataset) {
-            res.status(404).send('Dataset not found');
-            return;
-        } else {
-            res.locals.dataset = dataset;
-            return next();
-        }
-    });
+        .exec((err, dataset: Dataset) => {
+            if (err) {
+                res.send(err);
+                return;
+            } else if (!dataset) {
+                res.status(404).send('Dataset not found');
+                return;
+            } else {
+                res.locals.dataset = dataset;
+                return next();
+            }
+        });
 })
 
 
 
 
-    router.use('/datafiles/:filename', async (req, res) => {
-        const localDbLocation = tbConfig.localDbPath;
-        const fileName = req.params.filename;
-        const searchRoot = path.join(localDbLocation, 'gp_data_copy');
-    
-        try {
+router.use('/datafiles/:filename', async (req, res) => {
+    const localDbLocation = tbConfig.localDbPath;
+    const fileName = req.params.filename;
+    const searchRoot = path.join(localDbLocation, 'gp_data_copy');
 
-            const foundFilePath = await findFileRecursive(searchRoot, fileName);
-    
-            if (!foundFilePath) {
-                return res.status(404).send('File not found');
-            }
-            res.type('application/octet-stream'); // Or whatever the actual file type is
+    try {
 
-            await access(foundFilePath, fs.constants.R_OK);
-   
-            res.sendFile(foundFilePath, (err) => {
-                if (err) {
-                    if (err.message === 'EACCES') {
-                        return res.status(403).send('Permission denied while sending file');
-                    } else {
-                        console.error('Error sending file:', err);
-                        res.status(500).send('Internal Server Error');
-                    }
-                }
-            });
-    
-        } catch (err) {
-            if (err.code === 'EACCES') {
-                return res.status(403).send('Permission denied while accessing file');
-            } else {
-                console.error('Unexpected error during file search:', err);
-                res.status(500).send('Internal Server Error');
-            }
+        const foundFilePath = await findFileRecursive(searchRoot, fileName);
+
+        if (!foundFilePath) {
+            return res.status(404).send('File not found');
         }
-    });
+        res.type('application/octet-stream'); // Or whatever the actual file type is
+
+        await access(foundFilePath, fs.constants.R_OK);
+
+        res.sendFile(foundFilePath, (err) => {
+            if (err) {
+                if (err.message === 'EACCES') {
+                    return res.status(403).send('Permission denied while sending file');
+                } else {
+                    console.error('Error sending file:', err);
+                    res.status(500).send('Internal Server Error');
+                }
+            }
+        });
+
+    } catch (err) {
+        if (err.code === 'EACCES') {
+            return res.status(403).send('Permission denied while accessing file');
+        } else {
+            console.error('Unexpected error during file search:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+});
 
 
 
 
 
 router.route('/query/:datasetId/samples')
-      .get((req, res) => {
-    const options = {
-        maxBuffer: 5 * 1024 * 1024 // 5 megabytes
-    };
-    const tsiLocation = res.locals.dataset.tsi_location;
-    const tersectCommand = `tersect samples -n ${tsiLocation}`;
-    exec(tersectCommand, options, (err, stdout, stderr) => {
-        if (err) {
-            res.json(err);
-        } else if (stderr) {
-            res.json(stderr);
-        } else {
-            // Strip the last, empty element
-            const samples = stdout.split('\n').slice(0, -1);
-            res.json(samples);
-        }
+    .get((req, res) => {
+        const options = {
+            maxBuffer: 5 * 1024 * 1024 // 5 megabytes
+        };
+        const tsiLocation = res.locals.dataset.tsi_location;
+        const tersectCommand = `tersect samples -n ${tsiLocation}`;
+        exec(tersectCommand, options, (err, stdout, stderr) => {
+            if (err) {
+                res.json(err);
+            } else if (stderr) {
+                res.json(stderr);
+            } else {
+                // Strip the last, empty element
+                const samples = stdout.split('\n').slice(0, -1);
+                res.json(samples);
+            }
+        });
     });
-});
 
+    function streamToString(s: Readable): Promise<string> {
+  return new Promise(r => {
+    let out = '';
+    s.on('data', c => {
+        console.log(c.toString());
+        return (out += c)
+    });
+    s.on('close', () => {
+        console.log(out, 'r as something');
+        
+        r(out)
+    });
+  });
+}
 
-router.get('/query/:datasetId/variants/:chrom', async (req, res, next) => {
-  try {
-    const chrom = req.params.chrom;
-    const start = Number(req.query.start);
-    const end   = Number(req.query.end);
-    const filter   = req.query?.filter ?? 'HIGH';
-    const tsiLocation = res.locals.dataset.tsi_location;
+      function collectSampleNames(
+  data: [string, string][]
+): string[] {
+  return data.reduce<string[]>((acc, [, names]) => {
+    // split on 1 + spaces and push into the accumulator
+    names.split(/\s+/).forEach(name => {
+      if (name) acc.push(name);   // guard against empty strings
+    });
+    return acc;
+  }, []);
+}
 
-    /* validation */
-    if (!isValidChrom(chrom))
-      return res.status(400).json({ error: 'invalid chromosome' });
+router.get(
+  '/query/:datasetId/variants/:chrom',
+  async (req, res, next) => {
+    try {
+      /* ───────── 0. Params & validation ───────── */
+      const chrom   = req.params.chrom;
+      const start   = Number(req.query.start);
+      const end     = Number(req.query.end);
+      const filter  = req.query?.filter ?? 'HIGH';
+      const tsiPath = res.locals.dataset.tsi_location;
 
-    if (!Number.isInteger(start) || !Number.isInteger(end) ||
-        start < 1 || end < start)
-      return res.status(400).json({ error: 'invalid start/end' });
-     
+      if (!isValidChrom(chrom))
+        return res.status(400).json({ error: 'invalid chromosome' });
+      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < start)
+        return res.status(400).json({ error: 'invalid start/end' });
+
+      const vcfPath = path.join(DATA_DIR, 'all_samples.vcf.gz');
+      if (!fs.existsSync(vcfPath))
+        return res.status(404).json({ error: 'VCF not found' });
+
+      /* ───────── 1. Run bcftools ───────── */
+      const region   = `${chrom}:${start}-${end}`;
+      const bcftools = spawn('bcftools', [
+        'query',
+        '-i', `INFO/EFF~"${filter}"`,
+        '-r', region,
+        '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
+        vcfPath,
+      ]);
+      const closePromise = once(bcftools, 'close'); 
+      bcftools.stderr.on('data', b =>
+        console.error('[bcftools]', b.toString().trim())
+      );
+
+      /* ───────── 2. Collect output ───────── */
+      const lines: { key: string; eff: string }[] = [];
+      const keys  = new Set<string>();
+      const rl = readline.createInterface({ input: bcftools.stdout });
+
+      for await (const line of rl) {
+        if (!line) continue;
+        const tab = line.indexOf('\t');
+        const key = line.slice(0, tab);          // CHROM:POS:REF:ALT
+        const eff = line.slice(tab + 1);         // INFO/EFF
+        lines.push({ key, eff });
+        keys.add(key);
+      }
+      rl.close();
+
+      /* ───────── 3. Map variant → tsiKey ───────── */
+      const tsiResults = (await Promise.all(
+        Array.from(keys).map(async k => [k, await tersectForKey(k, tsiPath)])
+      )).filter(([keys, val]) => val !== 'NA');   // [key, 'NA' | 'x,y,z']
+
+      const allSampleNames = collectSampleNames(tsiResults as unknown as [string, string][])
+
       
+      const accMap = new Map<string, string>(
+        tsiResults as unknown as [string, string][]
+        );  
 
-    const vcfPath = path.join(DATA_DIR, 'all_samples.vcf.gz');
-   
-    if (!fs.existsSync(vcfPath))
-      return res.status(404).json({ error: 'VCF not found' });
+      const variants = lines.map(({ key, eff }) => {
+        const [chr, pos, ref, alt] = key.split(':');
 
-    const region = `${chrom}:${start}-${end}`;
-    console.log('region and filter', region, filter);
-    
+        // `tersectForKey` gives a single comma-separated string (or undefined)
+        const accStr = accMap.get(key) ?? '';
+        const accessions = accStr
+            .split(/[, \t]+/)       // split on commas *or* stray whitespace
+            .filter(Boolean);       // drop empties
 
-    /* 1. bcftools query (still one stream) */
-    const bcftools = spawn('bcftools', [
-      'query',
-      '-i', `INFO/EFF~"${filter}"`,
-      '-r', region,
-      '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
-      vcfPath
-    ]);
-    bcftools.stderr.on('data', c => console.error('[bcftools]', c.toString()));
+        return {
+            chr,
+            pos: { start: Number(pos) },
+            ref,
+            alt,
+            eff,                    // keep INFO/EFF if you still need it
+            accessions,             // ← the per-variant list you wanted
+        };
+        });
 
-    const rlBcf = readline.createInterface({ input: bcftools.stdout });
-
-    res.type('text/plain');
-
-    const MAX_PARALLEL = Math.max(1, cpus().length - 1);   // leave 1 core free
-    const pool         = new Pool(MAX_PARALLEL);
-
-    const pending = [];        // keep promises so we can flush in order
-    let index = 0;
-
-    for await (const line of rlBcf) {          // rlBcf = readline over bcftools
-
-    if (!line) continue;
-
-    const tab = line.indexOf('\t');
-    const key  = line.slice(0, tab);
-    const eff  = line.slice(tab + 1);
-
-    pending.push(
-        pool.run(() => tersectForKey(key, tsiLocation))
-            .then(acc => `${key}\t${eff}\t${acc}`)
-    );
-    index++;
+        return res.status(200).json({
+        region,
+        filter,
+        count: variants.length,
+        variants,
+        totalAccessions:  Array.from(new Set(allSampleNames))         // each item already contains its accession list
+        });
+    } catch (err) {
+      console.error(err);
+      next(err);
     }
+  },
+);
 
-    /* wait for *all* workers, preserving order ------------------------- */
-    for (const p of pending) res.write(await p + '\n');
-    res.end();
 
-    const [code] = await once(bcftools, 'close');
-    if (code !== 0) throw new Error('bcftools failed');
-
-    res.end();
-  } catch (err) {
-    next(err);
-  }
-});
 router.route('/query/:datasetId/chromosomes')
-      .get((req, res) => {
-    ChromosomeIndex.find({
-        reference: res.locals.dataset.reference
-    }, {'name': 1, 'size': 1, '_id': 0}).exec((err, chroms) => {
-        if (err) {
-            res.send(err);
-        } else if (!chroms) {
-            res.status(404).send('Chromosomes not found');
-        } else {
-            res.json(chroms);
-        }
+    .get((req, res) => {
+        ChromosomeIndex.find({
+            reference: res.locals.dataset.reference
+        }, { 'name': 1, 'size': 1, '_id': 0 }).exec((err, chroms) => {
+            if (err) {
+                res.send(err);
+            } else if (!chroms) {
+                res.status(404).send('Chromosomes not found');
+            } else {
+                res.json(chroms);
+            }
+        });
     });
-});
 
 router.route('/query/:datasetId/gaps/:chromosome')
-      .get((req, res) => {
-    ChromosomeIndex.findOne({
-        reference: res.locals.dataset.reference,
-        name: req.params.chromosome
-    }, 'gaps').exec((err, gaps) => {
-        if (err) {
-            res.send(err);
-        } else if (!gaps) {
-            res.status(404).send('Chromosome not found');
-        } else {
-            res.json(gaps['gaps']);
-        }
+    .get((req, res) => {
+        ChromosomeIndex.findOne({
+            reference: res.locals.dataset.reference,
+            name: req.params.chromosome
+        }, 'gaps').exec((err, gaps) => {
+            if (err) {
+                res.send(err);
+            } else if (!gaps) {
+                res.status(404).send('Chromosome not found');
+            } else {
+                res.json(gaps['gaps']);
+            }
+        });
     });
-});
 
 router.route('/query/:datasetId/dist')
-      .post((req, res) => {
+    .post((req, res) => {
         try {
-        
-    const options = {
-        maxBuffer: 200 * 1024 * 1024 // 200 megabytes
-    };
 
-    const tsiLocation = res.locals.dataset.tsi_location;
-    const distBinQuery: DistanceBinQuery = req.body;
+            const options = {
+                maxBuffer: 200 * 1024 * 1024 // 200 megabytes
+            };
 
-    const region = formatRegion(distBinQuery.chromosome_name,
-                                distBinQuery.interval[0],
-                                distBinQuery.interval[1]);
+            const tsiLocation = res.locals.dataset.tsi_location;
+            const distBinQuery: DistanceBinQuery = req.body;
 
-    const reference = distBinQuery.reference;
-    const binsize = distBinQuery.binsize;
-    
-    writeAccessions(distBinQuery.accessions).then(accFile => {
-        const tersectCommand = `tersect dist -j ${tsiLocation} \
+            const region = formatRegion(distBinQuery.chromosome_name,
+                distBinQuery.interval[0],
+                distBinQuery.interval[1]);
+
+            const reference = distBinQuery.reference;
+            const binsize = distBinQuery.binsize;
+
+            writeAccessions(distBinQuery.accessions).then(accFile => {
+                const tersectCommand = `tersect dist -j ${tsiLocation} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
 
-        const output: DistanceBins = {
-            query: distBinQuery,
-            bins: {}
-        };
-        try {
-            exec(tersectCommand, options, (err, stdout, stderr) => {
-                if (err) {
-                    res.json(err);
-                } else if (stderr) {
-                    res.json(stderr);
-                } else {
-                    const tersectOutput = JSON.parse(stdout);
-                    const accessions = tersectOutput['columns'];
-                    accessions.forEach((accessionName: string) => {
-                        output.bins[accessionName] = [];
+                const output: DistanceBins = {
+                    query: distBinQuery,
+                    bins: {}
+                };
+                try {
+                    exec(tersectCommand, options, (err, stdout, stderr) => {
+                        if (err) {
+                            res.json(err);
+                        } else if (stderr) {
+                            res.json(stderr);
+                        } else {
+                            const tersectOutput = JSON.parse(stdout);
+                            const accessions = tersectOutput['columns'];
+                            accessions.forEach((accessionName: string) => {
+                                output.bins[accessionName] = [];
+                            });
+                            tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
+                                binMatrix[0].forEach((dist: number, i: number) => {
+                                    output.bins[accessions[i]].push(dist);
+                                });
+                            });
+                            res.json(output);
+                        }
                     });
-                    tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
-                        binMatrix[0].forEach((dist: number, i: number) => {
-                            output.bins[accessions[i]].push(dist);
-                        });
-                    });
-                    res.json(output);
+                } catch (error) {
+
                 }
+
             });
         } catch (error) {
-            
+            console.log(error);
+            res.status(500).send('Error processing request');
+
         }
-       
     });
-} catch (error) {
-        console.log(error);
-        res.status(500).send('Error processing request');
-              
-}
-});
 
 router.route('/datasets')
-      .get((req, res) => {
-    Dataset.find().exec((err, r: Dataset[]) => {
-        if (err || !r) {
-            res.json(undefined);
-        } else {
-            const output: DatasetPublic[] = r.map(dataset => {
-                return {
-                    dataset_id: dataset._id,
-                    view_id: dataset.view_id,
-                    reference: dataset.reference
-                };
-            });
-            res.json(output);
-        }
+    .get((req, res) => {
+        Dataset.find().exec((err, r: Dataset[]) => {
+            if (err || !r) {
+                res.json(undefined);
+            } else {
+                const output: DatasetPublic[] = r.map(dataset => {
+                    return {
+                        dataset_id: dataset._id,
+                        view_id: dataset.view_id,
+                        reference: dataset.reference
+                    };
+                });
+                res.json(output);
+            }
+        });
     });
-});
 
 router.route('/views/share/:id')
-      .get((req, res) => {
-    ViewSettings.findOne({ '_id': req.params.id })
-                .exec((err, r) => {
-        if (err || !r) {
-            res.json(undefined);
-        } else {
-            res.json(r['settings']);
-        }
+    .get((req, res) => {
+        ViewSettings.findOne({ '_id': req.params.id })
+            .exec((err, r) => {
+                if (err || !r) {
+                    res.json(undefined);
+                } else {
+                    res.json(r['settings']);
+                }
+            });
     });
-});
 
 const DEFAULT_VIEW_SALT = 'tersectsalt';
 const MAX_VIEW_ID = 2000000000;
@@ -445,10 +493,10 @@ function exportView(req: Request, res: Response) {
 }
 
 router.route('/views/export')
-      .post(exportView);
+    .post(exportView);
 
 router.route('/query/:datasetId/tree')
-      .post((req, res) => {
+    .post((req, res) => {
         try {
             const tsiLocation = res.locals.dataset.tsi_location;
             const treeQuery: TreeQuery = req.body;
@@ -459,37 +507,37 @@ router.route('/query/:datasetId/tree')
                 'query.accessions': treeQuery.accessions
             };
             NewickTree.findOne(dbQuery)
-                      .exec((err, result: NewickTree) => {
-                if (err) {
-                    return res.status(500).send('Tree creation failed');
-                } else if (!result) {
-                    // Generating new tree
-                    const phyloTree = new NewickTree({
-                        datasetId: req.params.datasetId,
-                        'query.chromosomeName': treeQuery.chromosomeName,
-                        'query.interval': treeQuery.interval,
-                        'query.accessions': treeQuery.accessions,
-                        status: 'Collating data...'
-                    }).save(saveErr => {
-                        if (saveErr) {
-                            return res.status(500).send('Tree creation failed');
-                        }
-                        generateTree(tsiLocation, treeQuery, dbQuery);
-                    });
-                    res.json(phyloTree);
-                } else {
-                    // Retrieved previously generated tree
-                    res.json(result);
-                }
-            });
+                .exec((err, result: NewickTree) => {
+                    if (err) {
+                        return res.status(500).send('Tree creation failed');
+                    } else if (!result) {
+                        // Generating new tree
+                        const phyloTree = new NewickTree({
+                            datasetId: req.params.datasetId,
+                            'query.chromosomeName': treeQuery.chromosomeName,
+                            'query.interval': treeQuery.interval,
+                            'query.accessions': treeQuery.accessions,
+                            status: 'Collating data...'
+                        }).save(saveErr => {
+                            if (saveErr) {
+                                return res.status(500).send('Tree creation failed');
+                            }
+                            generateTree(tsiLocation, treeQuery, dbQuery);
+                        });
+                        res.json(phyloTree);
+                    } else {
+                        // Retrieved previously generated tree
+                        res.json(result);
+                    }
+                });
         } catch (error) {
             console.log('Error creating tree');
             console.log(error);
             res.status(500).send('Tree creation failed');
         }
-        
 
-});
+
+    });
 
 function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
     const rapidnj = spawn('rapidnj', ['-a', 'jc', '-i', 'pd', phylipFile]);
@@ -520,19 +568,19 @@ function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
 
     merge(progress$, result$).pipe(
         concatMap(update => NewickTree.updateOne(dbQuery, update))
-    ).subscribe(() => {});
+    ).subscribe(() => { });
 }
 
 
 
 function generateTree(tsiLocation: string, treeQuery: TreeQuery,
-                      dbQuery: TreeDatabaseQuery) {
+    dbQuery: TreeDatabaseQuery) {
     const partitions = partitionQuery(tsiLocation, tbConfig.indexPartitions,
-                                      treeQuery);
+        treeQuery);
 
     const dbFiles = partitions.indexed.map(async interval => {
         const region = formatRegion(treeQuery.chromosomeName, interval.start,
-                                    interval.end);
+            interval.end);
         const result = await DBMatrix.findOne(
             { dataset_id: dbQuery.datasetId, region: region },
             { _id: 0, matrix_file: 1 }
@@ -543,7 +591,7 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
     const tersectOutputFiles = partitions.nonindexed.map(async interval => {
         const outputFile = fileSync();
         const region = formatRegion(treeQuery.chromosomeName,
-                                    interval.start, interval.end);
+            interval.start, interval.end);
         const command = `tersect dist ${tsiLocation} ${region} > ${outputFile.name}`;
         const result = await execPromise(command);
         // TODO: error handling on tersect result / promise rejection
@@ -578,9 +626,9 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
 
     Promise.all(inputFiles).then(([accFile, ...matrixFiles]) => {
         const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
-                                    .join(' ');
+            .join(' ');
         const negative = matrixFiles.slice(positiveMatrixFiles.length,
-                                           matrixFiles.length).join(' ');
+            matrixFiles.length).join(' ');
         const script = path.join(__dirname, '../scripts/merge_phylip.py');
         let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile} --interval-size ${intervalSize}`;
         if (negative.length) {
