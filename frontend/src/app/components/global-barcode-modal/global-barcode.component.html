@@ -1,15 +1,18 @@
 
 
 <p-dialog
-  *ngIf="isVisible"
+ 
   [(visible)]="isVisible"  dismissableMask="true"
   (onHide)="resetModal()"
   [resizable]="false" modal="true" appendTo="body"
   [style]="{ width: '40vw'}"
-  [position]="center"
+  [position]="'center'"
   [positionTop]="30"
   [header]="modalTitle">
   
+  <ng-container  *ngIf="isVisible">
+
+
   <div class="modal-title">Barcode Generator:</div>
   <div class="modal-subtitle">Generate accession-specific barcodes to identify specified accession from all other accessions within the bin interval.
     Customisable parameters include barcode length, and total number of accession-specific variants within the barcode (optional parameter).
@@ -34,7 +37,7 @@
       <p-progressSpinner *ngIf="isLoading" styleClass="custom-spinner" [diameter]="10"></p-progressSpinner>
     </button>
   </div>
-  
+
   <a
   *ngIf="downloadUrl"
   [href]="downloadUrl"
@@ -43,4 +46,6 @@
   >
     Download
   </a>
+
+</ng-container>
 </p-dialog>
