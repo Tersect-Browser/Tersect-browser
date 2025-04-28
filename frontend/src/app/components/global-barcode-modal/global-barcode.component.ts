@@ -54,6 +54,7 @@ export class GlobalBarcodeComponent implements OnInit {
   //  <a href="link.href" download="link.download">Download</a>
 
   resetModal(): void {
+    console.log('reset modal called')
     this.barcodeSize = 150;
     this.maxVariants = null;
     this.downloadUrl = null;
