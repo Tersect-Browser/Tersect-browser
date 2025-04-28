@@ -1,10 +1,7 @@
 import TrixTextSearchAdapter from '@gmod/trix';
 import { fromUrl, open } from 'generic-filehandle2'
-import { getConf } from '@jbrowse/core/configuration'
-import { environment } from '../../environments/environment';
+import tbconfig from '../../../../../tbconfig.json'
 
-
-import { Feature } from '@jbrowse/core/util'
 
 
 export enum ImpactLevel {
@@ -82,8 +79,8 @@ export async function searchGene(term: string, session: any, filter: ImpactLevel
 
 export async function getSuggestions(term: string, chrom: string = 'SL2.50ch01') {
 
-  const ixFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
-  const ixxFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
+  const ixFile = fromUrl(`${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
+  const ixxFile = fromUrl(`${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
 
   const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 100)
   const results = await adapter.search(term)
@@ -123,7 +120,7 @@ async function searchInterval(interval: [number, number], chrom: string, dataset
   const results: any = []
 
   try {
-    const urlToUse = `http://127.0.0.1:4300/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&format=json`
+    const urlToUse = `${tbconfig.serverPort}/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&format=json`
     const res = await fetch(urlToUse);      // stream begins     // resolves only after stream closes
     const response = res.json()
     return response;

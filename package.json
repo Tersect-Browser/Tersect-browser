@@ -39,7 +39,7 @@
         "rimraf": "^3.0.0",
         "rollup-plugin-postcss": "^4.0.2",
         "turbo": "^2.4.4",
-        "yargs": "^14.2.0"
+        "yargs": "^14.2.3"
     },
     "packageManager": "npm@8.5.0",
     "workspace": "^1.0.0"

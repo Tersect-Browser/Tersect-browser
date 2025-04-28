@@ -6,6 +6,8 @@ import 'primereact/resources/primereact.min.css' // core css
 import './geneSearchStyles.css'
 import 'primeflex/primeflex.css'
 
+
+
 import { PrimeReactProvider } from 'primereact/api'
 import {
   createViewState,
