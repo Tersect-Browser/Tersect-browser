@@ -1,6 +1,7 @@
 import argparse
 from Bio import SeqIO
 import datetime
+import os
 
 
 # parse tersect output to get dict of variants (original base, alternate base) based on seq position
@@ -116,6 +117,18 @@ def highlight_positions(seq, positions):
             highlighted += base
     return highlighted
 
+# highlight variant position in barcode with square brackets and ref/alt
+def highlight_ref_alt_positions(seq, positions, barcode_start, variants):
+    highlighted = ''
+    for i, base in enumerate(seq):
+        abs_pos = barcode_start + i
+        if i in positions and abs_pos in variants:
+            ref_base, alt_base = variants[abs_pos]
+            highlighted += "[{}/{}]".format(ref_base, alt_base)
+        else:
+            highlighted += base
+    return highlighted
+
 
 # calculate gc content per barcode
 def calculate_gc_content(barcode):
@@ -136,7 +149,10 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=int, required=True) ### ADD CHECK
     parser.add_argument("--unique_variants", required=True)
     parser.add_argument("--union_variants", required=True)
+    parser.add_argument("--max_variants", type=int, required=False)
     args = parser.parse_args()
+
+    print('Python script running')
 
     # Check if user-inputted barcode size is less than the interval
     interval = args.end - args.start
@@ -160,46 +176,112 @@ if __name__ == "__main__":
     # Find truly unique barcode windows
     barcodes = find_barcode_windows(unique_seq, ref_window, args.start, args.size)
 
+    print('barcodes generated - now printing to file')
+
     # # find system date and time
     ct = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     # # create file to hold output results
-    filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.txt'
-    with open(filename, "w") as f:
-    # f = open("barcode_output.tsv", "w")
+    try:
+        filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
+        print('created file name', filename)
+        outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
+        print('created output foler', outputFolder)
+        fullPath = os.path.join(outputFolder, filename)
+        print('created fullPath', fullPath)
 
-        # # write system date and time  to the file
-        f.write(ct + 'TersectBrowser+, Cranfield University (c)' + '\n')
+        os.makedirs(outputFolder, exist_ok=True)
 
-        # # Output the parameters to the file
-        f.write('\n')
-        f.write('Accession\tChromosome\tInterval Start\tInterval End\tBarcode Size\n')
-        f.write('\t'.join([str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
-        f.write('\n')
-        
-        # calculate variant number, repeat content,  and gc content in barcodes and save to output file
-        f.write("Sequence\tBarcode Start\tBarcode End\tVariant Count\tVariant Position\tRepeats\tRepeat Multiplier\tRepeat Start-End\tGC Content\n")
-        for s,e,seq in barcodes:
-            # calculate variant number stats
-            var = count_variant_number(s, e, new_unique_vars)
+    except IOError as e:
+        print(f"Error with file I/O: {e}")
 
-            # highlight variant within barcode
-            highlighted_barcode = highlight_positions(seq, var[1])
+    
+    try:
+        with open(fullPath, "w", encoding="utf-8") as f:
+        # f = open("barcode_output.tsv", "w")
 
-            # print barcode stats
-            f.write('\t'.join([str(highlighted_barcode), str(s), str(e)]) + '\t')
+            # # write system date and time  to the file
+            f.write('##' +ct + ' TersectBrowser+, Cranfield University (c)' + '\n')
 
-            # print variant number stats
-            f.write(str(var[0]) + '\t')
-            f.write(str(var[1]) + '\t')
+            # # Output the parameters to the file
+            f.write('##\n')
+            f.write('##Accession\tChromosome\tInterval_Start\tInterval_End\tBarcodeSize\n')
+            f.write('\t'.join(['##' + str(args.accession), str(args.chrom), str(args.start), str(args.end), str(args.size)])+'\n')
+            f.write('##\n')
+            f.write('##Sequence="Full-length barcode sequence. SNVs are highlighted in the format: [original base/alternate base]."\n')
+            f.write('##Chromosome="Chromosomal position of the barcode."\n')
+            f.write('##Barcode_Start="Relative start position of the barcode within the chromosome."\n')
+            f.write('##Barcode_End="Relative end position of the barcode within the chromosome."\n')
+            f.write('##Length="Barcode length."') 
+            f.write('##Variant_Count="Total number of accession-specific SNVs within the barcode sequence."\n')
+            f.write('##Variant_Position="Absolute positions of accession-specific SNVs within the barcode sequence."\n')
+            f.write('##Repeat_Sequence="Regions where a dinucleotide (2-base pair) sequence repeats consecutively three or more times."\n')
+            f.write('##Repeat_Multiplier="Number of consecutive repeats of a dinucleotide sequence."\n')
+            f.write('##Repeat_Start-End="Absolute start and end positions of the repeat region within the barcode."\n')
+            f.write('##GC_Content="Percentage GC in the barcode, rounded to six decimal places."\n')
+            f.write('##\n')
+            
+            # calculate variant number, repeat content,  and gc content in barcodes and save to output file
+            f.write("#Sequence\tChromosome\tBarcode_Start\tBarcode_End\tLength\tVariant_Count\tVariant_Position\tRepeat_Sequence\tRepeat_Multiplier\tRepeat_Start-End\tGC_Content\n")
+            for s,e,seq in barcodes:
+                # calculate variant number stats
+                var = count_variant_number(s, e, new_unique_vars)
 
-            # print repeat region stats
-            count = find_dinucleotide_repeats_custom(seq)
-            f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
+                if args.max_variants is None or var[0] <= args.max_variants:
+                    # highlight variant within barcode
+                    highlighted_barcode = highlight_ref_alt_positions(seq, var[1], s, new_unique_vars)
+                    # calculate repetitive regions
+                    count = find_dinucleotide_repeats_custom(seq)
+                    # calculate gc content
+                    gc = calculate_gc_content(seq)
+                    # print stats to file
+                    f.write('\t'.join([
+                        str(highlighted_barcode), 
+                        str(args.chrom), 
+                        str(s), 
+                        str(e),
+                        str(args.size),
+                        str(var[0]),
+                        str(var[1]),
+                        str(count[0]), 
+                        str(count[1]), 
+                        str(count[2]),
+                        str(gc)
+                    ]) + '\n')
 
-            # print gc content
-            gc = calculate_gc_content(seq)
-            f.write(str(gc) + '\n')
+                    # # highlight variant within barcode
+                    # highlighted_barcode = highlight_ref_alt_positions(seq, var[1], s, new_unique_vars)
+
+                    # # print barcode stats
+                    # f.write('\t'.join([str(highlighted_barcode), str(args.chrom), str(s), str(e)]) + '\t')
+
+                    # # print variant number stats
+                    # f.write(str(var[0]) + '\t')
+                    # f.write(str(var[1]) + '\t')
+
+                    # # print repeat region stats
+                    # count = find_dinucleotide_repeats_custom(seq)
+                    # f.write('\t'.join([str(count[0]), str(count[1]), str(count[2])])+ '\t')
+
+                    # # print gc content
+                    # gc = calculate_gc_content(seq)
+                    # f.write(str(gc) + '\n')
+
+                # f.write('\t'.join([
+                #     str(highlighted_barcode), 
+                #     str(args.chrom), 
+                #     str(s), 
+                #     str(e),
+                #     var[0],
+                #     var[1],
+                #     str(count[0]), 
+                #     str(count[1]), 
+                #     str(count[2]),
+                #     str(gc)
+                # ]))
+
+    except Exception as e:
+        print(f"Error with file I/O when writing to file: {e}")
     
 
 

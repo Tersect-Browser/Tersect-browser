@@ -3,6 +3,7 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import {
     IntroPageModule
@@ -23,7 +24,9 @@ import {
 
 import { APP_CONFIG, TERSECT_BROWSER_CONFIG } from './app.config';
 import { GlobalModalComponent } from './components/global-jbrowse-modal/global-modal.component';
+import { GlobalBarcodeComponent } from './components/global-barcode-modal/global-barcode.component';
 import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: TersectBrowserComponent },
@@ -35,6 +38,7 @@ const appRoutes: Routes = [
     declarations: [
         AppComponent,
         GlobalModalComponent,
+        GlobalBarcodeComponent,
     ],
     imports: [
         BrowserAnimationsModule,
@@ -43,7 +47,9 @@ const appRoutes: Routes = [
         IntroPageModule,
         TersectBrowserModule,
         DialogModule,
-        RouterModule.forRoot(appRoutes)
+        RouterModule.forRoot(appRoutes),
+        FormsModule,
+        ProgressSpinnerModule
     ],
     providers: [
         HttpClient,

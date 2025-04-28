@@ -143,6 +143,9 @@ Once downloaded, you should be able to deploy Tersect Browser and view these tra
 
 This should deploy the Tersect Browser and the Genome Browser component, which can be accessed by clicking on the binoculars button. Open the track selector of the Genome Browser, and select the reference genome and the accession that you downloaded the files for (in this case S.lyc LA2838A).
 
+#### Clear angular cache
+In the event that an error message stating an .angular/cache/ file does not exist, this error can be resolved by navigating to `{path-to}/Tersect-browser/extension/genome-browser/.angular/` and running `ng cache clean` to clean the cache
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://127.0.0.1:4200/`. The app will automatically reload if you change any of the source files.
