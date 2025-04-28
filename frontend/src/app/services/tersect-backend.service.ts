@@ -132,4 +132,15 @@ export class TersectBackendService {
         const query = `${this.apiUrl}/views/export`;
         return this.http.post<string>(query, settings, httpOptions);
     }
+
+    generateBarcodes(accessionName: string, chrom: string, start: number, end: number, size: number, maxVar: number | null): Observable<{ downloadableURL: string }> {
+        const payload = { accessionName, chrom, start, end, size, maxVar };
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      
+        return this.http.post<{ downloadableURL: string }>(
+            `${this.apiUrl}/generate-barcodes`, 
+            payload, 
+            { headers, responseType: 'json' }
+        );
+      }
 }
