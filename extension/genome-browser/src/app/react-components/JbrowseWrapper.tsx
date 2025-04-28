@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   createViewState,
   JBrowseLinearGenomeView,
@@ -8,8 +8,6 @@ import assembly from './assembly';
 import tracks from './tracks';
 import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
-import MyNoHScrollPlugin from './BlockHorizontalScrollPlugin';
-import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 
 
@@ -51,7 +49,6 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       
   
       configuration: config,
-      plugins: [LinearGenomeViewPlugin, MyNoHScrollPlugin]
     })
   
   

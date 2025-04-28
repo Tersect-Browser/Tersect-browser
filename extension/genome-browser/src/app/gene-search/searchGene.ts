@@ -79,8 +79,8 @@ export async function searchGene(term: string, session: any, filter: ImpactLevel
 
 export async function getSuggestions(term: string, chrom: string = 'SL2.50ch01') {
 
-  const ixFile = fromUrl(`localhost:${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
-  const ixxFile = fromUrl(`localhost:${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
+  const ixFile = fromUrl(`${tbconfig.frontendHost}:${tbconfig.frontendPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
+  const ixxFile = fromUrl(`${tbconfig.frontendHost}:${tbconfig.frontendPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
 
   const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 100)
   const results = await adapter.search(term)
@@ -120,7 +120,7 @@ async function searchInterval(interval: [number, number], chrom: string, dataset
   const results: any = []
 
   try {
-    const urlToUse = `${tbconfig.serverPort}/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&format=json`
+    const urlToUse = `${tbconfig.frontendHost}:${tbconfig.frontendPort}/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&format=json`
     const res = await fetch(urlToUse);      // stream begins     // resolves only after stream closes
     const response = res.json()
     return response;
