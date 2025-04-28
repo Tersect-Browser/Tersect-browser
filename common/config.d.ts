@@ -5,4 +5,7 @@ export interface TersectBrowserConfig {
     dbName: string;
     localDbPath: string;
     indexPartitions: number[];
+    frontendPort : string;
+    frontendHost: string;
+    bcftoolsLocation: string;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@tersectbrowser/genome-browser",
-  "version": "1.0.1",
+  "version": "1.0.2",
    "main": "genome-browser.min.js",
   "unpkg": "genome-browser.min.js",
   "jsdelivr": "genome-browser.min.js",

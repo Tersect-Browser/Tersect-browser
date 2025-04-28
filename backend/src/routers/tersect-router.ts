@@ -258,6 +258,7 @@ router.get(
       const end     = Number(req.query.end);
       const filter  = req.query?.filter ?? 'HIGH';
       const tsiPath = res.locals.dataset.tsi_location;
+      const bcfToolsCommand = tbConfig.bcftoolsLocation
 
       if (!isValidChrom(chrom))
         return res.status(400).json({ error: 'invalid chromosome' });
@@ -268,9 +269,9 @@ router.get(
       if (!fs.existsSync(vcfPath))
         return res.status(404).json({ error: 'VCF not found' });
 
-      /* ───────── 1. Run bcftools ───────── */
+
       const region   = `${chrom}:${start}-${end}`;
-      const bcftools = spawn('bcftools', [
+      const bcftools = spawn(`${bcfToolsCommand}`, [
         'query',
         '-i', `INFO/EFF~"${filter}"`,
         '-r', region,
