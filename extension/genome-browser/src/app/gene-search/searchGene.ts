@@ -79,8 +79,8 @@ export async function searchGene(term: string, session: any, filter: ImpactLevel
 
 export async function getSuggestions(term: string, chrom: string = 'SL2.50ch01') {
 
-  const ixFile = fromUrl(`${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
-  const ixxFile = fromUrl(`${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
+  const ixFile = fromUrl(`localhost:${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
+  const ixxFile = fromUrl(`localhost:${tbconfig.serverPort}/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
 
   const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 100)
   const results = await adapter.search(term)
