@@ -69,6 +69,7 @@ export class PlotClickMenuComponent {
         this.el.nativeElement.style.visibility = 'visible';
     }
 
+
     private getAccessionItem(targetAccession: PlotAccession): MenuItem {
         return {
             label: targetAccession.accessionLabel,
@@ -145,6 +146,27 @@ export class PlotClickMenuComponent {
                         this.setIntervalEnd.emit(bin.endPosition);
                         this.hide();
                     }
+                },
+                {
+                    label: 'Create barcode',
+                    icon: 'fa fa-barcode',
+                    command: () => {
+                        this.modalService.openBarcodeModal(bin.accessionLabel, 
+                            this.plotStateService.chromosome.name, 
+                            bin.startPosition, 
+                            bin.endPosition
+                        );
+
+                        
+                        console.log('barcode service opened')
+                        console.log('Accession:', bin.accessionLabel)
+                        console.log('chrom', this.plotStateService.chromosome.name)
+                        console.log('start', bin.startPosition)
+                        console.log('end', bin.endPosition)
+
+                        this.hide();
+                    }
+
                 }
             ]
         };
