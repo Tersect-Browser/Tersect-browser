@@ -1,6 +1,7 @@
 import {
     exec,
-    spawn
+    spawn,
+    execFile
 } from 'child_process';
 import * as readline from 'readline';
 import { once } from 'events';
@@ -553,6 +554,50 @@ router.route('/query/:datasetId/tree')
 
 
     });
+
+router.route('/generate-barcodes').post((req, res) => {
+    try{
+        console.log('Barcode scripts added')
+    const { accessionName, chrom, start, end, size, maxVar } = req.body;
+
+    // define path to tsi and fasta
+    const tsi_file = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
+    const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
+
+    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsi_file];
+
+    const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
+
+    execFile(scriptPath, args, (error, stdout, stderr) => {
+        if (error) {
+          console.error('Shell script error:', error);
+          return res.status(500).send('Error running barcode script!');
+        }
+    
+        const outputFile = stdout.trim();
+        const filename = path.basename(outputFile); // just the filename
+
+        console.log('outputpath', outputFile);
+
+
+        
+        // res.download(outputFile, filename); // send file to client
+        // res.send - return json wirth downloadable url --> should be in server
+        //res.status.send? --> need to put status code
+
+        const downloadableURL = `http://127.0.0.1:4300/TersectBrowserGP/datafiles/barcodes/${filename}`
+        // const downloadableURL = `http://127.0.0.1:4300/TersectBrowserGP/download-barcode/${filename}`
+
+        res.json({downloadableURL})
+        
+      });
+    } catch (error) {
+        res.status(500).json(error)
+    }
+    
+})
+
+
 
 function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
     const rapidnj = spawn('rapidnj', ['-a', 'jc', '-i', 'pd', phylipFile]);
