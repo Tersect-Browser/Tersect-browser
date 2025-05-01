@@ -264,7 +264,6 @@ router.get(
 
        const withGene = (gene: string, filter: string) => {
           const expression = `INFO/EFF~"${gene}" && INFO/EFF~"${filter}"`;
-        console.log('Running bcftools with expression:', expression);
         return spawn('bcftools', [
             'query',
             '-i', expression,
@@ -283,8 +282,6 @@ router.get(
       ]);
       }
       const bcftools = gene ? withGene(gene, filter): withoutGene(filter);
-      
-      console.log('returned result', bcftools);
       
   
       bcftools.stderr.on('data', b =>
@@ -555,16 +552,17 @@ router.route('/query/:datasetId/tree')
 
     });
 
-router.route('/generate-barcodes').post((req, res) => {
+router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     try{
         console.log('Barcode scripts added')
     const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
-    const tsi_file = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
-    const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
+    const tsiLocation = "/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi";
+    const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/SL2.50.fa`;
 
-    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsi_file];
+
+    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation];
 
     const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
 
@@ -592,6 +590,7 @@ router.route('/generate-barcodes').post((req, res) => {
         
       });
     } catch (error) {
+        console.log(error)
         res.status(500).json(error)
     }
     

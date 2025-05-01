@@ -148,7 +148,7 @@ export class TersectBackendService {
     //       responseType: 'blob' // Important for file download
     //     });
     //   }
-    generateBarcodes(accessionName: string, chrom: string, start: number, end: number, size: number, maxVar: number | null): Observable<{ downloadableURL: string }> {
+    generateBarcodes(accessionName: string, chrom: string, start: number, end: number, size: number, maxVar: number | null, datasetId): Observable<{ downloadableURL: string }> {
         // return this.http.post<{ downloadableURL: string }>(
         //   '/generate-barcodes',
         //   { accessionName, chrom, start, end, size } // body payload
@@ -161,7 +161,7 @@ export class TersectBackendService {
         //   responseType: 'json' // Important for file download
         // }) as unknown as Observable<{ downloadableURL: string }>;
         return this.http.post<{ downloadableURL: string }>(
-            `${this.apiUrl}/generate-barcodes`, 
+            `${this.apiUrl}/query/${datasetId}/generate-barcodes`, 
             payload, 
             { headers, responseType: 'json' }
         );
