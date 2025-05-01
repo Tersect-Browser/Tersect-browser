@@ -55,7 +55,6 @@ export class ScaleBarComponent extends CanvasPlotElement {
     }
 
     draw() {
-        console.log('Drawing scale bar');
         let scaleView = this.scaleViewState.currentScaleView;
         if (isNullOrUndefined(scaleView)) {
             scaleView = new ScaleView(this.plotState.interval,

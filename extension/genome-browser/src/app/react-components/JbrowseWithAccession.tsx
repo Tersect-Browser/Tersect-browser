@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import {
   createViewState,
   JBrowseLinearGenomeView,
@@ -14,10 +14,15 @@ const JbrowseWithState = ({ state }: { state: ViewModel }) => {
     viewState={state} />
 }
 
-const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: string, location: any}) => {
-  console.log(accessionName, 'accessionName')
+function formatWithLocale(n: number): string {
+  return n.toLocaleString('en-US');
+}
 
-  const state = createViewState({
+
+
+const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: string, location: any}) => {
+  const [state,] = useState(() => {
+     const state = createViewState({
     assembly,
     tracks,
     defaultSession: {
@@ -41,9 +46,11 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
     configuration: config
   })
 
+  return state
+  })
 
-
-  state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+  useLayoutEffect(() => {
+      state.assemblyManager.waitForAssembly(assembly.name).then(data => {
 
     // remove previously loaded view states
     if (state.session.views.length > 0) {
@@ -67,22 +74,31 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
     })
     // Add the variant tracks
     console.log('added view', location?.accession?.chromosome?.name);
+
+    const start = formatWithLocale(location?.accession?.defaultInterval?.[0])
+    const end = formatWithLocale(location?.accession?.defaultInterval?.[1])
+
+    console.log(start, ":", end)
     // state.session.views[0]?.showTrack(tracks[0].trackId)
     const targetTrack = tracks.find((track) => track.trackId === accessionName);
     if (targetTrack && state.session.views[0]?.initialized) {
       state.session.views[0]?.showTrack(assembly.sequence.trackId);
       state.session.views[0]?.showTrack(tracks[0].trackId);
       state.session.views[0]?.showTrack(targetTrack.trackId)
+      state.session.views[0].navToLocString(`${location?.accession?.preselectedChromosome?.name}:${start}..${end}`)
+      state.session.views[0].zoomTo(3130)
     } else {
-    tracks.slice(0, 3).forEach(each => {
 
       state.session.views[0]?.setHideHeader(true)
       // state.session.views[0]?.scrollTo(50000, 900000)
-      state.session.views[0]?.showTrack(each.trackId)
-    })
+      state.session.views[0]?.showTrack(tracks[0]?.trackId)
+
     // state.session.views[0].horizontalScroll(-(location.offsetCanvas - 4))
   }
   })
+  }, [location])
+
+ 
 
 
   //@ts-ignore
