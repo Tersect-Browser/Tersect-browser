@@ -330,14 +330,6 @@ export class BinDrawService {
         // Colour specified bins red
         const coordinates = Array.from(binMapSet);
 
-        // for (let i = 0; i < accessionIndices.length; i++) {
-        //     let row = accessionIndices[i]; // set row as the index defined in indices
-        //     const rowOffset = colNum * row;
-        //     const col = binIndex;
-        //     const pos = 4 * (col + rowOffset); // to colour col 1
-            
-        // }
-
         coordinates.forEach(([col, rowArray]) => {
             rowArray.forEach(row => {
                 const rowOffset = colNum * row;

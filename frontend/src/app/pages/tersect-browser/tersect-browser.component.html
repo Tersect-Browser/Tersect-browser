@@ -1,4 +1,4 @@
-<div class="p-grid p-justify-between tb-toolbar p-nogutter animation-fade-in">
+<div class="p-grid p-justify-between tb-toolbar p-nogutter animation-fade-in" style="z-index: 500;">
     <div>
         <div class="input-label-small">Genomes</div>
         <app-accession-style-selector></app-accession-style-selector>
@@ -62,6 +62,7 @@
         [(selectedAccessions)]="selectedAccessions">
     </app-accession-tab>
 </p-sidebar>
+<div id="mytarget" [ngStyle]="displayButton ? { position: 'relative', top: '-32px', 'margin-bottom': '-32px' } : {}" [style.margin-left.px]="offsetCanvas">
 <jbrowser-wrapper *ngIf="displayButton" bind-props="{location : {
     start: '0', 
     end: '98543444', 
@@ -77,7 +78,7 @@
 scaleView: this.syncedScaleView,
 displayed: this.displayButton
 }"></jbrowser-wrapper>
-
+</div>
 <div class="plot-container animation-fade-in">
     <app-tersect-distance-plot (plotMouseClick)="plotClick($event)" (plotMouseHover)="tooltip.show($event)"
         (plotMouseMove)="tooltip.hide()" (wheel)="scrollWheel($event)" (mouseleave)="tooltip.hide()">

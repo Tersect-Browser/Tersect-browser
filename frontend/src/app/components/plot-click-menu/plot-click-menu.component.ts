@@ -114,7 +114,7 @@ export class PlotClickMenuComponent {
                                     preselectedChromosome: this.plotStateService.chromosome,
                                     chromosome: this.plotStateService.chromosome,
                                     selectedInterval: this.plotStateService.interval,
-                                    defaultInterval: [1, this.plotStateService.chromosome.size],
+                                    defaultInterval: [targetAccession.startPosition || 1, targetAccession.endPosition || this.plotStateService.chromosome.size],
                                 }
                             }
                         });

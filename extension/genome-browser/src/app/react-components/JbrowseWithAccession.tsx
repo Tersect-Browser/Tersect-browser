@@ -73,12 +73,11 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
       state.session.views[0]?.showTrack(tracks[0].trackId);
       state.session.views[0]?.showTrack(targetTrack.trackId)
     } else {
-    tracks.slice(0, 3).forEach(each => {
 
       state.session.views[0]?.setHideHeader(true)
       // state.session.views[0]?.scrollTo(50000, 900000)
-      state.session.views[0]?.showTrack(each.trackId)
-    })
+      state.session.views[0]?.showTrack(tracks[0]?.trackId)
+
     // state.session.views[0].horizontalScroll(-(location.offsetCanvas - 4))
   }
   })

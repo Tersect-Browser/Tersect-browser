@@ -26,6 +26,7 @@ export interface Parsed {
 }
 
 export function parseDocId(id: string): Parsed {
+  console.log(id)
   /* -------------------------------------------------------- samples ---- */
   // 1) TEXT before first "|", then SAMPLE segment, then "|EFF="
   const segMatch = id.match(/^[^|]+\|([^|]+)\|EFF=/);
@@ -61,6 +62,8 @@ export function parseDocId(id: string): Parsed {
     }
   }
 
+  console.log(sampleSet, geneSet)
+
   return { samples: [...sampleSet], genes: [...geneSet] };
 }
 
@@ -91,6 +94,20 @@ export async function getSuggestions(term: string, chrom: string = 'SL2.50ch01')
   }).flat()))
 }
 
+export async function searchByGene(term: string, chrom: string = 'SL2.50ch01') {
+
+  const ixFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
+  const ixxFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
+
+  const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 100)
+  const results = await adapter.search(term)
+  const docs =  Array.from(new Set(results.map(([, doc]) => {
+    return doc
+  })))
+  const output = parseSL2List(docs, '', '')
+  return output as any
+}
+
 
 
 export const extractGeneName = (EFF: string): string | null => {
@@ -117,39 +134,22 @@ export const extractGeneName = (EFF: string): string | null => {
   return '';                      // none found
 };
 
-async function searchInterval(interval: [number, number], chrom: string, datasetId: string, filter: ImpactLevel): Promise<string[]> {
+async function searchInterval(term:string, interval: [number, number], chrom: string, datasetId: string, filter: ImpactLevel): Promise<string[]> {
+
+  if(term){
+    const geneResults = await searchByGene(term, chrom)
+    console.log(geneResults);
+    
+    return geneResults
+  }
 
   const results: any = []
 
   try {
-    const urlToUse = `http://127.0.0.1:4300/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&format=json`
+    const urlToUse = `http://127.0.0.1:4300/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&term=${term}&format=json`
     const res = await fetch(urlToUse);      // stream begins     // resolves only after stream closes
-    // or:
     const response = res.json()
-
     return response;
-    
-
-    // while (true) {
-    //   const { value, done } = await reader.read();
-    //   const decoder = new TextDecoder();
-    //   let buffer = '';
-
-    //   buffer += decoder.decode(value, { stream: true });
-    //   const lines = buffer.split('\n');
-    //   buffer = lines.pop() ?? '';
-    //   for (const line of lines) {
-    //     if (line) {
-    //       if (line === 'DONE') {
-    //         console.log('finished', results);
-    //         // ← here’s the “finished” signal
-    //         if (buffer) console.log('variant:', buffer);
-    //         return results;
-    //       }
-    //       results.push(line)
-    //     }   // process a full line
-    //   }
-    // }
 
   } catch (error) {
     return results
@@ -162,75 +162,88 @@ export function extractPosition(key: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-const parseIntervalResults = (results: string[]) => {
-  const splitted = results.map(each => each.split('\t')).map(([pos, eff, accession]) => {
-    console.log(accession, '<------at least');
-
-    return {
-      pos: {
-        start: extractPosition(pos),
-        chromPos: pos,
-      },
-      eff,
-      accession: accession.split(' ').filter(each => each !== 'NA')
-    }
-  })
-  return splitted.filter(each => each.accession.length > 0)
-}
 
 
 
 async function internalSearchGene(term: string, chrom: string, range: [number, number], datasetId: string, filter: ImpactLevel) {
-  const results = await searchInterval(range, chrom, datasetId, filter)
+  const results = await searchInterval(term ,range, chrom, datasetId, filter)
   return results
 }
 
-
-
-
-const parseTrixSearchMeta = (meta: string) => {
-  // Grab the metadata string from the result
-  if (!meta) {
-    console.error('No raw metadata found');
-    return;
-  }
-
-
-  // Clean and decode the metadata string
-  const cleaned = meta.replace(/^\[|\]$/g, ''); // Remove square brackets
-  const parts: string[] = cleaned.split('|').map((part: string) =>
-    decodeURIComponent(part.replace(/"/g, '')) // Decode URL-encoded strings and remove quotes
-  );
-
-  // Debug: Check if parts are being split correctly
-
-  // The first part is the gene position (should be "SL2.50ch01:776048..784378")
-  const genePosition = parts[0];
-
-  // Extract the gene start position and chromosome using a regular expression
-  const genePositionMatch = genePosition.match(/:(\d+)\.\.(\d+)/); // Match numbers between colon and ".."
-  const geneChromMatch = genePosition.match(/^([^:]+)/)
-
-  let startGenePosition: number | null = null;
-  let endGenePosition: number | null = null;
-  let geneChrom: string | null = null;
-
-  if (genePositionMatch) {
-    startGenePosition = parseInt(genePositionMatch[1], 10);
-    endGenePosition = parseInt(genePositionMatch[2], 10);
-  }
-
-
-  if (geneChromMatch) {
-    geneChrom = geneChromMatch[0];
-
-  };
-  return {
-    start: startGenePosition,
-    end: endGenePosition,
-    chrom: geneChrom
-  }
+export interface Variant {
+  chr: string;
+  pos: { start: number };
+  ref: string;
+  alt: string;
+  eff: string;
+  accessions: string[];
 }
+
+export interface ParsedResult {
+  region: string;
+  filter: string;
+  count: number;
+  variants: Variant[];
+  totalAccessions: string[];
+}
+
+export function parseSL2List(
+  entries: string[],
+  region: string,
+  filter: string
+): ParsedResult {
+  // map each entry
+  const variants = entries.map(parseEntry);
+
+  // build a deduped, sorted list of all accessions across variants
+  const accSet = new Set<string>();
+  for (const v of variants) {
+    for (const a of v.accessions) {
+      accSet.add(a);
+    }
+  }
+  const totalAccessions = Array.from(accSet).sort();
+
+  return {
+    region,
+    filter,
+    count: variants.length,
+    variants,
+    totalAccessions,
+  };
+}
+
+function parseEntry(entry: string): Variant {
+  // split off the coordinate/ref/alt from any pipes
+  const parts = entry.split('|');
+  const [coordPart, ...metaParts] = parts;
+
+  // 1) chr, pos, ref, alt
+  const [chr, posStr, ref, alt] = coordPart.split(':');
+  const pos = { start: parseInt(posStr, 10) };
+
+  // 2) effect string (EFF=...) and accessions (anything else)
+  let eff = '';
+  const accessions: string[] = [];
+
+  for (const p of metaParts) {
+    if (p.startsWith('EFF=')) {
+      // drop the "EFF=" prefix
+      eff = p.substring(4);
+    } else if (p.trim() !== '') {
+      // one or more accession IDs, e.g. "S.lyc_LYC2910_" or "A,B,C_"
+      // strip trailing underscores, split on commas, convert dots → underscores
+      p
+        .split(',')
+        .map(a => a.replace(/_+$/, '').replace(/\./g, '_'))
+        .filter(a => a.length > 0)
+        .forEach(a => accessions.push(a));
+    }
+  }
+
+  return { chr, pos, ref, alt, eff, accessions };
+}
+
 
 
 

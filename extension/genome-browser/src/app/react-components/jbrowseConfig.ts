@@ -18,6 +18,7 @@
         styleOverrides: {
           root: {
             boxShadow: 'none',
+            padding: '0 !important'
           },
         },
       }
