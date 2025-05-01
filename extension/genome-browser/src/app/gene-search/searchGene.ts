@@ -1,246 +1,251 @@
-import TrixTextSearchAdapter  from '@gmod/trix'
-import { fromUrl,open  } from 'generic-filehandle2'
+import TrixTextSearchAdapter from '@gmod/trix';
+import { fromUrl, open } from 'generic-filehandle2'
 import { getConf } from '@jbrowse/core/configuration'
 
 
 import { Feature } from '@jbrowse/core/util'
 
+
+export enum ImpactLevel {
+  HIGH = "HIGH",
+  MODERATE = "MODERATE",
+  LOW = "LOW"
+}
+/**
+ * A docId has this shape (no spaces):
+ *   CHR:POS:REF:ALT | sample[,sample2 …] | EFF=type(…gene…) [,EFF=…]
+ *
+ * Examples
+ * ──────────────────────────────────────────────────────────────────────────
+ * SL2.50ch01:20001262:T:A|S.arc_LA2157_|EFF=STOP_LOST(HIGH|…|Solyc01g016460.2|…)
+ * SL2.50ch02:147085:AT:A|S.pen_LA1272_,S.lyc_LA2706_|EFF=FRAME_SHIFT(HIGH|…)
+ */
+export interface Parsed {
+  samples: string[];  // one or more, trimmed, duplicates removed
+  genes: string[];  // de-duplicated gene IDs (e.g. Solyc01gxxxxx.x)
+}
+
+export function parseDocId(id: string): Parsed {
+  console.log(id)
+  /* -------------------------------------------------------- samples ---- */
+  // 1) TEXT before first "|", then SAMPLE segment, then "|EFF="
+  const segMatch = id.match(/^[^|]+\|([^|]+)\|EFF=/);
+  if (!segMatch) return {
+    samples: [],
+    genes: [],
+  }
+  const sampleSeg = segMatch[1];
+
+  // split on "," and/or whitespace, drop empties, uniq
+  const sampleSet = new Set(
+    sampleSeg
+      .split(/[,\s]+/)
+      .map(s => s.trim())
+      .filter(Boolean),
+  );
+
+  /* ---------------------------------------------------------- genes ---- */
+  // Everything after first "|EFF=" may have several ",EFF=" parts
+  const effSection = id.split('|EFF=').slice(1).join('|EFF=');
+  // cut into individual effect strings: "TYPE(...)", keep last ")"
+  const effects = effSection.split(/,(?=EFF=)/);
+
+  const geneRe = /Solyc\d+g\d+\.\d+/;          // tomato gene pattern
+  const geneSet = new Set<string>();
+
+  for (const eff of effects) {
+    const m = eff.match(/\(([^)]*)\)/);        // payload inside (...)
+    if (!m) continue;
+
+    for (const field of m[1].split('|')) {
+      if (geneRe.test(field)) geneSet.add(field);
+    }
+  }
+
+  console.log(sampleSet, geneSet)
+
+  return { samples: [...sampleSet], genes: [...geneSet] };
+}
+
 // ------------------------------------------------------------------
 // 1) A function to search for a gene by name using Trix
 // ------------------------------------------------------------------
 
-export async function searchGene(term: string, session:any) {
-  console.log('called session', session)
-
-  const hits = await findHighImpactInGene(session, term)
+export async function searchGene(term: string, session: any, filter: ImpactLevel = ImpactLevel.HIGH, chrom: string, range: [number, number], datasetId: string) {
+  // const hits = await findHighImpactInGene(session, term, options, chrom)
 
   // Each "result" typically has refName, start, end, etc.
   // But depends on how you generated the Trix file.
-  return hits
-}
+  const results = await internalSearchGene(term, chrom, range, datasetId, filter)
+  console.log(results);
 
-async function internalSearchGene(term: string, session:any) {
-  // Example: your Trix index files (adjust paths as needed)
-  const ixFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.ix')
-  const ixxFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.ixx')
-  const metaFile = fromUrl('http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix/SL2.50.meta.json')
-
-  const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 30)
-  const results = await adapter.search(term, {
-    signal: new AbortController().signal,
-  })
-
-  // Each "result" typically has refName, start, end, etc.
-  // But depends on how you generated the Trix file.
   return results
 }
 
-// ------------------------------------------------------------------
-// 2) Get all "VariantTrack" configs from the session
-//    (or adapt for however your tracks are listed)
-// ------------------------------------------------------------------
+export async function getSuggestions(term: string, chrom: string = 'SL2.50ch01') {
 
-function getAllVcfTrackConfigs(session: any) {
-  
-  // This can vary by your environment.
-  // For example, session might have `session.tracks` or `views[0].tracks`.
-  // Here, we assume session.views[0].tracks is an array of track configs.
-  const trackConfigs = session.views[0].tracks || []
+  const ixFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
+  const ixxFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
 
-
-  // Filter only the VCF-type tracks
-  return trackConfigs.filter((t: any) => t.type === 'VariantTrack')
+  const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 100)
+  const results = await adapter.search(term)
+  return Array.from(new Set(results.map(([, doc]) => {
+    return parseDocId(doc).genes
+  }).flat()))
 }
 
-// ------------------------------------------------------------------
-// 3) Fetch features from a single VCF track for a given region
-// ------------------------------------------------------------------
+export async function searchByGene(term: string, chrom: string = 'SL2.50ch01') {
 
-async function fetchVariantsForRegion(
-  session: any,
-  trackConfig: any,
-  refName: string,
-  start: number,
-  end: number,
-) {
-  // The adapter config tells JBrowse how to load data (VCF .tbi, etc.)
-  const adapterConfig = getConf(trackConfig, 'adapter')
+  const ixFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ix`)
+  const ixxFile = fromUrl(`http://127.0.0.1:4300/TersectBrowserGP/datafiles/trix_indices/${chrom}/${chrom}.ixx`)
 
-
-  // "CoreGetFeatures" is the built-in RPC method for fetching features
-
-  const asyncGenerator: AsyncGenerator<Feature> = await session.rpcManager.call(
-    session.id,
-    'CoreGetFeatures',
-    {
-      sessionId: session.id,
-      adapterConfig,
-      regions: [{ refName, start, end }],
-      rpcDriverName: 'MainThreadRpcDriver'
-    },
-  )
-
-  // Collect the async generator into an array
-  const features: Feature[] = []
-  for await (const feature of asyncGenerator) {
-    features.push(feature)
-  }
-  return features
-}
-
-// ------------------------------------------------------------------
-// 4) Example filter for "high impact" variants
-//    Adjust to match your actual VCF annotation scheme
-// ------------------------------------------------------------------
-function isHighImpactVariant(feature:any) {
-  const info = feature.get('INFO')
-  // The EFF field is typically an array of strings
-  const effArray = info?.EFF
-  if (!effArray) {
-    return false
-  }
-
-  // Each EFF array element might look like:
-  //   "UPSTREAM(HIGH|...|gene|...)"
-  // or "UTR_3_PRIME(MODIFIER|...|gene|...)"
-  for (const effString of effArray) {
-    // Check if it says HIGH in parentheses
-    if (effString.includes('HIGH')) {
-      return true
-    }
-  }
-  return false
+  const adapter = new TrixTextSearchAdapter(ixxFile, ixFile, 100)
+  const results = await adapter.search(term)
+  const docs =  Array.from(new Set(results.map(([, doc]) => {
+    return doc
+  })))
+  const output = parseSL2List(docs, '', '')
+  return output as any
 }
 
 
-function filterHighImpact(features: Feature[]) {
-  return features.filter(f => {
-    // For VCF features, the "INFO" field is often in f.get('INFO')
-    // Or f.get('info'), or something similar, depending on your setup
-    return isHighImpactVariant(f)
-  })
-}
 
-function filterLowImpact(features: Feature[]) {
-  return features.filter(f => {
-    // For VCF features, the "INFO" field is often in f.get('INFO')
-    // Or f.get('info'), or something similar, depending on your setup
-    const info = f.get('INFO')
-    // Example check: if "IMPACT" field is "LOW"
-    return info?.IMPACT === 'LOW'
-  })
-}
+export const extractGeneName = (EFF: string): string | null => {
+  // Regex for a Solyc tomato gene ID (adjust if you need other species)
+  const geneRe = /Solyc\d+g\d+\.\d+/;
 
-const parseTrixSearchMeta = (meta: string) => {
-// Grab the metadata string from the result
-      if (!meta) {
-        console.error('No raw metadata found');
-        return;
-      }
-  
+  // One variant can have several EFF=SPEC(...) blocks separated by commas.
+  // Split on ',' **but** keep the parentheses together.
+  const effects = EFF.split(/,(?=[A-Z_]+\()/);
 
-      // Clean and decode the metadata string
-      const cleaned = meta.replace(/^\[|\]$/g, ''); // Remove square brackets
-      const parts: string[] = cleaned.split('|').map((part: string) => 
-        decodeURIComponent(part.replace(/"/g, '')) // Decode URL-encoded strings and remove quotes
-      );
-  
-      // Debug: Check if parts are being split correctly
+  for (const eff of effects) {
+    // grab everything inside the first pair of parentheses
+    const m = eff.match(/\(([^)]*)\)/);
+    if (!m) continue;
 
-      // The first part is the gene position (should be "SL2.50ch01:776048..784378")
-      const genePosition = parts[0];
-
-          // Extract the gene start position and chromosome using a regular expression
-    const genePositionMatch = genePosition.match(/:(\d+)\.\.(\d+)/); // Match numbers between colon and ".."
-    const geneChromMatch = genePosition.match(/^([^:]+)/)
-
-    let startGenePosition: number | null = null;
-    let endGenePosition: number | null = null;
-    let geneChrom: string | null = null;
-
-    if (genePositionMatch) {
-      startGenePosition = parseInt(genePositionMatch[1], 10);
-      endGenePosition = parseInt(genePositionMatch[2], 10);
-    } 
-
-
-    if (geneChromMatch){
-      geneChrom = geneChromMatch[0];
-
-    };
-    return {
-      start: startGenePosition,
-      end: endGenePosition,
-      chrom: geneChrom
-    }
-}
-
-// ------------------------------------------------------------------
-// 5) Main function: search for gene, then fetch variants from each
-//    VCF track, filter by "high impact", and return results
-// ------------------------------------------------------------------
-
-export async function findHighImpactInGene(session: any, geneName: string) {
-  // 1) Look up the gene by name
-  const geneMatches = await internalSearchGene(geneName, session)
-
-  // 2) Gather all VCF track configs (no track ID needed)
-  const vcfTracks = getAllVcfTrackConfigs(session)
-
-  // This array will collect the final results
-  const finalResults = []
-
-  // 3) For each gene match (some genes have multiple isoforms/locations)
-
-    //use @Tanya parsing function here
-    const payload = parseTrixSearchMeta(geneMatches[1][1])
-    console.log('parsed trix data', payload)
-
-    // 4) For each VCF track, fetch the variants in that region
-    for (const trackConfig of vcfTracks) {
-      console.log(trackConfig, 'each track config')
-      const allVariants = await fetchVariantsForRegion(
-        session,
-        trackConfig,
-        payload?.chrom ?? '',
-        payload?.start ?? 0,
-        payload?.end ?? 0,
-      )
-
-      console.log(allVariants, payload);
-
-      // 5) Filter for "high impact"
-      const highImpact = filterHighImpact(allVariants)
-      if (highImpact.length > 0) {
-        finalResults.push({
-          trackId: trackConfig.trackId,
-          trackName: trackConfig.name,
-          chrom: payload?.chrom ?? '',
-          highImpactVariants: highImpact,
-        })
+    // fields are pipe-separated; scan each for a gene ID
+    for (const field of m[1].split('|')) {
+      const gene = field.trim();
+      if (geneRe.test(gene)) {
+        return gene;               // return the first one we see
       }
     }
-  
+  }
+  return '';                      // none found
+};
 
-  // Return an array of results. Each entry:
-  // { trackId, trackName, gene, highImpactVariants[] }
-  console.log('Final results', finalResults)
-  return finalResults
+async function searchInterval(term:string, interval: [number, number], chrom: string, datasetId: string, filter: ImpactLevel): Promise<string[]> {
+
+  if(term){
+    const geneResults = await searchByGene(term, chrom)
+    console.log(geneResults);
+    
+    return geneResults
+  }
+
+  const results: any = []
+
+  try {
+    const urlToUse = `http://127.0.0.1:4300/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&term=${term}&format=json`
+    const res = await fetch(urlToUse);      // stream begins     // resolves only after stream closes
+    const response = res.json()
+    return response;
+
+  } catch (error) {
+    return results
+  }
 }
 
-// ------------------------------------------------------------------
-// 6) Example usage (if running in a custom environment):
-// ------------------------------------------------------------------
+export function extractPosition(key: string): number | null {
+  //            ── chromosome ──   position    ref   alt
+  const m = /^.+?:([0-9]+):[^:]+:[^:]+$/u.exec(key);
+  return m ? Number(m[1]) : null;
+}
 
-/*
-(async () => {
-  // Suppose you have a reference to the JBrowse session object:
-  const session = getMyJBrowseSessionSomehow()
 
-  const geneToSearch = 'MY_GENE'
-  const hits = await findHighImpactInGene(session, geneToSearch)
 
-  console.log('High-impact variants for gene', geneToSearch)
-  console.log(JSON.stringify(hits, null, 2))
-})()
-*/
+
+async function internalSearchGene(term: string, chrom: string, range: [number, number], datasetId: string, filter: ImpactLevel) {
+  const results = await searchInterval(term ,range, chrom, datasetId, filter)
+  return results
+}
+
+export interface Variant {
+  chr: string;
+  pos: { start: number };
+  ref: string;
+  alt: string;
+  eff: string;
+  accessions: string[];
+}
+
+export interface ParsedResult {
+  region: string;
+  filter: string;
+  count: number;
+  variants: Variant[];
+  totalAccessions: string[];
+}
+
+export function parseSL2List(
+  entries: string[],
+  region: string,
+  filter: string
+): ParsedResult {
+  // map each entry
+  const variants = entries.map(parseEntry);
+
+  // build a deduped, sorted list of all accessions across variants
+  const accSet = new Set<string>();
+  for (const v of variants) {
+    for (const a of v.accessions) {
+      accSet.add(a);
+    }
+  }
+  const totalAccessions = Array.from(accSet).sort();
+
+  return {
+    region,
+    filter,
+    count: variants.length,
+    variants,
+    totalAccessions,
+  };
+}
+
+function parseEntry(entry: string): Variant {
+  // split off the coordinate/ref/alt from any pipes
+  const parts = entry.split('|');
+  const [coordPart, ...metaParts] = parts;
+
+  // 1) chr, pos, ref, alt
+  const [chr, posStr, ref, alt] = coordPart.split(':');
+  const pos = { start: parseInt(posStr, 10) };
+
+  // 2) effect string (EFF=...) and accessions (anything else)
+  let eff = '';
+  const accessions: string[] = [];
+
+  for (const p of metaParts) {
+    if (p.startsWith('EFF=')) {
+      // drop the "EFF=" prefix
+      eff = p.substring(4);
+    } else if (p.trim() !== '') {
+      // one or more accession IDs, e.g. "S.lyc_LYC2910_" or "A,B,C_"
+      // strip trailing underscores, split on commas, convert dots → underscores
+      p
+        .split(',')
+        .map(a => a.replace(/_+$/, '').replace(/\./g, '_'))
+        .filter(a => a.length > 0)
+        .forEach(a => accessions.push(a));
+    }
+  }
+
+  return { chr, pos, ref, alt, eff, accessions };
+}
+
+
+
+
+
+

@@ -167,6 +167,8 @@ if __name__ == "__main__":
     unique_vars = load_variant_file(args.unique_variants)
     union_vars = load_variant_file(args.union_variants)
 
+    print(unique_vars, union_vars, args.unique_variants)
+
     ## Reduce dictionary
     new_unique_vars = remove_overlapping_variants(unique_vars, union_vars)
 
@@ -185,7 +187,7 @@ if __name__ == "__main__":
     try:
         filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
         print('created file name', filename)
-        outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
+        outputFolder = '/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/barcodes/'
         print('created output foler', outputFolder)
         fullPath = os.path.join(outputFolder, filename)
         print('created fullPath', fullPath)

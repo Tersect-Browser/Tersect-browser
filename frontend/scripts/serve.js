@@ -33,7 +33,8 @@ const serveCommand = 'ng serve'
   + ' --baseHref=' + baseHref
   + ' --deployUrl=' + deployUrl
   + ' --port ' + argv.port
-  + ' --host=' + argv.host;
+  + ' --host=' + argv.host
+  + ' --disable-host-check' 
 
 console.log('Running:', serveCommand); // debug
 

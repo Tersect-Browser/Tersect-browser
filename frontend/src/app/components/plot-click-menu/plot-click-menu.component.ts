@@ -115,7 +115,7 @@ export class PlotClickMenuComponent {
                                     preselectedChromosome: this.plotStateService.chromosome,
                                     chromosome: this.plotStateService.chromosome,
                                     selectedInterval: this.plotStateService.interval,
-                                    defaultInterval: [1, this.plotStateService.chromosome.size],
+                                    defaultInterval: [targetAccession.startPosition || 1, targetAccession.endPosition || this.plotStateService.chromosome.size],
                                 }
                             }
                         });
@@ -147,10 +147,24 @@ export class PlotClickMenuComponent {
                         this.hide();
                     }
                 },
+                 {
+                    label: 'Search for variants',
+                    icon: 'fa fa-search',
+                    command: () => {
+                        window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
+                            interval: [bin.startPosition, bin.endPosition],
+                            waitTime: 40000
+                        } }));
+                        // this.setInterval.emit([int.startPosition,
+                        //                        int.endPosition]);
+                        this.hide();
+                    }
+                },
                 {
                     label: 'Create barcode',
                     icon: 'fa fa-barcode',
                     command: () => {
+                        console.log(this.modalService.openBarcodeModal)
                         this.modalService.openBarcodeModal(bin.accessionLabel, 
                             this.plotStateService.chromosome.name, 
                             bin.startPosition, 
@@ -183,6 +197,19 @@ export class PlotClickMenuComponent {
                     command: () => {
                         this.setInterval.emit([int.startPosition,
                                                int.endPosition]);
+                        this.hide();
+                    }
+                },
+                {
+                    label: 'Search for variants',
+                    icon: 'fa fa-search',
+                    command: () => {
+                        window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
+                            interval: [int.startPosition, int.endPosition],
+                            waitTime: 40000
+                        } }));
+                        // this.setInterval.emit([int.startPosition,
+                        //                        int.endPosition]);
                         this.hide();
                     }
                 }
