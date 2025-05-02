@@ -1,0 +1,9 @@
+/* custom‑colors.css */
+:root {
+    /* Lara theme uses these tokens for brand colour */
+    --primary-500:#459e00;   /* base */
+    --primary-600:#3c8a00;
+    --primary-700:#326f00;
+    --primary-400:#5cc000;
+    /* etc. (add lighter/darker tints for hover/active states) */
+  }

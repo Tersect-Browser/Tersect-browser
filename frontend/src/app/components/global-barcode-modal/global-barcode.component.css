@@ -1,0 +1,146 @@
+/* General Styling */
+p-dialog {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  max-width: 500px;
+}
+
+/* Title and Subtitle Styling (Bold and Spacing) */
+.modal-title{
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+.modal-subtitle {
+  font-size: 16px;
+  color: #333;
+}
+.modal-subtitle-2 {
+  font-size: 16px;
+  color: #333;
+}
+
+/* Add space between subtitle and the next section */
+.modal-subtitle-2 {
+  margin-top: 10px;
+  margin-bottom: 20px; /* Increase space between subtitle and next section */
+}
+
+/* Spacer to add spacing between elements */
+.spacer {
+  height: 20px; /* Adjust this value to control the space */
+}
+
+/* Input Container Styling (Spacing between fields and button) */
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Adds space between input and button */
+  margin-top: 10px;
+}
+
+/* Label Styling (Bold for clarity) */
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Input and Button Styling */
+input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px;
+  background-color: #459e00;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button .button-text {
+  display: inline-block;
+  margin-right: 8px;  /* Space between text and spinner */
+}
+
+button .custom-spinner {
+  position: absolute;
+  right: 10px;  /* Position spinner to the right of the text */
+  width: 10px !important;  /* Force smaller width */
+  height: 10px !important;  /* Force smaller height */
+  display: inline-block;
+  top: 50%;
+  transform: translateY(-50%);  /* Center the spinner vertically */
+}
+
+.custom-spinner .p-progress-circle {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+button[disabled] {
+  cursor: not-allowed;
+}
+
+button:hover {
+  background-color: #33b357;;
+}
+
+/* Optional: Link styling for download URL */
+a.p-button {
+  display: inline-block;
+  margin-top: 20px;
+  text-decoration: none;
+  padding: 10px 20px;
+  background-color: #459e00;
+  color: white;
+  border-radius: 4px;
+}
+
+a.p-button:hover {
+  background-color: #33b357;;
+}
+
+
+.loading-msg {
+  text-align: center;
+  font-weight: bold;
+  color: #555;
+  margin: 20px 0;
+}
+
+.loading-container {
+  text-align: center;
+  margin: 20px 0;
+  color: #666;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.input-row label {
+  min-width: 200px; /* Adjust as needed */
+}
+.input-row input {
+  max-width: 200px;
+}
+.compact-row label {
+  flex: 0 0 100px;
+}

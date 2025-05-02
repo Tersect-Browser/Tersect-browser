@@ -76,6 +76,7 @@ export class TersectBrowserComponent implements OnInit {
     static readonly DEFAULT_ZOOM_LEVEL = 100;
     zoomLevel: number = 0;
     binSize: number = 0;
+    settingsId: string = "";
     selectedChromosomeSub: Chromosome;
     selectedInterval: number[];
     defaultInterval: number[];
@@ -136,13 +137,11 @@ export class TersectBrowserComponent implements OnInit {
 
 
     ngOnInit() {
-
+        
         this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
-            console.log('syncedScaleViewSub', scaleView);
             if (scaleView) {
                 // Use updated ScaleView here
                 this.syncedScaleView = this.scaleDrawService.getSyncedScaleView(scaleView);
-                console.log('syncedScaleView', this.syncedScaleView);
             }
         });
 
@@ -171,7 +170,6 @@ export class TersectBrowserComponent implements OnInit {
 
         this.offsetCanvasSub = this.plotState.offsetCanvas$.subscribe(value => {
             this.offsetCanvas = value;
-            console.log('tracking offset', this.offsetCanvas);
         })
 
 
@@ -190,6 +188,7 @@ export class TersectBrowserComponent implements OnInit {
 
             const accessions$ = this.tersectBackendService.getAccessionNames(settings.dataset_id);
             const chromosomes$ = this.tersectBackendService.getChromosomes(settings.dataset_id);
+            this.settingsId = settings.dataset_id;
 
             forkJoin([accessions$, chromosomes$]).subscribe(([accessions, chromosomes]) => {
                 this.generateMissingSettings(settings, accessions, chromosomes);
@@ -218,6 +217,11 @@ export class TersectBrowserComponent implements OnInit {
         if (this.binSizeSub){
             this.binSizeSub.unsubscribe()
         }
+    }
+    refreshBin(){
+
+       this.drawBin.refreshBin()
+    
     }
 
     isDownloadReady(): boolean {
@@ -306,6 +310,8 @@ export class TersectBrowserComponent implements OnInit {
     handleGeneChromChanged(geneChrom: string){
         this.geneChrom = geneChrom;
     }
+
+
 
     /**
      * Load default values for missing settings.

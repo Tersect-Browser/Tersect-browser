@@ -5,10 +5,49 @@ import {
   ViewModel
 } from '@jbrowse/react-linear-genome-view'
 import { autorun } from 'mobx';
+import type PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
+import { types } from 'mobx-state-tree'
 import assembly from './assembly';
 import tracks from './tracks';
 import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
+import { observer } from 'mobx-react'
+
+class DisableScroll extends Plugin {
+  name: 'MyPlugin' = "MyPlugin";
+  override install(pluginManager: PluginManager) {
+    pluginManager.addToExtensionPoint(
+      'Core-extendPluggableElement',
+      pluggableElement => {
+        // @ts-expect-error
+        if (pluggableElement.name === 'LinearGenomeView') {
+          // @ts-expect-error
+          pluggableElement.stateModel = types.compose(
+            // @ts-expect-error
+            pluggableElement.stateModel,
+            types.model().actions(_self => {
+               //@ts-expect-error
+              console.log(_self.scrollTo)
+              return ({
+            
+              
+              zoomTo: (args:any) => {
+                console.log(args)
+              },
+
+              scrollTo: () => {
+
+              }
+            })}),
+          )
+        }
+        return pluggableElement
+      },
+    )
+  }
+  override configure() {}
+}
 
 
 export interface JbrowseWrapperProps {
@@ -28,9 +67,13 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
   const [isInitialised, setIsInitialized] = useState(false);
 
   useLayoutEffect(() => {
+    document.querySelectorAll('[data-testid="view_menu_icon"]').forEach(each => {
+      each.parentElement?.remove()
+    })
     const state = createViewState({
       assembly,
       tracks,
+      plugins: [DisableScroll],
       defaultSession: {
         name: 'default session',
         view: {
@@ -81,19 +124,8 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       const view = state.session.views[0];
       stateRef.current = state
       setIsInitialized(true);
-   
-      // Add the variant tracks
-      console.log('added view', state.session.views.length);
-      // state.session.views[0]?.showTrack(tracks[0].trackId)
-      tracks.slice(0, 3).forEach(each => {
-
-        view?.setHideHeader(true)
-        // view?.scrollTo(50000, 900000)
-        view?.showTrack(each.trackId)
-        
-      })
-      view.horizontalScroll(-(props.location.offsetCanvas - 4))
-      
+      view?.setHideHeader(true)
+      view?.showTrack(tracks[0].trackId)
     })
   }, [])
 
@@ -158,16 +190,12 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
       console.log(view, 'set hide header after')
       console.log('added view', state.session.views.length);
         // state.session.views[0]?.showTrack(tracks[0].trackId)
-        tracks.slice(0, 3).forEach(each => {
 
           view?.setHideHeader(true)
-          console.log(each, 'each track after switching chromosomes')
-          // view?.scrollTo(50000, 900000)
-          view?.showTrack(each.trackId)
+          view?.showTrack(tracks[0].trackId)
           
-        })
-        view?.horizontalScroll(-(props.location.offsetCanvas - 4))
-   
+        
+
 
       
     })
@@ -188,7 +216,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
 
   //@ts-ignore
-  return <JbrowseWithState key={props.location.chromosome}   state={stateRef.current} />
+  return <JbrowseWithState key={ props?.location.offsetCanvas}   state={stateRef.current} />
 }
 
 export default JbrowserWrapper

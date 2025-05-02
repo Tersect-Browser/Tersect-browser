@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port=3200",
+    "start": "ng serve --port=3200 --disable-host-check",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -25,6 +25,7 @@
     "@ngeenx/ngx-react": "^2.0.0",
     "@primeng/themes": "^18.0.0",
     "generic-filehandle2": "^1.0.0",
+    "primeflex": "^4.0.0",
     "primeng": "^18.0.0",
     "primereact": "^10.9.4",
     "react": "^18.3.1",
