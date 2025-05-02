@@ -140,8 +140,8 @@ def main():
     add_example_dataset()
     
     # Copying reference fasta to root as well
-    #destination_dir = os.path.expanduser("./")
-    #shutil.copy2(fasta_path, destination_dir)
+    destination_dir = os.path.expanduser("./")
+    shutil.copy2(fasta_path, destination_dir)
 
     # Add tracks to genome browser
     print("Setting up Genome Browser...")
@@ -161,7 +161,7 @@ def main():
 
     print("Copying files for Genome Browser access...")
     # Copy necessary files to gp_data_copy for access in browser
-    copy_files(fasta_path, gff_file, vcf_files, "./~/mongo-data/gp_data_copy/")  
+    copy_files(fasta_path, gff_file, vcf_files, "./newdb2/mongo-data/gp_data_copy/")  
     
     print("Deploying on localhost...")
    # deploy_browser()
