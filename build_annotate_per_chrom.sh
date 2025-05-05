@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #------------------------------------------------------------------------------
-# build_VCF_per_chrom.sh
+# build_annotate_per_chrom.sh
 #  Author: David Oluwasusi 26/04/2025
 #  Merge all sanitized VCFs once, then per-chromosome:
 #   • union via Tersect
@@ -10,7 +10,7 @@
 #  All temp files are kept under $OUTDIR.
 #
 #  Usage:
-#    build_trix_per_chrom.sh tracks.json index.tsi genes.gff3.gz [outdir]
+#    build_annotate_per_chrom.sh tracks.json index.tsi genes.gff3.gz [outdir]
 #
 set -euo pipefail
 IFS=$'\n\t'

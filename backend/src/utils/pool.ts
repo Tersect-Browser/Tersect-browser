@@ -1,5 +1,7 @@
 /* helpers ----------------------------------------------------------- */
 import { spawn }   from 'child_process';
+import * as os from 'os'
+import * as pLimit from 'p-limit';
 
 
 export class Pool {
@@ -11,8 +13,11 @@ export class Pool {
     return new Promise((resolve, reject) => {
       const exec = () => {
         this.active++;
+        
         fn().then(resolve, reject).finally(() => {
+         
           this.active--;
+          
           if (this.queue.length) this.queue.shift()();
         });
       };
@@ -33,6 +38,32 @@ export function collectSampleNames(
   }, []);
 }
 
+function getOptimalConcurrency() {
+  const cores = os.cpus().length;
+  return Math.max(cores - 1, 1); // leave one core free
+}
+
+export async function processKeys(keys, tsiPath) {
+  const concurrency = getOptimalConcurrency();
+  const limit = pLimit(concurrency);
+
+  const total = Array.from(keys).length;
+  let completed = 0;
+
+  const results = await Promise.all(
+    Array.from(keys).map(key =>
+      limit(() => tersectForKey(key, tsiPath).then(val => {
+        completed++;
+        console.log(`Completed ${completed}/${total}: key=${key}`);
+        return [key, val];
+      }))
+    )
+  );
+
+  return results.filter(([_, val]) => val !== 'NA');
+
+}
+
 export function tersectForKey(key, tsiLocation): Promise<string> {
   return new Promise(res => {
     const p = spawn(
@@ -41,13 +72,11 @@ export function tersectForKey(key, tsiLocation): Promise<string> {
     );
     let out = '';
     p.stdout.on('data', c => {
-        // console.log(c, 'from tersect')
         return (out += c)
     });
     p.on('close', () => {
        
       const accessions = out.trim().split('\n').slice(1).join(' ')
-      //  console.log(list, first), 'l | f';
       res(accessions || 'NA');
     });
   });

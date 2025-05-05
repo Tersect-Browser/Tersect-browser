@@ -137,7 +137,7 @@ export class TersectBrowserComponent implements OnInit {
 
 
     ngOnInit() {
-
+        
         this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
             if (scaleView) {
                 // Use updated ScaleView here

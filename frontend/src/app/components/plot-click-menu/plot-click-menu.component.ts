@@ -115,7 +115,7 @@ export class PlotClickMenuComponent {
                                     preselectedChromosome: this.plotStateService.chromosome,
                                     chromosome: this.plotStateService.chromosome,
                                     selectedInterval: this.plotStateService.interval,
-                                    defaultInterval: [1, this.plotStateService.chromosome.size],
+                                    defaultInterval: [targetAccession.startPosition || 1, targetAccession.endPosition || this.plotStateService.chromosome.size],
                                 }
                             }
                         });
@@ -152,11 +152,9 @@ export class PlotClickMenuComponent {
                     icon: 'fa fa-search',
                     command: () => {
                         window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
-                            interval: [bin.startPosition, bin.endPosition],
-                            waitTime: 40000
+                            interval: [bin.startPosition, bin.endPosition]
                         } }));
-                        // this.setInterval.emit([int.startPosition,
-                        //                        int.endPosition]);
+  
                         this.hide();
                     }
                 },
@@ -164,6 +162,7 @@ export class PlotClickMenuComponent {
                     label: 'Create barcode',
                     icon: 'fa fa-barcode',
                     command: () => {
+                        console.log(this.modalService.openBarcodeModal)
                         this.modalService.openBarcodeModal(bin.accessionLabel, 
                             this.plotStateService.chromosome.name, 
                             bin.startPosition, 

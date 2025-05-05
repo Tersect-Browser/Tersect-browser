@@ -52,7 +52,7 @@ import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
 import { partitionQuery } from '../utils/partitioning';
 import { formatRegion } from '../utils/utils';
-import { Pool, tersectForKey } from '../utils/pool';
+import { collectSampleNames, Pool, processKeys, tersectForKey } from '../utils/pool';
 import { Readable } from 'stream';
 
 const util = require('util');
@@ -236,17 +236,7 @@ router.route('/query/:datasetId/samples')
   });
 }
 
-      function collectSampleNames(
-  data: [string, string][]
-): string[] {
-  return data.reduce<string[]>((acc, [, names]) => {
-    // split on 1 + spaces and push into the accumulator
-    names.split(/\s+/).forEach(name => {
-      if (name) acc.push(name);   // guard against empty strings
-    });
-    return acc;
-  }, []);
-}
+      
 
 router.get(
   '/query/:datasetId/variants/:chrom',
@@ -257,6 +247,7 @@ router.get(
       const start   = Number(req.query.start);
       const end     = Number(req.query.end);
       const filter  = req.query?.filter ?? 'HIGH';
+      const gene  = req.query?.term;
       const tsiPath = res.locals.dataset.tsi_location;
       const bcfToolsCommand = tbConfig.bcftoolsLocation
 
@@ -271,17 +262,38 @@ router.get(
 
 
       const region   = `${chrom}:${start}-${end}`;
-      const bcftools = spawn(`${bcfToolsCommand}`, [
+
+       const withGene = (gene: string, filter: string) => {
+          const expression = `INFO/EFF~"${gene}" && INFO/EFF~"${filter}"`;
+        return spawn('bcftools', [
+            'query',
+            '-i', expression,
+            '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
+            vcfPath,
+        ]);
+        };
+
+      const withoutGene =(filter:string) => {
+        return spawn('bcftools', [
         'query',
         '-i', `INFO/EFF~"${filter}"`,
         '-r', region,
         '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
         vcfPath,
       ]);
-      const closePromise = once(bcftools, 'close'); 
+      }
+      const bcftools = gene ? withGene(gene, filter): withoutGene(filter);
+      
+  
       bcftools.stderr.on('data', b =>
         console.error('[bcftools]', b.toString().trim())
       );
+
+      bcftools.on('close', (code) => {
+        if (code !== 0) {
+            console.error(`[bcftools] exited with code ${code}`);
+        }
+        });
 
       /* ───────── 2. Collect output ───────── */
       const lines: { key: string; eff: string }[] = [];
@@ -289,6 +301,7 @@ router.get(
       const rl = readline.createInterface({ input: bcftools.stdout });
 
       for await (const line of rl) {
+        console.log(line)
         if (!line) continue;
         const tab = line.indexOf('\t');
         const key = line.slice(0, tab);          // CHROM:POS:REF:ALT
@@ -298,12 +311,10 @@ router.get(
       }
       rl.close();
 
-      /* ───────── 3. Map variant → tsiKey ───────── */
-      const tsiResults = (await Promise.all(
-        Array.from(keys).map(async k => [k, await tersectForKey(k, tsiPath)])
-      )).filter(([keys, val]) => val !== 'NA');   // [key, 'NA' | 'x,y,z']
 
-      const allSampleNames = collectSampleNames(tsiResults as unknown as [string, string][])
+    const tsiResults = await processKeys(keys, tsiPath);
+
+    const allSampleNames = collectSampleNames(tsiResults as unknown as [string, string][])
 
       
       const accMap = new Map<string, string>(
@@ -508,6 +519,7 @@ router.route('/query/:datasetId/tree')
                 'query.interval': treeQuery.interval,
                 'query.accessions': treeQuery.accessions
             };
+            console.log(dbQuery, 'query')
             NewickTree.findOne(dbQuery)
                 .exec((err, result: NewickTree) => {
                     if (err) {
@@ -541,16 +553,17 @@ router.route('/query/:datasetId/tree')
 
     });
 
-router.route('/generate-barcodes').post((req, res) => {
+router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     try{
         console.log('Barcode scripts added')
     const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
-    const tsi_file = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
-    const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
+    const tsiLocation = "/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi";
+    const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/SL2.50.fa`;
 
-    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsi_file];
+
+    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation];
 
     const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
 
@@ -578,6 +591,7 @@ router.route('/generate-barcodes').post((req, res) => {
         
       });
     } catch (error) {
+        console.log(error)
         res.status(500).json(error)
     }
     

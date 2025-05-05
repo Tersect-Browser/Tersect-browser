@@ -33,7 +33,9 @@ import {
     AccessionInfo
 } from '../models/PlotState';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root' 
+})
 export class PlotStateService {
     settings$: Observable<BrowserSettings>;
 
