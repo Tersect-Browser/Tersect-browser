@@ -4,7 +4,6 @@ import {
   JBrowseLinearGenomeView,
   ViewModel
 } from '@jbrowse/react-linear-genome-view'
-import { autorun } from 'mobx';
 import type PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import { types } from 'mobx-state-tree'
@@ -12,7 +11,7 @@ import assembly from './assembly';
 import tracks from './tracks';
 import config from './jbrowseConfig';
 import JbrowseWithAccessionName from './JbrowseWithAccession';
-import { observer } from 'mobx-react'
+
 
 class DisableScroll extends Plugin {
   name: 'MyPlugin' = "MyPlugin";

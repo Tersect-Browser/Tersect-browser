@@ -235,8 +235,6 @@ export class BinDrawService {
         }
     }
 
-    // Define function to redraw canvas to highlight feature bins
-
     getAccessionIndexFromName (accessionName, orderedAccessions) {
         return orderedAccessions.findIndex(each => each === accessionName)
     }
@@ -290,8 +288,6 @@ export class BinDrawService {
 
     highlightFeatureBins(binMapSet: Map<number, number[]>,  binView: DistanceBinView) {
  
-
-
         const palette: DistancePalette = GreyscalePalette;
         // const colorPalette: DistancePalette = RedPalette;
 
