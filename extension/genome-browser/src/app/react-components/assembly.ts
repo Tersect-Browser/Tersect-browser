@@ -6,11 +6,11 @@ export default {
       "adapter": {
         "type": "IndexedFastaAdapter",
         "fastaLocation": {
-          "uri": "http://127.0.0.1:4300/TersectBrowserGP/tbapi/datafiles//SL2.50.fa",
+          "uri": "http://127.0.0.1:4300/TersectBrowserGP/tbapi/datafiles/SL2.50.fa",
           "locationType": "UriLocation"
         },
         "faiLocation": {
-          "uri": "http://127.0.0.1:4300/TersectBrowserGP/tbapi/datafiles//SL2.50.fa.fai",
+          "uri": "http://127.0.0.1:4300/TersectBrowserGP/tbapi/datafiles/SL2.50.fa.fai",
           "locationType": "UriLocation"
         }
       }

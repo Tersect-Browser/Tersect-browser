@@ -85,6 +85,7 @@ const JbrowseWithAccessionName = ({accessionName, location}:{ accessionName: str
       state.session.views[0]?.showTrack(assembly.sequence.trackId);
       state.session.views[0]?.showTrack(tracks[0].trackId);
       state.session.views[0]?.showTrack(targetTrack.trackId)
+      console.log('showing track', targetTrack.trackId, `${location?.accession?.preselectedChromosome?.name}:${start}..${end}`)
       state.session.views[0].navToLocString(`${location?.accession?.preselectedChromosome?.name}:${start}..${end}`)
       state.session.views[0].zoomTo(3130)
     } else {
