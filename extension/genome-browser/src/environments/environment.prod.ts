@@ -1,5 +1,5 @@
 
-const baseUrl = 'http://127.0.0.1:4200/TersectBrowserGP/tbapi/'
+const baseUrl = 'http://127.0.0.1:4300/TersectBrowserGP/tbapi/'
 export const environment = {
   production: true,
   apiUrl: 'https://dev.api.example.com',

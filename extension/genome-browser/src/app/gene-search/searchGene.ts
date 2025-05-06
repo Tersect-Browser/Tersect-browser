@@ -176,7 +176,7 @@ async function searchInterval(term:string, interval: [number, number], chrom: st
   const results: any = []
 
   try {
-    const urlToUse = `${tbconfig.frontendHost}:${tbconfig.frontendPort}/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&term=${term}&format=json`
+    const urlToUse = `${tbconfig.frontendHost}/TersectBrowserGP/tbapi/query/${datasetId}/variants/${chrom}?start=${interval[0]}&end=${interval[1]}&filter=${filter}&term=${term}&format=json`
     const res = await fetch(urlToUse);
     const response = res.json()
     return response;
