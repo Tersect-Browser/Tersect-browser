@@ -265,7 +265,7 @@ router.get(
 
        const withGene = (gene: string, filter: string) => {
           const expression = `INFO/EFF~"${gene}" && INFO/EFF~"${filter}"`;
-        return spawn('bcftools', [
+        return spawn(`${bcfToolsCommand || 'bcftools'}`, [
             'query',
             '-i', expression,
             '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',

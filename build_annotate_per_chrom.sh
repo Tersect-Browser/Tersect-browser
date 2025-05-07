@@ -87,14 +87,13 @@ bcftools merge \
 tabix -p vcf "$OUTDIR/all_samples.vcf.gz"
 
 ################################################################################
-# 3) Parse chromosomes (skip SL2.50ch00)
+# 3) Parse chromosomes
 ################################################################################
 echo "[*] tersect chroms $TSI"
 tersect chroms "$TSI" > "$OUTDIR/chroms_raw.txt"
 
 tail -n +2 "$OUTDIR/chroms_raw.txt" \
   | sed '/^[[:space:]]*$/d' \
-  | grep -v '^SL2\.50ch00[[:space:]]' \
   | awk '{print $1, $2}' \
   > "$OUTDIR/chroms.txt"
 
