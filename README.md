@@ -34,7 +34,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
     "baseHref": "/TersectBrowserGP/",
     "mongoHost": "mongodb://127.0.0.1:27017", // adjust url to fit your local mongodb installation
     "dbName": "tersect_browser_gp",
-    "localDbPath": "/Users/user/Tersect-browser/~/mongo-data/gp_data_copy", // adjust url to fit your Tersect-browser path
+    "localDbPath": "/Users/user/Tersect-browser/db-data/mongo-data/gp_data_copy", // adjust url to fit your Tersect-browser path
     "indexPartitions": [
         100000000,
         50000000,
@@ -50,17 +50,18 @@ Ensure you have nvm installed on your machine and perform the following steps;
 
 ## How to load data set
 
-First requires a valid Mongodb installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine so it should not be an issue.
+Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine while building the application.
 
-After successful installation, start the mongodb server by running `mongod`. By default mongodb will try to create and store data in a `/data/db` path. There is a tendency that on mac this is a read-only path. If that is the case you may need to use a different path. Personally, I used `~/mongo-data`.
+After successful installation, start the MongoDB server by running `mongod`. By default, MongoDB will try to create and store data in a `/data/db` path. 
+There is a tendency that on Mac, this is a read-only path. If that is the case, you may need to use a different path. I used `db-data/mongo-data`.
 
-to start mongodb with a different path, create the path by running `mkdir -p ~/mongo-data` then run mongodb with this path `mongod --dbpath ~/mongo-data`.
+To start MongoDB with a different path, create the path by running `mkdir -p ~/mongo-data`, then run MongoDB with this path `mongod --dbpath ~/mongo-data`.
 
-When your database is up and running you can start the backend server.
+When your database is up and running, you can start the backend server (However, there will be no datasets at this point).
 
 ### Generating the dataset
 
-To generate the data set, copy the data in the `gp_data` folder on elvis to the root of the `tersect_browser` folder.
+To generate the data set, copy the data in the `gp_data` folder on Elvis to the root of the `tersect_browser` folder.
 Copy also the `add_example_dataset` script to the root of the `tersect_browser` folder.
 
 An example copy script via the terminal is;
