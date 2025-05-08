@@ -37,11 +37,13 @@ def main():
             gff_file = a
         elif o in ("-v", "--vcfs"):
             vcf_files = a.split(',')
+            dataset_name = os.path.basename(vcf_files[1])
         elif o in ("-V", "--dir"):
             vcf_dir = a
             dataset_name = os.path.basename(vcf_dir)  # Use vcf directory name as dataset name
         elif o in ("-m", "--multi-sample-vcf"):
             multi_sample_vcf = a
+            dataset_name = os.path.basename(multi_sample_vcf)
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
@@ -68,21 +70,7 @@ def main():
         if not os.path.exists(multi_sample_vcf):
             print(f"{multi_sample_vcf} does not exist!\n")
             sys.exit()
-  
-        # Splitting the multi-sample VCF file
-        workdir = os.path.dirname(multi_sample_vcf)
-        accessions_list_file = os.path.join(workdir, "accessions.txt")
-        if os.path.exists(accessions_list_file):
-            with open(accessions_list_file) as accessions:
-                for sample in accessions:
-                    sample = sample.strip()
-                    print(f"Extracting {sample}...")
-                    output_vcf = f"{sample}.vcf.gz"
-                    run_with_retry(["bcftools", "view", "-c1", "-Oz", "--threads", "10", "-s", sample, "-o", output_vcf, multi_sample_vcf], module_name="BCFtools")
-                    vcf_files.append(output_vcf)
-        else:
-            print(f"{accessions_list_file} does not exist. Cannot split VCF file.")
-            sys.exit()
+        vcf_files = handle_multi_vcf(multi_sample_vcf)
 
     if not vcf_files:
         print("Please provide at least one VCF file as input (option -v), a directory of VCF files (option -V), or a multi-sample VCF file (option -m).")
@@ -104,18 +92,18 @@ def main():
 
 
     # Prepare VCF files for Tersect build
-    #print("Preparing VCF files for Tersect...")
-    #tmp_vcf_files = []
-    #for vcf_file in vcf_files:
-    #    decompressed_file = decompress_file(vcf_file)[0]  
-    #    tmp_vcf_files.append(decompressed_file)
+    print("Preparing VCF files for Tersect...")
+    tmp_vcf_files = []
+    for vcf_file in vcf_files:
+        decompressed_file = decompress_file(vcf_file)[0]  
+        tmp_vcf_files.append(decompressed_file)
 
     # Build Tersect index
-    #print("Building Tersect index...")
-    #build_tersect_index(dataset_name, tmp_vcf_files)
-    #print("Tersect index created successfully.")
+    print("Building Tersect index...")
+    build_tersect_index(dataset_name, tmp_vcf_files)
+    print("Tersect index created successfully.")
     # This will iterate over each file path and remove the temporary file
-    #_ = [os.remove(file) for file in tmp_vcf_files if os.path.exists(file)]
+    _ = [os.remove(file) for file in tmp_vcf_files if os.path.exists(file)]
 
     # Recompress and index VCF files if needed
     print("Indexing VCF files...")
@@ -124,7 +112,7 @@ def main():
     
     # Ensure the FASTA file is unzipped and indexed
     fasta_path=ensure_fasta_index(fasta)
-    if not os.path.exists(fasta_path):
+    if not os.path.exists(fasta_path): 
         print(f"Decompressed FASTA file {fasta_path} does not exist or is invalid.")
         sys.exit()
     fasta_index = fasta_path + ".fai"
@@ -161,10 +149,9 @@ def main():
 
     print("Copying files for Genome Browser access...")
     # Copy necessary files to gp_data_copy for access in browser
-    copy_files(fasta_path, gff_file, vcf_files, "./newdb2/mongo-data/gp_data_copy/")  
+    copy_files(fasta_path, gff_file, vcf_files, "./db-data/mongo-data/gp_data_copy/")  
     
-    print("Deploying on localhost...")
-   # deploy_browser()
+    print("Ready for deployment on localhost")
 
 if __name__ == "__main__":
     main()

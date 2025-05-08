@@ -166,8 +166,42 @@ def ensure_vcf_index(vcf_path):
     bgzipped_vcf= ensure_bgzip_compression(vcf_path)
     vcf_index = bgzipped_vcf + ".tbi"
     print(f"Indexing {bgzipped_vcf} with tabix...")
-    run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
+    run_with_retry(["tabix", "-fp", "vcf", bgzipped_vcf], module_name="htslib")
     return bgzipped_vcf
+
+def handle_multi_vcf(multi_vcf):
+    workdir = os.path.dirname(multi_vcf)
+        
+    # Creating index file
+    multisample_index = os.path.join(workdir, f"{multi_vcf}.tbi")
+    if not os.path.exists(multisample_index):
+        print(f"{multisample_index} does not exist - Creating...\n")
+        try:
+            multisample_index = ensure_vcf_index(multi_vcf)
+        except:
+            print("Error with creating index file")
+            sys.exit()
+    
+    # Splitting the multi-sample VCF file
+    accessions_list_file = os.path.join(workdir, "accessions.txt")
+    if os.path.exists(accessions_list_file):
+        vcf_files = []
+        with open(accessions_list_file) as accessions:
+            for sample in accessions:
+                sample = sample.strip()
+                print(f"Extracting {sample}...")
+                output_vcf = f"{sample}.vcf.gz"
+                run_with_retry(["bcftools", "view", "-c1", "-Oz", "--threads", "10", "-s", sample, "-o", output_vcf, multi_vcf], module_name="BCFtools")
+                vcf_files.append(output_vcf)
+        return(vcf_files)
+    else:
+        try:
+            os.chdir(workdir)
+            with open("accessions.txt", "w") as file:
+                run_with_retry(["bcftools", "query", "-l", multi_vcf], stdout=file, check=True, module_name="BCFtools")
+        except:
+            print(f"{accessions_list_file} does not exist. Cannot split VCF file.")
+            sys.exit()
 
 def write_to_shell_script(dataset_name, reference_path):
     """
@@ -215,8 +249,9 @@ def copy_files(fasta, gff_file, vcf_files, destination):
         shutil.copy2(fasta_index, destination_dir)
 
     # Files to copy: GFF and index
-    gff_index = os.path.basename(gff_file) + ".tbi"
-    shutil.copy2(os.path.basename(gff_file), destination_dir)
+    
+    gff_index = os.path.relpath(gff_file) + ".tbi"
+    shutil.copy2(gff_file, destination_dir)
     if os.path.exists(gff_index):
         shutil.copy2(gff_index, destination_dir)
 
@@ -348,7 +383,7 @@ def ensure_gff_index(gff_path, fasta_index):
         print(gff_index)
         if not os.path.exists(gff_index):
             print(f"Index for {gff_path} not found. Creating...")
-            run_with_retry(["tabix", "-p", "gff", gff_path], module_name="htslib")
+            run_with_retry(["tabix", "-fp", "gff", gff_path], module_name="htslib")
         return(gff_path)
     except subprocess.CalledProcessError as e:
         print(f"Exception during jbrowse sort-gff: {e}")
@@ -356,7 +391,7 @@ def ensure_gff_index(gff_path, fasta_index):
 def create_jbrowse_config(arg,file):
     try:
         #run_with_temp_node("22")
-        command=f"{arg} {file} --load copy --out config.json --force"
+        command=f"{arg} {file} --load inPlace --out config.json --force"
         run_command_with_node("18", command)
         #subprocess.run(command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
@@ -375,95 +410,97 @@ def copy_json_tracks():
     with open("./config.json", 'r') as json_file:
         config_data = json.load(json_file)
   
-    # Extract assemblies and tracks
-    assemblies = config_data.get("assemblies", [])
-    tracks = config_data.get("tracks", [])
+        # Extract assemblies and tracks
+        assemblies = config_data.get("assemblies", [])
+        tracks = config_data.get("tracks", [])
 
-    if assemblies:
-        # Assume you want to modify the first assembly in the list
-        assembly = assemblies[0]
-        
-        # Modify the assembly information
-        new_assembly = {
-            "name": assembly.get("name", ""),
-            "sequence": {
-                "type": assembly.get("sequence", {}).get("type", ""),
-                "trackId": assembly.get("sequence", {}).get("trackId", "").replace(".fna", ""),
-                "adapter": {
-                    "type": "IndexedFastaAdapter",
-                    "fastaLocation": {
-                        "uri": (
-                            "http://127.0.0.1:4200/TersectBrowserGP/tbapi/"
-                            "datafiles//" + assembly.get("name", "")
-                        ),
-                        "locationType": "UriLocation"
-                    },
-                    "faiLocation": {
-                        "uri": (
-                            "http://127.0.0.1:4200/TersectBrowserGP/tbapi/"
-                            "datafiles//" + assembly.get("name", "").replace(".fna", ".fna.fai")
-                        ),
-                        "locationType": "UriLocation"
+        if assemblies:
+            # Assume you want to modify the first assembly in the list
+            assembly = assemblies[0]
+            sequence = assembly["sequence"]
+            adapter = sequence["adapter"]
+            fastaLocation = adapter["fastaLocation"]
+            # Modify the assembly information
+            new_assembly = {
+                "name": assembly.get("name", ""),
+                "sequence": {
+                    "type": assembly.get("sequence", {}).get("type", ""),
+                    "trackId": assembly.get("sequence", {}).get("trackId", ""),
+                    "adapter": {
+                        "type": "IndexedFastaAdapter",
+                        "fastaLocation": {
+                            "uri": (
+                                "http://127.0.0.1:4200/TersectBrowserGP/tbapi/"
+                                "datafiles//" + fastaLocation.get("uri", "")
+                            ),
+                            "locationType": "UriLocation"
+                        },
+                        "faiLocation": {
+                            "uri": (
+                                "http://127.0.0.1:4200/TersectBrowserGP/tbapi/"
+                                "datafiles//" + fastaLocation.get("uri", "")+".fai"
+                            ),
+                            "locationType": "UriLocation"
+                        }
                     }
                 }
             }
-        }
 
-        # Prepare data for TypeScript files with updated URIs
-        ts_assembly_content = "export default " + json.dumps(new_assembly, indent=2) + ";"
+            # Prepare data for TypeScript files with updated URIs
+            ts_assembly_content = "export default " + json.dumps(new_assembly, indent=2) + ";"
 
-        # Write to assembly.ts
-        with open("extension/genome-browser/src/app/react-components/assembly.ts", 'w') as assembly_file:
-            assembly_file.write(ts_assembly_content)
-            print("Assembly data written to assembly.ts")
-    else:
-        print("Assembly not found in JSON config!")
+            # Write to assembly.ts
+            with open("extension/genome-browser/src/app/react-components/assembly.ts", 'w') as assembly_file:
+                assembly_file.write(ts_assembly_content)
+                print("Assembly data written to assembly.ts")
+        else:
+            print("Assembly not found in JSON config!")
 
-    if tracks:
-        # Modify the Track entries
-        new_tracks = []
-        for track in tracks:
-            # Update track name (remove file extension)
-            track["name"] = os.path.splitext(track["name"])[0]
-  
-            # Update URI locations for gffGzLocation and index location
-            if track["type"] == "VariantTrack":
-                adapter = track["adapter"]
-                if "vcfGzLocation" in adapter:
-                    adapter["vcfGzLocation"]["uri"] = (
-                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
-                        track["trackId"] + ".gz"
-                    )
-                if "index" in adapter and "location" in adapter["index"]:
-                    adapter["index"]["location"]["uri"] = (
-                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
-                        track["trackId"] + ".gz" + ".tbi"
-                    )
-            elif track["type"] == "FeatureTrack":
-                adapter = track["adapter"]
-                if "gffGzLocation" in adapter:
-                    adapter["gffGzLocation"]["uri"] = (
-                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
-                        track["trackId"] + ".gz"
-                    )
-                if "index" in adapter and "location" in adapter["index"]:
-                    adapter["index"]["location"]["uri"] = (
-                        "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
-                        track["trackId"] + ".gz"+ ".tbi"
-                    )
-            else:
-                print("Unable to change uris")
-            # Add to new tracks list
-            new_tracks.append(track)
-        # Prepare data for TypeScript files with updated URIs
-        ts_tracks_content = "export default " + json.dumps(new_tracks, indent=2) + ";"
+        if tracks:
+            # Modify the Track entries
+            new_tracks = []
+            for track in tracks:
+                # Update track name (remove file extension)
+                track["name"] = os.path.splitext(track["name"])[0]
+    
+                # Update URI locations for gffGzLocation and index location
+                if track["type"] == "VariantTrack":
+                    adapter = track["adapter"]
+                    if "vcfGzLocation" in adapter:
+                        adapter["vcfGzLocation"]["uri"] = (
+                            "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                            track["trackId"] + ".gz"
+                        )
+                    if "index" in adapter and "location" in adapter["index"]:
+                        adapter["index"]["location"]["uri"] = (
+                            "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                            track["trackId"] + ".gz" + ".tbi"
+                        )
+                elif track["type"] == "FeatureTrack":
+                    adapter = track["adapter"]
+                    if "gffGzLocation" in adapter:
+                        adapter["gffGzLocation"]["uri"] = (
+                            "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                            track["trackId"] + ".gz"
+                        )
+                    if "index" in adapter and "location" in adapter["index"]:
+                        adapter["index"]["location"]["uri"] = (
+                            "http://localhost:4200/TersectBrowserGP/tbapi/datafiles//" +
+                            track["trackId"] + ".gz"+ ".tbi"
+                        )
+                else:
+                    print("Unable to change uris")
+                # Add to new tracks list
+                new_tracks.append(track)
+            # Prepare data for TypeScript files with updated URIs
+            ts_tracks_content = "export default " + json.dumps(new_tracks, indent=2) + ";"
 
-        # Write to tracks.ts
-        with open("extension/genome-browser/src/app/react-components/tracks.ts", 'w') as tracks_file:
-            tracks_file.write(ts_tracks_content)
-            print("Tracks data written to tracks.ts")
-    else:
-        print("Tracks not found in JSON config!")
+            # Write to tracks.ts
+            with open("extension/genome-browser/src/app/react-components/tracks.ts", 'w') as tracks_file:
+                tracks_file.write(ts_tracks_content)
+                print("Tracks data written to tracks.ts")
+        else:
+            print("Tracks not found in JSON config!")
 
 def deploy_browser():
     run_command_with_node("16","npm start")
