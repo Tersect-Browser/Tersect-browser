@@ -88,6 +88,11 @@ Run the script to setup datasets automatically
 G2.4_gene_models.sorted.gff3.gz -V /Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ -c /Users/davidoluwasusi/msc_project/tersect-browser/tbconfig.json 
 ```
 
+```
+./build_annotate_per_chrom.sh ../../../test-data/mongo-data/gp_data_copy/tracks.json /Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/SGN_aer_hom_snps.tsi /Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/trix_indicies
+
+```
+
 
 
 An example copy script via the terminal is;

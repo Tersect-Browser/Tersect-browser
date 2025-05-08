@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import platform
+from pathlib import Path
 import getopt
 import shutil
 import json
@@ -169,14 +170,14 @@ def ensure_vcf_index(vcf_path):
     run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
     return bgzipped_vcf
 
-def write_to_shell_script(dataset_name, reference_path):
+def write_to_shell_script(dataset_name, reference_path, dataset_path):
     """
     Writes the required command to the add_example_dataset.sh script.
     NB: the data.tsi file points to the root dir location
     NB: the reference file should also now be in the root dir location
     
     """
-    if not (dataset_name and reference_path):
+    if not (dataset_name and reference_path and dataset_path):
         print("Required parameters missing for shell script creation.")
         sys.exit()
     script_content = f"""#!/bin/bash
@@ -185,7 +186,7 @@ def write_to_shell_script(dataset_name, reference_path):
 SCRIPT="./backend/src/scripts/add_dataset.py"
 CONFIG_FILE="./tbconfig.json"
 DATASET_NAME="{dataset_name}"
-TSI_FILE="./{dataset_name}.tsi"  
+TSI_FILE="{dataset_path}/{dataset_name}.tsi"  
 REFERENCE_NAME="{os.path.relpath(reference_path)}"
 REFERENCE="./{os.path.relpath(reference_path)}"
 
@@ -393,13 +394,13 @@ def copy_json_tracks(config):
                     "type": "IndexedFastaAdapter",
                     "fastaLocation": {
                         "uri": (
-                            config.frontendHost + config.fileLoadingRoute + assembly.get("name", "")
+                            config['frontendHost'] + config['fileLoadingRoute'] + assembly["sequence"]["adapter"]["fastaLocation"]["uri"]
                         ),
                         "locationType": "UriLocation"
                     },
                     "faiLocation": {
                         "uri": (
-                            config.frontendHost + config.fileLoadingRoute + assembly.get("name", "").replace(".fna", ".fna.fai")
+                            config['frontendHost'] + config['fileLoadingRoute'] + assembly["sequence"]["adapter"]["faiLocation"]["uri"]
                         ),
                         "locationType": "UriLocation"
                     }
@@ -420,6 +421,7 @@ def copy_json_tracks(config):
     if tracks:
         # Modify the Track entries
         new_tracks = []
+        new_json_tracks = []
         for track in tracks:
             # Update track name (remove file extension)
             track["name"] = os.path.splitext(track["name"])[0]
@@ -429,24 +431,24 @@ def copy_json_tracks(config):
                 adapter = track["adapter"]
                 if "vcfGzLocation" in adapter:
                     adapter["vcfGzLocation"]["uri"] = (
-                        config.frontendHost + config.fileLoadingRoute +
+                        config['frontendHost'] + config['fileLoadingRoute'] +
                         track["trackId"] + ".gz"
                     )
                 if "index" in adapter and "location" in adapter["index"]:
                     adapter["index"]["location"]["uri"] = (
-                        config.frontendHost + config.fileLoadingRoute +
+                        config['frontendHost'] + config['fileLoadingRoute'] +
                         track["trackId"] + ".gz" + ".tbi"
                     )
             elif track["type"] == "FeatureTrack":
                 adapter = track["adapter"]
                 if "gffGzLocation" in adapter:
                     adapter["gffGzLocation"]["uri"] = (
-                        config.frontendHost + config.fileLoadingRoute +
+                        config['frontendHost'] + config['fileLoadingRoute'] +
                         track["trackId"] + ".gz"
                     )
                 if "index" in adapter and "location" in adapter["index"]:
                     adapter["index"]["location"]["uri"] = (
-                        config.frontendHost + config.fileLoadingRoute +
+                        config['frontendHost'] + config['fileLoadingRoute'] +
                         track["trackId"] + ".gz"+ ".tbi"
                     )
             else:
@@ -454,12 +456,44 @@ def copy_json_tracks(config):
             # Add to new tracks list
             new_tracks.append(track)
         # Prepare data for TypeScript files with updated URIs
+        for track in tracks:
+            new_json_tracks.append({
+                "name": track["name"],
+                "type": track["type"],
+                "adapter": {
+                    "type": track["adapter"]["type"],
+                    "vcfGzLocation": {
+                        "uri": (
+                            config['localDbPath'] + config['vcfLocation'] + "/" +
+                            track["trackId"] + ".gz"
+                        ),
+                        "locationType": "UriLocation"
+                    },
+                    "index": {
+                        "location": {
+                            "uri": (
+                                config['localDbPath'] + config['vcfLocation'] + "/" +
+                                track["trackId"] + ".gz" + ".tbi"
+                            ),
+                            "locationType": "UriLocation"
+                        }
+                    }
+                }
+            })
         ts_tracks_content = "export default " + json.dumps(new_tracks, indent=2) + ";"
+        json_tracks_content = json.dumps(new_json_tracks, indent=2)
 
         # Write to tracks.ts
-        with open("extension/genome-browser/src/app/react-components/tracks.ts", 'w') as tracks_file:
+        tracks_file_path = Path("extension/genome-browser/src/app/react-components/tracks.ts")
+        tracks_file_path.parent.mkdir(parents=True, exist_ok=True)
+        with tracks_file_path.open("w", encoding="utf-8") as tracks_file:
             tracks_file.write(ts_tracks_content)
             print("Tracks data written to tracks.ts")
+        file_path = Path(config["localDbPath"]) / "gp_data_copy" / "tracks.json"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        with file_path.open("w", encoding="utf-8") as tracks_json_file:
+            tracks_json_file.write(json_tracks_content)
+            print("Tracks data written to gp_data_copy")
     else:
         print("Tracks not found in JSON config!")
 

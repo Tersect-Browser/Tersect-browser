@@ -29,7 +29,6 @@ def main():
         usage()
         sys.exit(2)
 
-    dataset_name = None
 
     for o, a in opts:
         if o in ("-f", "--fasta"):
@@ -39,10 +38,11 @@ def main():
             gff_file = a
         elif o in ("-v", "--vcfs"):
             vcf_files = a.split(',')
-            dataset_name = os.path.basename(vcf_files[1])
+            print(f"VCF files: {vcf_files}")
+            
+            
         elif o in ("-V", "--dir"):
             vcf_dir = a
-            dataset_name = os.path.basename(vcf_dir)  # Use vcf directory name as dataset name
         elif o in ("-m", "--multi-sample-vcf"):
             multi_sample_vcf = a
         elif o in ("-h", "--help"):
@@ -113,20 +113,6 @@ def main():
             sys.exit()
 
 
-    # Prepare VCF files for Tersect build
-    #print("Preparing VCF files for Tersect...")
-    #tmp_vcf_files = []
-    #for vcf_file in vcf_files:
-    #    decompressed_file = decompress_file(vcf_file)[0]  
-    #    tmp_vcf_files.append(decompressed_file)
-
-    # Build Tersect index
-    #print("Building Tersect index...")
-    #build_tersect_index(dataset_name, tmp_vcf_files)
-    #print("Tersect index created successfully.")
-    # This will iterate over each file path and remove the temporary file
-    #_ = [os.remove(file) for file in tmp_vcf_files if os.path.exists(file)]
-
     # Recompress and index VCF files if needed
     print("Indexing VCF files...")
     for vcf_file in vcf_files:
@@ -148,8 +134,8 @@ def main():
         cfg = json.load(cfg_file)
 
 
-    print("Editing backend dataset scripts...")
-    write_to_shell_script(dataset_name, fasta_path)
+    print("Editing backend dataset scripts...", cfg)
+    write_to_shell_script(cfg['datasetName'], fasta_path, cfg['tsiPath'])
     print("Loading final tersect dataset...")
     # Add dataset tsi file to tersect browser
     add_example_dataset()
@@ -176,7 +162,7 @@ def main():
 
     print("Copying files for Genome Browser access...")
     # Copy necessary files to gp_data_copy for access in browser
-    copy_files(fasta_path, gff_file, vcf_files, "./~/mongo-data/gp_data_copy/")  
+    copy_files(fasta_path, gff_file, vcf_files, cfg["localDbPath"]+"/gp_data_copy/")  
     
     print("Deploying on localhost...")
    # deploy_browser()

@@ -75,16 +75,36 @@ done
 ################################################################################
 # 2a) Merge all sanitized VCFs once into all_samples.vcf.gz
 ################################################################################
-echo "[*] Merging all sanitized VCFs → $OUTDIR/all_samples.vcf.gz"
-NCPU=$(sysctl -n hw.ncpu || echo 1)
 
-bcftools merge \
-  --threads "$NCPU" \
-  --force-samples -m none \
-  -Oz -o "$OUTDIR/all_samples.vcf.gz" \
-  "${SANIT_VCFS[@]}"
+NCPU=$(sysctl -n hw.ncpu 2>/dev/null || nproc || echo 1)
+NVFILES=${#SANIT_VCFS[@]}   # how many VCFs do we actually have?
 
-tabix -p vcf "$OUTDIR/all_samples.vcf.gz"
+echo "[*] Found $NVFILES sanitized VCF file(s)"
+
+if [[ $NVFILES -gt 1 ]]; then
+  echo "[*] Merging all sanitized VCFs → $OUTDIR/all_samples.vcf.gz"
+
+  bcftools merge \
+    --threads "$NCPU" \
+    --force-samples -m none \
+    -Oz -o "$OUTDIR/all_samples.vcf.gz" \
+    "${SANIT_VCFS[@]}"
+
+  tabix -p vcf "$OUTDIR/all_samples.vcf.gz"
+
+else
+  echo "[*] Only one VCF – no merge needed. Renaming to all_samples.vcf.gz"
+
+  # Move (or use cp if you prefer to keep the original)
+  mv "${SANIT_VCFS[0]}" "$OUTDIR/all_samples.vcf.gz"
+
+  # If it already has a tabix index, move that too; else create one
+  if [[ -f "${SANIT_VCFS[0]}.tbi" ]]; then
+    mv "${SANIT_VCFS[0]}.tbi" "$OUTDIR/all_samples.vcf.gz.tbi"
+  else
+    tabix -p vcf "$OUTDIR/all_samples.vcf.gz"
+  fi
+fi
 
 ################################################################################
 # 3) Parse chromosomes
