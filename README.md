@@ -114,6 +114,7 @@ Install Rosetta (if not already):
 ```
 softwareupdate --install-rosetta
 ```
+
 Run the Terminal in Rosetta:
 
 Go to Applications > Utilities > Terminal.
