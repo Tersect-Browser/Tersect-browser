@@ -558,11 +558,11 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
-    // const tsiLocation = "/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi";
-    // const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/SL2.50.fa`;
+    const tsiLocation = "/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi";
+    const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/SL2.50.fa`;
 
-    const tsiLocation = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
-    const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
+    // const tsiLocation = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
+    // const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
 
     const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation];
 
