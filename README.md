@@ -68,16 +68,27 @@ Example `tbconfig.localDbPath` tree looks like this
 ├── diagnostic.data
 ├── distmats
 ├── gp_data_copy
-    ├── 150_VCFs_2.50
-    ├── barcodes
-    ├── ix_files
-    ├── scripts
-    ├── tbi_files
-    └── trix_indices
+    ├── ITAG2.4_gene_models.gff3
+    ├── ITAG2.4_gene_models.sorted.gff3.gz
+    ├── ITAG2.4_gene_models.sorted.gff3.gz.tbi
+    ├── SGN_aer_hom_snps.tsi
+    ├── SL2.50.fa
+    ├── SL2.50.fa.fai
+    └── vcf_location
+        └── RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz
 
 ```
+Note: The files on elvis will be more as they contain the processed vcf files and index files needed for the search functionality
 
 Copy also the `add_example_dataset` script to the root of the `tersect_browser` folder.
+
+Run the script to setup datasets automatically 
+```
+ python setup_new_tbrowser_dataset.py -f /Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa -g /Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITA
+G2.4_gene_models.sorted.gff3.gz -V /Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ -c /Users/davidoluwasusi/msc_project/tersect-browser/tbconfig.json 
+```
+
+
 
 An example copy script via the terminal is;
 `scp -r username@port:/home/tbrowser/add_example_dataset.sh  /Users/davidoluwasusi/msc_project/tersect-browser/gp_data`
@@ -90,8 +101,8 @@ We are using python 3.11 because numpy has issues when we try to install via pyt
 Activate the virtual environment
 `source .tersect/bin/activate`
 
-Install the dependencies in the requirements.txt file
-`pip3 install -r /path/to/requirements.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
+Install the dependencies in the requirements.txt file, conda channels does not have the version of hashids specified needed for tersect cli, therefore tersect dependencies are in requirements.venv.txt
+`pip3 install -r /path/to/requirements.venv.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
 
 - If there are errors during the installation here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
 

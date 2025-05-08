@@ -3,10 +3,10 @@
 
 SCRIPT="./backend/src/scripts/add_dataset.py"
 CONFIG_FILE="./tbconfig.json"
-DATASET_NAME="Example dataset"
-TSI_FILE="./gp_data/SGN_aer_hom_snps.tsi"
-REFERENCE_NAME="SL2.50"
-REFERENCE="./gp_data/SL2.50.fa"
+DATASET_NAME="HN-Soybean-data"
+TSI_FILE="./HN-Soybean-data.tsi"  
+REFERENCE_NAME="Soybean/glyma.Wm82.gnm2.DTC4.genome_main.fna"
+REFERENCE="./Soybean/glyma.Wm82.gnm2.DTC4.genome_main.fna"
 
 $SCRIPT $CONFIG_FILE -f \
 "$DATASET_NAME" "$TSI_FILE" \
