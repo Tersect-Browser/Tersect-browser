@@ -59,6 +59,27 @@ def find_barcode_windows(personal_seq, ref_seq, ref_start, window_size, step=1):
                 barcodes.append((win_start, win_end, win_seq))
     return barcodes
 
+# generate barcodes only if variants are present in the centre of the barcode region
+def find_central_barcode_windows(personal_seq, ref_seq, private_positions, ref_start, window_size, step=1, core_margin=5):
+    barcodes = []
+    for i in range(0, len(personal_seq) - window_size + 1, step):
+        win_start = ref_start + i
+        win_end = win_start + window_size
+        win_seq = personal_seq[i:i+window_size]
+        ref_win_seq = ref_seq[i:i+window_size]
+
+        if win_seq != ref_win_seq:
+            # Define core zone
+            window_center = (win_start + win_end) // 2
+            core_start = window_center - core_margin
+            core_end = window_center + core_margin
+
+            # Check if any private variant falls inside core
+            if any(core_start <= p < core_end for p in private_positions):
+                barcodes.append((win_start, win_end, win_seq))
+    return barcodes
+
+
 # count how many unique variants fall within the barcode length, and their relative position within the barcode
 def count_variant_number(barcode_start, barcode_end, variants):
     # results = ""
@@ -172,11 +193,15 @@ if __name__ == "__main__":
     ## Reduce dictionary
     new_unique_vars = remove_overlapping_variants(unique_vars, union_vars)
 
+    # Extract variant positions
+    unique_var_positions = set(new_unique_vars.keys())
+
     # Generate accession-specific sequence
     unique_seq = apply_variants_to_sequence(ref_window, args.start, new_unique_vars)
 
     # Find truly unique barcode windows
-    barcodes = find_barcode_windows(unique_seq, ref_window, args.start, args.size)
+    # barcodes = find_barcode_windows(unique_seq, ref_window, args.start, args.size)
+    barcodes = find_central_barcode_windows(unique_seq, ref_window, unique_var_positions, args.start, args.size)
 
     print('barcodes generated - now printing to file')
 
@@ -188,6 +213,7 @@ if __name__ == "__main__":
         filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
         print('created file name', filename)
         outputFolder = '/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/barcodes/'
+        # outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
         print('created output foler', outputFolder)
         fullPath = os.path.join(outputFolder, filename)
         print('created fullPath', fullPath)
