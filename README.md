@@ -61,7 +61,22 @@ When your database is up and running, you can start the backend server (However,
 
 ### Generating the dataset
 
-To generate the data set, copy the data in the `gp_data` folder on Elvis to the root of the `tersect_browser` folder.
+To generate the data set, copy the data in the `gp_data_copy` folder on Elvis to your selected database folder. i.e the value of `tbconfig.localDbPath`.
+
+Example `tbconfig.localDbPath` tree looks like this
+```
+├── diagnostic.data
+├── distmats
+├── gp_data_copy
+    ├── 150_VCFs_2.50
+    ├── barcodes
+    ├── ix_files
+    ├── scripts
+    ├── tbi_files
+    └── trix_indices
+
+```
+
 Copy also the `add_example_dataset` script to the root of the `tersect_browser` folder.
 
 An example copy script via the terminal is;
@@ -77,7 +92,8 @@ Activate the virtual environment
 
 Install the dependencies in the requirements.txt file
 `pip3 install -r /path/to/requirements.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
-- If errors in install here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
+
+- If there are errors during the installation here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
 
 Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
 
@@ -86,6 +102,7 @@ Give the `add_example_dataset.sh` script write access by running `chmod u+x add_
 Run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
 
 If seeing errors about python version such as: `env: python3\r: No such file or directory` , then it might be a unix line encoding error in the python scripts. Run the following dos2unix command, and just make sure you *don't* commit the changes to these scripts (will show up as unstaged .py scripts in git status).
+
 - `find {path_to}/Tersect-browser -type f \( -name "*.sh" -o -name "*.py" \) -exec dos2unix {} + `
 
 ### Additional Requirement For Running The Browser
