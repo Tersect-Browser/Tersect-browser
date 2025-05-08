@@ -1,164 +1,233 @@
 import tracks from '../../react-components/tracks'
 import assembly from '../../react-components/assembly'
 import config from '../../react-components/jbrowseConfig'
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
+import 'primereact/resources/themes/saga-green/theme.css' // theme
+import 'primereact/resources/primereact.min.css' // core css
+import './geneSearchStyles.css'
+import 'primeflex/primeflex.css'
+
+import { PrimeReactProvider } from 'primereact/api'
 import {
-    createViewState,
-    createModel,
-    JBrowseLinearGenomeView,
-    ViewModel
+  createViewState,
+  ViewModel,
 } from '@jbrowse/react-linear-genome-view'
-import React, { useState, useEffect, useRef } from 'react';
-import { AutoComplete } from 'primereact/autocomplete';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { searchGene } from '../searchGene';
+import React, { useEffect, useRef, useState } from 'react'
+import { AutoComplete } from 'primereact/autocomplete'
+import { Button } from 'primereact/button'
+import { Dialog } from 'primereact/dialog'
+import { Divider } from 'primereact/divider';
+import { Slider } from 'primereact/slider'
+import { Dropdown } from 'primereact/dropdown';
+import { InputNumber } from 'primereact/inputnumber'
+import { searchGene, ImpactLevel, getSuggestions } from '../searchGene'
 
-// If you have your searchGene function in a separate file, import it:
-// import { searchGene } from './searchGene';
-
-export default function GeneSearch(props:any) {
-    console.log(props, 'from angular')
-    const [query, setQuery] = useState('');
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [results, setResults] = useState<any[]>([]);
-    const [showPopup, setShowPopup] = useState(false);
-
-    // Fake local terms; you can replace this with a fetch or a real function
-    const possibleTerms = ['BRCA1', 'TP53', 'MYC', 'EGFR', 'CDKN2A'];
-
-    /**
-     * Called by <AutoComplete> whenever it needs fresh suggestions.
-     * 'event.query' has the current input text.
-     */
-    const handleComplete = (event: { query: string }) => {
-        const filtered = possibleTerms.filter((term) =>
-            term.toLowerCase().startsWith(event.query.toLowerCase())
-        );
-        setSuggestions(filtered);
-    };
-
-    /**
-     * Basic parse function from your sample code
-     * (You can remove it if you’re not actually using this logic.)
-     */
-    const parseResult = (result: any) => {
-        const [id, raw] = result;
-        try {
-            const decoded = decodeURIComponent(raw)
-                .replace(/^\[|\]$/g, '') // remove brackets
-                .split('|');
-            const [location, source, name, type] = decoded;
-            return {
-                id,
-                location,
-                source,
-                name,
-                type: type?.split('%3A')[0] || 'feature',
-            };
-        } catch (e) {
-            return {
-                id,
-                location: 'unknown',
-                source: 'unknown',
-                type: 'unknown',
-            };
-        }
-    };
-
-
-
-
-    const state = createViewState({
-        assembly,
-        tracks,
-        defaultSession: {
-            name: 'default session',
-            view: {
-                type: 'LinearGenomeView',
-                id: '1',
-                bpPerPx: 50000,
-                offsetPx: 0,
-                displayedRegions: [
-                    {
-                        assemblyName: assembly.name,
-                        start: 1,
-                        end: 9000000,
-                        refName: 'SL2.50ch01',
-                    },
-                ],
-            },
-        },
-        
-        configuration: config
-    })
-
-    
+/**
+ * Extends the original GeneSearch component by
+ * – replacing the free‑text input with a PrimeReact <AutoComplete>
+ * – adding a numeric range selector (PrimeReact <Slider range />) so callers can
+ *   constrain the genomic position (or any numeric field you need).
+ */
+function GeneSearch(props: any) {
+  console.log(props)
   
+    // ---------- JBrowse view ----------
 
-    state.session.addView('LinearGenomeView', {
-        type: 'LinearGenomeView',
-        id: '1',
-        bpPerPx: 50000,
-        offsetPx: 0,
-        displayedRegions: [
-            {
-                assemblyName: assembly.name,
-                start: 1,
-                end: 9000000,
-                refName: 'SL2.50ch01',
-            },
-        ],
-    });
-    const view = state.session.views[0];
-    tracks.forEach(each => {
-        view?.setHideHeader(true)
-        // view?.scrollTo(50000, 900000)
-        view?.showTrack(each.trackId)
-    })
+  const [query, setQuery] = useState<string>('')
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  // Replace 0/1 000 000 with a sensible default for your dataset
+  const [range, setRange] = useState<[number, number]>(props?.selectedInterval)
+  const [showDialog, setShowDialog] = useState<boolean>(false)
+  const [viewState, setViewState] = useState<ViewModel>()
 
-    /**
-     * Called by the search button or onSelect from the AutoComplete.
-     * Replace this with your actual search.
-     */
-    const search = async (query: string) => {
-        console.log('ran the search', query)
-        if (!query) return;
+  const [selectedImpacts, setSelectedImpacts] = useState<ImpactLevel>(ImpactLevel.HIGH)
+  const [loading, setLoading] = useState<boolean>(false)
+  const triggerRef = useRef<HTMLDivElement | null>(null)
 
-        const testResults = await searchGene(query, state.session)
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ interval: [number, number] }>) => {
+      setRange(e.detail.interval);
+      setShowDialog(true);
+      handleSearch(e.detail.interval);
+    }
+   
 
-        props.callback(testResults);
-    };
+    // add
+    window.addEventListener("tersect-search-variants", handler as EventListener);
+    console.log('registered')
 
-    return (
-        <PrimeReactProvider>
-            <div className="p-inputgroup" style={{ position: 'relative' }}>
-                <InputText
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search for a gene..."
+    // clean up
+    return () =>
+      window.removeEventListener("tersect-search-variants", handler as EventListener);
+  },[])
+
+  // ---------- AutoComplete helper ----------
+  // Accept a list of gene IDs from the parent, otherwise keep an empty list.
+  const geneOptions: string[] =  []
+
+  const completeGeneId = async (e: { query: string }) => {
+    const q = e.query.trim().toLowerCase()
+    if (!q) {
+      setSuggestions([])
+      return
+    }
+    const result = await getSuggestions(q)
+    setSuggestions(
+       result// cap for performance
+    )
+  } 
+
+
+
+  // ---------- UI helpers ----------
+  const impacts = [ImpactLevel.HIGH]
+  // , ImpactLevel.LOW, ImpactLevel.MODERATE]
+
+  const toggleImpact = (value: ImpactLevel) => {
+    setSelectedImpacts(value)
+  }
+
+  const handleSearch = async (recentInterval?: [number, number]) => {
+    // if (!query.trim()) return
+    setLoading(true)
+    try {
+      const results = await searchGene(
+        query,
+        viewState?.session,
+        selectedImpacts,
+        props?.chromosome?.name,
+        recentInterval ?? range,
+        props?.datasetId
+      )
+      console.log(results);
+      
+      props?.callback?.(results)
+    } finally {
+      setLoading(false)
+      setShowDialog(false)
+    }
+  }
+
+  return (
+    <div className="relative inline-block" ref={triggerRef}>
+      {/* Trigger */}
+      <Button
+        label="Open Variant Search"
+        style={{
+          backgroundColor: '#459e00',
+          borderRadius: 4,
+          padding: 2,
+          color: 'white',
+          fontSize: 16,
+          paddingRight: 10,
+          paddingLeft: 10,
+          borderColor: '#327e04',
+        }}
+        onClick={() => setShowDialog(true)}
+        outlined
+      />
+
+      {/* Dialog */}
+      <Dialog
+        header="Variant Search"
+        visible={showDialog}
+        style={{ width: '50rem', top: '100px' }}
+        modal
+        onHide={() => setShowDialog(false)}
+        position="top-right"
+        appendTo={triggerRef.current as any}
+        draggable={false}
+      >
+        <p className='block mb-2'>Search by interval</p>
+
+        {/* Range selector */}
+        <div className={query ? 'opacity-20' : 'opacity-1'}>
+        <div className="mb-5">
+          <label className="block mb-2 font-semibold">Position range (bp)</label>
+          <Slider min={1} value={range} step={1} max={98543444} onChange={e => {
+            console.log(e.value)
+            setRange(e.value as [number, number])}}    range className="w-full" />
+          <div className="flex justify-between mt-2">
+            <InputNumber
+              value={range[0]}
+              onValueChange={e => setRange([e.value ?? 0, range[0]])}
+              min={1}
+              step={1}
+              max={98543444}
+              mode="decimal"
+              useGrouping={false}
+              inputClassName="w-full"
+            />
+            <span className="px-2">to</span>
+            <InputNumber
+              value={range[1]}
+              step={1}
+              onValueChange={e => setRange([range[0], e.value ?? range[1]])}
+              min={1}
+            max={98543444}
+              mode="decimal"
+              useGrouping={false}
+              inputClassName="w-full"
+            />
+          </div>
+        </div>
+         {/* Impact checkboxes */}
+        <div className="mb-4">
+          <label className="block mb-2 font-semibold">Choose Impact</label>
+          <div className="flex gap-3">
+            {impacts.map(level => (
+              <div key={level} className="flex items-center gap-2">
+                <Dropdown
+                  inputId={`impact-${level}`}
+                  value={selectedImpacts}
+                  onChange={(e) => toggleImpact(e.value)}
+                  options={[ImpactLevel.HIGH, ImpactLevel.MODERATE, ImpactLevel.LOW]}
                 />
-                <Button label="Search" onClick={() => search(query)} />
+              </div>
+            ))}
+          </div>
+        </div>
+        </div>
+        <Divider type="dashed" />
+        {/* Gene ID autocomplete */}
+        <p className='block mb-2'>Search by high impact gene id (optional)</p>
+        <div className="p-fluid mb-3">
+          <label htmlFor="geneSearchAuto" className="block mb-1">
+            Gene ID
+          </label>
+          <AutoComplete
+            inputId="geneSearchAuto"
+            value={query}
+            suggestions={suggestions}
+            completeMethod={completeGeneId}
+            onChange={e => setQuery(e.value)}
+            placeholder="Start typing…"
+            forceSelection={false}
+            className="w-full"
+          />
+        </div>
 
-                <Dialog
-                    header="Search Results"
-                    visible={showPopup}
-                    style={{ width: '30rem' }}
-                    onHide={() => setShowPopup(false)}
-                >
-                    {results.length > 0 ? (
-                        results.map((r, idx) => {
-                            const parsed = parseResult(r);
-                            return <div onClick={() => {
-                                props?.callback()
-                            }} key={idx}>{parsed.name ?? r[0]}</div>;
-                        })
-                    ) : (
-                        <i>No results found</i>
-                    )}
-                </Dialog>
-            </div>
-        </PrimeReactProvider>
-    );
+       
+
+        {/* Search */}
+        <Button
+          label={loading ? 'Searching…' : 'Search for variants'}
+          icon={loading ? 'pi pi-spin pi-spinner' : undefined}
+          loading={loading}
+          disabled={loading}
+          onClick={() => handleSearch()}
+          className="w-full"
+        />
+      </Dialog>
+    </div>
+  )
 }
+
+export default function WrappedApp(props: any) {
+  return (
+    <PrimeReactProvider>
+      <GeneSearch {...props} />
+    </PrimeReactProvider>
+  )
+}
+
+

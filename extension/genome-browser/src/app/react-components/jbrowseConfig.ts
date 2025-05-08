@@ -7,7 +7,7 @@
         "main": "#459e00"
       },
       "tertiary": {
-        "main": "#459e00"
+        "main": "#327e04"
       },
       "quaternary": {
         "main": "#459e00"
@@ -18,14 +18,13 @@
         styleOverrides: {
           root: {
             boxShadow: 'none',
+            padding: '0 !important'
           },
         },
       }
     }
   },
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
-  },
+
   };
 
   export default config;

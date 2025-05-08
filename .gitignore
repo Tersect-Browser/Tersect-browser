@@ -63,3 +63,7 @@ db-data/
 .tersect
 gp_data
 db-data/
+
+~/mongo-data/
+tmp_outputs/
+

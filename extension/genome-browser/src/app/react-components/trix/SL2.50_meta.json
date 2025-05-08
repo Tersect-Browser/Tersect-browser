@@ -1,11 +1,12 @@
 {
-  "dateCreated": "2025-04-10T13:27:03.255Z",
+  "dateCreated": "2025-04-18T14:05:15.911Z",
   "tracks": [
     {
       "trackId": "S.lyc LA2706",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -29,8 +30,9 @@
     {
       "trackId": "S.lyc LA2838A",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -54,8 +56,9 @@
     {
       "trackId": "S.lyc PI406760",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -79,8 +82,9 @@
     {
       "trackId": "S.lyc LA1090",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -104,8 +108,9 @@
     {
       "trackId": "S.lyc EA00325",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -129,8 +134,9 @@
     {
       "trackId": "S.lyc EA00488",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -154,8 +160,9 @@
     {
       "trackId": "S.lyc EA00375",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -179,8 +186,9 @@
     {
       "trackId": "S.lyc EA00371",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -204,8 +212,9 @@
     {
       "trackId": "S.lyc LYC1365",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -229,8 +238,9 @@
     {
       "trackId": "S.lyc LYC1969",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -254,8 +264,9 @@
     {
       "trackId": "S.lyc LYC3897",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -279,8 +290,9 @@
     {
       "trackId": "S.lyc LYC3476",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -304,8 +316,9 @@
     {
       "trackId": "S.lyc TR00003",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -329,8 +342,9 @@
     {
       "trackId": "S.lyc CGN15464",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -354,8 +368,9 @@
     {
       "trackId": "S.lyc LYC3340",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -379,8 +394,9 @@
     {
       "trackId": "S.lyc EA01155",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -404,8 +420,9 @@
     {
       "trackId": "S.lyc EA01049",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -429,8 +446,9 @@
     {
       "trackId": "S.lyc LYC3153",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -454,8 +472,9 @@
     {
       "trackId": "S.lyc LYC3155",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -479,8 +498,9 @@
     {
       "trackId": "S.lyc PI129097",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -504,8 +524,9 @@
     {
       "trackId": "S.lyc PI272654",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -529,8 +550,9 @@
     {
       "trackId": "S.lyc EA00990",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -554,8 +576,9 @@
     {
       "trackId": "S.cor LA0118",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -579,8 +602,9 @@
     {
       "trackId": "S.lyc EA00157",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -604,8 +628,9 @@
     {
       "trackId": "S.lyc CGN20815",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -629,8 +654,9 @@
     {
       "trackId": "S.lyc PI303721",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -654,8 +680,9 @@
     {
       "trackId": "S.lyc EA00027",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -679,8 +706,9 @@
     {
       "trackId": "S.lyc V710092",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -704,8 +732,9 @@
     {
       "trackId": "S.lyc PC711092",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -729,8 +758,9 @@
     {
       "trackId": "S.lyc PI93302",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -754,8 +784,9 @@
     {
       "trackId": "S.lyc SG16",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -779,8 +810,9 @@
     {
       "trackId": "S.lyc EA01088",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -804,8 +836,9 @@
     {
       "trackId": "S.lyc PI203232",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -829,8 +862,9 @@
     {
       "trackId": "S.lyc PI311117",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -854,8 +888,9 @@
     {
       "trackId": "S.lyc LA1314",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -879,8 +914,9 @@
     {
       "trackId": "S.lyc PI158760",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -904,8 +940,9 @@
     {
       "trackId": "S.lyc LA0113",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -929,8 +966,9 @@
     {
       "trackId": "S.lyc LYC1410",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -954,8 +992,9 @@
     {
       "trackId": "S.lyc PI169588",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -979,8 +1018,9 @@
     {
       "trackId": "S.lyc LYC2962",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1004,8 +1044,9 @@
     {
       "trackId": "S.lyc LYC2910",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1029,8 +1070,9 @@
     {
       "trackId": "S.pim LYC2798",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1054,8 +1096,9 @@
     {
       "trackId": "S.lyc LYC2740",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1079,8 +1122,9 @@
     {
       "trackId": "S.pim LA1584",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1104,8 +1148,9 @@
     {
       "trackId": "S.pim LA1578",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1129,8 +1174,9 @@
     {
       "trackId": "S.per LA1278",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1154,8 +1200,9 @@
     {
       "trackId": "S.chm LA2663",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1179,8 +1226,9 @@
     {
       "trackId": "S.chm LA2695",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1204,8 +1252,9 @@
     {
       "trackId": "S.gal LA0483",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1229,8 +1278,9 @@
     {
       "trackId": "S.lyc CGN15820",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1254,8 +1304,9 @@
     {
       "trackId": "S.gal LA1401",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1279,8 +1330,9 @@
     {
       "trackId": "S.neo LA2133",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1304,8 +1356,9 @@
     {
       "trackId": "S.neo LA0735",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1329,8 +1382,9 @@
     {
       "trackId": "S.arc LA2157",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1354,8 +1408,9 @@
     {
       "trackId": "S.arc LA2172",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1379,8 +1434,9 @@
     {
       "trackId": "S.per LA1954",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1404,8 +1460,9 @@
     {
       "trackId": "S.hua LA1983",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1429,8 +1486,9 @@
     {
       "trackId": "S.hua LA1365",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1454,8 +1512,9 @@
     {
       "trackId": "S.chi CGN15532",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1479,8 +1538,9 @@
     {
       "trackId": "S.chi CGN15530",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1504,8 +1564,9 @@
     {
       "trackId": "S.hab CGN15791",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1529,8 +1590,9 @@
     {
       "trackId": "S.hab PI134418",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1554,8 +1616,9 @@
     {
       "trackId": "S.hab CGN15792",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1579,8 +1642,9 @@
     {
       "trackId": "S.hab LA1718",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1604,8 +1668,9 @@
     {
       "trackId": "S.hab LA1777",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1629,8 +1694,9 @@
     {
       "trackId": "S.hab LA0407",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1654,8 +1720,9 @@
     {
       "trackId": "S.hab LYC4",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1679,8 +1746,9 @@
     {
       "trackId": "S.pen LA1272",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1704,8 +1772,9 @@
     {
       "trackId": "S.pen LA0716",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1729,8 +1798,9 @@
     {
       "trackId": "S.hua LA1364",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1754,8 +1824,9 @@
     {
       "trackId": "S.lyc TR00018",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1779,8 +1850,9 @@
     {
       "trackId": "S.lyc EA00940",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1804,8 +1876,9 @@
     {
       "trackId": "S.lyc TR00019",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1829,8 +1902,9 @@
     {
       "trackId": "S.lyc EA01019",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1854,8 +1928,9 @@
     {
       "trackId": "S.lyc TR00020",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1879,8 +1954,9 @@
     {
       "trackId": "S.lyc EA01037",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1904,8 +1980,9 @@
     {
       "trackId": "S.lyc TR00021",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1929,8 +2006,9 @@
     {
       "trackId": "S.lyc TR00022",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1954,8 +2032,9 @@
     {
       "trackId": "S.lyc TR00023",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -1979,8 +2058,9 @@
     {
       "trackId": "S.lyc EA01640",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -2004,8 +2084,9 @@
     {
       "trackId": "S.lyc LA4133",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -2029,8 +2110,9 @@
     {
       "trackId": "S.lyc LA1421",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -2054,8 +2136,9 @@
     {
       "trackId": "S.gal LA1044",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",
@@ -2079,8 +2162,9 @@
     {
       "trackId": "S.lyc LA1479",
       "attributesIndexed": [
-        "Name",
-        "ID"
+        "#CHROM",
+        "POS",
+        "INFO"
       ],
       "excludedTypes": [
         "CDS",

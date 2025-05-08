@@ -35,6 +35,21 @@ export class BinDrawService {
     public accessions: string[];
     public binIndex: number;
 
+      refreshBin(){
+            this.generatePlotArray(this.bins);
+            if (!isNullOrUndefined(this.targetCanvas)) {
+                this.updateCanvas(this.bins, this.targetCanvas);
+                const targetCanvas = this.targetCanvas;
+                const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
+                ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+                const visibleImage = this.extractVisibleImage(this.bins,
+                                                              this.offsetX, this.offsetY,
+                                                              targetCanvas);
+                ctx.putImageData(visibleImage, this.offsetX, this.offsetY);
+            }
+        
+        }
+
 
     draw(binView: DistanceBinView, offsetX?: number, offsetY?: number,
         targetCanvas?: HTMLCanvasElement) {
@@ -58,7 +73,6 @@ export class BinDrawService {
     }
 
     getImageData(binView: DistanceBinView): ImageData {
-        console.log(binView, 'binView');
         if (binView.redrawRequired) {
             this.generatePlotArray(binView);
         }
@@ -156,9 +170,7 @@ export class BinDrawService {
     }
 
     private generatePlotArray(binView: DistanceBinView) {
-        console.log(binView, 'binView');
         const palette: DistancePalette = GreyscalePalette;
-        console.log(binView.orderedAccessions)
 
         // First dimension (rows) are accessions, second (cols) are bins.
         const binMatrix: number[][] = binView.orderedAccessions.map(
@@ -225,17 +237,27 @@ export class BinDrawService {
 
     // Define function to redraw canvas to highlight feature bins
 
+    getAccessionIndexFromName (accessionName, orderedAccessions) {
+        return orderedAccessions.findIndex(each => each === accessionName)
+    }
+
     highlightBins(intervalStart, binsize, orderedAccessions, searchedAccessions) {
-        console.log(this.accessions, searchedAccessions[0].trackName)
-        const searchAccessionData = searchedAccessions.map(each => findAccessionMatch(each.trackName, orderedAccessions));
-        searchAccessionData.forEach((eachAccession, i) => {
-            const binIndex = getBinIndexFromPosition(searchedAccessions[i].highImpactVariants[0].data.POS, intervalStart, binsize)
-            this.highlightFeatureBins(searchAccessionData, binIndex, this.bins)
+        if(searchedAccessions.length < 1){
+            this.refreshBin();
+            return;
+        }
+        const binMapSet = new Map();
+        searchedAccessions.variants.forEach((highImpact) => {
+                const binIndex = getBinIndexFromPosition(highImpact.pos.start, intervalStart, binsize)
+                if(binMapSet.has(binIndex)){
+                    binMapSet.set(binIndex, [...binMapSet.get(binIndex), ...(highImpact.accessions.map(each => this.getAccessionIndexFromName(each, orderedAccessions)))]);
+                }else {
+                    binMapSet.set(binIndex, highImpact.accessions.map(each => this.getAccessionIndexFromName(each, orderedAccessions)))
+                }
         })
-        // this.highlightFeatureBins(this.accessions, this.binIndex, this.bins)
+        this.highlightFeatureBins(binMapSet,  this.bins)
 
         if (!isNullOrUndefined(this.targetCanvas)) {
-            console.log('valid canvas reached++++++++++')
             this.updateCanvas(this.bins, this.targetCanvas);
             const targetCanvas = this.targetCanvas;
             const ctx: CanvasRenderingContext2D = targetCanvas.getContext('2d');
@@ -250,7 +272,6 @@ export class BinDrawService {
     // Define setters and getters to get data passed from tersect-browser.component.ts
     setAccessions(value: string[]) {
         this.accessions = value;
-        console.log('accession names passed to bin-draw-service');
     }
 
     getAccessions() {
@@ -267,28 +288,9 @@ export class BinDrawService {
 
     // Define function to highlight feature bins
 
-    highlightFeatureBins(accessions: string[], binIndex: number, binView: DistanceBinView) {
-        console.log('indices injected to bin-draw.service', accessions);
+    highlightFeatureBins(binMapSet: Map<number, number[]>,  binView: DistanceBinView) {
+ 
 
-        console.log('calculated binIndex passed to bin-draw.servies', binIndex);
-
-        // TODO - find accession name index in binView.orderedAccessions
-        let accessionIndices: Array<number> = [];
-
-        for (let n = 0; n < accessions.length; n++) {
-            binView.orderedAccessions.forEach((accession, index) => {
-                if (accession == accessions[n]) {
-                    console.log(accession)
-                    console.log('position', index)
-                    accessionIndices.push(index)
-                }
-            })
-        }
-
-        console.log('accessionINdices,', accessionIndices)
-
-        console.log('binview here ------', binView)
-        console.log('binview container size', binView.containerSize)
 
         const palette: DistancePalette = GreyscalePalette;
         // const colorPalette: DistancePalette = RedPalette;
@@ -326,17 +328,18 @@ export class BinDrawService {
         }
 
         // Colour specified bins red
+        const coordinates = Array.from(binMapSet);
 
-        for (let i = 0; i < accessionIndices.length; i++) {
-            let row = accessionIndices[i]; // set row as the index defined in indices
-            const rowOffset = colNum * row;
-            const col = binIndex;
-            const pos = 4 * (col + rowOffset); // to colour col 1
-            binView.imageArray[pos] = 255;
-            binView.imageArray[pos + 1] = 0;
-            binView.imageArray[pos + 2] = 0;
-            binView.imageArray[pos + 3] = 255;
-        }
+        coordinates.forEach(([col, rowArray]) => {
+            rowArray.forEach(row => {
+                const rowOffset = colNum * row;
+                const pos = 4 * (col + rowOffset);
+                binView.imageArray[pos] = 255;
+                binView.imageArray[pos + 1] = 0;
+                binView.imageArray[pos + 2] = 0;
+                binView.imageArray[pos + 3] = 255;
+            })
+        })
 
         binView.redrawRequired = false;
         return binView;
