@@ -63,18 +63,20 @@ cd /tersect-browser/extension/genome-browser
 
 - run `nvm use 22`
 
+- run `npm install`
+
 - run `npm start`
 
 The extension server should be available on port 3200.
 
-## How to load data set
+## How to load the dataset
 
 Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine while building the application.
 
 After successful installation, start the MongoDB server by running `mongod`. By default, MongoDB will try to create and store data in a `/data/db` path. 
-There is a tendency that on Mac, this is a read-only path. If that is the case, you may need to use a different path. I used `db-data/mongo-data`.
+There is a tendency that on Mac, this is a read-only path. If that is the case, you may need to use a different path.  `db-data/mongo-data` was used to test the application.
 
-To start MongoDB with a different path, create the path by running `mkdir -p ~/mongo-data`, then run MongoDB with this path `mongod --dbpath ~/mongo-data`.
+To start MongoDB with a different path, create the path by running `mkdir -p db-data/mongo-data`, then run MongoDB with this path `mongod --dbpath db-data/mongo-data`.
 
 When your database is up and running, you can start the backend server (However, there will be no datasets at this point).
 
@@ -134,13 +136,23 @@ Its correct usage is
 
 E.G
 ```
- python setup_new_tbrowser_dataset.py -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITA
-G2.4_gene_models.sorted.gff3.gz -V /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ -c /Users/user/msc_project/tersect-browser/tbconfig.json 
+ python setup_new_tbrowser_dataset.py \
+ -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa \
+ -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
+ -V /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ \
+ -c /Users/user/msc_project/tersect-browser/tbconfig.json 
 ```
 
 `-V can be replaced with -v to use a comma separated list of vcf file paths instead`
 
-
+E.G
+```
+ python setup_new_tbrowser_dataset.py \
+ -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa \
+ -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
+ -v /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz \
+ -c /Users/user/msc_project/tersect-browser/tbconfig.json 
+```
 
 After the data set is loaded you can start the server and see the loaded dataset on the home page
 
@@ -148,9 +160,9 @@ After the data set is loaded you can start the server and see the loaded dataset
 
 #### VCF Index
 
-navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
+- Navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
 
-Run the `build_annotate_per_chrom.sh` script to generate the indexes for each chromosome
+- Run the `build_annotate_per_chrom.sh` script to generate the indexes for each chromosome
 
 E.G
 ```
@@ -158,9 +170,10 @@ E.G
 
 ```
 #### TRIX Index
-navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
 
-Run the `tersect_trix_builder.sh` script to generate the trix indexes for each chromosome
+- Navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
+
+- Run the `tersect_trix_builder.sh` script to generate the trix indexes for each chromosome
 
 ```
 ./tersect_trix_builder.sh /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/trix_indices /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi
@@ -210,7 +223,18 @@ In the event that an error message stating an .angular/cache/ file does not exis
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://127.0.0.1:4200/`. The app will automatically reload if you change any of the source files.
+At the root of tersect-browser, run `turbo dev` to start the frontend and backend development server.
+
+Change directory to the genome browser in the extensions folder
+
+` nvm use 22`;
+` npm start `;
+
+It should load the extensions on port 3200
+
+Change the path in the index.html to reference this port in `/tersect-browser/frontend/src/index.html`;
+
+  `<script  type="module" src="http://localhost:3200/main.js"></script>`
 
 ## Code scaffolding
 
@@ -218,7 +242,7 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+Run `npm run-script build` to build the frontend and backend application
 
 ## Deployment
 
