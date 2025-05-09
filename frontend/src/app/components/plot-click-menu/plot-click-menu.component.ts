@@ -166,7 +166,8 @@ export class PlotClickMenuComponent {
                         this.modalService.openBarcodeModal(bin.accessionLabel, 
                             this.plotStateService.chromosome.name, 
                             bin.startPosition, 
-                            bin.endPosition
+                            bin.endPosition,
+                            this.plotStateService.datasetId
                         );
 
                         

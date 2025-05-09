@@ -3,7 +3,7 @@ import { ModalService } from '../../pages/tersect-browser/services/modal.service
 import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 import { ActivatedRoute } from '@angular/router';
-import { take } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 
 import { PlotStateService } from '../tersect-distance-plot/services/plot-state.service';
 import { isNullOrUndefined } from '../../utils/utils';
@@ -28,7 +28,7 @@ export class GlobalBarcodeComponent implements OnInit {
   maxVariants: number | null = 1;
 
   downloadLink: string;
-  datasetId: string;
+  datasetId: string = '';
 
   downloadUrl: string | null = null;
   downloadFileName: string = '';
@@ -42,8 +42,14 @@ export class GlobalBarcodeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+  
     
     this.modalService.barcode$.subscribe(val => this.isVisible = val);
+
+    this.modalService.datasetIdSelected$.subscribe(datasetId => {
+      this.datasetId = datasetId;
+      console.log('datasetId', datasetId);
+    });
 
     this.modalService.barcodeTit$.subscribe(title => {
       console.log('title', title);
@@ -83,7 +89,7 @@ export class GlobalBarcodeComponent implements OnInit {
       this.endPosition,
       this.barcodeSize,
       this.maxVariants,
-      this.plotState.datasetId || "Example dataset"
+      this.datasetId || "Example dataset"
     ).subscribe({
       next: (response) => {
 

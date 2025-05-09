@@ -175,26 +175,9 @@ if __name__ == "__main__":
     parser.add_argument("--max_variants", type=int, required=False)
     args = parser.parse_args()
     
-    config_file = abspath(args.config)
-    cfg = None
-    # Check if the config file exists
-    if not os.path.isfile(config_file):
-        print(f"Configuration file {config_file} does not exist.")
-        exit(1)
-    # Load the configuration file
-    import json
-    # Check if the config file is a valid JSON file
-    try:
-        with open(config_file, 'r') as cfg_file:
-            json.load(cfg_file)
-    except json.JSONDecodeError:
-        print(f"Configuration file {config_file} is not a valid JSON file.")
-        exit(1)
-    # Load the configuration file
-    with open(config_file, 'r') as cfg_file:
-        cfg = json.load(cfg_file)
 
-    local_db_path = cfg["localDbPath"]
+
+    local_db_path = args.config
 
     print('Python script running')
 
@@ -235,7 +218,7 @@ if __name__ == "__main__":
     try:
         filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
         print('created file name', filename)
-        outputFolder = local_db_path + 'gp_data_copy/barcodes/'
+        outputFolder = local_db_path + '/gp_data_copy/barcodes/'
         # outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
         print('created output foler', outputFolder)
         fullPath = os.path.join(outputFolder, filename)

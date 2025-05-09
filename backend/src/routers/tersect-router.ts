@@ -542,13 +542,13 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
-    const tsiLocation = `${tbConfig.localDbPath}/gp_data_copy/SGN_aer_hom_snps.tsi`;
-    const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/SL2.50.fa`;
+    const tsiLocation = `${tbConfig.tsiPath}/${tbConfig.datasetName}.tsi`;
+    const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/${tbConfig.fastaName}`;
 
     // const tsiLocation = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
     // const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
 
-    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation];
+    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation, tbConfig.localDbPath];
 
     const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
 
@@ -569,7 +569,7 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
         // res.send - return json wirth downloadable url --> should be in server
         //res.status.send? --> need to put status code
 
-        const downloadableURL = `http://127.0.0.1:4300/TersectBrowserGP/datafiles/barcodes/${filename}`
+        const downloadableURL = `${tbConfig.serverHost}/datafiles/barcodes/${filename}`
         // const downloadableURL = `http://127.0.0.1:4300/TersectBrowserGP/download-barcode/${filename}`
 
         res.json({downloadableURL})
