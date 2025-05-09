@@ -152,11 +152,9 @@ export class PlotClickMenuComponent {
                     icon: 'fa fa-search',
                     command: () => {
                         window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
-                            interval: [bin.startPosition, bin.endPosition],
-                            waitTime: 40000
+                            interval: [bin.startPosition, bin.endPosition]
                         } }));
-                        // this.setInterval.emit([int.startPosition,
-                        //                        int.endPosition]);
+  
                         this.hide();
                     }
                 },

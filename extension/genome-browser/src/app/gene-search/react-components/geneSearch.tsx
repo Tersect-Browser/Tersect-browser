@@ -1,16 +1,10 @@
-import tracks from '../../react-components/tracks'
-import assembly from '../../react-components/assembly'
-import config from '../../react-components/jbrowseConfig'
-import 'primereact/resources/themes/saga-green/theme.css' // theme
-import 'primereact/resources/primereact.min.css' // core css
+import 'primereact/resources/themes/saga-green/theme.css'
+import 'primereact/resources/primereact.min.css'
 import './geneSearchStyles.css'
 import 'primeflex/primeflex.css'
 
 import { PrimeReactProvider } from 'primereact/api'
-import {
-  createViewState,
-  ViewModel,
-} from '@jbrowse/react-linear-genome-view'
+import {ViewModel} from '@jbrowse/react-linear-genome-view'
 import React, { useEffect, useRef, useState } from 'react'
 import { AutoComplete } from 'primereact/autocomplete'
 import { Button } from 'primereact/button'
@@ -21,16 +15,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber'
 import { searchGene, ImpactLevel, getSuggestions } from '../searchGene'
 
-/**
- * Extends the original GeneSearch component by
- * – replacing the free‑text input with a PrimeReact <AutoComplete>
- * – adding a numeric range selector (PrimeReact <Slider range />) so callers can
- *   constrain the genomic position (or any numeric field you need).
- */
+
 function GeneSearch(props: any) {
-  console.log(props)
-  
-    // ---------- JBrowse view ----------
 
   const [query, setQuery] = useState<string>('')
   const [suggestions, setSuggestions] = useState<string[]>([])
@@ -47,7 +33,7 @@ function GeneSearch(props: any) {
     const handler = (e: CustomEvent<{ interval: [number, number] }>) => {
       setRange(e.detail.interval);
       setShowDialog(true);
-      handleSearch(e.detail.interval);
+      // handleSearch(e.detail.interval);
     }
    
 
