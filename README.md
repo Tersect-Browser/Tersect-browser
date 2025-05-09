@@ -107,7 +107,7 @@ We are using python 3.11 because numpy has issues when we try to install via pyt
 
 To generate the data set, copy the data in the `gp_data_copy` folder on Elvis to your selected database folder. i.e the value of `tbconfig.localDbPath`. 
 
-To test the setup script quickly, the test dataset at the root of tersect browser repository can be used. only copy the TSI file from Elvis to that folder.
+To test the setup script quickly, the test dataset at the root of tersect browser repository can be used. copy the TSI file and fasta file from Elvis to that folder.
 
 The credentials for elvis will be bundled with the submission in a credentials.txt file.
 
