@@ -3,7 +3,7 @@ import { ModalService } from '../../pages/tersect-browser/services/modal.service
 import { JbrowseWrapperProps } from '../../../../../common/JbrowseInterface';
 import { TersectBackendService } from '../../services/tersect-backend.service';
 import { ActivatedRoute } from '@angular/router';
-import { take } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 
 import { PlotStateService } from '../tersect-distance-plot/services/plot-state.service';
 import { isNullOrUndefined } from '../../utils/utils';
@@ -25,10 +25,10 @@ export class GlobalBarcodeComponent implements OnInit {
   chromosome: string;
   startPosition: number;
   endPosition: number;
-  maxVariants: number | null = null;
+  maxVariants: number | null = 1;
 
   downloadLink: string;
-  datasetId: string;
+  datasetId: string = '';
 
   downloadUrl: string | null = null;
   downloadFileName: string = '';
@@ -42,8 +42,14 @@ export class GlobalBarcodeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+  
     
     this.modalService.barcode$.subscribe(val => this.isVisible = val);
+
+    this.modalService.datasetIdSelected$.subscribe(datasetId => {
+      this.datasetId = datasetId;
+      console.log('datasetId', datasetId);
+    });
 
     this.modalService.barcodeTit$.subscribe(title => {
       console.log('title', title);
@@ -58,11 +64,6 @@ export class GlobalBarcodeComponent implements OnInit {
     this.modalService.end$.subscribe(val => {
       this.endPosition = val
     })
-    console.log('ran', this.route.paramMap)
-  
-
-    
-    
   }
 
 
@@ -71,7 +72,7 @@ export class GlobalBarcodeComponent implements OnInit {
   resetModal(): void {
     console.log('reset modal called')
     this.barcodeSize = 150;
-    this.maxVariants = null;
+    this.maxVariants = 1;
     this.downloadUrl = null;
     this.downloadFileName = '';
     this.isLoading = false;
@@ -79,15 +80,7 @@ export class GlobalBarcodeComponent implements OnInit {
   
   async generateBarcode() {
     this.isLoading = true;
-    console.log('loading status - start', this.isLoading)
-    console.log('Barcode size entered:', this.barcodeSize);
-    console.log('Accession', this.modalTitle);
-    console.log('chrom', this.chromosome);
-    console.log('start', this.startPosition);
-    console.log('end', this.plotState.settings$);
 
-    console.log('hererrer-----------------------===========', this.plotState.datasetId)
-    
   
     this.tersectBackendService.generateBarcodes(
       this.modalTitle,
@@ -96,7 +89,7 @@ export class GlobalBarcodeComponent implements OnInit {
       this.endPosition,
       this.barcodeSize,
       this.maxVariants,
-      this.plotState.datasetId || "Example dataset"
+      this.datasetId || "Example dataset"
     ).subscribe({
       next: (response) => {
 
@@ -112,7 +105,7 @@ export class GlobalBarcodeComponent implements OnInit {
       complete: () => {
         this.isLoading = false;
         console.log('loading status - finished', this.isLoading)
-        this.maxVariants = null;
+        this.maxVariants = 1;
         this.barcodeSize = 150;
       }
 

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "ITAG2.4_gene_models.sorted.gff3.sorted",
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "Gff3TabixAdapter",
+      "vcfGzLocation": {
+        "uri": "/Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ITAG2.4_gene_models.sorted.gff3.sorted.gff.gz",
+        "locationType": "UriLocation"
+      },
+      "index": {
+        "location": {
+          "uri": "/Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ITAG2.4_gene_models.sorted.gff3.sorted.gff.gz.tbi",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  },
+  {
+    "name": "RF_001_SZAXPI008746-45.vcf.gz.snpeff",
+    "type": "VariantTrack",
+    "adapter": {
+      "type": "VcfTabixAdapter",
+      "vcfGzLocation": {
+        "uri": "/Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz",
+        "locationType": "UriLocation"
+      },
+      "index": {
+        "location": {
+          "uri": "/Users/davidoluwasusi/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz.tbi",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  }
+]

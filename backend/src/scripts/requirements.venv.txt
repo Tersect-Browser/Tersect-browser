@@ -1,0 +1,4 @@
+biopython==1.85
+hashids==1.2.0
+numpy==2.2.4
+pymongo==3.10.0

@@ -193,11 +193,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
           view?.setHideHeader(true)
           view?.showTrack(tracks[0].trackId)
-          
-        
 
-
-      
     })
   }, [props?.location?.chromosome?.name])
 
@@ -216,7 +212,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
 
   //@ts-ignore
-  return <JbrowseWithState key={ props?.location.offsetCanvas}   state={stateRef.current} />
+  return <JbrowseWithState key={ `${props?.location.offsetCanvas}-${props.location?.binSize}`}   state={stateRef.current} />
 }
 
 export default JbrowserWrapper

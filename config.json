@@ -1,0 +1,73 @@
+{
+  "assemblies": [
+    {
+      "name": "SL2.50",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "SL2.50-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "SL2.50.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "SL2.50.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ITAG2.4_gene_models.sorted.gff3.sorted.gff",
+      "name": "ITAG2.4_gene_models.sorted.gff3.sorted.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "ITAG2.4_gene_models.sorted.gff3.sorted.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ITAG2.4_gene_models.sorted.gff3.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": [
+        "SL2.50"
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf",
+      "name": "RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": [
+        "SL2.50"
+      ]
+    }
+  ]
+}

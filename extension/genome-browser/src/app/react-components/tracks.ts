@@ -14,11 +14,16 @@ export default [
               "uri": "https://elvis.misc.cranfield.ac.uk/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz.tbi",
               "locationType": "UriLocation"
             },
-            "indexType": "TBI"
-          }
+            "index": {
+                "location": {
+                    "uri": "http://127.0.0.1:4200/TersectBrowserGP/tbapi/datafiles/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz.tbi",
+                    "locationType": "UriLocation"
+                },
+                "indexType": "TBI"
+            }
         },
         "assemblyNames": [
-          "SL2.50"
+            "SL2.50"
         ]
       },
       {

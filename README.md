@@ -26,15 +26,23 @@ Ensure you have nvm installed on your machine and perform the following steps;
 - Run `npm install -g turbo` to install turbo
 - Add a `tbconfig.json` with the following values (remove commented line)
   - mongoHost relates to the local mongodb installation that is probably in this path: ~/mongo-data
-  - localDbPath is how we host the reference file and tbi + vcf files for each accession. These should be within your Tersect-browser project, at the path: Tersect-browser/~/mongo-data/gp_data_copy
+  - localDbPath is how we host the reference file and tbi + vcf files for each accession. These should be within your Tersect-browser project, at the path: Tersect-browser/db-data/mongo-data/gp_data_copy
 
 ```json
 {
     "serverPort": 4300,
+    "serverHost": "http://127.0.0.1:4300/TersectBrowserGP",
+    "vcfLocation": "/gp_data_copy/vcf_location",
+    "tsiPath": "/Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy", // parent directory of the tsi file should be relative to localdb path
+    "datasetName": "SGN_aer_hom_snps",
+    "fileLoadingRoute": "/tbapi/datafiles/",
+    "bcftoolsLocation": "bcftools", // may vary per individual machine
+    "fastaName": "SL2.50.fa", 
+    "frontendHost": "http://127.0.0.1:4200/TersectBrowserGP",
     "baseHref": "/TersectBrowserGP/",
-    "mongoHost": "mongodb://127.0.0.1:27017", // adjust url to fit your local mongodb installation
+    "mongoHost": "mongodb://localhost:27017", // adjust as necessary
     "dbName": "tersect_browser_gp",
-    "localDbPath": "/Users/user/Tersect-browser/~/mongo-data/gp_data_copy", // adjust url to fit your Tersect-browser path
+    "localDbPath":"/Users/user/msc_project/tersect-browser/test-data/mongo-data", // adjust as necessary
     "indexPartitions": [
         100000000,
         50000000,
@@ -45,47 +53,134 @@ Ensure you have nvm installed on your machine and perform the following steps;
     ]
 }
 ```
-- Run `turbo build` to build the application
 - Run `turbo dev` to start the application (it'll load the frontend and backend application).
 
-## How to load data set
+- cd to the genome-browser application
 
-First requires a valid Mongodb installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine so it should not be an issue.
+```
+cd /tersect-browser/extension/genome-browser
+```
 
-After successful installation, start the mongodb server by running `mongod`. By default mongodb will try to create and store data in a `/data/db` path. There is a tendency that on mac this is a read-only path. If that is the case you may need to use a different path. Personally, I used `~/mongo-data`.
+- run `nvm use 22`
 
-to start mongodb with a different path, create the path by running `mkdir -p ~/mongo-data` then run mongodb with this path `mongod --dbpath ~/mongo-data`.
+- run `npm install`
 
-When your database is up and running you can start the backend server.
+- run `npm start`
 
-### Generating the dataset
+The extension server should be available on port 3200.
 
-To generate the data set, copy the data in the `gp_data` folder on elvis to the root of the `tersect_browser` folder.
-Copy also the `add_example_dataset` script to the root of the `tersect_browser` folder.
+## How to load the dataset
 
-An example copy script via the terminal is;
-`scp -r username@port:/home/tbrowser/add_example_dataset.sh  /Users/davidoluwasusi/msc_project/tersect-browser/gp_data`
+Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine while building the application.
 
-Create a python virtual environment with venv at the root of the `tersect_browser` folder.
+After successful installation, start the MongoDB server by running `mongod`. By default, MongoDB will try to create and store data in a `/data/db` path. 
+There is a tendency that on Mac, this is a read-only path. If that is the case, you may need to use a different path.  `db-data/mongo-data` was used to test the application.
+
+To start MongoDB with a different path, create the path by running `mkdir -p db-data/mongo-data`, then run MongoDB with this path `mongod --dbpath db-data/mongo-data`.
+
+When your database is up and running, you can start the backend server (However, there will be no datasets at this point).
+
+### Installing Python dependencies
+The python dependencies available in conda are listed in the requirements.txt in `/tersect-browser/backend/src/scripts`
+
+Some dependencies are available with [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) as tersect browser  originally managed its virtual environment with pip related virtual managers like venv.
+
+These dependencies are present in the requirements.venv.txt in `/tersect-browser/backend/src/scripts`
+
+- Create a python virtual environment with venv at the root of the `tersect_browser` folder.
 `python3.11 -m venv .tersect`
 
 We are using python 3.11 because numpy has issues when we try to install via python > 3.12.
 
-Activate the virtual environment
+- Activate the virtual environment
 `source .tersect/bin/activate`
 
-Install the dependencies in the requirements.txt file
-`pip3 install -r /path/to/requirements.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
-- If errors in install here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
+- Install the dependencies in the requirements.venv.txt file, conda channels does not have the version of hashids  needed for tersect cli, therefore tersect dependencies are in requirements.venv.txt
+`pip3 install -r /path/to/requirements.venv.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
 
-Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
+- If there are errors during the installation here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
 
-Give the `add_example_dataset.sh` script write access by running `chmod u+x add_example_dataset.sh`.
+- Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
 
-Run `./add_example_dataset.sh` to start generating the dataset. Feel free to grab a coffee while it runs 😉 (it takes some minutes).
 
-If seeing errors about python version such as: `env: python3\r: No such file or directory` , then it might be a unix line encoding error in the python scripts. Run the following dos2unix command, and just make sure you *don't* commit the changes to these scripts (will show up as unstaged .py scripts in git status).
-- `find {path_to}/Tersect-browser -type f \( -name "*.sh" -o -name "*.py" \) -exec dos2unix {} + `
+### Generating the dataset
+
+To generate the data set, copy the data in the `gp_data_copy` folder on Elvis to your selected database folder. i.e the value of `tbconfig.localDbPath`. 
+
+To test the setup script quickly, the test dataset at the root of tersect browser repository can be used. copy the TSI file and fasta file from Elvis to that folder.
+
+The credentials for elvis will be bundled with the submission in a credentials.txt file.
+
+Example `tbconfig.localDbPath` tree looks like this
+```
+...
+├── gp_data_copy
+    ├── ITAG2.4_gene_models.gff3
+    ├── ITAG2.4_gene_models.sorted.gff3.gz
+    ├── ITAG2.4_gene_models.sorted.gff3.gz.tbi
+    ├── SGN_aer_hom_snps.tsi
+    ├── SL2.50.fa
+    ├── SL2.50.fa.fai
+    └── vcf_location
+        └── RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz
+        ...
+...
+
+```
+Note: The files on elvis will be more as they contain the processed vcf files and index files needed for the search functionality
+
+At the root of tersect browser, run the `setup_new_tbrowser_dataset.py` script to setup datasets automatically.
+
+Its correct usage is 
+` python setup_new_tbrowser_dataset.py -f {fasta file path} -g {gff gz path} -V {vcf files path} -c {tbconfig.json path}`
+
+E.G
+```
+ python setup_new_tbrowser_dataset.py \
+ -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa \
+ -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
+ -V /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ \
+ -c /Users/user/msc_project/tersect-browser/tbconfig.json 
+```
+
+`-V can be replaced with -v to use a comma separated list of vcf file paths instead`
+
+E.G
+```
+ python setup_new_tbrowser_dataset.py \
+ -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa \
+ -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
+ -v /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz \
+ -c /Users/user/msc_project/tersect-browser/tbconfig.json 
+```
+
+After the data set is loaded you can start the server and see the loaded dataset on the home page
+
+### Creating the search Index
+
+#### VCF Index
+
+- Navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
+
+- Run the `build_annotate_per_chrom.sh` script to generate the indexes for each chromosome
+
+E.G
+```
+./build_annotate_per_chrom.sh ../../../test-data/mongo-data/gp_data_copy/tracks.json /Users/user/msc_project/tersect-browser/test-data/mongo-data/SGN_aer_hom_snps.tsi /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/trix_indicies
+
+```
+#### TRIX Index
+
+- Navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
+
+- Run the `tersect_trix_builder.sh` script to generate the trix indexes for each chromosome
+
+```
+./tersect_trix_builder.sh /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/trix_indices /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi
+
+```
+
+
 
 ### Additional Requirement For Running The Browser
 [RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood, git clone the repository, and run make in the root.
@@ -96,6 +191,7 @@ Install Rosetta (if not already):
 ```
 softwareupdate --install-rosetta
 ```
+
 Run the Terminal in Rosetta:
 
 Go to Applications > Utilities > Terminal.
@@ -122,33 +218,23 @@ move it to the usr path
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.1.
 
-### To set up data for the Genome Browser extension
-This extension requires data for tracks to be hosted within the Tersect-browser project folder structure. Copy the reference sequence, index, and at least one of the VCF and corresponding TBI files (in this case 002) to the following folder:
-- `ls Tersect-browser/~/mongo-data/gp_data_copy/`
-  - SL2.50.fa
-  - SL2.50.fa.fai
-  - RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz
-  - RF_002_SZAXPI009284-57.vcf.gz.snpeff.tbi.vcf.gz
-
-Once downloaded, you should be able to deploy Tersect Browser and view these tracks. Deployment now takes an extra step, as the Genome Browser extension needs to be deployed separately to the main Browser:
-- `mongod --dbpath ~/mongo-data`
-- `cd {path-to}/Tersect-browser/extension/genome-browser`
-  - `nvm use 18`
-  - `source .tersect/bin/activate`
-  - `npm start`
-- `cd {path-to}/Tersect-browser`
-  - `nvm use 16`
-  - `source .tersect/bin/activate`
-  - `npm start`
-
-This should deploy the Tersect Browser and the Genome Browser component, which can be accessed by clicking on the binoculars button. Open the track selector of the Genome Browser, and select the reference genome and the accession that you downloaded the files for (in this case S.lyc LA2838A).
-
 #### Clear angular cache
 In the event that an error message stating an .angular/cache/ file does not exist, this error can be resolved by navigating to `{path-to}/Tersect-browser/extension/genome-browser/.angular/` and running `ng cache clean` to clean the cache
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://127.0.0.1:4200/`. The app will automatically reload if you change any of the source files.
+At the root of tersect-browser, run `turbo dev` to start the frontend and backend development server.
+
+Change directory to the genome browser in the extensions folder
+
+` nvm use 22`;
+` npm start `;
+
+It should load the extensions on port 3200
+
+Change the path in the index.html to reference this port in `/tersect-browser/frontend/src/index.html`;
+
+  `<script  type="module" src="http://localhost:3200/main.js"></script>`
 
 ## Code scaffolding
 
@@ -156,7 +242,64 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+Run `npm run-script build` to build the frontend and backend application
+
+## Deployment
+
+- Git checkout to the deployment branch `Chore-Deployment`
+- Configure `tbconfig` to use correct paths and host
+
+EG
+```
+{
+    "serverPort": 4300,
+    "serverHost": // Elvis server host,
+    "vcfLocation": "/gp_data_copy/vcf_location",
+    "tsiPath": // Elvis TSI Path,
+    "datasetName": "SGN_aer_hom_snps",
+    "fileLoadingRoute": "/tbapi/datafiles/",
+    "bcftoolsLocation": Path to bcf tools on elvis,
+    "fastaName": "SL2.50.fa",
+    "frontendHost": // Elvis frontend host,
+    "baseHref": "/TersectBrowserGP/",
+    "mongoHost": "mongodb://localhost:27017",
+    "dbName": "tersect_browser_gp",
+    "localDbPath": // Path to local database folder on elvis,
+    "indexPartitions": [
+        100000000,
+        50000000,
+        25000000,
+        10000000,
+        5000000,
+        1000000
+    ]
+}
+
+```
+
+Change directory to the genome-browser application
+  `cd /tersect-browser/extension/genome-browser `
+
+Switch to a compatible node version
+
+  `nvm use 22`
+
+Trigger a release to NPM
+
+  `npm run release`
+
+Change the path in the index.html to reference this release in `/tersect-browser/frontend/src/index.html`;
+
+  `<script  type="module" src="http://localhost:3200/main.js"></script>`
+
+Change directory to the root of tersect browser
+
+  `cd /tersect-browser/`
+
+Run deployment scripts
+
+  `npm run-script build`
+  `npm run-script deploy`
 
 ## Running unit tests
 

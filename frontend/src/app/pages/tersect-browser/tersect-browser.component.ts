@@ -159,12 +159,10 @@ export class TersectBrowserComponent implements OnInit {
 
         this.chromosomeSub = this.plotState.chromosome$.subscribe(chromosome => {
             this.selectedChromosomeSub = chromosome;
-            console.log('what is a chromosome', this.selectedChromosomeSub);
         })
 
         this.selectedIntervalSub = this.plotState.interval$.subscribe(value => {
             this.selectedInterval = value;
-            console.log('tracking selectedInterval', this.selectedInterval);
         })
 
 
@@ -304,7 +302,6 @@ export class TersectBrowserComponent implements OnInit {
     // This function is called when the event is emitted from the child
     handleGenePositionChanged(startGenePosition: number) {
         this.startGenePosition = startGenePosition;
-        console.log('Received gene start position in parent:', this.startGenePosition);
     }
     
     handleGeneChromChanged(geneChrom: string){
@@ -335,9 +332,7 @@ export class TersectBrowserComponent implements OnInit {
             settings.selected_binsize = TersectBrowserComponent.DEFAULT_BINSIZE;
         }
         if (isNullOrUndefined(settings.selected_chromosome)) {
-            console.log('chromosomes here ----------', chromosomes)
             this.chromosomeArray = chromosomes;
-            console.log('saved chromosomes', this.chromosomeArray)
             const largestChrom = chromosomes.reduce((prev, current) =>
                 current.size > prev.size ? current : prev
             );

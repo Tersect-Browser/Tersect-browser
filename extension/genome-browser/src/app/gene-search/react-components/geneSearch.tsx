@@ -41,7 +41,6 @@ function GeneSearch(props: any) {
 
     // add
     window.addEventListener("tersect-search-variants", handler as EventListener);
-    console.log('registered')
 
     // clean up
     return () =>
