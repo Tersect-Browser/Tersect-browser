@@ -25,6 +25,7 @@ export default [
         "assemblyNames": [
             "SL2.50"
         ]
+      }
       },
       {
           "type": "VariantTrack",
