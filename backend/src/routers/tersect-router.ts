@@ -221,21 +221,6 @@ router.route('/query/:datasetId/samples')
         });
     });
 
-    function streamToString(s: Readable): Promise<string> {
-  return new Promise(r => {
-    let out = '';
-    s.on('data', c => {
-        console.log(c.toString());
-        return (out += c)
-    });
-    s.on('close', () => {
-        console.log(out, 'r as something');
-        
-        r(out)
-    });
-  });
-}
-
       
 
 router.get(
@@ -300,7 +285,6 @@ router.get(
       const rl = readline.createInterface({ input: bcftools.stdout });
 
       for await (const line of rl) {
-        console.log(line)
         if (!line) continue;
         const tab = line.indexOf('\t');
         const key = line.slice(0, tab);          // CHROM:POS:REF:ALT
@@ -334,8 +318,8 @@ router.get(
             pos: { start: Number(pos) },
             ref,
             alt,
-            eff,                    // keep INFO/EFF if you still need it
-            accessions,             // ← the per-variant list you wanted
+            eff,                    // keep INFO/EFF 
+            accessions,             // ← the per-variant list 
         };
         });
 
@@ -518,7 +502,7 @@ router.route('/query/:datasetId/tree')
                 'query.interval': treeQuery.interval,
                 'query.accessions': treeQuery.accessions
             };
-            console.log(dbQuery, 'query')
+            
             NewickTree.findOne(dbQuery)
                 .exec((err, result: NewickTree) => {
                     if (err) {
@@ -558,7 +542,7 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
-    const tsiLocation = "/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi";
+    const tsiLocation = `${tbConfig.localDbPath}/gp_data_copy/SGN_aer_hom_snps.tsi`;
     const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/SL2.50.fa`;
 
     // const tsiLocation = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');

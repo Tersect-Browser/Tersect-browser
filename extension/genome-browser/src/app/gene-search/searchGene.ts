@@ -33,49 +33,6 @@ export enum ImpactLevel {
 }
 
 //utils
-//  function parseDocId(id: string): Parsed {
-//   console.log('====================================');
-//   console.log(id);
-//   console.log('====================================');
-//   /* -------------------------------------------------------- samples ---- */
-//   // 1) TEXT before first "|", then SAMPLE segment, then "|EFF="
-//   const segMatch = id.match(/^[^|]+\|([^|]+)\|EFF=/);
-//   if (!segMatch) return {
-//     samples: [],
-//     genes: [],
-//   }
-//   const sampleSeg = segMatch[1];
-
-//   // split on "," and/or whitespace, drop empties, uniq
-//   const sampleSet = new Set(
-//     sampleSeg
-//       .split(/[,\s]+/)
-//       .map(s => s.trim())
-//       .filter(Boolean),
-//   );
-
-//   /* ---------------------------------------------------------- genes ---- */
-//   // Everything after first "|EFF=" may have several ",EFF=" parts
-//   const effSection = id.split('|EFF=').slice(1).join('|EFF=');
-//   // cut into individual effect strings: "TYPE(...)", keep last ")"
-//   const effects = effSection.split(/,(?=EFF=)/);
-
-//   const geneRe = /Solyc\d+g\d+\.\d+/;          // tomato gene pattern
-//   const geneSet = new Set<string>();
-
-//   for (const eff of effects) {
-//     const m = eff.match(/\(([^)]*)\)/);        // payload inside (...)
-//     if (!m) continue;
-
-//     for (const field of m[1].split('|')) {
-//       if (geneRe.test(field)) geneSet.add(field);
-//     }
-//   }
-
-//   console.log(sampleSet, geneSet)
-
-//   return { samples: [...sampleSet], genes: [...geneSet] };
-// }
 
 function parseDocId(id: string): Parsed {
   /* -------------------------------------------------------- samples ---- */

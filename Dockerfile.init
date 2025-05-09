@@ -24,4 +24,4 @@ RUN chmod u+x add_example_dataset.sh
 ARG CACHE_BUST=1
 RUN ./add_example_dataset.sh
 # Wait for MongoDB to be ready before running the script
-# CMD ["/bin/bash", "-c", "/app/wait-for.sh mongo:27017 -- /app/add_example_dataset.sh"]
+CMD ["/bin/bash", "-c", "/app/wait-for.sh mongo:27017 -- /app/add_example_dataset.sh"]

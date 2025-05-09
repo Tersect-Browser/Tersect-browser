@@ -58,11 +58,6 @@ export class GlobalBarcodeComponent implements OnInit {
     this.modalService.end$.subscribe(val => {
       this.endPosition = val
     })
-    console.log('ran', this.route.paramMap)
-  
-
-    
-    
   }
 
 
@@ -79,15 +74,7 @@ export class GlobalBarcodeComponent implements OnInit {
   
   async generateBarcode() {
     this.isLoading = true;
-    console.log('loading status - start', this.isLoading)
-    console.log('Barcode size entered:', this.barcodeSize);
-    console.log('Accession', this.modalTitle);
-    console.log('chrom', this.chromosome);
-    console.log('start', this.startPosition);
-    console.log('end', this.plotState.settings$);
 
-    console.log('hererrer-----------------------===========', this.plotState.datasetId)
-    
   
     this.tersectBackendService.generateBarcodes(
       this.modalTitle,
