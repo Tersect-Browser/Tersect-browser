@@ -13,6 +13,7 @@ SIZE="$5"
 VAR="$6"
 FASTA="$7"
 TSI="$8"
+CONFIG="$9"
 
 
 REGION="${CHROM}:${START}-${END}"
@@ -43,6 +44,7 @@ if [ "${VAR}" != "null" ]; then
   --size "$SIZE" \
   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
   --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv \
+  --config "${CONFIG}" \
   --max_variants "${VAR}"
 else
   echo "max variants is null - will call python without var arg: ${VAR} ${SAFE_ACC}"
@@ -54,18 +56,6 @@ else
   --end "$END" \
   --size "$SIZE" \
   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
-  --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv
+  --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv \
+  --config "${CONFIG}" 
 fi
-
-# Run barcode finder
-# python3 "$SCRIPT_DIR/find_barcode.py" \
-#   --accession "$ACCESSION" \
-#   --fasta "$FASTA" \
-#   --chrom "$CHROM" \
-#   --start "$START" \
-#   --end "$END" \
-#   --size "$SIZE" \
-#   --unique_variants tmp_outputs/${SAFE_ACC}_acc_unique.tsv \
-#   --union_variants tmp_outputs/${SAFE_ACC}_union_vars.tsv \
-#   --max_variants 4
-# tersect view /Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/SGN_aer_hom_snps.tsi "'S.hab LA1777'" SL2.50ch01:500001-550000 ⁠

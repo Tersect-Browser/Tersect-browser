@@ -14,12 +14,14 @@ export class ModalService {
   private barcodeChromo$ = new BehaviorSubject<string>('');
   private barcodeStart$ = new BehaviorSubject<number>(0);
   private barcodeEnd$ = new BehaviorSubject<number>(0);
+  private datasetId$ = new BehaviorSubject<string>('');
 
   visible$ = this.modalVisible$.asObservable();
   title$ = this.modalTitle$.asObservable();
   customElement$ = this.modalProps$.asObservable();
   barcode$ = this.barcodeVisible$.asObservable();
   barcodeTit$ = this.barcodeTitle$.asObservable();
+  datasetIdSelected$ = this.datasetId$.asObservable();
   chrom$ = this.barcodeChromo$.asObservable();
   start$ = this.barcodeStart$.asObservable();
   end$ = this.barcodeEnd$.asObservable();
@@ -35,12 +37,14 @@ export class ModalService {
     this.modalProps$.next(null);
   }
 
-  openBarcodeModal(accessionName, chrom, startPosition, endPosition){
+  openBarcodeModal(accessionName, chrom, startPosition, endPosition, datasetId) {
+    console.log('datasetId from open', datasetId);
     this.barcodeVisible$.next(true);
     this.barcodeTitle$.next(accessionName);
     this.barcodeChromo$.next(chrom);
     this.barcodeStart$.next(startPosition);
     this.barcodeEnd$.next(endPosition);
+    this.datasetId$.next(datasetId);
   }
 
   closeBarcodeModal(){

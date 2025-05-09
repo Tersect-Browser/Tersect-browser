@@ -1,6 +1,7 @@
 import argparse
 from Bio import SeqIO
 import datetime
+from os.path import abspath
 import os
 
 
@@ -170,8 +171,13 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=int, required=True) ### ADD CHECK
     parser.add_argument("--unique_variants", required=True)
     parser.add_argument("--union_variants", required=True)
+    parser.add_argument("--config", required=True)
     parser.add_argument("--max_variants", type=int, required=False)
     args = parser.parse_args()
+    
+
+
+    local_db_path = args.config
 
     print('Python script running')
 
@@ -212,7 +218,7 @@ if __name__ == "__main__":
     try:
         filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
         print('created file name', filename)
-        outputFolder = '/Users/davidoluwasusi/msc_project/tersect-browser/db-data/mongo-data/gp_data_copy/barcodes/'
+        outputFolder = local_db_path + '/gp_data_copy/barcodes/'
         # outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
         print('created output foler', outputFolder)
         fullPath = os.path.join(outputFolder, filename)
