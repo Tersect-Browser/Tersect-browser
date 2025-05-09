@@ -253,14 +253,14 @@ EG
 ```
 {
     "serverPort": 4300,
-    "serverHost": // Elvis server host,
+    "serverHost": https://elvis.misc.cranfield.ac.uk/TersectBrowserGP/ // Elvis server host,
     "vcfLocation": "/gp_data_copy/vcf_location",
     "tsiPath": // Elvis TSI Path,
     "datasetName": "SGN_aer_hom_snps",
     "fileLoadingRoute": "/tbapi/datafiles/",
     "bcftoolsLocation": Path to bcf tools on elvis,
     "fastaName": "SL2.50.fa",
-    "frontendHost": // Elvis frontend host,
+    "frontendHost": https://elvis.misc.cranfield.ac.uk/TersectBrowserGP/ // Elvis frontend host,
     "baseHref": "/TersectBrowserGP/",
     "mongoHost": "mongodb://localhost:27017",
     "dbName": "tersect_browser_gp",
@@ -290,7 +290,7 @@ Trigger a release to NPM
 
 Change the path in the index.html to reference this release in `/tersect-browser/frontend/src/index.html`;
 
-  `<script  type="module" src="http://localhost:3200/main.js"></script>`
+  `<script  type="module" src="https://unpkg.com/@tersectbrowser/genome-browser@1.0.8/genome-browser.min.js"></script>`
 
 Change directory to the root of tersect browser
 
