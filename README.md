@@ -227,7 +227,29 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 EG
 ```
-
+{
+    "serverPort": 4300,
+    "serverHost": // Elvis server host,
+    "vcfLocation": "/gp_data_copy/vcf_location",
+    "tsiPath": // Elvis TSI Path,
+    "datasetName": "SGN_aer_hom_snps",
+    "fileLoadingRoute": "/tbapi/datafiles/",
+    "bcftoolsLocation": Path to bcf tools on elvis,
+    "fastaName": "SL2.50.fa",
+    "frontendHost": // Elvis frontend host,
+    "baseHref": "/TersectBrowserGP/",
+    "mongoHost": "mongodb://localhost:27017",
+    "dbName": "tersect_browser_gp",
+    "localDbPath": // Path to local database folder on elvis,
+    "indexPartitions": [
+        100000000,
+        50000000,
+        25000000,
+        10000000,
+        5000000,
+        1000000
+    ]
+}
 
 ```
 
