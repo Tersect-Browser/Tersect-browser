@@ -143,6 +143,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
     if(view?.initialized){
 
       view.setNewView?.(bpPerPx,  start / bpPerPx);
+      view?.navToLocString(`${props?.location?.chromosome?.name}:${start}..${end}`)
       view.horizontalScroll(-(props?.location?.offsetCanvas - 4));
     };
   }, [
@@ -156,45 +157,45 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
   ]);
 
-  useEffect(() => {
-    if(!stateRef?.current) return;
-    const session = stateRef?.current?.session;
-    const state = stateRef?.current;
-    console.log()
-    state.assemblyManager.waitForAssembly(assembly.name).then(data => {
+  // useEffect(() => {
+  //   if(!stateRef?.current) return;
+  //   const session = stateRef?.current?.session;
+  //   const state = stateRef?.current;
+  //   console.log()
+  //   state.assemblyManager.waitForAssembly(assembly.name).then(data => {
   
-      // remove previously loaded view states
-      if (state.session.views.length > 0) {
-        state.session.removeView();
-      }
+  //     // remove previously loaded view states
+  //     if (state.session.views.length > 0) {
+  //       state.session.removeView();
+  //     }
   
-      // update view state with selected chromosome
-      state.session.addView('LinearGenomeView', {
-        type: 'LinearGenomeView',
-        id: `linear-genome-view-${props.location?.chromosome?.name}`,
-        bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1))),
-        offsetPx: 0,
-        displayedRegions: [
-          {
-            assemblyName: assembly.name,
-            start: props.location?.selectedInterval?.[0] ?? 0,
-            end: props.location?.selectedInterval?.[1] ?? 0,
-            refName: props.location?.chromosome?.name ?? '',
-          },
-        ],
-      })
+  //     // update view state with selected chromosome
+  //     state.session.addView('LinearGenomeView', {
+  //       type: 'LinearGenomeView',
+  //       id: `linear-genome-view-${props.location?.chromosome?.name}`,
+  //       bpPerPx: ((props.location?.binSize ?? 1) * (100 / (props.location?.zoomLevel ?? 1))),
+  //       offsetPx: 0,
+  //       displayedRegions: [
+  //         {
+  //           assemblyName: assembly.name,
+  //           start: props.location?.selectedInterval?.[0] ?? 0,
+  //           end: props.location?.selectedInterval?.[1] ?? 0,
+  //           refName: props.location?.chromosome?.name ?? '',
+  //         },
+  //       ],
+  //     })
     
-      const view = state.session.views.find(each => each.id === `linear-genome-view-${props.location?.chromosome?.name}`);
-      view?.setHideHeader(true)
-      console.log(view, 'set hide header after')
-      console.log('added view', state.session.views.length);
-        // state.session.views[0]?.showTrack(tracks[0].trackId)
+  //     const view = state.session.views.find(each => each.id === `linear-genome-view-${props.location?.chromosome?.name}`);
+  //     view?.setHideHeader(true)
+  //     console.log(view, 'set hide header after')
+  //     console.log('added view', state.session.views.length);
+  //       // state.session.views[0]?.showTrack(tracks[0].trackId)
 
-          view?.setHideHeader(true)
-          view?.showTrack(tracks[0].trackId)
+  //         view?.setHideHeader(true)
+  //         view?.showTrack(tracks[0].trackId)
 
-    })
-  }, [props?.location?.chromosome?.name])
+  //   })
+  // }, [props?.location?.chromosome?.name])
 
   console.log(props.location.chromosome)
   if(props?.location?.accession?.name) {
@@ -211,7 +212,7 @@ function JbrowserWrapper(props: JbrowseWrapperProps) {
 
 
   //@ts-ignore
-  return <JbrowseWithState key={ `${props?.location.offsetCanvas}-${props.location?.binSize}`}   state={stateRef.current} />
+  return <JbrowseWithState key={ `${props?.location.offsetCanvas}`}   state={stateRef.current} />
 }
 
 export default JbrowserWrapper
