@@ -55,6 +55,28 @@ import { formatRegion } from '../utils/utils';
 import { collectSampleNames, Pool, processKeys, tersectForKey } from '../utils/pool';
 import { Readable } from 'stream';
 
+function expandSci(match) {
+  return Number(match).toFixed(9).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function cleanLabel(lbl) {
+  return lbl
+    .replace(/^'+|'+$/g, '')           // remove surrounding quotes
+    .replace(/[^\w.\-]/g, '_');        // only letters, digits, . and -
+}
+
+function sanitizeTree(rawTree) {
+
+    return rawTree
+    // a) expand branch-length notation
+    .replace(/[-+]?\d*\.?\d+e[-+]?\d+/gi, expandSci)
+    // b) clean every taxon / internal label
+    .replace(/([,(])\s*([^:,()]+)\s*(?=[:),])/g,
+             (_, pre, label) => `${pre}${cleanLabel(label)}`)
+    // c) guarantee exactly one trailing semicolon
+    // .trim().replace(/;*$/, ';');// ensure trailing ;
+}
+
 const util = require('util');
 
 const readdir = util.promisify(fs.readdir);
@@ -104,8 +126,14 @@ export const router = Router();
  */
 async function writeAccessions(accessions: string[]): Promise<string> {
     try {
-        const outputFile = fileSync();
+        const tmpDir = path.join(__dirname, '../tmp');
+        fs.mkdirSync(tmpDir, { recursive: true });
+          const outputFile = fileSync({
+            dir: tmpDir,
+            keep: false       // prevent automatic cleanup until you call removeCallback()
+        });
         await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
+        console.log(outputFile.name, 'output file')
         return outputFile.name;
     } catch (error) {
         console.log('Error writing accessions to file');
@@ -206,11 +234,11 @@ router.route('/query/:datasetId/samples')
         const options = {
             maxBuffer: 5 * 1024 * 1024 // 5 megabytes
         };
-        const tsiLocation = res.locals.dataset.tsi_location;
+        const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
         const tersectCommand = `tersect samples -n ${tsiLocation}`;
         exec(tersectCommand, options, (err, stdout, stderr) => {
             if (err) {
-                res.json(err);
+                res.status(500).json(err);
             } else if (stderr) {
                 res.json(stderr);
             } else {
@@ -221,7 +249,7 @@ router.route('/query/:datasetId/samples')
         });
     });
 
-      
+
 
 router.get(
   '/query/:datasetId/variants/:chrom',
@@ -267,8 +295,8 @@ router.get(
       ]);
       }
       const bcftools = gene ? withGene(gene, filter): withoutGene(filter);
-      
-  
+
+
       bcftools.stderr.on('data', b =>
         console.error('[bcftools]', b.toString().trim())
       );
@@ -299,10 +327,10 @@ router.get(
 
     const allSampleNames = collectSampleNames(tsiResults as unknown as [string, string][])
 
-      
+
       const accMap = new Map<string, string>(
         tsiResults as unknown as [string, string][]
-        );  
+        );
 
       const variants = lines.map(({ key, eff }) => {
         const [chr, pos, ref, alt] = key.split(':');
@@ -318,8 +346,8 @@ router.get(
             pos: { start: Number(pos) },
             ref,
             alt,
-            eff,                    // keep INFO/EFF 
-            accessions,             // ← the per-variant list 
+            eff,                    // keep INFO/EFF
+            accessions,             // ← the per-variant list
         };
         });
 
@@ -377,7 +405,7 @@ router.route('/query/:datasetId/dist')
                 maxBuffer: 200 * 1024 * 1024 // 200 megabytes
             };
 
-            const tsiLocation = res.locals.dataset.tsi_location;
+            const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
             const distBinQuery: DistanceBinQuery = req.body;
 
             const region = formatRegion(distBinQuery.chromosome_name,
@@ -390,6 +418,8 @@ router.route('/query/:datasetId/dist')
             writeAccessions(distBinQuery.accessions).then(accFile => {
                 const tersectCommand = `tersect dist -j ${tsiLocation} \
 -a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
+
+console.log(tersectCommand, 'Tersect command');
 
                 const output: DistanceBins = {
                     query: distBinQuery,
@@ -494,7 +524,8 @@ router.route('/views/export')
 router.route('/query/:datasetId/tree')
     .post((req, res) => {
         try {
-            const tsiLocation = res.locals.dataset.tsi_location;
+            const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
+            console.log(tsiLocation, req.body, 'tsi');
             const treeQuery: TreeQuery = req.body;
             const dbQuery: TreeDatabaseQuery = {
                 datasetId: req.params.datasetId,
@@ -502,7 +533,7 @@ router.route('/query/:datasetId/tree')
                 'query.interval': treeQuery.interval,
                 'query.accessions': treeQuery.accessions
             };
-            
+
             NewickTree.findOne(dbQuery)
                 .exec((err, result: NewickTree) => {
                     if (err) {
@@ -557,14 +588,14 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
           console.error('Shell script error:', error);
           return res.status(500).send('Error running barcode script!');
         }
-    
+
         const outputFile = stdout.trim();
         const filename = path.basename(outputFile); // just the filename
 
         console.log('outputpath', outputFile);
 
 
-        
+
         // res.download(outputFile, filename); // send file to client
         // res.send - return json wirth downloadable url --> should be in server
         //res.status.send? --> need to put status code
@@ -573,14 +604,81 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
         // const downloadableURL = `http://127.0.0.1:4300/TersectBrowserGP/download-barcode/${filename}`
 
         res.json({downloadableURL})
-        
+
       });
     } catch (error) {
         console.log(error)
         res.status(500).json(error)
     }
-    
+
 })
+
+export async function fetchChromosomes(reference: string): Promise<Array<{ name: string; size: number }>> {
+  return ChromosomeIndex
+    .find({ reference }, { name: 1, size: 1, _id: 0 })
+    .lean()
+    .exec();
+}
+
+router.route('/query/:datasetId/species-tree')
+  .post(async (req, res) => {
+    const { datasetId } = req.params;
+    const { chromosomeName, interval, accessions } = req.body as TreeQuery;
+    const reference = res.locals.dataset.reference;
+    const chroms = await fetchChromosomes(reference);
+
+    const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
+
+    try {
+      // kick off one promise per chromosome
+      const treePromises = chroms.map(({ name, size }) => {
+        // build the query we use both for find and for generation
+        const thisQuery: TreeDatabaseQuery = {
+          datasetId,
+          'query.chromosomeName': name,
+          'query.interval': [0, size],
+          'query.accessions': accessions
+        };
+
+        return NewickTree
+          .findOne(thisQuery)
+          .exec()
+          .then(async (found) => {
+            if (found) {
+              // already on disk / in DB
+              return found;
+            }
+
+            // otherwise create a placeholder doc so we can return immediately,
+            // then fire off the async generateTree job
+            const placeholder = await new NewickTree({
+              datasetId,
+              query: {
+                chromosomeName: name,
+                interval: [0, size],
+                accessions
+              },
+              status: 'Collating data...'
+            }).save();
+
+            // this kicks off your existing worker/job to build the tree
+            generateTree(tsiLocation, { chromosomeName: name, interval: [0, size], accessions }, thisQuery);
+
+            return placeholder;
+          });
+      });
+
+      // wait for all 12 documents (either existing or placeholders)…
+      const allTrees = await Promise.all(treePromises);
+
+      // and return them as a JSON array
+      return res.json(allTrees.map((each) => sanitizeTree(each.tree)));
+
+    } catch (err) {
+      console.error("Error in species-tree:", err);
+      return res.status(500).send('Species tree creation failed');
+    };
+  });
 
 
 
@@ -616,6 +714,23 @@ function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
     ).subscribe(() => { });
 }
 
+export function mapToAppPath(inputPath: string): string {
+  const marker = '/distmats/';
+  const idx = inputPath.indexOf(marker);
+  if (idx === -1) {
+    throw new Error(`Cannot find "${marker}" in input path "${inputPath}"`);
+  }
+
+  // everything from "/distmats/..." onwards
+  const tail = inputPath.slice(idx);
+
+  // prepend the fixed container root + db-data path
+  return path.posix.normalize(path.posix.join(
+    '/app/db-data/mongo-data',
+    tail
+  ));
+}
+
 
 
 function generateTree(tsiLocation: string, treeQuery: TreeQuery,
@@ -648,11 +763,16 @@ function generateTree(tsiLocation: string, treeQuery: TreeQuery,
 
     partitions.indexed.forEach((interval, i) => {
         if (interval.type === 'add') {
-            positiveMatrixFiles.push(dbFiles[i]);
+            positiveMatrixFiles.push(dbFiles[i].then(file => {
+                return mapToAppPath(file);
+            }));
         } else if (interval.type === 'subtract') {
-            negativeMatrixFiles.push(dbFiles[i]);
+            negativeMatrixFiles.push(dbFiles[i].then(file => {
+                return mapToAppPath(file);
+            }));
         }
     });
+
     partitions.nonindexed.forEach((interval, i) => {
         if (interval.type === 'add') {
             positiveMatrixFiles.push(tersectOutputFiles[i]);

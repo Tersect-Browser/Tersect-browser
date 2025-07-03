@@ -81,6 +81,7 @@ export class BinPlotComponent extends CanvasPlotElement
 
     draw() {
         if (isNullOrUndefined(this.storedBinView)) {
+            console.log(this.plotState.orderedAccessions,'Creating new bin view')
             this.storedBinView = new DistanceBinView(this.plotState.distanceBins,
                                                      this.plotState.orderedAccessions,
                                                      this.plotCreator.binHeight);

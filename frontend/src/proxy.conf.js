@@ -16,8 +16,11 @@ const PROXY_CONFIG = [
             url.resolve(baseHref, 'tbapi'),
             url.resolve(baseHref, 'tgrc')
         ],
-        target: 'http://localhost:' + devPort,
-        secure: false
+            target: `http://backend:${devPort}`,
+            secure: false,
+            changeOrigin: true,      // often helpful for Host header rewriting
+            logLevel: 'debug'        // optional: see full proxy logs
+
     }
 ];
 

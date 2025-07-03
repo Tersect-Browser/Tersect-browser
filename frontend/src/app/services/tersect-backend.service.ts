@@ -50,6 +50,7 @@ export class TersectBackendService {
             binsize: binsize,
             accessions: accessions
         };
+        console.log(distBinQuery, 'ran here');
         return this.http.post<DistanceBins>(query, distBinQuery, httpOptions)
                         .pipe(
             tap(distBins => {
@@ -137,14 +138,14 @@ export class TersectBackendService {
     generateBarcodes(accessionName: string, chrom: string, start: number, end: number, size: number, maxVar: number | null, datasetId): Observable<{ downloadableURL: string }> {
         const payload = { accessionName, chrom, start, end, size, maxVar };
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-      
+
         // return this.http.post(`${this.apiUrl}/generate-barcodes`, payload, {
         //   headers,
         //   responseType: 'json' // Important for file download
         // }) as unknown as Observable<{ downloadableURL: string }>;
         return this.http.post<{ downloadableURL: string }>(
-            `${this.apiUrl}/query/${datasetId}/generate-barcodes`, 
-            payload, 
+            `${this.apiUrl}/query/${datasetId}/generate-barcodes`,
+            payload,
             { headers, responseType: 'json' }
         );
       }

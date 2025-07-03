@@ -1,28 +1,69 @@
-version: '3.9'
 
 services:
+    extension:
+        image: daviddamilola20/tersect-browser-extension:latest
+        build:
+            context: ./extension/genome-browser
+        ports:
+            - "3200:3200"
+        depends_on:
+            - backend
+        networks:
+            - app-net
+    frontend:
+        image: daviddamilola20/tersect-browser-frontend:latest
+        build:
+            context: .
+            dockerfile: Dockerfile.frontend
+        ports:
+            - "4200:4200"
+        networks:
+            - app-net
+        depends_on:
+            - backend
+            - extension
+    backend:
+        image: daviddamilola20/tersect-browser-backend:latest
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "4300:4300"
+        volumes:
+            # Mongo’s own data dir (if backend actually needs direct access):
+            - ./db-data/mongo-data:/data/db
 
-  extension:
-    build:
-      context: ./extension/genome-browser
-    ports:
-      - "3200:3200"
-    # depends_on:
-      # - backend
-    networks:
-      - app-net
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports:
-      - "4200:4200"
-    networks:
-      - app-net
-    depends_on:
-      # - backend
-      - extension
-
+            # Your application data (TSI, VCFs) for tersect + express.static:
+            - ./db-data/mongo-data/gp_data_copy:/app/gp_data_copy
+            - ./:/app
+        networks:
+            - app-net
+        depends_on:
+            - database
+        develop:
+            watch:
+                - action: rebuild
+                  path: ./backend
+    database:
+        image: mongo:8.0
+        restart: unless-stopped
+        volumes:
+            - ./db-data/mongo-data:/data/db
+            - ./db-data/mongo-data/gp_data_copy:/app/gp_data_copy
+        networks:
+            - app-net
+        environment:
+            MONGO_INITDB_DATABASE: tersect_browser_gp
+        ports:
+            - "27017:27017"
 networks:
-  app-net:
-    driver: bridge
+    app-net:
+        driver: bridge
+
+volumes:
+    dbdata:
+        driver: local
+        driver_opts:
+            type: none
+            device: ./db-data
+            o: bind

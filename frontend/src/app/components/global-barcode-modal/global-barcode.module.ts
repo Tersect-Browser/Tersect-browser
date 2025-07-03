@@ -7,19 +7,19 @@ import { GlobalBarcodeComponent } from './global-barcode.component';
 
 
 
-@NgModule({
-    declarations: [
-
-    ],
-    exports: [
-        GlobalBarcodeComponent
-    ],
-    imports: [
-        CommonModule,
-    ],
-    providers: [
-        PlotStateService
-    ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA]
-})
-export class GlobalBarcodeModule { }
+// @NgModule({
+//     declarations: [
+//         GlobalBarcodeComponent
+//     ],
+//     exports: [
+//         GlobalBarcodeComponent
+//     ],
+//     imports: [
+//         CommonModule,
+//     ],
+//     providers: [
+//         PlotStateService
+//     ],
+//     schemas: [CUSTOM_ELEMENTS_SCHEMA]
+// })
+// export class GlobalBarcodeModule { }

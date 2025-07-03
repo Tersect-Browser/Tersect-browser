@@ -1,6 +1,6 @@
 import TrixTextSearchAdapter from '@gmod/trix';
 import { fromUrl } from 'generic-filehandle2';
-import tbconfig from '../../../../../tbconfig.json';
+import tbconfig from '../../../tbconfig.json';
 
 
 // Types
