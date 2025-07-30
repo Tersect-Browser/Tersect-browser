@@ -31,6 +31,7 @@ export function partitionQuery(tsiLocation: string,
                                indexPartitions: number[],
                                query: TreeQuery): IntervalPartitions {
     // TODO: check if calling this each time affects performance
+    console.log('Partitioning query', query);
     const chromosomePartitions = loadChromosomePartitions(tsiLocation,
                                                           indexPartitions);
 
@@ -73,7 +74,7 @@ function partitionInterval(input: Interval,
     partitionSizes.sort((a, b) => a - b); // Ascending order
     let partSize = partitionSizes.pop();
     const intervals = _partitionInterval(input, partSize);
-    while (partitionSizes.length) {
+    while (partitionSizes && partitionSizes.length) {
         partSize = partitionSizes.pop();
         const newIndexed: Interval[] = [];
         const newNonindexed: Interval[] = [];

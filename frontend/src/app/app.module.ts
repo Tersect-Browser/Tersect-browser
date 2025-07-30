@@ -27,6 +27,7 @@ import { GlobalModalComponent } from './components/global-jbrowse-modal/global-m
 import { GlobalBarcodeComponent } from './components/global-barcode-modal/global-barcode.component';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+import { IntrogressionService } from './services/introgression.service';
 
 const appRoutes: Routes = [
     { path: 'share/:exportid', component: TersectBrowserComponent },
@@ -49,10 +50,12 @@ const appRoutes: Routes = [
         DialogModule,
         RouterModule.forRoot(appRoutes),
         FormsModule,
-        ProgressSpinnerModule
+        ProgressSpinnerModule,
+
     ],
     providers: [
         HttpClient,
+        IntrogressionService,   
         { provide: APP_CONFIG, useValue: TERSECT_BROWSER_CONFIG }
     ],
     bootstrap: [AppComponent],

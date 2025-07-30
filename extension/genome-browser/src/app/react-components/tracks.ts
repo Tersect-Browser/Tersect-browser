@@ -6,12 +6,12 @@ export default [
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz",
+          "uri": "http://localhost:4100/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "http://localhost:4200/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz.tbi",
+            "uri": "http://localhost:4100/TersectBrowserGP/tbapi/datafiles/ITAG2.4_gene_models.sorted.gff3.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"

@@ -8,6 +8,7 @@ import Aura from '@primeng/themes/aura'; // or whichever theme preset
 
 import { AppComponent } from './app/app.component';
 import {GeneSearchComponent} from './app/gene-search/gene-search.component';
+import { IntrogressionVisualizerComponent } from './app/introgression-visualizer/introgression-visualizer.component';
 
 (async () => {
   const app = await createApplication({
@@ -30,4 +31,9 @@ import {GeneSearchComponent} from './app/gene-search/gene-search.component';
 
   const GeneSearchElement = createCustomElement(GeneSearchComponent, { injector: app.injector });
   customElements.define('gene-search', GeneSearchElement);
+
+  const IntrogressionVisualizationElement = createCustomElement(
+    IntrogressionVisualizerComponent, { injector: app.injector }
+  );
+  customElements.define('introgression-visualization', IntrogressionVisualizationElement);
 })();

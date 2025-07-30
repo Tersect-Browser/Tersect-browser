@@ -63,10 +63,12 @@ import {
 import {
     TersectBrowserComponent
 } from './tersect-browser.component';
+import { IntrogressionPlotViewComponent } from '../../components/introgression-plot/introgression-plot.component';
 
 @NgModule({
     declarations: [
         TersectBrowserComponent,
+        IntrogressionPlotViewComponent,
         AccessionStyleSelectorComponent,
         ReferenceSelectorComponent,
         ChromosomeSelectorComponent,

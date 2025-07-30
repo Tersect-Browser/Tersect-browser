@@ -8,7 +8,7 @@ COPY ./tbconfig.json /app/
 WORKDIR /app/frontend
 
 RUN npm install
-RUN npm run build  # or your build command
+
 
 EXPOSE 4200
 CMD ["npm", "start"]

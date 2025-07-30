@@ -4,7 +4,6 @@ import {
     execFile
 } from 'child_process';
 import * as readline from 'readline';
-import { once } from 'events';
 
 import {
     Request,
@@ -16,24 +15,6 @@ import {
     default as Hashids
 } from 'hashids';
 import * as path from 'path';
-import {
-    fromEvent,
-    merge
-} from 'rxjs';
-import {
-    concatMap,
-    map,
-    reduce,
-    take,
-    takeUntil,
-    throttleTime
-} from 'rxjs/operators';
-import {
-    fileSync
-} from 'tmp';
-import {
-    promisify
-} from 'util';
 
 import {
     DistanceBinQuery,
@@ -51,9 +32,12 @@ import { DBMatrix } from '../models/dbmatrix';
 import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
 import { partitionQuery } from '../utils/partitioning';
-import { formatRegion } from '../utils/utils';
+import { formatRegion, writeAccessions } from '../utils/utils';
 import { collectSampleNames, Pool, processKeys, tersectForKey } from '../utils/pool';
-import { Readable } from 'stream';
+import introgressionController from './introgression-router';
+import { createRapidnjTree } from '../utils/dbutils';
+import { generateTree } from '../controllers/generateTree';
+
 
 function expandSci(match) {
   return Number(match).toFixed(9).replace(/0+$/, '').replace(/\.$/, '');
@@ -82,7 +66,7 @@ const util = require('util');
 const readdir = util.promisify(fs.readdir);
 const stat = util.promisify(fs.stat);
 const access = util.promisify(fs.access);
-const DATA_DIR = `${tbConfig.localDbPath}/gp_data_copy/trix_indices`;
+const DATA_DIR = `/app/gp_data_copy/trix_indices`;
 
 function isValidChrom(chr: string): boolean {
     return /^SL2\.50ch(0[0-9]|1[0-2])$/.test(chr);
@@ -124,39 +108,8 @@ export const router = Router();
 /**
  * Save list of accessions into a temporary file and return the file name.
  */
-async function writeAccessions(accessions: string[]): Promise<string> {
-    try {
-        const tmpDir = path.join(__dirname, '../tmp');
-        fs.mkdirSync(tmpDir, { recursive: true });
-          const outputFile = fileSync({
-            dir: tmpDir,
-            keep: false       // prevent automatic cleanup until you call removeCallback()
-        });
-        await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
-        console.log(outputFile.name, 'output file')
-        return outputFile.name;
-    } catch (error) {
-        console.log('Error writing accessions to file');
-        console.log(error);
 
-    }
 
-}
-
-function execPromise(command: string, options = {}) {
-    return new Promise((resolve, reject) => {
-        exec(command, options, (error, stdout, stderr) => {
-            if (error) {
-                reject(error);
-                return;
-            } else if (stderr) {
-                reject(stderr);
-                return;
-            }
-            resolve(stdout);
-        });
-    });
-}
 
 
 
@@ -179,7 +132,9 @@ router.use('/query/:datasetId', (req, res, next) => {
                 res.status(404).send('Dataset not found');
                 return;
             } else {
+
                 res.locals.dataset = dataset;
+                res.locals.datasetId = dataset._id;
                 return next();
             }
         });
@@ -188,7 +143,7 @@ router.use('/query/:datasetId', (req, res, next) => {
 
 
 
-router.use('/datafiles/:filename', async (req, res) => {
+router.get('/datafiles/:filename', async (req, res) => {
     const localDbLocation = tbConfig.localDbPath;
     const fileName = req.params.filename;
     const searchRoot = path.join(localDbLocation, 'gp_data_copy');
@@ -576,8 +531,6 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     const tsiLocation = `${tbConfig.tsiPath}/${tbConfig.datasetName}.tsi`;
     const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/${tbConfig.fastaName}`;
 
-    // const tsiLocation = path.join(__dirname, '../../../gp_data/SGN_aer_hom_snps.tsi');
-    // const fasta_file = path.join(__dirname, '../../../gp_data/SL2.50.fa');
 
     const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation, tbConfig.localDbPath];
 
@@ -595,14 +548,7 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
         console.log('outputpath', outputFile);
 
 
-
-        // res.download(outputFile, filename); // send file to client
-        // res.send - return json wirth downloadable url --> should be in server
-        //res.status.send? --> need to put status code
-
         const downloadableURL = `${tbConfig.serverHost}/datafiles/barcodes/${filename}`
-        // const downloadableURL = `http://127.0.0.1:4300/TersectBrowserGP/download-barcode/${filename}`
-
         res.json({downloadableURL})
 
       });
@@ -613,194 +559,16 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
 
 })
 
-export async function fetchChromosomes(reference: string): Promise<Array<{ name: string; size: number }>> {
-  return ChromosomeIndex
-    .find({ reference }, { name: 1, size: 1, _id: 0 })
-    .lean()
-    .exec();
-}
 
-router.route('/query/:datasetId/species-tree')
-  .post(async (req, res) => {
-    const { datasetId } = req.params;
-    const { chromosomeName, interval, accessions } = req.body as TreeQuery;
-    const reference = res.locals.dataset.reference;
-    const chroms = await fetchChromosomes(reference);
 
-    const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
-
-    try {
-      // kick off one promise per chromosome
-      const treePromises = chroms.map(({ name, size }) => {
-        // build the query we use both for find and for generation
-        const thisQuery: TreeDatabaseQuery = {
-          datasetId,
-          'query.chromosomeName': name,
-          'query.interval': [0, size],
-          'query.accessions': accessions
-        };
-
-        return NewickTree
-          .findOne(thisQuery)
-          .exec()
-          .then(async (found) => {
-            if (found) {
-              // already on disk / in DB
-              return found;
-            }
-
-            // otherwise create a placeholder doc so we can return immediately,
-            // then fire off the async generateTree job
-            const placeholder = await new NewickTree({
-              datasetId,
-              query: {
-                chromosomeName: name,
-                interval: [0, size],
-                accessions
-              },
-              status: 'Collating data...'
-            }).save();
-
-            // this kicks off your existing worker/job to build the tree
-            generateTree(tsiLocation, { chromosomeName: name, interval: [0, size], accessions }, thisQuery);
-
-            return placeholder;
-          });
-      });
-
-      // wait for all 12 documents (either existing or placeholders)…
-      const allTrees = await Promise.all(treePromises);
-
-      // and return them as a JSON array
-      return res.json(allTrees.map((each) => sanitizeTree(each.tree)));
-
-    } catch (err) {
-      console.error("Error in species-tree:", err);
-      return res.status(500).send('Species tree creation failed');
-    };
-  });
+router.route('/query/:datasetId/scan-introgression')
+  .post(introgressionController);
 
 
 
-function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string) {
-    const rapidnj = spawn('rapidnj', ['-a', 'jc', '-i', 'pd', phylipFile]);
-
-    const stdoutClose$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
-    const stderrClose$ = fromEvent(rapidnj.stderr, 'close').pipe(take(1));
-
-    const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
-        takeUntil(stderrClose$),
-        throttleTime(500),
-        map(data => {
-            const statusUpdates = data.toString().trim().split(' ');
-            const percentage = statusUpdates[statusUpdates.length - 1].trim();
-            return percentage;
-        }),
-        map(percentage => `Building tree: ${percentage}`),
-        map(statusUpdate => ({ status: statusUpdate }))
-    );
-
-    const result$ = fromEvent(rapidnj.stdout, 'data').pipe(
-        takeUntil(stdoutClose$),
-        reduce((newickOutput, chunk) => newickOutput + chunk, ''),
-        map(newickOutput => ({
-            status: 'ready',
-            tree: newickOutput
-        }))
-    );
-
-    merge(progress$, result$).pipe(
-        concatMap(update => NewickTree.updateOne(dbQuery, update))
-    ).subscribe(() => { });
-}
-
-export function mapToAppPath(inputPath: string): string {
-  const marker = '/distmats/';
-  const idx = inputPath.indexOf(marker);
-  if (idx === -1) {
-    throw new Error(`Cannot find "${marker}" in input path "${inputPath}"`);
-  }
-
-  // everything from "/distmats/..." onwards
-  const tail = inputPath.slice(idx);
-
-  // prepend the fixed container root + db-data path
-  return path.posix.normalize(path.posix.join(
-    '/app/db-data/mongo-data',
-    tail
-  ));
-}
 
 
 
-function generateTree(tsiLocation: string, treeQuery: TreeQuery,
-    dbQuery: TreeDatabaseQuery) {
-    const partitions = partitionQuery(tsiLocation, tbConfig.indexPartitions,
-        treeQuery);
 
-    const dbFiles = partitions.indexed.map(async interval => {
-        const region = formatRegion(treeQuery.chromosomeName, interval.start,
-            interval.end);
-        const result = await DBMatrix.findOne(
-            { dataset_id: dbQuery.datasetId, region: region },
-            { _id: 0, matrix_file: 1 }
-        );
-        return result['matrix_file'];
-    });
 
-    const tersectOutputFiles = partitions.nonindexed.map(async interval => {
-        const outputFile = fileSync();
-        const region = formatRegion(treeQuery.chromosomeName,
-            interval.start, interval.end);
-        const command = `tersect dist ${tsiLocation} ${region} > ${outputFile.name}`;
-        const result = await execPromise(command);
-        // TODO: error handling on tersect result / promise rejection
-        return outputFile.name;
-    });
 
-    const positiveMatrixFiles = [];
-    const negativeMatrixFiles = [];
-
-    partitions.indexed.forEach((interval, i) => {
-        if (interval.type === 'add') {
-            positiveMatrixFiles.push(dbFiles[i].then(file => {
-                return mapToAppPath(file);
-            }));
-        } else if (interval.type === 'subtract') {
-            negativeMatrixFiles.push(dbFiles[i].then(file => {
-                return mapToAppPath(file);
-            }));
-        }
-    });
-
-    partitions.nonindexed.forEach((interval, i) => {
-        if (interval.type === 'add') {
-            positiveMatrixFiles.push(tersectOutputFiles[i]);
-        } else if (interval.type === 'subtract') {
-            negativeMatrixFiles.push(tersectOutputFiles[i]);
-        }
-    });
-
-    const inputFiles = [
-        writeAccessions(treeQuery.accessions),
-        ...positiveMatrixFiles,
-        ...negativeMatrixFiles
-    ];
-
-    const intervalSize = treeQuery.interval[1] - treeQuery.interval[0];
-
-    Promise.all(inputFiles).then(([accFile, ...matrixFiles]) => {
-        const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
-            .join(' ');
-        const negative = matrixFiles.slice(positiveMatrixFiles.length,
-            matrixFiles.length).join(' ');
-        const script = path.join(__dirname, '../scripts/merge_phylip.py');
-        let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile} --interval-size ${intervalSize}`;
-        if (negative.length) {
-            mergeCommand = `${mergeCommand} -n ${negative}`;
-        }
-        return execPromise(mergeCommand);
-    }).then((outputFilename: string) => {
-        createRapidnjTree(dbQuery, outputFilename.trim());
-    });
-}

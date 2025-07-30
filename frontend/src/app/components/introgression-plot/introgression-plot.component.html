@@ -1,0 +1,29 @@
+<div class="plot-panel" *ngIf="loading || plotUrl || error">
+  <!-- Loading message (centered) -->
+  <div *ngIf="loading" class="center-wrap" role="status" aria-live="polite">
+    <div class="status-text">Generating… please wait.</div>
+  </div>
+
+  <!-- Error message (centered) -->
+  <div *ngIf="!loading && error" class="center-wrap">
+    <div class="status-text status-text--error">{{ error }}</div>
+  </div>
+
+  <!-- Image -->
+  <div *ngIf="!loading && !error && plotUrl" class="img-wrap">
+    <img [src]="plotUrl" alt="Introgression plot" />
+  </div>
+
+  <!-- Empty state (centered) -->
+  <div *ngIf="!loading && !error && !plotUrl" class="center-wrap">
+    <div class="status-text">No plot yet.</div>
+  </div>
+
+  <!-- Bottom progress bar (only while loading) -->
+  <div *ngIf="loading" class="progress-footer" aria-hidden="true">
+    <div class="progress">
+      <div class="progress__track"></div>
+      <div class="progress__bar"></div>
+    </div>
+  </div>
+</div>

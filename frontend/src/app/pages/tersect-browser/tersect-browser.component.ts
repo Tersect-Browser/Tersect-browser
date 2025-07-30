@@ -46,6 +46,7 @@ import { ScaleDrawService } from '../../services/scale-draw.service';
 import { ScaleViewStateService } from '../../components/tersect-distance-plot/services/scale-view-state-service';
 
 import { BinDrawService } from '../../services/bin-draw.service';
+import { IntrogressionService } from '../../services/introgression.service';
 
 interface SyncedScaleView {
     binSize: number;
@@ -92,8 +93,8 @@ export class TersectBrowserComponent implements OnInit {
     displayButton = false;
     selectedAccessions: string[];
     preselectedChromosome: Chromosome;
-    
-   
+
+
     private zoomSub: Subscription;
     private binSizeSub: Subscription;
     private syncedScaleViewSub: Subscription;
@@ -112,7 +113,7 @@ export class TersectBrowserComponent implements OnInit {
     @ViewChild(PlotClickMenuComponent, { static: true })
     private readonly plotClickMenu: PlotClickMenuComponent;
 
-  
+
 
     // ✅ NEW: flag to track when the custom element is ready
     isJbrowserReady: boolean = false;
@@ -121,12 +122,12 @@ export class TersectBrowserComponent implements OnInit {
                 private readonly plotZoom: PlotZoomService,
                 private readonly drawBin: BinDrawService,
                 private readonly tersectBackendService: TersectBackendService,
-                private readonly treeDrawService: TreeDrawService,
+                private readonly introgressionService: IntrogressionService,
                 private readonly scaleDrawService: ScaleDrawService,
                 private readonly scaleViewState: ScaleViewStateService,
                 // private readonly treePlotCopmonent: TreePlotComponent,
                 private readonly router: Router,
-                private readonly route: ActivatedRoute) { 
+                private readonly route: ActivatedRoute) {
                     this.selectedInterval = this.plotState.interval
                     this.callHighlightBins = this.callHighlightBins.bind(this);
                 }
@@ -137,7 +138,7 @@ export class TersectBrowserComponent implements OnInit {
 
 
     ngOnInit() {
-        
+
         this.syncedScaleViewSub = this.scaleViewState.scaleView$.subscribe(scaleView => {
             if (scaleView) {
                 // Use updated ScaleView here
@@ -197,8 +198,8 @@ export class TersectBrowserComponent implements OnInit {
                 this.preselectedChromosome = this.plotState.chromosome;
             });
 
-            
-            
+
+
         });
 
 
@@ -219,7 +220,7 @@ export class TersectBrowserComponent implements OnInit {
     refreshBin(){
 
        this.drawBin.refreshBin()
-    
+
     }
 
     isDownloadReady(): boolean {
@@ -303,7 +304,7 @@ export class TersectBrowserComponent implements OnInit {
     handleGenePositionChanged(startGenePosition: number) {
         this.startGenePosition = startGenePosition;
     }
-    
+
     handleGeneChromChanged(geneChrom: string){
         this.geneChrom = geneChrom;
     }

@@ -14,6 +14,14 @@ import { SequenceInterval } from '../models/SequenceInterval';
 import { BrowserSettings } from '../pages/tersect-browser/models/BrowserSettings';
 import { isNullOrUndefined, snvCountToJC } from '../utils/utils';
 
+interface IntrogressionQuery {
+    chromosome: string;
+    interval: [number, number];
+    accessions: string[];
+    datasetId: string;
+    outgroup: string;
+}
+
 @Injectable()
 export class TersectBackendService {
     private readonly apiUrl: string;
@@ -149,4 +157,12 @@ export class TersectBackendService {
             { headers, responseType: 'json' }
         );
       }
+
+      searchForIntrogressions(payload: IntrogressionQuery) {
+        const introgressionScanUrl = `${this.apiUrl}/query/${payload.datasetId}/scan-introgression`;
+
+        return this.http.post<{ url: string }>(introgressionScanUrl, payload, {
+          responseType: 'json'
+        });
+    }
 }

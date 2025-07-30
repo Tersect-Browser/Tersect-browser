@@ -34,7 +34,7 @@
     </div>
     <div class="p-grid zoom-selector pt-1  align-items-start gap-2 vertical-align-top tb-toolbar-control">
         <gene-search class="col-120 h-2" *ngIf="!!binSize && settingsId"
-            bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins, chromosome: selectedChromosomeSub, 
+            bind-props="{selectedInterval: selectedInterval, callback: callHighlightBins, chromosome: selectedChromosomeSub,
             preselectedChromosome: preselectedChromosome,
             selectedInterval: selectedInterval,
             datasetId: settingsId,
@@ -64,16 +64,18 @@
     </app-accession-tab>
 </p-sidebar>
 <div id="mytarget" [ngStyle]="displayButton ? { position: 'relative', top: '-32px', 'margin-bottom': '-32px' } : {}" [style.margin-left.px]="offsetCanvas">
+<!-- <introgression-visualization></introgression-visualization> -->
+<app-introgression-plot></app-introgression-plot>
 <jbrowser-wrapper *ngIf="displayButton" bind-props="{location : {
-    start: '0', 
-    end: '98543444', 
-    zoomLevel: zoomLevel, 
-    binSize: binSize, 
-    chromosome: selectedChromosomeSub, 
+    start: '0',
+    end: '98543444',
+    zoomLevel: zoomLevel,
+    binSize: binSize,
+    chromosome: selectedChromosomeSub,
     preselectedChromosome: preselectedChromosome,
-    selectedInterval: selectedInterval, 
+    selectedInterval: selectedInterval,
     defaultInterval: defaultInterval,
-    offsetCanvas: offsetCanvas, 
+    offsetCanvas: offsetCanvas,
     plotPositionX: plotPositionX
 },
 scaleView: this.syncedScaleView,

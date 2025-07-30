@@ -32,6 +32,12 @@ app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.json());
 
 const baseHref = tbConfig.baseHref || '/';
+const PLOT_ROOT = process.env.PLOT_ROOT || path.join(__dirname, '..', 'public', 'plots');
 app.use('/TersectBrowserGP/datafiles', express.static(path.join(tbConfig.localDbPath, 'gp_data_copy')));
 app.use(url.resolve(baseHref, 'tbapi'), tbRouter);
 app.use(url.resolve(baseHref, 'tgrc'), tgrcRouter);
+app.use('/plots', express.static(PLOT_ROOT, {
+  maxAge: '7d',
+  immutable: true,
+  fallthrough: false
+}));

@@ -13,11 +13,17 @@ import {
 } from '../../utils/utils';
 import { ModalService } from '../../pages/tersect-browser/services/modal.service';
 import { PlotStateService } from '../tersect-distance-plot/services/plot-state.service';
+import { IntrogressionService } from '../../services/introgression.service';
+import { tap } from 'rxjs/operators';
 
 @Component({
     selector: 'app-plot-click-menu',
     templateUrl: './plot-click-menu.component.html',
-    styleUrls: ['./plot-click-menu.component.css']
+    styleUrls: ['./plot-click-menu.component.css'],
+    //  providers: [
+
+    //         IntrogressionService,
+    //     ]
 })
 export class PlotClickMenuComponent {
     @Output() removeAccession = new EventEmitter<string>();
@@ -29,7 +35,7 @@ export class PlotClickMenuComponent {
     menuItems: MenuItem[] = [];
 
 
-    constructor(private readonly el: ElementRef, private modalService: ModalService, private plotStateService: PlotStateService) { }
+    constructor(private readonly el: ElementRef, private modalService: ModalService, private plotStateService: PlotStateService, private introgressionService: IntrogressionService) { }
 
     private set position(pos: { x: number, y: number }) {
         this.el.nativeElement.style.left = `${pos.x}px`;
@@ -154,23 +160,24 @@ export class PlotClickMenuComponent {
                         window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
                             interval: [bin.startPosition, bin.endPosition]
                         } }));
-  
+
                         this.hide();
                     }
                 },
+
                 {
                     label: 'Create barcode',
                     icon: 'fa fa-barcode',
                     command: () => {
                         console.log(this.modalService.openBarcodeModal)
-                        this.modalService.openBarcodeModal(bin.accessionLabel, 
-                            this.plotStateService.chromosome.name, 
-                            bin.startPosition, 
+                        this.modalService.openBarcodeModal(bin.accessionLabel,
+                            this.plotStateService.chromosome.name,
+                            bin.startPosition,
                             bin.endPosition,
                             this.plotStateService.datasetId
                         );
 
-                        
+
                         console.log('barcode service opened')
                         console.log('Accession:', bin.accessionLabel)
                         console.log('chrom', this.plotStateService.chromosome.name)
@@ -205,13 +212,28 @@ export class PlotClickMenuComponent {
                     command: () => {
                         window.dispatchEvent(new CustomEvent("tersect-search-variants", { detail: {
                             interval: [int.startPosition, int.endPosition],
-                            waitTime: 40000
+                            waitTime: 40000,
                         } }));
-                        // this.setInterval.emit([int.startPosition,
-                        //                        int.endPosition]);
                         this.hide();
                     }
-                }
+                },
+                {
+                    label: 'Search for introgressions',
+                    icon: 'fa fa-search-plus',
+                    command: () => {
+                        console.log(this.plotStateService.chromosome, 'FOR PLOTSTATE')
+                        this.introgressionService.searchForIntrogressions({
+                            chromosome: this.plotStateService.chromosome.name,
+                            interval: [int.startPosition, int.endPosition],
+                            accessions: this.plotStateService.accessions,
+                            datasetId: this.plotStateService.datasetId,
+                            outgroup: this.plotStateService.reference,
+                        })
+                         this.setInterval.emit([int.startPosition,
+                                               int.endPosition]);
+                        this.hide();
+                    }
+                },
             ]
         };
     }
@@ -235,7 +257,14 @@ export class PlotClickMenuComponent {
                         this.setIntervalEnd.emit(pos.position);
                         this.hide();
                     }
-                }
+                },
+                 {
+                    label: 'Search for introgressions',
+                    icon: 'fa fa-graph',
+                    command: () => {
+                        this.hide();
+                    }
+                },
             ]
         };
     }

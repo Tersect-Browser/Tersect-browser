@@ -22,6 +22,10 @@ services:
         depends_on:
             - backend
             - extension
+        develop:
+            watch:
+                - action: rebuild
+                  path: ./frontend
     backend:
         image: daviddamilola20/tersect-browser-backend:latest
         build:
