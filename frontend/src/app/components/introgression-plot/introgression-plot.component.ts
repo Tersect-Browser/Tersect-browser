@@ -3,6 +3,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/
 import { IntrogressionService } from '../../services/introgression.service';
 import { tap } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { PlotStateService } from '../tersect-distance-plot/services/plot-state.service';
 
 @Component({
   selector: 'app-introgression-plot',
@@ -14,12 +15,14 @@ export class IntrogressionPlotViewComponent {
 
   loading = false;
     error = null;
-    plotUrl = null;
+    scanResponse = null;
 
   private sub = new Subscription();
+  offsetCanvas: number;
 
   constructor(
     public introgression: IntrogressionService,
+    private readonly plotState: PlotStateService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -34,10 +37,14 @@ export class IntrogressionPlotViewComponent {
       this.error = v;
       this.cdr.markForCheck();
     }));
-    this.sub.add(this.introgression.plotUrl$.subscribe(v => {
-      console.log('[plot-view] plotUrl', v);
-      this.plotUrl = v;
+    this.sub.add(this.introgression.scanResponse$.subscribe(v => {
+      console.log('[plot-view] scanResponse', v);
+      this.scanResponse = v;
       this.cdr.markForCheck();
+    }));
+    this.sub.add(this.plotState.offsetCanvas$.subscribe(value => {
+    console.log('[plot-view] offsetCanvas', value);
+      this.offsetCanvas = value;
     }));
   }
 }

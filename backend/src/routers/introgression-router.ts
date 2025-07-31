@@ -16,7 +16,13 @@ const mkdtemp = promisify(fs.mkdtemp);
 // Reuse your models/helpers:
 import { ensureBuildSpeciesTree } from "../utils/dbutils";
 import { Dataset } from "../models/dataset";
-import { accessionsKey, execFileLogged, moveFile, randomId, sanitizeTreeStr } from "../utils/utils";
+import {
+    accessionsKey,
+    execFileLogged,
+    moveFile,
+    randomId,
+    sanitizeTreeStr,
+} from "../utils/utils";
 import SpeciesTreeCache from "../models/SpeciesTreeCache";
 import { NewickTree } from "../models/newicktree";
 import { generateTreeAsync } from "../controllers/generateTree";
@@ -34,8 +40,6 @@ type IntrogressionQuery = {
     outgroup: string; // required for rooting
 };
 
-
-
 export const writeFileP = promisify(fs.writeFile);
 export const readFileP = promisify(fs.readFile);
 export const mkdirpP = promisify(mkdirp);
@@ -43,14 +47,17 @@ export const rimrafP = promisify(rimraf);
 const mkdtempP = promisify(fs.mkdtemp);
 
 const introgressionController = async (req, res) => {
-        const tmpBase = await mkdtempP(path.join(os.tmpdir(), "introgress-"));
-        const windowsDir = path.join(tmpBase, "windows");
+    const tmpBase = await mkdtempP(path.join(os.tmpdir(), "introgress-"));
+    const windowsDir = path.join(tmpBase, "windows");
 
-        const windowsCsvPath = path.join(windowsDir, "windows.csv");
-        const speciesTreePath = path.join(tmpBase, "species_tree_astral.tre");
-        const pngPath = path.join(tmpBase, "scan.png");
-        const cleanup = async () => { try { await rimrafP(tmpBase); } catch (_) {} };
-
+    const windowsCsvPath = path.join(windowsDir, "windows.csv");
+    const speciesTreePath = path.join(tmpBase, "species_tree_astral.tre");
+    const pngPath = path.join(tmpBase, "scan.png");
+    const cleanup = async () => {
+        try {
+            await rimrafP(tmpBase);
+        } catch (_) {}
+    };
 
     try {
         const {
@@ -68,7 +75,6 @@ const introgressionController = async (req, res) => {
         if (!dataset)
             return res.status(404).json({ error: "Dataset not found" });
 
-
         const accKey = accessionsKey(accessions);
         const existing: any = await SpeciesTreeCache.findOne({
             datasetId,
@@ -84,7 +90,7 @@ const introgressionController = async (req, res) => {
                 datasetId: dataset.id,
                 dataset,
                 accessions,
-            }).catch(() => {})
+            }).catch(() => {});
         }
 
         await writeFileP(
@@ -161,41 +167,60 @@ const introgressionController = async (req, res) => {
         ];
         await writeFileP(windowsCsvPath, rows.join("\n") + "\n", "utf8");
         console.log("Windows CSV written:", windowsCsvPath);
+        const jsonPath = path.resolve(tmpBase, "scan.json");
+
         await execFileLogged(
-        "micromamba",
-        [
-            "run", "-n", "tersect",
-            "python", "-u",
-            path.resolve("src/scripts/introgression_scan.py"),
-            "--windows-csv", windowsCsvPath,
-            "--species-tree", speciesTreePath,
-            "--out-png", pngPath,
-            "--mu", String(mu),
-            "--ne", String(ne),
-            "--block-size", String(blockSize),
-            "--outgroup", outgroup,
-        ],
-        tmpBase
+            "micromamba",
+            [
+                "run",
+                "-n",
+                "tersect",
+                "python",
+                "-u",
+                path.resolve("src/scripts/introgression_scan.py"),
+                "--windows-csv",
+                windowsCsvPath,
+                "--species-tree",
+                speciesTreePath,
+                "--mu",
+                String(mu),
+                "--ne",
+                String(ne),
+                "--block-size",
+                String(blockSize),
+                "--outgroup",
+                outgroup,
+                "--alpha",
+                "0.05",
+                "--out-json",
+                jsonPath, // << write results here
+            ],
+            tmpBase
         );
+        const text = await readFileP(jsonPath, "utf8");
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (err) {
+            // helpful server-side context if the JSON was truncated or invalid
+            throw new Error(
+                `Failed to parse scan JSON at ${jsonPath}: ${
+                    (err as Error).message
+                }`
+            );
+        }
 
         const status = existing ? existing.status : "building";
-        const id = randomId();                           // opaque, unguessable
-        const fileName = `${id}.png`;
-        const buf = await readFileP(pngPath); // Buffer with the image
-        const PLOT_ROOT = tbConfig.localDbPath + '/gp_data_copy/plots/'
-        await mkdirpP(PLOT_ROOT);
-        const finalPath = path.join(PLOT_ROOT, fileName);
-        await moveFile(pngPath, finalPath);
-        const downloadableURL = `${tbConfig.serverHost}/datafiles/plots/${fileName}`;
         res.status(existing && existing.status === "ready" ? 200 : 202).json({
             datasetId,
             accKey,
             status,
             tree: existing ? existing.tree : null,
-            url: downloadableURL,
+            data, // <-- frontend gets D3-ready payload
+            // url: undefined,                 // keep or omit for backward compatibility
         });
     } catch (e) {
-         await cleanup();
+        await cleanup();
         res.status(500).json({ error: String(e) });
     }
 };

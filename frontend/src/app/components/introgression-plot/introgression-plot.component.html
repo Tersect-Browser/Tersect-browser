@@ -1,4 +1,4 @@
-<div class="plot-panel" *ngIf="loading || plotUrl || error">
+<div class="plot-panel" *ngIf="loading || scanResponse || error">
   <!-- Loading message (centered) -->
   <div *ngIf="loading" class="center-wrap" role="status" aria-live="polite">
     <div class="status-text">Generating… please wait.</div>
@@ -10,12 +10,12 @@
   </div>
 
   <!-- Image -->
-  <div *ngIf="!loading && !error && plotUrl" class="img-wrap">
-    <img [src]="plotUrl" alt="Introgression plot" />
+  <div *ngIf="!loading && !error && scanResponse" class="img-wrap">
+    <introgression-visualization [offset]="offsetCanvas" [data]="scanResponse"></introgression-visualization>
   </div>
 
   <!-- Empty state (centered) -->
-  <div *ngIf="!loading && !error && !plotUrl" class="center-wrap">
+  <div *ngIf="!loading && !error && !scanResponse" class="center-wrap">
     <div class="status-text">No plot yet.</div>
   </div>
 

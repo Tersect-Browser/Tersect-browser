@@ -22,11 +22,11 @@ interface IntrogressionQuery {
 export class IntrogressionService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
-  private plotUrlSubject = new BehaviorSubject<string | null>(null);
+  private scanResponseSubject = new BehaviorSubject<string | null>(null);
 
   loading$: Observable<boolean> = this.loadingSubject.asObservable();
   error$: Observable<string | null> = this.errorSubject.asObservable();
-  plotUrl$: Observable<string | null> = this.plotUrlSubject.asObservable();
+  scanResponse$: Observable<string | null> = this.scanResponseSubject.asObservable();
 
   private activeSub: Subscription | null = null;
 
@@ -45,19 +45,19 @@ export class IntrogressionService {
     this.loadingSubject.next(true);
 
     // revoke previous URL if any
-    const prev = this.plotUrlSubject.value;
+    const prev = this.scanResponseSubject.value;
     if (prev) {
       URL.revokeObjectURL(prev);
-      this.plotUrlSubject.next(null);
+      this.scanResponseSubject.next(null);
     }
 
     this.activeSub = this.backend.searchForIntrogressions(payload).pipe(
       finalize(() => this.loadingSubject.next(false))
     ).subscribe({
       next: (res) => {
-        console.log('Introgression plot received:', this.loading$, this.error$, this.plotUrl$   );
-        const url = res.url;
-        this.plotUrlSubject.next(url);
+        console.log('Introgression plot received:', res );
+        const data = res.data;
+        this.scanResponseSubject.next(data);
       },
       error: (err) => {
         const msg = (err && err.message) || 'Failed to generate plot.';
@@ -69,9 +69,9 @@ export class IntrogressionService {
   /** Optional: clear current image & error (e.g., when changing dataset). */
   clear(): void {
     // this.activeSub?.unsubscribe();
-    // const prev = this.plotUrlSubject.value;
+    // const prev = this.scanResponseSubject.value;
     // if (prev) URL.revokeObjectURL(prev);
-    // this.plotUrlSubject.next(null);
+    // this.scanResponseSubject.next(null);
     // this.errorSubject.next(null);
     // this.loadingSubject.next(false);
   }

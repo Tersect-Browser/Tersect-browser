@@ -64,7 +64,7 @@
     </app-accession-tab>
 </p-sidebar>
 <div id="mytarget" [ngStyle]="displayButton ? { position: 'relative', top: '-32px', 'margin-bottom': '-32px' } : {}" [style.margin-left.px]="offsetCanvas">
-<!-- <introgression-visualization></introgression-visualization> -->
+
 <app-introgression-plot></app-introgression-plot>
 <jbrowser-wrapper *ngIf="displayButton" bind-props="{location : {
     start: '0',
