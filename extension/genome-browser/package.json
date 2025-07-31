@@ -24,6 +24,8 @@
     "@jbrowse/react-linear-genome-view": "^3.1.0",
     "@ngeenx/ngx-react": "^2.0.0",
     "@primeng/themes": "^18.0.0",
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
     "generic-filehandle2": "^1.0.0",
     "primeflex": "^4.0.0",
     "primeng": "^18.0.0",
