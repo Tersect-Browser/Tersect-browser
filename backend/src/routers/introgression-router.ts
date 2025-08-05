@@ -10,7 +10,6 @@ import * as os from "os";
 
 const pipe = promisify(pipeline);
 const writeFile = promisify(fs.writeFile);
-
 const mkdtemp = promisify(fs.mkdtemp);
 
 // Reuse your models/helpers:
@@ -168,36 +167,32 @@ const introgressionController = async (req, res) => {
         await writeFileP(windowsCsvPath, rows.join("\n") + "\n", "utf8");
         console.log("Windows CSV written:", windowsCsvPath);
         const jsonPath = path.resolve(tmpBase, "scan.json");
+        const phyloTextPath = path.resolve(tmpBase, "phylo.txt");
+        const phyloPlotPath = path.resolve(tmpBase, "phylo_plot.png");
+        const phyloIntroPlotPath = path.resolve(tmpBase, "phylo_intro_plot.png");
 
-        await execFileLogged(
-            "micromamba",
-            [
-                "run",
-                "-n",
-                "tersect",
-                "python",
-                "-u",
-                path.resolve("src/scripts/introgression_scan.py"),
-                "--windows-csv",
-                windowsCsvPath,
-                "--species-tree",
-                speciesTreePath,
-                "--mu",
-                String(mu),
-                "--ne",
-                String(ne),
-                "--block-size",
-                String(blockSize),
-                "--outgroup",
-                outgroup,
-                "--alpha",
-                "0.05",
-                "--out-json",
-                jsonPath, // << write results here
-            ],
-            tmpBase
-        );
-        const text = await readFileP(jsonPath, "utf8");
+        await runIntrogressionAnalysis({windowsCsvPath, speciesTreePath, mu, ne, blockSize, outgroup, jsonPath, tmpBase});
+        await runPhylonetAnalysis({tmpBase, treeDirectory:windowsDir, phyloTextPath, phyloPlotPath, phyloIntroPlotPath});
+        const id = randomId();                           // opaque, unguessable
+        const fileName = `${id}.png`;
+        const textFileName = `${id}.txt`;
+        const networkFileName = `${id}.png`;
+        const PLOT_ROOT = tbConfig.localDbPath + '/gp_data_copy/plots/'
+        const TEXT_ROOT = tbConfig.localDbPath + '/gp_data_copy/text/'
+        const NETWORK_ROOT = tbConfig.localDbPath + '/gp_data_copy/networks/'
+        await mkdirpP(TEXT_ROOT);
+        await mkdirpP(PLOT_ROOT);
+        await mkdirpP(NETWORK_ROOT);
+        const finalPath = path.join(PLOT_ROOT, fileName);
+        const finalTextPath = path.join(TEXT_ROOT, textFileName);
+        const finalNetworkPath = path.join(NETWORK_ROOT, networkFileName);
+        await moveFile(phyloPlotPath, finalPath);
+        await moveFile(phyloTextPath, finalTextPath);
+        await moveFile(phyloIntroPlotPath, finalNetworkPath);
+        const downloadableTextURL = `${tbConfig.serverHost}/datafiles/text/${textFileName}`;
+        const downloadableURL = `${tbConfig.serverHost}/datafiles/plots/${fileName}`;
+        const downloadableNetworkURL = `${tbConfig.serverHost}/datafiles/networks/${networkFileName}`;
+        const text = await readFileP(jsonPath, "utf8")
         let data;
         try {
             data = JSON.parse(text);
@@ -216,13 +211,91 @@ const introgressionController = async (req, res) => {
             accKey,
             status,
             tree: existing ? existing.tree : null,
+            phyloPlot: downloadableURL,
+            phyloText: downloadableTextURL,
+            phyloIntroPlot: downloadableNetworkURL,
             data, // <-- frontend gets D3-ready payload
             // url: undefined,                 // keep or omit for backward compatibility
         });
     } catch (e) {
         await cleanup();
         res.status(500).json({ error: String(e) });
-    }
+    };
 };
 
 export default introgressionController;
+
+
+async function runIntrogressionAnalysis(params: {
+    windowsCsvPath: string;
+    speciesTreePath: string;
+    mu: any;
+    ne: any;
+    blockSize: any;
+    outgroup: any;
+    jsonPath: string;
+    tmpBase: string;
+}) {
+    const { windowsCsvPath, speciesTreePath, mu, ne, blockSize, outgroup, jsonPath, tmpBase } = params;
+    await execFileLogged(
+        "micromamba",
+        [
+            "run",
+            "-n",
+            "tersect",
+            "python",
+            "-u",
+            path.resolve("src/scripts/introgression_scan.py"),
+            "--windows-csv",
+            windowsCsvPath,
+            "--species-tree",
+            speciesTreePath,
+            "--mu",
+            String(mu),
+            "--ne",
+            String(ne),
+            "--block-size",
+            String(blockSize),
+            "--outgroup",
+            outgroup,
+            "--alpha",
+            "0.05",
+            "--out-json",
+            jsonPath, // << write results here
+        ],
+        tmpBase
+    );
+}
+
+async function runPhylonetAnalysis(params: {
+    tmpBase: string;
+    treeDirectory: string;
+    phyloTextPath: string;
+    phyloPlotPath: string;
+    phyloIntroPlotPath: string;
+}) {
+    const { tmpBase, treeDirectory, phyloTextPath, phyloPlotPath, phyloIntroPlotPath } = params;
+    await execFileLogged(
+        "micromamba",
+        [
+            "run",
+            "-n",
+            "tersect",
+            "python",
+            "-u",
+            path.resolve("src/scripts/phylo_scan.py"),
+            "--tree-directory",
+            treeDirectory,
+            "--max-reticulations",
+            "2",
+            "--output-directory",
+            treeDirectory,
+            "--phylotxt",
+            phyloTextPath,
+            "--phylo-plot",
+            phyloPlotPath,
+            "--phylo-intro-plot",
+            phyloIntroPlotPath,
+        ],
+        tmpBase);
+};

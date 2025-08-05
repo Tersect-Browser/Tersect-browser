@@ -38,29 +38,6 @@ import introgressionController from './introgression-router';
 import { createRapidnjTree } from '../utils/dbutils';
 import { generateTree } from '../controllers/generateTree';
 
-
-function expandSci(match) {
-  return Number(match).toFixed(9).replace(/0+$/, '').replace(/\.$/, '');
-}
-
-function cleanLabel(lbl) {
-  return lbl
-    .replace(/^'+|'+$/g, '')           // remove surrounding quotes
-    .replace(/[^\w.\-]/g, '_');        // only letters, digits, . and -
-}
-
-function sanitizeTree(rawTree) {
-
-    return rawTree
-    // a) expand branch-length notation
-    .replace(/[-+]?\d*\.?\d+e[-+]?\d+/gi, expandSci)
-    // b) clean every taxon / internal label
-    .replace(/([,(])\s*([^:,()]+)\s*(?=[:),])/g,
-             (_, pre, label) => `${pre}${cleanLabel(label)}`)
-    // c) guarantee exactly one trailing semicolon
-    // .trim().replace(/;*$/, ';');// ensure trailing ;
-}
-
 const util = require('util');
 
 const readdir = util.promisify(fs.readdir);
@@ -557,7 +534,7 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
         res.status(500).json(error)
     }
 
-})
+});
 
 
 

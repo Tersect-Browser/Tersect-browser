@@ -1,0 +1,79 @@
+/* Make the content area full-height and remove default padding handled via contentStyle */
+.layout {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1px 3fr; /* 25% | 1px divider | 75% */
+  overflow: hidden;
+}
+
+.form-pane,
+.result-pane {
+  padding: 1rem;
+  overflow: auto; /* Independent scrolling panes */
+}
+
+/* Vertical divider */
+.v-divider {
+  width: 1px;
+  background: var(--surface-border, #e0e0e0);
+}
+
+/* Form styles */
+.field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+.sub {
+  display: block;
+  margin: 0.25rem 0 0.5rem;
+  opacity: 0.8;
+}
+.w-full {
+  width: 100%;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+.error {
+  color: var(--red-500, #b00020);
+}
+
+/* Results area */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding-top: 1rem;
+}
+.error-box {
+  border: 1px solid var(--red-300, #f5a9a9);
+  background: var(--red-50, #fdecec);
+  color: var(--red-700, #8a1c1c);
+  padding: .75rem;
+  border-radius: .5rem;
+}
+.placeholder {
+  opacity: 0.75;
+  font-style: italic;
+}
+.json {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1px auto; /* form | divider | results */
+  }
+  .v-divider {
+    height: 1px;
+    width: 100%;
+  }
+}

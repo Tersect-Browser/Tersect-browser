@@ -18,7 +18,7 @@ import {
 
 import * as os from 'os';
 import * as path from 'path';
-import { generateTree } from '../controllers/generateTree';
+import { generateTree, generateTreeAsync } from '../controllers/generateTree';
 import SpeciesTreeCache from '../models/SpeciesTreeCache';
 import { mkdirpP, writeFileP, readFileP, rimrafP } from '../routers/introgression-router';
 import { publishSSE } from '../routers/sse';
@@ -199,7 +199,7 @@ export async function ensureBuildSpeciesTree(opts: {
     const doc = false;
 
     // Kick off the build without blocking this call
-    setImmediate(async () => {
+
         const tmpRoot = path.join(os.tmpdir(), 'species-build', String(datasetId), accKey);
         const allChrTreesPath = path.join(tmpRoot, 'all_chr_trees.tre');
         const astralTreePath = path.join(tmpRoot, 'species_tree_astral.tre');
@@ -223,19 +223,24 @@ export async function ensureBuildSpeciesTree(opts: {
                 };
 
                 let rec: any = await NewickTree.findOne(q).lean().exec();
+                let immediateTree;
                 if (!rec) {
-                    await generateTree(
+                    immediateTree = await generateTreeAsync(
                         '/app/gp_data_copy/SGN_aer_hom_snps.tsi',
                         { chromosomeName: name, interval: [0, size], accessions },
                         q
                     );
-                    rec = await NewickTree.findOne(q).lean().exec();
-                    console.log('got rec', rec);
-                }
-
+                    lines.push(sanitizeTreeStr(immediateTree.tree).trim());
+                    console.log('passed here', immediateTree.tree);
+                    done += 1;
+                    publishSSE(keyForSSE, 'progress', { datasetId, accKey, stage: 'per-chrom', done, total });
+                }else{
                 if (rec && rec.tree) lines.push(sanitizeTreeStr(rec.tree).trim());
                 done += 1;
                 publishSSE(keyForSSE, 'progress', { datasetId, accKey, stage: 'per-chrom', done, total });
+                }
+
+
             }
 
             if (!lines.length) throw new Error('No per‑chromosome trees available');
@@ -269,7 +274,7 @@ export async function ensureBuildSpeciesTree(opts: {
         } finally {
             await rimrafP(tmpRoot); // best‑effort cleanup
         }
-    });
+    ;
 
 
 }

@@ -1,29 +1,37 @@
-<div class="plot-panel" *ngIf="loading || scanResponse || error">
-  <!-- Loading message (centered) -->
+
+<!-- <!doctype html>
+<div class="plot-panel" *ngIf="true">
+
   <div *ngIf="loading" class="center-wrap" role="status" aria-live="polite">
     <div class="status-text">Generating… please wait.</div>
   </div>
 
-  <!-- Error message (centered) -->
+
   <div *ngIf="!loading && error" class="center-wrap">
     <div class="status-text status-text--error">{{ error }}</div>
   </div>
 
-  <!-- Image -->
+
   <div *ngIf="!loading && !error && scanResponse" class="img-wrap">
     <introgression-visualization [offset]="offsetCanvas" [data]="scanResponse"></introgression-visualization>
   </div>
 
-  <!-- Empty state (centered) -->
+
   <div *ngIf="!loading && !error && !scanResponse" class="center-wrap">
     <div class="status-text">No plot yet.</div>
   </div>
 
-  <!-- Bottom progress bar (only while loading) -->
+
+
   <div *ngIf="loading" class="progress-footer" aria-hidden="true">
     <div class="progress">
       <div class="progress__track"></div>
       <div class="progress__bar"></div>
     </div>
   </div>
-</div>
+</div> -->
+
+  <introgression-modal [submitFn]="startAnalysis" [taxa]="accessions" *ngIf="showModal" [visible]="showModal" [modalClose]="handleModalClosed"></introgression-modal>
+
+
+

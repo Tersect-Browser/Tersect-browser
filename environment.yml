@@ -23,3 +23,10 @@ dependencies:
   - matplotlib=3.10.*
   - seaborn=0.13.*
   - statsmodels=0.14.*
+
+  # Phylonet visualization
+  - r-base
+  - r-ape
+  - r-cairo
+  - r-ragg
+  - r-svglite
