@@ -118,7 +118,7 @@ function main()
             svg(filename = $out, width = $win, height = $hin)
         }
         """
-        PhyloPlots.plot(net)
+        PhyloPlots.plot(net, showedgenumber=true, edgenumbercolor="red4")
         R"dev.off()"
 
     else

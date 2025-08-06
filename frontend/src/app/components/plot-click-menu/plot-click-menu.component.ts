@@ -221,7 +221,7 @@ export class PlotClickMenuComponent {
                     label: 'Search for introgressions',
                     icon: 'fa fa-search-plus',
                     command: () => {
-                        console.log(this.plotStateService.chromosome, 'FOR PLOTSTATE')
+
                         this.introgressionService.initiateScan({
                             chromosome: this.plotStateService.chromosome.name,
                             interval: [int.startPosition, int.endPosition],
@@ -229,8 +229,8 @@ export class PlotClickMenuComponent {
                             datasetId: this.plotStateService.datasetId,
                             outgroup: this.plotStateService.reference,
                         })
-                        //  this.setInterval.emit([int.startPosition,
-                        //                        int.endPosition]);
+                         this.setInterval.emit([int.startPosition,
+                                               int.endPosition]);
                         this.hide();
                     }
                 },

@@ -64,6 +64,8 @@ const introgressionController = async (req, res) => {
             chromosome,
             interval,
             accessions,
+            scanAccessions,
+            phyloAccessions,
             step = 500000,
             mu = 7e-9,
             ne = 1.5e4,

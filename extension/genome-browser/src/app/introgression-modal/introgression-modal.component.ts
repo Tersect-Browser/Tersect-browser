@@ -4,19 +4,19 @@ import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, Validati
 import { firstValueFrom, isObservable } from 'rxjs';
 
 // PrimeNG
-import { DialogModule } from 'primeng/dialog';
+// import { DialogModule } from 'primeng/dialog'; // <-- remove
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
 import { IntrogressionVisualizerComponent } from '../introgression-visualizer/introgression-visualizer.component';
 import { DomSanitizer } from '@angular/platform-browser';
 
-type SubmitPayload = {
-  outgroup: string;
-  quartet: string[];  // exactly 4, must include outgroup
-  mpl: string[];      // up to 5
-};
+// CDK
+import { DragDropModule } from '@angular/cdk/drag-drop';
+
+type SubmitPayload = { outgroup: string; quartet: string[]; mpl: string[]; };
 
 @Component({
   selector: 'app-introgression-modal',
@@ -24,10 +24,11 @@ type SubmitPayload = {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    DialogModule,
+    DragDropModule,
     DropdownModule,
     MultiSelectModule,
     ButtonModule,
+    TooltipModule,
     ProgressSpinnerModule,
     IntrogressionVisualizerComponent
   ],
@@ -41,30 +42,28 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
   @Input({ required: true }) taxa: string[] = [];
   @Input({ required: true }) submitFn!: (payload: SubmitPayload) => Promise<any> | import('rxjs').Observable<any>;
 
-  /** Two-way visible binding */
+  /** Show/hide (same API as before) */
   @Input() visible = false;
-  @Input({required: true}) modalClose!: () => void;
+  @Input({ required: true }) modalClose!: () => void;
   @Output() closed = new EventEmitter<boolean>();
-
-  /** Notify parent when a run completes (optional) */
   @Output() completed = new EventEmitter<{ payload: SubmitPayload; result: any; trustedUrl: any }>();
 
-
-
-
+  /** Window state */
+  minimized = false;
+  maximized = false;
+  floating = true;         // set false to dock inline with the page
+  width = '95vw';
+  height = '75vh';
 
   loading = false;
   submitted = false;
   result: any | null = null;
-  public trustedUrl: any = null; // Sanitized URL for iframe
+  public trustedUrl: any = null;
   error: string | null = null;
-  public sanitizerLocal: DomSanitizer;
-
-  constructor(private sanitizer: DomSanitizer) {
-    this.sanitizerLocal = sanitizer;
-  }
 
   taxaOptions: { label: string; value: string }[] = [];
+
+  constructor(public sanitizer: DomSanitizer) {}
 
   form = this.fb.group({
     outgroup: this.fb.control<string | null>(null, { validators: [Validators.required] }),
@@ -74,12 +73,9 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.syncOptions();
-
-    // Keep quartet in sync with outgroup: ensure it is included (auto-add if possible)
     this.ctrl('outgroup').valueChanges.subscribe(og => {
       const q = this.ctrl('quartet').value ?? [];
       if (!og) return;
-
       if (!q.includes(og)) {
         const others = q.filter((x: any) => x !== og);
         const next = [og, ...others].slice(0, 4);
@@ -87,8 +83,6 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
       }
       this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
     });
-
-    console.log(this.modalClose, this.submitFn, 'in init');
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -103,21 +97,14 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
     return this.form.get(name) as AbstractControl;
   }
 
-  get quartetMissingOutgroup() {
-    return this.ctrl('quartet').errors?.['missingOutgroup'];
-  }
-
-  get quartetSizeInvalid() {
-    return this.ctrl('quartet').errors?.['sizeInvalid'];
-  }
+  get quartetMissingOutgroup() { return this.ctrl('quartet').errors?.['missingOutgroup']; }
+  get quartetSizeInvalid() { return this.ctrl('quartet').errors?.['sizeInvalid']; }
 
   async onSubmit() {
     this.submitted = true;
     this.form.markAllAsTouched();
     if (this.form.invalid || !this.submitFn) return;
-
-    this.loading = true;
-    this.error = null;
+    this.loading = true; this.error = null;
 
     const payload: SubmitPayload = {
       outgroup: this.ctrl('outgroup').value!,
@@ -128,10 +115,9 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
     try {
       const maybe = this.submitFn(payload);
       const result = isObservable(maybe) ? await firstValueFrom(maybe as any) : await (maybe as Promise<any>);
-      this.result = result;                 // <-- show on the right pane
+      this.result = result;
       this.trustedUrl = this.sanitizer.bypassSecurityTrustUrl(result.phyloText);
       this.completed.emit({ payload, result, trustedUrl: this.trustedUrl });
-      // Do NOT close; keep dialog open to display results
     } catch (err: any) {
       console.error('Introgression analysis failed', err);
       this.error = err?.message ?? 'Failed to run analysis.';
@@ -140,36 +126,37 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
     }
   }
 
-  clearResults() {
-    this.result = null;
-    this.error = null;
-  }
+  clearResults() { this.result = null; this.error = null; }
 
   cancel() {
     this.close();
-     return this.modalClose();
+    return this.modalClose?.();
   }
 
   private close() {
-    // this.visible = false;
     this.closed.emit(false);
     this.submitted = false;
     this.result = null;
     this.error = null;
     this.form.reset({ outgroup: null, quartet: [], mpl: [] });
+    this.visible = false;
   }
+
+  /** Window controls */
+  toggleMinimize() { this.minimized = !this.minimized; }
+  toggleMaximize() {
+    this.maximized = !this.maximized;
+    if (this.maximized) { this.minimized = false; }
+  }
+  toggleFloating() { this.floating = !this.floating; }
 }
 
-/** Validators **/
-
-/** Form-level validator: quartet must be exactly 4 and include outgroup. */
+/** Validators (unchanged) */
 function quartetValidator(): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
     const outgroup = group.get('outgroup')?.value as string | null;
     const quartet = (group.get('quartet')?.value as string[] | null) ?? [];
-
-    const ctrl = group.get('quartet');
-    if (!ctrl) return null;
+    const ctrl = group.get('quartet'); if (!ctrl) return null;
 
     const errors: any = {};
     if (quartet.length !== 4) errors.sizeInvalid = true;
@@ -180,7 +167,6 @@ function quartetValidator(): ValidatorFn {
   };
 }
 
-/** Control-level validator: limit array length to max. */
 function maxItemsValidator(max: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const v = control.value as string[] | null;

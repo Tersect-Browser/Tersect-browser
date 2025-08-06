@@ -1,141 +1,102 @@
-<p-dialog
-  [(visible)]="visible"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [style]="{ width: '95vw', maxWidth: '1600px' }"
-  [breakpoints]="{ '1200px': '95vw', '960px': '100vw' }"
-  [contentStyle]="{ height: '75vh', padding: '0' }"
-  (onHide)="cancel()"
-  header="Introgression analysis"
->
-  <div class="layout">
-    <!-- Left: Form (1/4 width) -->
-    <form [formGroup]="form" class="form-pane" (ngSubmit)="onSubmit()">
-      <!-- Choose outgroup -->
-      <div class="field">
-        <label for="outgroup">Choose outgroup</label>
-        <p-dropdown
-          inputId="outgroup"
-          formControlName="outgroup"
-          [options]="taxaOptions"
-          optionLabel="label"
-          optionValue="value"
-          [filter]="true"
-          placeholder="Select an outgroup"
-          styleClass="w-full"
-          [filter]="true"
-          [filterBy]="'label'"
-          [filterMatchMode]="'contains'"
-          filterPlaceholder="Search taxa..."
-          [showClear]="true"
-        ></p-dropdown>
-        <small class="error" *ngIf="ctrl('outgroup').touched && ctrl('outgroup').invalid">
-          Outgroup is required.
-        </small>
-      </div>
+<!-- Show/hide like before -->
+<div *ngIf="visible"
+     class="introgression-shell"
+     [ngClass]="{ floating: floating, minimized: minimized, maximized: maximized }"
+     [style.width]="width"
+     [style.height]="height">
 
-      <!-- Quartet for window scan analysis -->
-      <div class="field">
-        <label for="quartet">Choose 4 taxa (must include outgroup)</label>
-        <small class="sub">Quartet for window scan analysis</small>
+  <!-- Header (drag handle when floating) -->
+  <div class="shell-header" cdkDrag cdkDragRootElement=".introgression-shell" [cdkDragDisabled]="!floating">
+    <div class="title">Introgression analysis</div>
+    <span class="spacer"></span>
 
-        <p-multiSelect
-          inputId="quartet"
-          formControlName="quartet"
-          [options]="taxaOptions"
-          optionLabel="label"
-          optionValue="value"
-          [filter]="true"
-          placeholder="Select exactly 4 taxa including the outgroup"
-          [selectionLimit]="4"
-          styleClass="w-full"
-          [filter]="true"
-          [filterBy]="'label'"
-          [filterMatchMode]="'contains'"
-          filterPlaceholder="Search taxa..."
-          [showClear]="true"
-        ></p-multiSelect>
+    <!-- Controls -->
+    <button pButton type="button" [text]="true" icon="pi pi-minus" (click)="toggleMinimize()"
+            [disabled]="maximized" pTooltip="Minimize"></button>
 
-        <ng-container *ngIf="ctrl('quartet').touched || submitted">
-          <small class="error" *ngIf="quartetMissingOutgroup">
-            Quartet must include the selected outgroup.
-          </small>
-          <small class="error" *ngIf="quartetSizeInvalid">
-            Please select exactly 4 taxa.
-          </small>
-        </ng-container>
-      </div>
+    <button pButton type="button" [text]="true" icon="pi pi-external-link"
+            (click)="toggleFloating()" pTooltip="{{ floating ? 'Dock' : 'Float' }}"></button>
 
-      <!-- MPL analysis with PhyloNet -->
-      <div class="field">
-        <label for="mpl">Choose up to 5 taxa</label>
-        <small class="sub">MPL analysis with PhyloNet</small>
+    <button pButton type="button" [text]="true"
+            [icon]="maximized ? 'pi pi-window-restore' : 'pi pi-window-maximize'"
+            (click)="toggleMaximize()" pTooltip="{{ maximized ? 'Restore' : 'Maximize' }}"></button>
 
-        <p-multiSelect
-          inputId="mpl"
-          formControlName="mpl"
-          [options]="taxaOptions"
-          optionLabel="label"
-          optionValue="value"
-          [filter]="true"
-          placeholder="Select up to 5 taxa"
-          [selectionLimit]="5"
-          styleClass="w-full"
-          [filter]="true"
-          [filterBy]="'label'"
-          [filterMatchMode]="'contains'"
-          filterPlaceholder="Search taxa..."
-          [showClear]="true"
-        ></p-multiSelect>
-
-    <small class="error"
-      *ngIf="(ctrl('mpl').touched || submitted) && ctrl('mpl').hasError('maxItems')">
-      You can select at most 5 taxa.
-    </small>
-      </div>
-
-      <div class="actions">
-        <p-button label="Cancel" (onClick)="cancel()" [text]="true" severity="secondary"></p-button>
-        <p-button type="submit" label="Run analysis" [loading]="loading" [disabled]="form.invalid || loading"></p-button>
-        <p-button label="Clear results" (onClick)="clearResults()" [text]="true" *ngIf="!loading && (result || error)"></p-button>
-      </div>
-    </form>
-
-    <!-- Divider -->
-    <div class="v-divider" aria-hidden="true"></div>
-
-    <!-- Right: Results (3/4 width) -->
-    <section class="result-pane">
-      <ng-container *ngIf="loading">
-        <div class="center">
-          <p-progressSpinner styleClass="spinner"></p-progressSpinner>
-          <p>Running analysis…</p>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="!loading && error">
-        <div class="error-box">
-          <strong>Error:</strong> {{ error }}
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="!loading && !error && result">
-        <!-- Replace this with your own result renderer -->
-        <h3>Results</h3>
-        <app-introgression-visualizer [offset]="0" [data]="result.data"></app-introgression-visualizer>
-        <h4>PhyloNet Plot</h4>
-        <img src="{{ result.phyloPlot }}" alt="PhyloNet Plot" class="phylo-plot" />
-        <h4>PhyloNet Output</h4>
-        <iframe src="{{ trustedUrl }}" type="text/plain"  ></iframe>
-
-      </ng-container>
-
-      <ng-container *ngIf="!loading && !error && !result">
-        <div class="placeholder">
-          Results will appear here after you run the analysis.
-        </div>
-      </ng-container>
-    </section>
+    <button pButton type="button" [text]="true" icon="pi pi-times" (click)="cancel()" pTooltip="Close"></button>
   </div>
-</p-dialog>
+
+  <!-- Body (hidden when minimized) -->
+  <div class="shell-body" *ngIf="!minimized">
+    <div class="layout">
+      <!-- Left: Form (1/4 width) -->
+      <form [formGroup]="form" class="form-pane" (ngSubmit)="onSubmit()">
+        <!-- Choose outgroup -->
+        <div class="field">
+          <label for="outgroup">Choose outgroup</label>
+          <p-dropdown inputId="outgroup" formControlName="outgroup" [options]="taxaOptions" optionLabel="label"
+            optionValue="value" [filter]="true" placeholder="Select an outgroup" styleClass="w-full"
+            [filterBy]="'label'" [filterMatchMode]="'contains'" filterPlaceholder="Search taxa..."
+            [showClear]="true"></p-dropdown>
+          <small class="error" *ngIf="ctrl('outgroup').touched && ctrl('outgroup').invalid">
+            Outgroup is required.
+          </small>
+        </div>
+
+        <!-- Quartet for window scan analysis -->
+        <div class="field">
+          <label for="quartet">Choose 4 taxa (must include outgroup)</label>
+          <small class="sub">Quartet for window scan analysis</small>
+
+          <p-multiSelect inputId="quartet" formControlName="quartet" [options]="taxaOptions" optionLabel="label"
+            optionValue="value" [filter]="true" placeholder="Select exactly 4 taxa including the outgroup"
+            [selectionLimit]="4" styleClass="w-full" [filterBy]="'label'" [filterMatchMode]="'contains'"
+            filterPlaceholder="Search taxa..." [showClear]="true"></p-multiSelect>
+
+          <ng-container *ngIf="ctrl('quartet').touched || submitted">
+            <small class="error" *ngIf="quartetMissingOutgroup">Quartet must include the selected outgroup.</small>
+            <small class="error" *ngIf="quartetSizeInvalid">Please select exactly 4 taxa.</small>
+          </ng-container>
+        </div>
+
+        <div class="actions">
+          <p-button label="Cancel" (onClick)="cancel()" [text]="true" severity="secondary"></p-button>
+          <p-button type="submit" label="Run analysis" [loading]="loading"
+            [disabled]="form.invalid || loading"></p-button>
+          <p-button label="Clear results" (onClick)="clearResults()" [text]="true"
+            *ngIf="!loading && (result || error)"></p-button>
+        </div>
+      </form>
+
+      <!-- Divider -->
+      <div class="v-divider" aria-hidden="true"></div>
+
+      <!-- Right: Results (3/4 width) -->
+      <section class="result-pane">
+        <ng-container *ngIf="loading">
+          <div class="center">
+            <p-progressSpinner styleClass="spinner"></p-progressSpinner>
+            <p>Running analysis…</p>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!loading && error">
+          <div class="error-box">
+            <strong>Error:</strong> {{ error }}
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!loading && !error && result">
+          <h3>Results</h3>
+          <app-introgression-visualizer [offset]="0" [data]="result.data"></app-introgression-visualizer>
+          <h4>PhyloNet Plot</h4>
+          <img [src]="result.phyloPlot" alt="PhyloNet Plot" class="phylo-plot" />
+          <h4>PhyloNet Output</h4>
+          <img [src]="result.phyloIntroPlot" alt="PhyloNet Introgression Plot" class="phylo-plot" />
+        </ng-container>
+
+        <ng-container *ngIf="!loading && !error && !result">
+          <div class="placeholder">Results will appear here after you run the analysis.</div>
+        </ng-container>
+      </section>
+    </div>
+  </div>
+</div>
