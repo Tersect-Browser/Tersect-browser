@@ -6,13 +6,9 @@ import { partitionQuery } from "../utils/partitioning";
 import { execPromise, formatRegion, mapToAppPath, writeAccessions } from "../utils/utils";
 import { createRapidnjTree , createRapidnjTreePromise} from "../utils/dbutils";
 import { tbConfig } from "../load-config";
-
 import * as fs from "fs";
 import * as rimraf from "rimraf";
-import { pipeline } from "stream";
 import { promisify } from "util";
-import * as mkdirp from "mkdirp";
-import * as pLimit from "p-limit";
 import * as os from "os";
 
 export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
@@ -71,7 +67,7 @@ export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
 
     const intervalSize = treeQuery.interval[1] - treeQuery.interval[0];
 
-    console.log("inputFiles", inputFiles);
+    const fileToCleanup = []
 
     return Promise.all(inputFiles).then(([accFile, ...matrixFiles]) => {
         const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
@@ -79,6 +75,7 @@ export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
         const negative = matrixFiles.slice(positiveMatrixFiles.length,
             matrixFiles.length).join(' ');
         const script = path.join(__dirname, '../scripts/merge_phylip.py');
+        fileToCleanup.push(accFile);
         let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile} --interval-size ${intervalSize}`;
         if (negative.length) {
             mergeCommand = `${mergeCommand} -n ${negative}`;
@@ -86,7 +83,17 @@ export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
         return execPromise(mergeCommand);
     }).then((outputFilename: string) => {
         createRapidnjTree(dbQuery, outputFilename.trim());
+        fileToCleanup.forEach(f => {
+        fs.unlink(f, (err) => {
+            if (err) {
+                console.error(`Error deleting file ${f}:`, err);
+            } else {
+                console.log(`Deleted temporary file: ${f}`);
+            }
+        });
     });
+    });
+
 }
 
 export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuery,
@@ -166,7 +173,13 @@ export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuer
     const outputFilename = await execPromise(mergeCommand) as string;
     const response = await createRapidnjTreePromise(dbQuery, outputFilename?.trim());
     console.log('Generated tree:', response);
-    const cleanup = async () => { try { await rimrafP(tmpBase); } catch (_) {} };
-
+    const cleanup = async () => {
+        try {
+            await rimrafP(tmpBase);
+        } catch (e) {
+            console.error('Error cleaning up:', e);
+        }
+    };
+    await cleanup();
     return response;
 }

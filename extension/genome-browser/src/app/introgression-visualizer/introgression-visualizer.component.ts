@@ -1,6 +1,40 @@
 import { Component, ElementRef, Input, OnChanges, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import { ScanResponse, TripletBlock } from './types';
+
+/** Minimal types this component */
+type HybridMode =
+  | 'sister_introgression'
+  | 'sister_introgression_with_asymmetry'
+  | 'nonsister_introgression'
+  | 'excess_ILS_or_other'
+  | string;
+
+interface TripletBlock {
+  mid_BP: number;
+  obs_disc_frac?: number | null;
+
+  // DCT
+  n_T1: number; n_T2: number; n_T3: number; n_total: number;
+  p_sym_fdr?: number | null;
+  p_total_fdr?: number | null;
+  exp_disc_frac?: number | null; // expected discordant fraction (if tau available)
+
+  // BLT
+  delta?: number | null;
+  mean_T2?: number | null;
+  mean_T3?: number | null;
+  p_blt_fdr?: number | null;
+
+  // Hybrid/original
+  mode?: HybridMode | null;
+  hybrid_mode?: HybridMode | null;
+}
+
+interface ScanParams { block_size: number; }
+interface ScanResponse {
+  params: ScanParams;
+  blocks: TripletBlock[];
+}
 
 @Component({
   selector: 'app-introgression-visualizer',
@@ -11,106 +45,66 @@ import { ScanResponse, TripletBlock } from './types';
 export class IntrogressionVisualizerComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() data!: ScanResponse;
   @ViewChild('container', { static: true }) container!: ElementRef<HTMLDivElement>;
-  @Input() set offset(v: number | null | undefined) {
-    console.log('[plot-view] set offset received', v);
-    const next = (v ?? 0);
-    if (next !== this._offset) {
-      this._offset = next;
-      if (this.hasView) this.scheduleRender(); // re-render on offset change
-    }
-  }
 
   private ro?: ResizeObserver;
-    private renderQueued = false;
   private hasView = false;
-    private _offset = 0;
-
-  get offset() { return this._offset; }
-
-  private scheduleRender() {
-    if (this.renderQueued) return;
-    this.renderQueued = true;
-    requestAnimationFrame(() => {
-      this.renderQueued = false;
-      this.render();
-    });
-  }
-
 
   ngAfterViewInit() {
     this.hasView = true;
-    // Observe width changes (e.g., panels toggling)
     this.ro = new ResizeObserver(() => this.render());
     this.ro.observe(this.container.nativeElement);
     if (this.data) this.render();
   }
-
-  ngOnChanges() {
-    if (this.hasView && this.data) this.render();
-  }
-
-  ngOnDestroy() {
-    this.ro?.disconnect();
-  }
-
-
+  ngOnChanges() { if (this.hasView && this.data) this.render(); }
+  ngOnDestroy() { this.ro?.disconnect(); }
 
   private render() {
     const el = this.container.nativeElement;
     if (!this.data) return;
-    console.log(el.parentElement?.parentElement?.clientWidth, el.getBoundingClientRect().width, el.parentElement?.clientWidth);
-    // Fixed height; responsive width
-    const width = el.parentElement?.parentElement?.clientWidth;
-    const height = 300;  // <— as requested
 
-    // If width is zero (hidden), try again on next frame.
-    if (!width) {
-      requestAnimationFrame(() => this.render());
-      return;
+    const width = el.parentElement?.parentElement?.clientWidth;
+    if (!width) { requestAnimationFrame(() => this.render()); return; }
+
+    // --- Layout
+    const H_TRACK = 160;            // px height per track
+    const GAP = 18;                 // px between tracks
+    const N_TRACKS = 3;
+    const height = 40 + (H_TRACK * N_TRACKS) + (GAP * (N_TRACKS - 1)) + 40; // top/bottom margins + tracks + gaps
+    const margin = { top: 40, right: 64, bottom: 36, left: 64 };
+    const innerW = Math.max(0, width - margin.left - margin.right);
+    const totalH = Math.max(0, height);
+
+    const getYforStar = (d: TripletBlock) => {
+      const p1 = d.n_total > 0 ? d.n_T1 / d.n_total : 0;
+       const hT1 = y1(p1);
+      return hT1;
     }
 
-    // Clear previous
     el.innerHTML = '';
-    const TITLE_OFFSET = 14; // px above the plot area
-    const margin = { top: TITLE_OFFSET + 20, right: 18, bottom: 36, left: 56 };
-    const w = Math.max(0, width - margin.left - margin.right);
-    const h = Math.max(0, height - margin.top - margin.bottom);
+    const svg = d3.select(el).append('svg').attr('width', width).attr('height', totalH);
+    const root = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const svg = d3.select(el)
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height);
+    const blocks = (this.data.blocks ?? []).slice().sort((a,b)=>a.mid_BP-b.mid_BP);
+    if (blocks.length === 0) return;
+    // Collect obs_disc values
+    const obsVals = blocks
+      .map(d => d.obs_disc_frac)
+      .filter(v => v != null && isFinite(v as number)) as number[];
 
-    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    const yMin = d3.min(obsVals) ?? 0;
+    const yMax = d3.max(obsVals) ?? 1;
 
-    const blocks = this.data.blocks ?? [];
-    const xDomain = (d3.extent(blocks, d => d.mid_BP) as [number, number]) ?? [0, 1];
-    const yMax = d3.max(blocks, d => d.obs_disc_frac) ?? 1;
+    // add 10% padding
+    const padY = (yMax - yMin) * 0.1 || 0.05;
 
-    const x = d3.scaleLinear().domain(xDomain).nice().range([0, w]);
-    const y = d3.scaleLinear().domain([0, yMax]).nice().range([h, 0]);
+    const frac = (d: TripletBlock) => (d.n_T2 + d.n_T3) / Math.max(1, d.n_total ?? 1);
+    const modeOf = (d: TripletBlock) => d.mode ?? d.hybrid_mode ?? null;
 
-    const xAxis = d3.axisBottom(x).ticks(8).tickFormat(d => `${Math.round(+d / 1e6)} Mb`);
-    const yAxis = d3.axisLeft(y).ticks(6);
+    // --- X scale (shared)
+    const xDomain = d3.extent(blocks, d => d.mid_BP) as [number, number];
+    const x = d3.scaleLinear().domain(xDomain).nice().range([0, innerW]);
 
-    g.append('g').attr('class', 'x-axis').attr('transform', `translate(0,${h})`).call(xAxis);
-    g.append('g').attr('class', 'y-axis').call(yAxis);
-
-    // Axis labels
-    g.append('text')
-      .attr('x', w / 2)
-      .attr('y', h + 32)
-      .attr('text-anchor', 'middle')
-      .text('Genomic position');
-
-    g.append('text')
-      .attr('x', -h / 2)
-      .attr('y', -42)
-      .attr('transform', 'rotate(-90)')
-      .attr('text-anchor', 'middle')
-      .text('Discordance fraction');
-
-    // Tooltip
+    // --- Tooltip FIRST (before any event handlers!)
     d3.select(el).selectAll('div.tooltip').remove();
     const tooltip = d3.select(el).append('div')
       .attr('class', 'tooltip')
@@ -123,351 +117,271 @@ export class IntrogressionVisualizerComponent implements OnChanges, AfterViewIni
       .style('font-size', '12px')
       .style('display', 'none');
 
-const showTip = (e: MouseEvent, d: TripletBlock) => {
-  const [px, py] = d3.pointer(e, el);      // coords relative to `el`
-  const margin = 14;
+    const fmtExp = (v?: number | null) => v != null ? v.toExponential(2) : 'NA';
+    const fmtFix = (v?: number | null, d=3) => v != null ? v.toFixed(d) : 'NA';
 
-  // Set content & reveal so we can measure dimensions
-  tooltip
-    .style('display', 'block')
-    .html(
-      `mid: ${(d.mid_BP/1e6).toFixed(2)} Mb<br/>
-       obs: ${d.obs_disc_frac.toFixed(3)}<br/>
-       exp: ${d.exp_disc_frac.toFixed(3)}<br/>
-       n: ${d.n_trees} (T2=${d.count_T2}, T3=${d.count_T3})<br/>
-       p_total(FDR): ${d.p_total_fdr.toExponential(2)}<br/>
-       p_sym(FDR): ${d.p_sym_fdr.toExponential(2)}`
-    );
-
-  const node = tooltip.node() as HTMLElement;
-  const tipW = node.offsetWidth;
-  const tipH = node.offsetHeight;
-
-  const { width: cw, height: ch } = (el as HTMLElement).getBoundingClientRect();
-
-  // Default: bottom-right of the pointer
-  let left = px + margin;
-  let top  = py + margin;
-
-  // Flip horizontally if it would overflow to the right
-  if (left + tipW > cw) {
-    left = px - margin - tipW;
-  }
-  // Flip vertically if it would overflow to the bottom
-  if (top + tipH > ch) {
-    top = py - margin - tipH;
-  }
-
-  // Clamp inside container as a last resort
-  left = Math.max(0, Math.min(left, cw - tipW));
-  top  = Math.max(0, Math.min(top,  ch - tipH));
-
-  tooltip.style('left', `${left}px`).style('top', `${top}px`);
-};
-
+    const showTip = (event: MouseEvent, d: TripletBlock) => {
+      const [px, py] = d3.pointer(event, el);
+      tooltip.style('display', 'block').html(`
+        mid: ${(d.mid_BP/1e6).toFixed(2)} Mb<br/>
+        <b>DCT</b><br/>
+        n: ${d.n_total} (T2=${d.n_T2}, T3=${d.n_T3})<br/>
+        disc. frac: ${frac(d).toFixed(3)}<br/>
+        expected: ${d.exp_disc_frac != null ? d.exp_disc_frac.toFixed(3) : 'NA'}<br/>
+        p_sym(FDR): ${fmtExp(d.p_sym_fdr)} &nbsp; p_total(FDR): ${fmtExp(d.p_total_fdr)}<br/>
+        <b>BLT</b><br/>
+        mean_T2: ${fmtFix(d.mean_T2)} &nbsp; mean_T3: ${fmtFix(d.mean_T3)}<br/>
+        Δ: ${fmtFix(d.delta)} &nbsp; p_blt(FDR): ${fmtExp(d.p_blt_fdr)}<br/>
+        <b>Hybrid</b><br/>
+        obs_disc: ${fmtFix(d.obs_disc_frac)}<br/>
+        mode: ${modeOf(d) ?? 'NA'}
+      `);
+      tooltip.style('left', `${px + 14}px`).style('top', `${py + 14}px`);
+    };
     const hideTip = () => tooltip.style('display', 'none');
 
-    // Points
-    g.selectAll('circle.base')
-      .data(blocks)
+    // Helper: compute visual bar width per block from neighbor gaps
+
+    const barWidth = innerW / blocks.length * 0.3;
+    const widths = blocks.map(() => barWidth);
+
+    // ============= Track 1: DCT (stacked T1/T2/T3 + discordant fraction + baseline) =============
+    const track1 = root.append('g').attr('transform', `translate(0,0)`);
+    const h1 = H_TRACK;
+
+    // y scale for proportions (0..1)
+    const b_size = this.data.params.block_size
+    const y1 = d3.scaleLinear().domain([0, 1]).nice().range([h1, 0]);
+    const y1_based_on = d3.scaleLinear().domain([(yMin - padY) * b_size, (yMax + padY) * b_size]).nice().range([h1, 0]);
+
+    // axes
+    track1.append('g').attr('class', 'y axis').call(d3.axisLeft(y1).ticks(5));
+    track1.append('text')
+      .attr('x', -h1 / 2).attr('y', -44)
+      .attr('transform', 'rotate(-90)').attr('text-anchor', 'middle')
+      .text('Topology proportion');
+
+    // stacked bars for T1/T2/T3
+    const colors = { T1: '#999999', T2: '#1f77b4', T3: '#ff7f0e' };
+    const barGroup = track1.append('g').attr('class', 'bars');
+
+    blocks.forEach((d, i) => {
+      const xCenter = x(d.mid_BP);
+      const w = widths[i];
+      const p1 = d.n_total > 0 ? d.n_T1 / d.n_total : 0;
+      const p2 = d.n_total > 0 ? d.n_T2 / d.n_total : 0;
+      const p3 = d.n_total > 0 ? d.n_T3 / d.n_total : 0;
+
+      let yBase = h1;
+
+      // T1
+      const hT1 = h1 - y1(p1);
+      barGroup.append('rect')
+        .attr('x', xCenter - w/2).attr('y', yBase - hT1)
+        .attr('width', w).attr('height', hT1)
+        .attr('fill', colors.T1).attr('opacity', 0.8);
+      yBase -= hT1;
+
+      // T2
+      const hT2 = h1 - y1(p2);
+      barGroup.append('rect')
+        .attr('x', xCenter - w/2).attr('y', yBase - hT2)
+        .attr('width', w).attr('height', hT2)
+        .attr('fill', colors.T2).attr('opacity', 0.85);
+      yBase -= hT2;
+
+      // T3
+      const hT3 = h1 - y1(p3);
+      barGroup.append('rect')
+        .attr('x', xCenter - w/2).attr('y', yBase - hT3)
+        .attr('width', w).attr('height', hT3)
+        .attr('fill', colors.T3).attr('opacity', 0.85);
+    });
+
+    // discordant fraction line (T2+T3)/total
+    const discLine = d3.line<TripletBlock>()
+      .x(d => x(d.mid_BP))
+      .y(d => getYforStar(d));
+    track1.append('path')
+      .datum(blocks)
+      .attr('fill', 'none').attr('stroke', '#d62728').attr('stroke-width', 1.4)
+      .attr('d', discLine);
+
+    // expected baseline (2/3*e^{-tau}) if available per block (assumed constant)
+    const anyExp = blocks.some(b => b.exp_disc_frac != null);
+    if (anyExp) {
+      const expVal = (blocks.find(b => b.exp_disc_frac != null)?.exp_disc_frac as number) ?? null;
+      if (expVal != null) {
+        track1.append('line')
+          .attr('x1', 0).attr('x2', innerW)
+          .attr('y1', y1(expVal)).attr('y2', y1(expVal))
+          .attr('stroke', '#6a3d9a').attr('stroke-dasharray', '4,3').attr('stroke-width', 1.2);
+        track1.append('text')
+          .attr('x', innerW - 4).attr('y', y1(expVal) - 6)
+          .attr('text-anchor', 'end').attr('fill', '#6a3d9a')
+          .style('font-size', '11px')
+          .text('expected discordance');
+      }
+    }
+
+    // significance stars for p_sym_fdr
+    const starBlocks = blocks.filter(b => b.n_T3 < b.n_T2 && b.n_T1 > b.n_T2);
+
+    track1.selectAll('text.star')
+      .data(starBlocks)
+      .enter()
+      .append('text')
+      .attr('class', 'star')
+      .attr('x', d => x(d.mid_BP))
+      .attr('y', d => getYforStar(d))
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#d62728')
+      .style('font-size', '12px')
+      .text('★');
+
+    // ============= Track 2: BLT (delta = mean_T2 − mean_T3) =============
+    const track2 = root.append('g').attr('transform', `translate(0,${H_TRACK + GAP})`);
+    const h2 = H_TRACK;
+
+    const deltas = blocks.map(d => d.delta ?? 0).filter(v => Number.isFinite(v));
+    const dMin = d3.min(deltas) ?? -0.1;
+    const dMax = d3.max(deltas) ?? 0.1;
+    const pad = (dMax - dMin) * 0.1 || 0.05;
+
+    const y2 = d3.scaleLinear().domain([dMin - pad, dMax + pad]).nice().range([h2, 0]);
+    track2.append('g').attr('class', 'y axis').call(d3.axisLeft(y2).ticks(5));
+    track2.append('text')
+      .attr('x', -h2 / 2).attr('y', -44)
+      .attr('transform', 'rotate(-90)').attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .text('Branch Length Test Δ (mean_T2 − mean_T3)');
+
+    // zero line
+    track2.append('line')
+      .attr('x1', 0).attr('x2', innerW)
+      .attr('y1', y2(0)).attr('y2', y2(0))
+      .attr('stroke', '#999').attr('stroke-width', 1).attr('stroke-dasharray', '4,3');
+
+    // line + points
+    const lineBLT = d3.line<TripletBlock>()
+      .defined(d => d.delta != null)
+      .x(d => x(d.mid_BP))
+      .y(d => y2(d.delta as number));
+
+    track2.append('path')
+      .datum(blocks.filter(d => d.delta != null))
+      .attr('fill', 'none').attr('stroke', '#1f77b4').attr('stroke-width', 1.6)
+      .attr('d', lineBLT);
+
+    track2.selectAll('circle.blt')
+      .data(blocks.filter(d => d.delta != null))
       .enter()
       .append('circle')
-      .attr('class', 'base')
+      .attr('class', 'blt')
       .attr('cx', d => x(d.mid_BP))
-      .attr('cy', d => y(d.obs_disc_frac))
+      .attr('cy', d => y2(d.delta as number))
       .attr('r', 3)
-      .attr('fill', '#ff0000ff')
-      .attr('opacity', 0.6)
-      .on('mousemove', (e, d) => showTip(e as MouseEvent, d as TripletBlock))
+      .attr('fill', '#1f77b4')
+      .attr('opacity', 0.8)
+      .on('mousemove', (e, d) => showTip(e as MouseEvent, d))
       .on('mouseleave', hideTip);
 
-    // Sister introgression significant: cross
-    const sisterSig = blocks.filter(d => d.mode === 'sister_introgression' && d.sig_total);
-    g.selectAll('path.sister')
-      .data(sisterSig)
-      .enter()
-      .append('path')
-      .attr('class', 'sister')
-      .attr('d', d3.symbol().type(d3.symbolCross).size(80))
-      .attr('transform', d => `translate(${x(d.mid_BP)},${y(d.obs_disc_frac)})`)
-      .attr('fill', 'none')
-      .attr('stroke', '#000')
-      .attr('stroke-width', 1.5)
-      .on('mousemove', (e, d) => showTip(e as MouseEvent, d as TripletBlock))
-      .on('mouseleave', hideTip);
-
-    // Non-sister introgression significant: hollow circle
-    const nonsisterSig = blocks.filter(d => d.mode === 'nonsister_test' && d.sig_total && d.sig_sym);
-    g.selectAll('circle.nonsister')
-      .data(nonsisterSig)
+    // significance highlight for p_blt_fdr
+    track2.selectAll('circle.blt-sig')
+      .data(blocks.filter(d => (d.p_blt_fdr ?? 1) < 0.05 && d.delta != null))
       .enter()
       .append('circle')
-      .attr('class', 'nonsister')
+      .attr('class', 'blt-sig')
       .attr('cx', d => x(d.mid_BP))
-      .attr('cy', d => y(d.obs_disc_frac))
+      .attr('cy', d => y2(d.delta as number))
       .attr('r', 6)
       .attr('fill', 'none')
-      .attr('stroke', '#d95f02')
+      .attr('stroke', '#1f77b4')
       .attr('stroke-width', 1.5)
-      .on('mousemove', (e, d) => showTip(e as MouseEvent, d as TripletBlock))
+      .on('mousemove', (e, d) => showTip(e as MouseEvent, d))
       .on('mouseleave', hideTip);
 
+    // ============= Track 3: Hybrid/original (obs_disc line + mode labels) =============
+    const track3 = root.append('g').attr('transform', `translate(0,${(H_TRACK + GAP)*2})`);
+    const h3 = H_TRACK;
+
+    // Y scale for obs_disc fractions (0..1)
+    const y3 = d3.scaleLinear()
+      .domain([yMin - padY, yMax + padY])
+      .nice()
+      .range([h3, 0]);
+    track3.append('g').call(d3.axisLeft(y3).ticks(5));
+    track3.append('text')
+      .attr('x', -h3 / 2).attr('y', -44)
+      .attr('transform', 'rotate(-90)').attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .text('Distance weighted discordance');
+
+    // obs_disc line
+    const lineHybrid = d3.line<TripletBlock>()
+      .defined(d => d.obs_disc_frac != null)
+      .x(d => x(d.mid_BP))
+      .y(d => y3(d.obs_disc_frac as number));
+
+    track3.append('path')
+      .datum(blocks.filter(d => d.obs_disc_frac != null))
+      .attr('fill', 'none').attr('stroke', '#000').attr('stroke-width', 1.6)
+      .attr('d', lineHybrid);
+
+    // Mode-encoded points
+    const symbolForSignificantBlock = (d: TripletBlock) => {
+      if(d.n_T3 < d.n_T2 && d.n_T1 > d.n_T2) return d3.symbolStar;
+      return d3.symbolCircle
+    };
+
+    const fillForBlock = (d: TripletBlock) => {
+  if(d.n_T3 < d.n_T2 && d.n_T1 > d.n_T2) {
+    return "#ffcc00";   // gold fill for stars
+  }
+  return "#222";        // dark fill for circles
+};
+
+    track3.selectAll('path.hybrid')
+      .data(blocks.filter(d => d.obs_disc_frac != null))
+      .enter()
+      .append('path')
+      .attr('class', 'hybrid')
+      .attr('d', d => d3.symbol().type(symbolForSignificantBlock(d)).size(80)())
+      .attr('transform', d => `translate(${x(d.mid_BP)},${y3(d.obs_disc_frac as number)})`)
+      .attr("fill", d => fillForBlock(d))
+      .attr('opacity', 0.9)
+      .on('mousemove', (e, d) => showTip(e as MouseEvent, d))
+      .on('mouseleave', hideTip);
+
+    // --- Shared X axis at the bottom of the last track
+    root.append('g')
+      .attr('transform', `translate(0,${(H_TRACK + GAP)*2 + h3})`)
+      .call(d3.axisBottom(x).ticks(8).tickFormat(d => `${Math.round(+d / 1e6)} Mb` as any));
+
+    // --- Hover wiring for DCT bars (attach after bars exist)
+    barGroup.selectAll<SVGRectElement, unknown>('rect')
+      .on('mousemove', (e, _r) => {
+        // hit-test approximate: find nearest block by x
+        const [px] = d3.pointer(e, barGroup.node() as any);
+        const xVal = x.invert(px);
+        // nearest by mid_BP
+        const nearest = blocks.reduce((best, b) => {
+          const dv = Math.abs(b.mid_BP - xVal);
+          return (!best || dv < best.dv) ? { dv, b } : best;
+        }, null as null | { dv: number, b: TripletBlock });
+        if (nearest) showTip(e as MouseEvent, nearest.b);
+      })
+      .on('mouseleave', hideTip);
+
+      const legendData = [
+  { key: 'T1', label: 'Species tree topology', color: colors.T1 },
+  { key: 'T2', label: 'Discordant topology 1', color: colors.T2 },
+  { key: 'T3', label: 'Discordant topology 2', color: colors.T3 }
+];
     // Title
-    g.append('text')
-      .attr('x', 0)
-       .attr('y', -TITLE_OFFSET)
+    root.append('text')
+      .attr('x', 0).attr('y', -14)
       .attr('font-weight', '600')
-      .text(`Triplet scan (B=${this.data.params.block_size}); global p=${this.data.global.p_global.toExponential(2)}`);
+      .text(`Triplet scan (B=${this.data.params.block_size}) — DCT (top), BLT (middle), Hybrid (bottom)`);
   }
 }
-
-// import { Component, ElementRef, Input, OnChanges, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
-// import * as d3 from 'd3';
-// import { ScanResponse, TripletBlock, D3Block } from './types';
-
-// type Mode = 'topology' | 'd3' | 'unknown';
-
-// @Component({
-//   selector: 'app-introgression-visualizer',
-//   standalone: true,
-//   template: `<div #container class="plot-container"></div>`,
-//   styleUrl: './introgression-visualizer.component.css'
-// })
-// export class IntrogressionVisualizerComponent implements OnChanges, AfterViewInit, OnDestroy {
-//   @Input() data!: ScanResponse;
-//   @ViewChild('container', { static: true }) container!: ElementRef<HTMLDivElement>;
-
-//   @Input() set offset(v: number | null | undefined) {
-//     const next = (v ?? 0);
-//     if (next !== this._offset) {
-//       this._offset = next;
-//       if (this.hasView) this.scheduleRender();
-//     }
-//   }
-//   get offset() { return this._offset; }
-
-//   private ro?: ResizeObserver;
-//   private renderQueued = false;
-//   private hasView = false;
-//   private _offset = 0;
-
-//   ngAfterViewInit() {
-//     this.hasView = true;
-//     this.ro = new ResizeObserver(() => this.render());
-//     this.ro.observe(this.container.nativeElement);
-//     if (this.data) this.render();
-//   }
-//   ngOnChanges() { if (this.hasView && this.data) this.render(); }
-//   ngOnDestroy() { this.ro?.disconnect(); }
-
-//   private scheduleRender() {
-//     if (this.renderQueued) return;
-//     this.renderQueued = true;
-//     requestAnimationFrame(() => { this.renderQueued = false; this.render(); });
-//   }
-
-//   private detectMode(blocks: any[]): Mode {
-//     if (!blocks || blocks.length === 0) return 'unknown';
-//     const b = blocks[0];
-//     if ('obs_disc_frac' in b) return 'topology';
-//     if ('d3' in b || 'p_d3' in b || 'sig_d3' in b) return 'd3';
-//     return 'unknown';
-//   }
-
-//   private render() {
-//     const el = this.container.nativeElement;
-//     if (!this.data) return;
-
-//     const width = el.parentElement?.parentElement?.clientWidth;
-//     const height = 300;
-//     if (!width) { requestAnimationFrame(() => this.render()); return; }
-
-//     el.innerHTML = '';
-//     const TITLE_OFFSET = 14;
-//     const margin = { top: TITLE_OFFSET + 20, right: 18, bottom: 36, left: 56 };
-//     const w = Math.max(0, width - margin.left - margin.right);
-//     const h = Math.max(0, height - margin.top - margin.bottom);
-
-//     const svg = d3.select(el).append('svg').attr('width', width).attr('height', height);
-//     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-
-//     const blocks: any[] = (this.data as any).blocks ?? [];
-//     const mode = this.detectMode(blocks);
-
-//     // Shared x-scale
-//     const xDomain = (d3.extent(blocks, d => +d.mid_BP) as [number, number]) ?? [0, 1];
-//     const x = d3.scaleLinear().domain(xDomain).nice().range([0, w]);
-//     const xAxis = d3.axisBottom(x).ticks(8).tickFormat(d => `${Math.round(+d / 1e6)} Mb`);
-
-//     // Tooltip shared container
-//     d3.select(el).selectAll('div.tooltip').remove();
-//     const tooltip = d3.select(el).append('div')
-//       .attr('class', 'tooltip')
-//       .style('position', 'absolute')
-//       .style('pointer-events', 'none')
-//       .style('background', '#fff')
-//       .style('border', '1px solid #ccc')
-//       .style('padding', '6px 8px')
-//       .style('border-radius', '4px')
-//       .style('font-size', '12px')
-//       .style('display', 'none');
-
-//     const placeTip = (e: MouseEvent) => {
-//       const [px, py] = d3.pointer(e, el);
-//       const node = tooltip.node() as HTMLElement;
-//       const tipW = node.offsetWidth, tipH = node.offsetHeight;
-//       const { width: cw, height: ch } = (el as HTMLElement).getBoundingClientRect();
-//       const m = 14;
-//       let left = px + m, top = py + m;
-//       if (left + tipW > cw) left = px - m - tipW;
-//       if (top + tipH > ch) top = py - m - tipH;
-//       left = Math.max(0, Math.min(left, cw - tipW));
-//       top  = Math.max(0, Math.min(top,  ch - tipH));
-//       tooltip.style('left', `${left}px`).style('top', `${top}px`);
-//     };
-//     const hideTip = () => tooltip.style('display', 'none');
-
-//     if (mode === 'topology') {
-//       // ---------- OLD: topology plot ----------
-//       const yMax = d3.max(blocks, d => +d.obs_disc_frac) ?? 1;
-//       const y = d3.scaleLinear().domain([0, yMax]).nice().range([h, 0]);
-//       const yAxis = d3.axisLeft(y).ticks(6);
-
-//       g.append('g').attr('class', 'x-axis').attr('transform', `translate(0,${h})`).call(xAxis);
-//       g.append('g').attr('class', 'y-axis').call(yAxis);
-
-//       // Labels
-//       g.append('text').attr('x', w / 2).attr('y', h + 32).attr('text-anchor', 'middle').text('Genomic position');
-//       g.append('text').attr('x', -h / 2).attr('y', -42).attr('transform', 'rotate(-90)').attr('text-anchor', 'middle')
-//         .text('Discordance fraction');
-
-//       // Points
-//       g.selectAll('circle.base')
-//         .data(blocks).enter().append('circle')
-//         .attr('class', 'base')
-//         .attr('cx', d => x(+d.mid_BP))
-//         .attr('cy', d => y(+d.obs_disc_frac))
-//         .attr('r', 3).attr('fill', '#ff0000ff').attr('opacity', 0.6)
-//         .on('mousemove', (e, d: TripletBlock) => {
-//           tooltip.style('display', 'block').html(
-//             `mid: ${(d.mid_BP/1e6).toFixed(2)} Mb<br/>
-//              obs: ${d.obs_disc_frac.toFixed(3)}<br/>
-//              exp: ${d.exp_disc_frac.toFixed(3)}<br/>
-//              n: ${d.n_trees} (T2=${d.count_T2}, T3=${d.count_T3})<br/>
-//              p_total(FDR): ${d.p_total_fdr.toExponential(2)}<br/>
-//              p_sym(FDR): ${d.p_sym_fdr.toExponential(2)}`
-//           ); placeTip(e as MouseEvent);
-//         })
-//         .on('mouseleave', hideTip);
-
-//       // Sister significant (cross)
-//       const sisterSig = blocks.filter(d => d.mode === 'sister_introgression' && d.sig_total);
-//       g.selectAll('path.sister').data(sisterSig).enter().append('path')
-//         .attr('class', 'sister')
-//         .attr('d', d3.symbol().type(d3.symbolCross).size(80))
-//         .attr('transform', d => `translate(${x(+d.mid_BP)},${y(+d.obs_disc_frac)})`)
-//         .attr('fill', 'none').attr('stroke', '#000').attr('stroke-width', 1.5)
-//         .on('mousemove', (e, d: TripletBlock) => {
-//           tooltip.style('display', 'block').html(
-//             `mid: ${(d.mid_BP/1e6).toFixed(2)} Mb<br/>
-//              obs: ${d.obs_disc_frac.toFixed(3)}<br/>
-//              exp: ${d.exp_disc_frac.toFixed(3)}<br/>
-//              n: ${d.n_trees} (T2=${d.count_T2}, T3=${d.count_T3})<br/>
-//              p_total(FDR): ${d.p_total_fdr.toExponential(2)}<br/>
-//              p_sym(FDR): ${d.p_sym_fdr.toExponential(2)}`
-//           ); placeTip(e as MouseEvent);
-//         })
-//         .on('mouseleave', hideTip);
-
-//       // Non-sister significant (ring)
-//       const nonsisterSig = blocks.filter(d => d.mode === 'nonsister_test' && d.sig_total && d.sig_sym);
-//       g.selectAll('circle.nonsister').data(nonsisterSig).enter().append('circle')
-//         .attr('class', 'nonsister')
-//         .attr('cx', d => x(+d.mid_BP)).attr('cy', d => y(+d.obs_disc_frac))
-//         .attr('r', 6).attr('fill', 'none').attr('stroke', '#d95f02').attr('stroke-width', 1.5)
-//         .on('mousemove', (e, d: TripletBlock) => { /* same tooltip */ placeTip(e as MouseEvent); })
-//         .on('mouseleave', hideTip);
-
-//       g.append('text').attr('x', 0).attr('y', -TITLE_OFFSET).attr('font-weight', '600')
-//         .text(`Triplet scan (B=${(this.data as any).params.block_size}); global p=${(this.data as any).global.p_global.toExponential(2)}`);
-
-//     } else if (mode === 'd3') {
-//       // ---------- NEW: D3 plot ----------
-//       const d3Blocks = blocks as D3Block[];
-//       const yAbsMax = Math.max(
-//         0.1,
-//         d3.max(d3Blocks, d => Math.abs(d.d3 ?? 0)) ?? 0.1
-//       );
-//       const pad = 1.1;
-//       const y = d3.scaleLinear()
-//         .domain([-Math.min(1, yAbsMax * pad), Math.min(1, yAbsMax * pad)])
-//         .range([h, 0]);
-
-//       const yAxis = d3.axisLeft(y).ticks(6);
-//       g.append('g').attr('class', 'x-axis').attr('transform', `translate(0,${h})`).call(xAxis);
-//       g.append('g').attr('class', 'y-axis').call(yAxis);
-
-//       // Baseline at 0
-//       g.append('line')
-//         .attr('x1', 0).attr('x2', w)
-//         .attr('y1', y(0)).attr('y2', y(0))
-//         .attr('stroke', '#888').attr('stroke-dasharray', '4,4');
-
-//       // Labels
-//       g.append('text').attr('x', w / 2).attr('y', h + 32).attr('text-anchor', 'middle')
-//         .text('Genomic position');
-//       g.append('text').attr('x', -h / 2).attr('y', -42).attr('transform', 'rotate(-90)').attr('text-anchor', 'middle')
-//         .text('D3 = (dP2P3 - dP1P3) / (dP2P3 + dP1P3)');
-
-//       // Error bars if se_d3 present (±1.96 SE)
-//       const withSE = d3Blocks.filter(b => b.d3 !== null && b.se_d3 !== null && isFinite(b.se_d3 as number));
-//       g.selectAll('line.err')
-//         .data(withSE).enter().append('line')
-//         .attr('class', 'err')
-//         .attr('x1', d => x(d.mid_BP)).attr('x2', d => x(d.mid_BP))
-//         .attr('y1', d => y((d.d3 as number) - 1.96 * (d.se_d3 as number)))
-//         .attr('y2', d => y((d.d3 as number) + 1.96 * (d.se_d3 as number)))
-//         .attr('stroke', '#999').attr('stroke-width', 1);
-
-//       // Points
-//       g.selectAll('circle.base')
-//         .data(d3Blocks).enter().append('circle')
-//         .attr('class', 'base')
-//         .attr('cx', d => x(d.mid_BP))
-//         .attr('cy', d => y((d.d3 ?? 0)))
-//         .attr('r', 3)
-//         .attr('fill', d => {
-//           // Optional: color by sign; neutral gray for nulls
-//           if (d.d3 == null) return '#bbb';
-//           return (d.d3 < 0) ? '#1b9e77' : '#7570b3';
-//         })
-//         .attr('opacity', 0.7)
-//         .on('mousemove', (e, d: D3Block) => {
-//           const q = (d as any).p_d3_fdr ?? d.p_d3; // show FDR if present, else raw
-//           tooltip.style('display', 'block').html(
-//             `mid: ${(d.mid_BP/1e6).toFixed(2)} Mb<br/>
-//              D3: ${d.d3?.toFixed(3) ?? 'NA'}${(d.se_d3!=null && isFinite(d.se_d3)) ? ` ± ${(+d.se_d3).toFixed(3)}` : ''}<br/>
-//              n: ${d.n_windows_used}${(d.denom_sum!=null)? `; denomΣ=${(d.denom_sum as number).toFixed(2)}` : ''}<br/>
-//              p${(q===d.p_d3 ? '' : ' (FDR)')}: ${(+q).toExponential(2)}`
-//           ); placeTip(e as MouseEvent);
-//         })
-//         .on('mouseleave', hideTip);
-
-//       // Significant points (FDR): draw ring
-//       const sig = d3Blocks.filter(b => (b.sig_d3 === true) || ((b as any).p_d3_fdr !== undefined && (b as any).p_d3_fdr < (this.data as any).params.alpha));
-//       g.selectAll('circle.sig')
-//         .data(sig).enter().append('circle')
-//         .attr('class', 'sig')
-//         .attr('cx', d => x(d.mid_BP)).attr('cy', d => y((d.d3 ?? 0)))
-//         .attr('r', 6).attr('fill', 'none').attr('stroke', '#d95f02').attr('stroke-width', 1.5);
-
-//       // Title
-//       const gp = (this.data as any).global?.p_global;
-//       g.append('text').attr('x', 0).attr('y', -TITLE_OFFSET).attr('font-weight', '600')
-//         .text(`D3 scan (B=${(this.data as any).params.block_size}); global p=${(gp!=null)? (+gp).toExponential(2) : 'NA'}`);
-//     } else {
-//       // Unknown schema
-//       g.append('text').attr('x', 0).attr('y', 0).text('Unrecognized data schema.');
-//     }
-//   }
-// }

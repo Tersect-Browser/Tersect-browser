@@ -46,7 +46,7 @@ import { ScaleDrawService } from '../../services/scale-draw.service';
 import { ScaleViewStateService } from '../../components/tersect-distance-plot/services/scale-view-state-service';
 
 import { BinDrawService } from '../../services/bin-draw.service';
-import { IntrogressionService } from '../../services/introgression.service';
+import { IntrogressionQuery, IntrogressionService } from '../../services/introgression.service';
 
 interface SyncedScaleView {
     binSize: number;
@@ -240,6 +240,17 @@ export class TersectBrowserComponent implements OnInit {
         if ($event.target.plotAreaType !== 'background') {
             this.plotClickMenu.show($event);
         }
+    }
+
+    handleIntrogressionSearch() {
+        const payload: IntrogressionQuery = {
+            chromosome: this.selectedChromosomeSub.name,
+            interval: this.selectedInterval as [number, number],
+            accessions: this.selectedAccessions,
+            datasetId: this.settingsId,
+            outgroup: this.plotState.reference,
+        };
+        this.introgressionService.initiateScan(payload);
     }
 
     removeAccession($event: string) {

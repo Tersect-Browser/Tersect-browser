@@ -19,73 +19,140 @@ def jackknife_mean(arr):
     se = math.sqrt((n - 1) / n * float(np.sum((np.array(jk) - jk_mean) ** 2)))
     return float(np.mean(x)), se
 
-def jackknife_mean_diff(obs, exp):
-    """Global delete-one-block jackknife for mean(obs - exp)."""
-    diffs = np.asarray(obs, dtype=float) - np.asarray(exp, dtype=float)
-    n = len(diffs)
-    if n < 2:
-        return float(np.mean(diffs)), float("inf")
-    jk_means = [float(np.mean(np.delete(diffs, i))) for i in range(n)]
-    jk_mean = float(np.mean(jk_means))
-    se = math.sqrt((n - 1) / n * float(np.sum((np.array(jk_means) - jk_mean) ** 2)))
-    return jk_mean, se
-
 def load_newick(path):
     with open(path) as fh:
         # strip comments like [S=...] that sometimes appear in ASTRAL/gene trees
         return re.sub(r"\[[^\]]*\]", "", fh.read().strip())
 
-def is_strict_pair_clade(tree, a, b):
-    """True if MRCA(a,b) subtends exactly {a,b} (no third ingroup taxon under it)."""
-    ca = tree.get_common_ancestor(a, b)
-    return set(ca.get_leaf_names()) == {a, b}
 
-def infer_sister_pair(sp, ingroup):
-    """Find which ingroup pair is sister on the species tree (rooted at outgroup)."""
-    a, b, c = ingroup
-    for p in [(a, b), (a, c), (b, c)]:
-        if is_strict_pair_clade(sp, *p):
-            return p
-    raise ValueError("Could not identify a strict sister ingroup pair on the species tree.")
+def infer_sister_pair_from_quartet(tree, trio, outgroup):
+    a, b, c = trio
+    for x, y, other in ((a,b,c), (a,c,b), (b,c,a)):
+        ca = tree.get_common_ancestor(x, y)
+        # Among the pruned quartet, the sister pair’s MRCA will NOT contain the third ingroup
+        if other not in set(ca.get_leaf_names()):
+            return x, y
+    raise ValueError("Unresolved trio (polytomy?) in pruned tree.")
 
-def label_topology_by_splits(gt, p1, p2, p3):
-    """Return T1/T2/T3 by **clade membership** (T1 is the species-tree sister pair p1,p2)."""
-    if is_strict_pair_clade(gt, p1, p2):
+
+def label_topology_quartet(gt_q, p1, p2, p3, outgroup, min_distance=0.005):
+    """
+    Correct quartet topology determination using all four taxa with discordant distance filtering.
+    Based on Hibbins & Hahn (2022) Genetics and standard quartet analysis.
+
+    Parameters:
+    - gt_q: pruned gene tree with quartet taxa
+    - p1, p2, p3: ingroup taxa names
+    - outgroup: outgroup taxon name
+    - min_distance: minimum distance threshold for discordant topologies (T2/T3)
+
+    Returns:
+    - T1: Species tree topology (p1,p2) are sisters OR discordant distance below threshold
+    - T2: (p1,p3) are sisters (first discordant topology) with distance >= min_distance
+    - T3: (p2,p3) are sisters (second discordant topology) with distance >= min_distance
+    - ERROR: if calculation fails
+    """
+
+    # Method 1: Tree structure approach (most reliable)
+    preliminary_topology = None
+    try:
+        # Check which ingroup pair forms a clade excluding the outgroup
+        lca_12 = gt_q.get_common_ancestor([p1, p2])
+        lca_13 = gt_q.get_common_ancestor([p1, p3])
+        lca_23 = gt_q.get_common_ancestor([p2, p3])
+
+        # Get all leaves under each LCA
+        leaves_12 = set([leaf.name for leaf in lca_12.get_leaves()])
+        leaves_13 = set([leaf.name for leaf in lca_13.get_leaves()])
+        leaves_23 = set([leaf.name for leaf in lca_23.get_leaves()])
+
+        # The correct sister pair should NOT include the outgroup in their LCA
+        if outgroup not in leaves_12 and leaves_12 == {p1, p2}:
+            preliminary_topology = "T1"  # (p1,p2) are sisters - species tree topology
+        elif outgroup not in leaves_13 and leaves_13 == {p1, p3}:
+            preliminary_topology = "T2"  # (p1,p3) are sisters - first discordant topology
+        elif outgroup not in leaves_23 and leaves_23 == {p2, p3}:
+            preliminary_topology = "T3"  # (p2,p3) are sisters - second discordant topology
+
+    except Exception as e:
+        print(f"Tree structure method failed: {e}")
+
+    # Method 2: Quartet distance method (fallback if structure method failed)
+    if preliminary_topology is None:
+        try:
+            # Calculate all six pairwise distances
+            d12 = gt_q.get_distance(p1, p2)
+            d13 = gt_q.get_distance(p1, p3)
+            d14 = gt_q.get_distance(p1, outgroup)
+            d23 = gt_q.get_distance(p2, p3)
+            d24 = gt_q.get_distance(p2, outgroup)
+            d34 = gt_q.get_distance(p3, outgroup)
+
+            # Standard quartet analysis: compare sums of opposite pairs
+            sum_T1 = d12 + d34  # Species tree topology
+            sum_T2 = d13 + d24  # First discordant topology
+            sum_T3 = d23 + d14  # Second discordant topology
+
+            # The topology with the SMALLEST sum is the correct one
+            min_sum = min(sum_T1, sum_T2, sum_T3)
+
+            if min_sum == sum_T1:
+                preliminary_topology = "T1"
+            elif min_sum == sum_T2:
+                preliminary_topology = "T2"
+            else:
+                preliminary_topology = "T3"
+
+        except Exception as e:
+            print(f"Distance method failed: {e}")
+            return "ERROR"
+
+    # Now apply distance filtering for discordant topologies
+    if preliminary_topology == "T1":
+        # T1 (concordant) - no distance filtering needed
         return "T1"
-    if is_strict_pair_clade(gt, p1, p3):
-        return "T2"
-    if is_strict_pair_clade(gt, p2, p3):
-        return "T3"
-    # Fallback: choose the pair with the smallest path length (safeguard for odd cases)
-    d12 = gt.get_distance(p1, p2)
-    d13 = gt.get_distance(p1, p3)
-    d23 = gt.get_distance(p2, p3)
-    m = min(d12, d13, d23)
-    if m == d12: return "T1"
-    if m == d13: return "T2"
-    return "T3"
 
-def safe_two_sided_p_from_z(z):
-    if not math.isfinite(z):
-        return 1.0
-    return 2.0 * norm.sf(abs(z))
+    elif preliminary_topology == "T2":
+        # T2: (p1,p3) are sisters - check their distance
+        try:
+            discordant_distance = gt_q.get_distance(p1, p3)
+            if discordant_distance >= min_distance:
+                return "T2"
+            else:
+                # Distance too small, treat as T1 (concordant)
+                return "T1"
+        except Exception as e:
+            print(f"Failed to calculate T2 distance: {e}")
+            return "ERROR"
 
-# ---------- main ----------
+    elif preliminary_topology == "T3":
+        # T3: (p2,p3) are sisters - check their distance
+        try:
+            discordant_distance = gt_q.get_distance(p2, p3)
+            if discordant_distance >= min_distance:
+                return "T3"
+            else:
+                # Distance too small, treat as T1 (concordant)
+                return "T1"
+        except Exception as e:
+            print(f"Failed to calculate T3 distance: {e}")
+            return "ERROR"
+
+    else:
+        return "ERROR"
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--windows-csv", required=True)
     p.add_argument("--species-tree", required=True)   # a single Newick from ASTRAL
+    p.add_argument("--ingroup", nargs=3, required=True, metavar=("P1","P2","P3"))
     p.add_argument("--out-json")                      # optional; if omitted, print to stdout
-    p.add_argument("--mu", type=float, default=7e-9)
-    p.add_argument("--ne", type=float, default=1.5e4)
-    p.add_argument("--block-size", type=int, default=8)
+    p.add_argument("--block-size", type=int, default=50)
     p.add_argument("--outgroup", required=True)       # taxon name for rooting
     p.add_argument("--alpha", type=float, default=0.05)
     args = p.parse_args()
 
-    COAL_FACTOR = 2 * args.mu * args.ne if args.mu and args.ne else 1.0
-    B = max(1, args.block_size)
+    B = args.block_size
 
     # --- Load mapping/paths ---
     mapping_df = pd.read_csv(args.windows_csv).sort_values("start", ignore_index=True)
@@ -93,19 +160,22 @@ def main():
 
     # --- Load species tree, root, and identify ingroup sister pair ---
     sp = Tree(load_newick(args.species_tree), format=1)
-    tip_names = [t.name for t in sp.iter_leaves()]
-    if args.outgroup not in tip_names:
-        raise SystemExit(f"Outgroup {args.outgroup} not found in species tree tips: {tip_names}")
+    leafs = {t.name for t in sp.iter_leaves()}
+    need = set(args.ingroup) | {args.outgroup}
+    missing = need - leafs
+    if missing:
+        raise SystemExit(f"Missing in species tree: {sorted(missing)}", need, leafs)
     sp.set_outgroup(sp.search_nodes(name=args.outgroup)[0])
-    ingroup = [t for t in tip_names if t != args.outgroup]
-    if len(ingroup) != 3:
-        raise SystemExit(f"Expected exactly 3 ingroup taxa; found {len(ingroup)}: {ingroup}")
+    quartet = [*args.ingroup, args.outgroup]
+    sp_q = sp.copy(method="deepcopy")
+    sp_q.prune(quartet, preserve_branch_length=True)
+    print(f"Pruned quartet tree: {sp_q.get_ascii(show_internal=True)}", sp)
     # Identify species-tree sister pair and order taxa as (p1,p2 are sisters, p3 is the third)
     try:
-        p1, p2 = infer_sister_pair(sp, ingroup)
+        p1, p2 = infer_sister_pair_from_quartet(sp_q, args.ingroup, args.outgroup)
     except ValueError as e:
         raise SystemExit(str(e))
-    p3 = next(t for t in ingroup if t not in (p1, p2))
+    p3 = next(t for t in args.ingroup if t not in (p1, p2))
     taxa = [p1, p2, p3]  # record the explicit order used for T1/T2/T3
 
     # Species-tree internal branch length (coalescent units if available)
@@ -120,6 +190,7 @@ def main():
             return Tree(re.sub(r"\[[^\]]*\]", "", fh.read().strip()), format=1)
 
     gene_trees = [load_tree(pth) for pth in mapping_df["tree"]]
+    gene_start_locations = mapping_df["start"].tolist()
 
     # --- First pass over all gene trees to label topologies and distances ---
     # Store per-tree info so we can (i) estimate tau if needed and (ii) aggregate into blocks.
@@ -128,16 +199,36 @@ def main():
     total_n2 = 0
     total_n3 = 0
 
-    for gt in gene_trees:
+    for i, gt in enumerate(gene_trees):
+        start_idx = gene_start_locations[i]
         # root gene tree at the outgroup; will raise KeyError if taxa missing
         gt.set_outgroup(gt.search_nodes(name=args.outgroup)[0])
+        quartet = [p1, p2, p3, args.outgroup]
+        gt_q = gt.copy(method="deepcopy")
+        gt_q.prune(quartet, preserve_branch_length=True)
 
-        topo = label_topology_by_splits(gt, p1, p2, p3)
-        d = None
+        bl = [n.dist for n in gt_q.traverse() if n.dist is not None]
+        if not bl or max(bl) == 0.0:
+            print("Warning: zero/absent branch lengths in this window", file=sys.stderr)
+
+        filtered_count = 0
+        error_count = 0
+        topo = label_topology_quartet(gt_q, p1, p2, p3, args.outgroup, min_distance=0.005)
+        # Handle the filtered cases:
+        if topo == "FILTERED_LOW_DISTANCE":
+            filtered_count += 1
+            continue  # Skip this tree
+        elif topo == "ERROR":
+            error_count += 1
+            continue  # Skip this tree
+        d = float(gt_q.get_distance(p1, p2))
+        print("initial distance:", d)
         if topo == "T2":
-            d = float(gt.get_distance(p1, p3))
+            d = float(gt_q.get_distance(p1, p3))
+            print(f"Gene tree {gt}: T2, d={d}", p1, p3, 'start_idx:', start_idx)
         elif topo == "T3":
-            d = float(gt.get_distance(p2, p3))
+            d = float(gt_q.get_distance(p2, p3))
+            print(f"Gene tree {gt}: T3, d={d}", p2, 'start_idx:', start_idx)
 
         per_tree.append((topo, d))
         total_n += 1
@@ -149,7 +240,7 @@ def main():
         print(f"Using species-tree tau: {tau_species} coalescent units", file=sys.stderr)
         tau_hat_global = tau_species  # prefer ASTRAL's coalescent-unit internal branch
     else:
-        # Fallback: method-of-moments from genome-wide discordant fraction
+        # Fallback: method-of-moments from genome-wide discordant fraction TODO: implement
         f_disc = (total_n2 + total_n3) / max(1, total_n)
         # constrain to (0, 2/3) to avoid log problems
         eps = 1e-9
@@ -166,43 +257,68 @@ def main():
 
         # counts and per-tree indicators
         n1 = n2 = n3 = 0
-        d_T2, d_T3 = [], []
-        disc_ind = []  # 1 for discordant (T2/T3), 0 for concordant (T1)
-        sym_y = []     # +1 for T2, -1 for T3 (discordant only)
-
+        valid_trees = 0
+        d_T1, d_T2, d_T3 = [], [], []
+        total_evolutionary_distance = 0.0
+        concordant_distance = 0.0
+        discordant_distance = 0.0
         for topo, d in trees:
+            print(f"Processing Tree {start_idx}: {topo}, d={d}")
+            if d is None or d <= 0:
+                continue
+            valid_trees += 1
+            total_evolutionary_distance += d
             if topo == "T1":
+                concordant_distance += d
+                d_T1.append(d)
                 n1 += 1
-                disc_ind.append(0.0)
             elif topo == "T2":
+                discordant_distance += d
                 n2 += 1
-                disc_ind.append(1.0)
-                sym_y.append(1.0)
-                if d is not None: d_T2.append(d)
+                d_T2.append(d)
             elif topo == "T3":
+                discordant_distance += d
                 n3 += 1
-                disc_ind.append(1.0)
-                sym_y.append(-1.0)
-                if d is not None: d_T3.append(d)
+                d_T3.append(d)
+
+        all_distances = d_T1 + d_T2 + d_T3
+        discordant_distances = d_T2 + d_T3
+        if len(all_distances) == 0:
+            continue
+        mean_total, _ = jackknife_mean(all_distances)
+        mean_discordant, _ = jackknife_mean(discordant_distances) if discordant_distances else (0.0, float("inf"))
+        print(f"Block {start_idx} ({len(trees)} trees): T1={n1}, T2={n2}, T3={n3}, discordant_distance={discordant_distance} total_evolutionary_distance={total_evolutionary_distance}")
+        obs_disc = mean_discordant / mean_total if mean_total > 0 else 0.0
+
+        if len(d_T2) > 0 and len(d_T3) > 0:
+            mean_T2, _ = jackknife_mean(d_T2)
+            mean_T3, _ = jackknife_mean(d_T3)
+            asymmetry_score = (mean_T2 - mean_T3) / (mean_T2 + mean_T3)
+        elif len(d_T2) > 0:
+            asymmetry_score = 1.0  # Only T2 present
+        elif len(d_T3) > 0:
+            asymmetry_score = -1.0  # Only T3 present
+        else:
+            asymmetry_score = 0.0  # No discordant trees
 
         n = max(1, n1 + n2 + n3)
-        obs_disc = (n2 + n3) / n
 
-        # --- total discordance test: jackknife SE of mean(disc_ind) vs expected ---
-        m_disc, se_disc = jackknife_mean(disc_ind) if len(disc_ind) > 0 else (obs_disc, float("inf"))
-        # use two-sided test around the expected value
-        z_disc = (m_disc - p_disc_expected) / se_disc if se_disc > 0 and math.isfinite(se_disc) else 0.0
-        p_tot = safe_two_sided_p_from_z(z_disc) if se_disc > 0 and math.isfinite(se_disc) else 1.0
+        p_tot = 1.0
 
-        # --- symmetry test on discordant trees only: E[mean(sym_y)] = 0 under ILS ---
-        if len(sym_y) >= 2:
-            m_sym, se_sym = jackknife_mean(sym_y)
-            z_sym = m_sym / se_sym if se_sym > 0 and math.isfinite(se_sym) else 0.0
-            p_sym = safe_two_sided_p_from_z(z_sym) if se_sym > 0 and math.isfinite(se_sym) else 1.0
+
+
+        mode = ""
+
+        if obs_disc < p_disc_expected:
+            if asymmetry_score is not None and asymmetry_score < 0.05:
+                mode = "sister_introgression_with_asymmetry"  # Unusual pattern
+            else:
+                mode = "sister_introgression"
         else:
-            p_sym = None
-
-        mode = "sister_introgression" if obs_disc < p_disc_expected else "nonsister_test"
+            if asymmetry_score is not None and asymmetry_score < 0.05:
+                mode = "nonsister_introgression"  # Clear introgression signal
+            else:
+                mode = "excess_ILS_or_other"
 
         records.append({
             'start_idx': int(start_idx),
@@ -211,7 +327,7 @@ def main():
             'obs_disc_frac': float(obs_disc),
             'exp_disc_frac': float(p_disc_expected),
             'mode': mode,
-            'p_symmetry': float(p_sym) if p_sym is not None else None,
+            'p_symmetry': float(asymmetry_score) if asymmetry_score is not None else None,
             'p_total': float(p_tot),
             'n_trees': int(n),
             'count_T2': int(n2),
@@ -226,30 +342,21 @@ def main():
     dfb['sig_total']   = (dfb['p_total_fdr'] < args.alpha)
     dfb['sig_sym']     = (dfb['p_sym_fdr'] < args.alpha)
 
-    # Global test (jackknife across blocks) for mean difference obs - exp
-    gdiff, gse = jackknife_mean_diff(dfb['obs_disc_frac'].values, dfb['exp_disc_frac'].values)
-    z_global = gse and (gdiff / gse) if (gse and gse > 0 and math.isfinite(gse)) else 0.0
-    p_global = safe_two_sided_p_from_z(z_global) if (gse and gse > 0 and math.isfinite(gse)) else 1.0
 
     # Prepare JSON-safe payload
     blocks_json = dfb.replace({np.nan: None}).to_dict(orient='records')
+    # TODO: global statistics
     payload = {
         "params": {
-            "mu": args.mu,
-            "ne": args.ne,
-            "coal_factor": COAL_FACTOR,
             "block_size": B,
-            "alpha": args.alpha,
             "outgroup": args.outgroup,
-            # Explicit taxa order used: (p1,p2) are the species sisters => T1;
-            # T2 is (p1,p3), T3 is (p2,p3).
             "taxa": taxa,
         },
         "global": {
-            "jackknife_mean_diff": gdiff,
-            "jackknife_se": gse if (gse and math.isfinite(gse)) else None,
-            "z_global": z_global,
-            "p_global": p_global,
+            "jackknife_mean_diff": 0.0,
+            "jackknife_se":0.0,
+            "z_global": 0.0,
+            "p_global": 0.0,
         },
         "blocks": blocks_json,
     }

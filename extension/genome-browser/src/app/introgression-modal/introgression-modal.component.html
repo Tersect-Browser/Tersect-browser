@@ -31,7 +31,7 @@
       <form [formGroup]="form" class="form-pane" (ngSubmit)="onSubmit()">
         <!-- Choose outgroup -->
         <div class="field">
-          <label for="outgroup">Choose outgroup</label>
+          <label class="block" for="outgroup">Choose outgroup</label>
           <p-dropdown inputId="outgroup" formControlName="outgroup" [options]="taxaOptions" optionLabel="label"
             optionValue="value" [filter]="true" placeholder="Select an outgroup" styleClass="w-full"
             [filterBy]="'label'" [filterMatchMode]="'contains'" filterPlaceholder="Search taxa..."
@@ -43,7 +43,7 @@
 
         <!-- Quartet for window scan analysis -->
         <div class="field">
-          <label for="quartet">Choose 4 taxa (must include outgroup)</label>
+          <label class="block" for="quartet">Choose 4 taxa (must include outgroup)</label>
           <small class="sub">Quartet for window scan analysis</small>
 
           <p-multiSelect inputId="quartet" formControlName="quartet" [options]="taxaOptions" optionLabel="label"
@@ -54,6 +54,30 @@
           <ng-container *ngIf="ctrl('quartet').touched || submitted">
             <small class="error" *ngIf="quartetMissingOutgroup">Quartet must include the selected outgroup.</small>
             <small class="error" *ngIf="quartetSizeInvalid">Please select exactly 4 taxa.</small>
+          </ng-container>
+        </div>
+
+        <div class="field">
+          <label class="block" for="blockSize">Block size</label>
+          <small class="sub">Amount of gene trees per block</small>
+          <p-inputnumber formControlName="blockSize" [min]="5" [max]="100" />
+
+          <ng-container *ngIf="ctrl('blockSize').touched || submitted">
+            <small class="error" *ngIf="ctrl('blockSize').invalid">
+              Block size is required (5-100).
+            </small>
+          </ng-container>
+        </div>
+
+        <div class="field">
+          <label class="block" for="maxReticulations">Max reticulations</label>
+          <small class="sub">Maximum number of reticulations to be used in phylonet</small>
+          <p-inputnumber formControlName="maxReticulations" [min]="2" [max]="4" />
+
+          <ng-container *ngIf="ctrl('maxReticulations').touched || submitted">
+            <small class="error" *ngIf="ctrl('maxReticulations').invalid">
+              Max reticulations is required (2-4).
+            </small>
           </ng-container>
         </div>
 
@@ -86,11 +110,26 @@
 
         <ng-container *ngIf="!loading && !error && result">
           <h3>Results</h3>
-          <app-introgression-visualizer [offset]="0" [data]="result.data"></app-introgression-visualizer>
+          <div class="legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background:#999999"></span>
+            T1 — Species tree topology
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background:#1f77b4"></span>
+            T2 — Discordant topology 1
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background:#ff7f0e"></span>
+            T3 — Discordant topology 2
+          </div>
+        </div>
+          <app-introgression-visualizer  [data]="result.data"></app-introgression-visualizer>
+          <a [href]="result.phyloText" target="download">Download PhyloNet output</a>
           <h4>PhyloNet Plot</h4>
-          <img [src]="result.phyloPlot" alt="PhyloNet Plot" class="phylo-plot" />
+          <img height="400px" width="800px" [src]="result.phyloPlot" alt="PhyloNet Plot" class="phylo-plot" />
           <h4>PhyloNet Output</h4>
-          <img [src]="result.phyloIntroPlot" alt="PhyloNet Introgression Plot" class="phylo-plot" />
+          <img height="400px" width="800px" [src]="result.phyloIntroPlot" alt="PhyloNet Introgression Plot" class="phylo-plot" />
         </ng-container>
 
         <ng-container *ngIf="!loading && !error && !result">

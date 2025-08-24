@@ -7,6 +7,7 @@ import { firstValueFrom, isObservable } from 'rxjs';
 // import { DialogModule } from 'primeng/dialog'; // <-- remove
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
@@ -16,7 +17,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 // CDK
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
-type SubmitPayload = { outgroup: string; quartet: string[]; mpl: string[]; };
+type SubmitPayload = { outgroup: string; quartet: string[]; mpl: string[]; blockSize: number; maxReticulations: number; };
 
 @Component({
   selector: 'app-introgression-modal',
@@ -30,7 +31,8 @@ type SubmitPayload = { outgroup: string; quartet: string[]; mpl: string[]; };
     ButtonModule,
     TooltipModule,
     ProgressSpinnerModule,
-    IntrogressionVisualizerComponent
+    IntrogressionVisualizerComponent,
+    InputNumberModule
   ],
   templateUrl: './introgression-modal.component.html',
   styleUrls: ['./introgression-modal.component.css'],
@@ -68,6 +70,8 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
   form = this.fb.group({
     outgroup: this.fb.control<string | null>(null, { validators: [Validators.required] }),
     quartet: this.fb.control<string[]>([], { validators: [] }),
+    maxReticulations: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(2), Validators.max(4)] }),
+    blockSize: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(5), Validators.max(100)] }),
     mpl: this.fb.control<string[]>([], { validators: [maxItemsValidator(5)] })
   }, { validators: [quartetValidator()] });
 
@@ -93,7 +97,7 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
     this.taxaOptions = (this.taxa ?? []).map(t => ({ label: t, value: t }));
   }
 
-  ctrl(name: 'outgroup' | 'quartet' | 'mpl') {
+  ctrl(name: 'outgroup' | 'quartet' | 'mpl' | 'blockSize' | 'maxReticulations') {
     return this.form.get(name) as AbstractControl;
   }
 
@@ -109,7 +113,9 @@ export class IntrogressionModalComponent implements OnInit, OnChanges {
     const payload: SubmitPayload = {
       outgroup: this.ctrl('outgroup').value!,
       quartet: this.ctrl('quartet').value ?? [],
-      mpl: this.ctrl('mpl').value ?? []
+      mpl: this.ctrl('mpl').value ?? [],
+      blockSize: this.ctrl('blockSize').value!,
+      maxReticulations: this.ctrl('maxReticulations').value!
     };
 
     try {

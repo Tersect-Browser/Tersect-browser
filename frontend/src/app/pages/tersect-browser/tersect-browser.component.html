@@ -43,6 +43,11 @@
         <button class="col-10 mt-0 " pButton icon="fa fa-refresh" (click)="refreshBin()">
         </button>
     </div>
+     <div class="p-col toolbar-buttons tb-toolbar-control">
+
+        <button pButton label="Search For Introgression" icon="fa fa-search-plus" (click)="handleIntrogressionSearch()">
+        </button>
+    </div>
 
     <div class="p-col toolbar-buttons tb-toolbar-control">
         <button pButton label="Download" icon="fa fa-download" [disabled]="isDownloadReady()"

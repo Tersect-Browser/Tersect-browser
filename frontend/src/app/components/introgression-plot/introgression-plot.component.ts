@@ -70,14 +70,17 @@ scanPayload: IntrogressionQuery | null = null;
     }));
 
   }
-   async startAnalysis({outgroup, quartet, mpl}: {outgroup: string; quartet: string[]; mpl: string[]}) {
+   async startAnalysis({outgroup, quartet, blockSize, maxReticulations}: {outgroup: string; quartet: string[]; mpl: string[]; blockSize: number; maxReticulations: number}) {
     console.log('Starting analysis with:', this.scanPayload);
     return this.introgression.searchForIntrogressions({
                             chromosome: this.scanPayload.chromosome,
                             interval: this.scanPayload.interval,
                             accessions: quartet,
+                            wholeAccessions: this.scanPayload.accessions,
                             datasetId: this.scanPayload.datasetId,
                             outgroup: outgroup,
+                            blockSize,
+                            maxReticulations
                         }).pipe(take(1)).toPromise();
     }
     async handleModalClosed() {

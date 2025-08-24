@@ -55,16 +55,30 @@ export function mapToAppPath(inputPath: string): string {
   ));
 }
 
+const unlinkAsync = promisify(fs.unlink);
+
+export async function deleteFile(filePath: string): Promise<void> {
+  try {
+    await unlinkAsync(filePath);
+    console.log(`Deleted: ${filePath}`);
+  } catch (error) {
+    // if the file is already gone, don't treat it as an error
+    if (error.code !== "ENOENT") {
+      console.error(`Error deleting file ${filePath}:`, error);
+      throw error;
+    }
+  }
+}
+
 export async function writeAccessions(accessions: string[], tempDir?: string): Promise<string> {
     try {
         const tmpDir = tempDir ? tempDir : path.join(__dirname, '../tmp');
         fs.mkdirSync(tmpDir, { recursive: true });
           const outputFile = fileSync({
             dir: tmpDir,
-            keep: false       // prevent automatic cleanup until you call removeCallback()
+            keep: false
         });
         await promisify(fs.writeFile)(outputFile.name, accessions.join('\n') + '\n');
-        console.log(outputFile.name, 'output file')
         return outputFile.name;
     } catch (error) {
         console.log('Error writing accessions to file');
@@ -83,13 +97,14 @@ export function accessionsKey(list: string[]) {
 }
 
 export function sanitizeTreeStr(s: string) {
-  return s
+  const result =  s
     .replace(/[-+]?\d*\.?\d+e[-+]?\d+/gi, (m) =>
       Number(m).toFixed(9).replace(/0+$/, '').replace(/\.$/, '')
     )
     .replace(/([,(])\s*([^:,()]+)\s*(?=[:),])/g, (_m, pre, label) =>
       `${pre}${String(label).replace(/^'+|'+$/g, '').replace(/[^\w.\-]/g, '_')}`
     );
+    return result;
 }
 
 export async function execFileLogged(cmd: string, args: string[], cwd: string) {
@@ -112,5 +127,72 @@ export async function moveFile(src: string, dst: string) {
     await copyFileP(src, dst);
     await unlinkP(src);
   }
+}
+export async function runPhylonetAnalysis(params: {
+    tmpBase: string;
+    treeDirectory: string;
+    phyloTextPath: string;
+    phyloPlotPath: string;
+    phyloIntroPlotPath: string;
+    speciesTreePath: string;
+    maxReticulations: number;
+}) {
+    const { tmpBase, treeDirectory, phyloTextPath, phyloPlotPath, phyloIntroPlotPath, speciesTreePath, maxReticulations } = params;
+    await execFileLogged(
+        "micromamba",
+        [
+            "run",
+            "-n",
+            "tersect",
+            "python",
+            "-u",
+            path.resolve("src/scripts/phylo_scan.py"),
+            "--tree-directory",
+            treeDirectory,
+            "--max-reticulations",
+            String(maxReticulations),
+            "--output-directory",
+            treeDirectory,
+            "--species-tree-path",
+            speciesTreePath,
+            "--phylotxt",
+            phyloTextPath,
+            "--phylo-plot",
+            phyloPlotPath,
+            "--phylo-intro-plot",
+            phyloIntroPlotPath,
+        ],
+        tmpBase);
+}
+;
+export async function runIntrogressionAnalysis(params: {
+    windowsCsvPath: string;
+    speciesTreePath: string;
+    mu: any;
+    ne: any;
+    blockSize: any;
+    outgroup: any;
+    jsonPath: string;
+    tmpBase: string;
+    accessions: string[];
+}) {
+    const { windowsCsvPath, speciesTreePath, mu, ne, blockSize, outgroup, jsonPath, tmpBase, accessions } = params;
+    const trio = accessions.filter(x => x !== outgroup); // exclude outgroup
+
+    if (trio.length !== 3) {
+        throw new Error(`--ingroup needs exactly 3 taxa; got ${trio.length}. Choose the trio explicitly.`);
+    }
+
+    await execFileLogged("micromamba", [
+        "run", "-n", "tersect", "python", "-u",
+        path.resolve("src/scripts/introgression_scan3.py"),
+        "--windows-csv", windowsCsvPath,
+        "--species-tree", speciesTreePath,
+        "--block-size", String(blockSize),
+        "--outgroup", outgroup,
+        "--ingroup", ...trio, // <-- pass exactly 3 ingroup taxa
+        "--alpha", "0.05",
+        "--out-json", jsonPath,
+    ], tmpBase);
 }
 
