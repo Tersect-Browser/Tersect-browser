@@ -28,15 +28,13 @@ import {
 import { tbConfig } from '../load-config';
 import { ChromosomeIndex } from '../models/chromosomeindex';
 import { Dataset, DatasetPublic } from '../models/dataset';
-import { DBMatrix } from '../models/dbmatrix';
 import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
-import { partitionQuery } from '../utils/partitioning';
 import { formatRegion, writeAccessions } from '../utils/utils';
-import { collectSampleNames, Pool, processKeys, tersectForKey } from '../utils/pool';
+import { collectSampleNames, Pool, processKeys } from '../utils/pool';
 import introgressionController from './introgression-router';
-import { createRapidnjTree } from '../utils/dbutils';
 import { generateTree } from '../controllers/generateTree';
+import { subscribeSSE, unsubscribeSSE } from './sse';
 
 const util = require('util');
 
@@ -118,7 +116,30 @@ router.use('/query/:datasetId', (req, res, next) => {
 })
 
 
+router.get('/sse/:datasetId/:accKey', (req, res) => {
+  const { accKey } = req.params;
 
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+  subscribeSSE(res, accKey);
+
+  // optional auto-retry hint
+  res.write('retry: 3000\n\n');
+
+
+
+  // keep-alive ping prevents idle timeouts
+  const hb = setInterval(() => res.write(`: ping ${Date.now()}\n\n`), 25000);
+
+  req.on('close', () => {
+    clearInterval(hb);
+    unsubscribeSSE(res, accKey);
+    try { res.end(); } catch {}
+  });
+});
 
 router.get('/datafiles/:filename', async (req, res) => {
     const localDbLocation = tbConfig.localDbPath;
@@ -170,6 +191,7 @@ router.route('/query/:datasetId/samples')
         const tersectCommand = `tersect samples -n ${tsiLocation}`;
         exec(tersectCommand, options, (err, stdout, stderr) => {
             if (err) {
+                console.error('Error executing tersect samples:', err);
                 res.status(500).json(err);
             } else if (stderr) {
                 res.json(stderr);
@@ -182,10 +204,8 @@ router.route('/query/:datasetId/samples')
     });
 
 
-
-router.get(
-  '/query/:datasetId/variants/:chrom',
-  async (req, res, next) => {
+router.route(
+  '/query/:datasetId/variants/:chrom').get(async (req, res, next) => {
     try {
       /* ───────── 0. Params & validation ───────── */
       const chrom   = req.params.chrom;

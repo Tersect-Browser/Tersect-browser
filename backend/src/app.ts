@@ -11,6 +11,7 @@ import { router as tgrcRouter } from './routers/tgrc-router';
 import { cleanDatabase } from './utils/dbutils';
 
 const mongoUrl = `${tbConfig.mongoHost}/${tbConfig.dbName}`;
+console.log('Mongo URL:', mongoUrl);
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);

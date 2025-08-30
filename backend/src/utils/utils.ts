@@ -182,10 +182,10 @@ export async function runIntrogressionAnalysis(params: {
     if (trio.length !== 3) {
         throw new Error(`--ingroup needs exactly 3 taxa; got ${trio.length}. Choose the trio explicitly.`);
     }
-
-    await execFileLogged("micromamba", [
+    try {
+   await execFileLogged("micromamba", [
         "run", "-n", "tersect", "python", "-u",
-        path.resolve("src/scripts/introgression_scan3.py"),
+        path.resolve("src/scripts/introgression_scan.py"),
         "--windows-csv", windowsCsvPath,
         "--species-tree", speciesTreePath,
         "--block-size", String(blockSize),
@@ -194,5 +194,10 @@ export async function runIntrogressionAnalysis(params: {
         "--alpha", "0.05",
         "--out-json", jsonPath,
     ], tmpBase);
+    } catch (error) {
+        console.error("Error occurred while running introgression analysis:");
+        console.error(error);
+    }
+
 }
 

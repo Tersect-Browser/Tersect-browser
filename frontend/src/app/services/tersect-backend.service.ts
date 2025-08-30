@@ -161,7 +161,7 @@ export class TersectBackendService {
       searchForIntrogressions(payload: IntrogressionQuery) {
         const introgressionScanUrl = `${this.apiUrl}/query/${payload.datasetId}/scan-introgression`;
 
-        return this.http.post<{ data: any }>(introgressionScanUrl, payload, {
+        return this.http.post<{ data: any, accKey?: string, datasetId?: string }>(introgressionScanUrl, payload, {
           responseType: 'json'
         });
     }

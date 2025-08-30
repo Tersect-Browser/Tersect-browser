@@ -67,4 +67,6 @@ db-data/
 
 ~/mongo-data/
 tmp_outputs/
+./gp_data_copy/*
+./test-data2/*
 

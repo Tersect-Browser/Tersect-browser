@@ -10,11 +10,9 @@ dependencies:
 
   # Bio tools
   - bcftools=1.21
-  - beagle=5.4_29Oct24.c8e
   - aster=1.16
   - biopython=1.85
   - ete3=3.1.3
-  - openjdk>=11  # beagle uses Java
 
   # Py data/ML stack (conda-forge builds keep ABI compatibility)
   - numpy=2.3.*

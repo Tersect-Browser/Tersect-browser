@@ -1,0 +1,16 @@
+name: tbrowser
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - bcftools>=1.15
+  - samtools>=1.15
+  - htslib>=1.15
+  - tabix  # comes via htslib on many platforms
+  - pip
+  - pip:
+      - biopython==1.85
+      - hashids==1.2.0
+      - numpy==2.0.*
+      - pymongo==3.10.0

@@ -8,7 +8,7 @@ import platform
 import getopt
 import shutil
 from os.path import abspath
-from Bio import SeqIO
+
 
 def main():
     fasta = None
@@ -18,10 +18,9 @@ def main():
     vcf_dir = None
 
     # Check installations and modules
-    check_install("samtools", "SAMtools")
-    check_install("bcftools", "BCFtools")
-    check_install("tabix", "htslib")
-    
+    # check_install("samtools", "SAMtools")
+
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hf:g:v:V:m:c:", ["help", "fasta=", "gff=", "vcfs=", "dir=", "multi-sample-vcf=", "cfgfile="])
     except getopt.GetoptError as err:
@@ -39,8 +38,8 @@ def main():
         elif o in ("-v", "--vcfs"):
             vcf_files = a.split(',')
             print(f"VCF files: {vcf_files}")
-            
-            
+
+
         elif o in ("-V", "--dir"):
             vcf_dir = a
         elif o in ("-m", "--multi-sample-vcf"):
@@ -57,7 +56,7 @@ def main():
         print("Please provide a configuration file as input (option -c).")
         usage()
         sys.exit()
-    
+
     if fasta is None:
         print("Please provide a FASTA file as input (option -f).")
         usage()
@@ -78,7 +77,7 @@ def main():
         if not os.path.exists(multi_sample_vcf):
             print(f"{multi_sample_vcf} does not exist!\n")
             sys.exit()
-  
+
         # Splitting the multi-sample VCF file
         workdir = os.path.dirname(multi_sample_vcf)
         accessions_list_file = os.path.join(workdir, "accessions.txt")
@@ -116,8 +115,9 @@ def main():
     # Recompress and index VCF files if needed
     print("Indexing VCF files...")
     for vcf_file in vcf_files:
+        print(f"Processing {vcf_file}...")
         vcf_file = ensure_vcf_index(vcf_file)
-    
+
     # Ensure the FASTA file is unzipped and indexed
     fasta_path=ensure_fasta_index(fasta)
     if not os.path.exists(fasta_path):
@@ -135,11 +135,11 @@ def main():
 
 
     print("Editing backend dataset scripts...", cfg)
-    write_to_shell_script(cfg['datasetName'], fasta_path, cfg['tsiPath'])
+    # write_to_shell_script(cfg['datasetName'], fasta_path, cfg['tsiPath'])
     print("Loading final tersect dataset...")
     # Add dataset tsi file to tersect browser
-    add_example_dataset()
-    
+    # add_example_dataset()
+
     # Copying reference fasta to root as well
     #destination_dir = os.path.expanduser("./")
     #shutil.copy2(fasta_path, destination_dir)
@@ -162,10 +162,8 @@ def main():
 
     print("Copying files for Genome Browser access...")
     # Copy necessary files to gp_data_copy for access in browser
-    copy_files(fasta_path, gff_file, vcf_files, cfg["localDbPath"]+"/gp_data_copy/")  
-    
-    print("Deploying on localhost...")
-   # deploy_browser()
+    # copy_files(fasta_path, gff_file, vcf_files, "/app/gp_data_copy/")
+
 
 if __name__ == "__main__":
     main()

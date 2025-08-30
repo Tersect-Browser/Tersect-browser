@@ -1,25 +1,66 @@
-FROM python:3.7-slim
 
-# Install dependencies including netcat for health checking
-RUN apt-get update && apt-get install -y \
-    gcc \
-    build-essential \
-    python3-dev \
-    netcat-openbsd \
+# Build stages (all amd64)
+# FROM --platform=linux/amd64 python:3.7-slim AS pybase
+FROM --platform=linux/amd64 tersect-base AS tersect
+
+# Builder with Node
+FROM --platform=linux/amd64 node:18-bullseye-slim AS nodeBase
+RUN npm config set update-notifier false \
+ && npm i -g @jbrowse/cli@latest
+
+FROM --platform=linux/amd64 mambaorg/micromamba:debian-slim AS env
+WORKDIR /tmp
+ENV MAMBA_ROOT_PREFIX=/opt/conda
+COPY setup_environment.yml /tmp/environment.yml
+RUN micromamba create -y -n tbrowser -f /tmp/environment.yml && \
+    micromamba clean -a -y
+RUN micromamba run -n tbrowser python -m pip install conda-pack && \
+    micromamba run -n tbrowser conda-pack \
+      -p $MAMBA_ROOT_PREFIX/envs/tbrowser \
+      -o /tmp/tbrowser.tar.gz
+
+# Final runtime (amd64 too)
+FROM --platform=linux/amd64 mongo:4.4
+# FROM --platform=linux/amd64 python:3.7-slim AS pybase
+WORKDIR /app
+
+# bring tersect from the tersect stage (amd64)
+COPY --from=tersect /usr/local/bin/tersect /usr/local/bin/tersect
+# if tersect installed shared libs to /usr/local/lib, bring them too
+COPY --from=tersect /usr/local/lib/ /usr/local/lib/
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+
+# unpack conda env (amd64)
+COPY --from=env /tmp/tbrowser.tar.gz /tmp/tbrowser.tar.gz
+RUN mkdir -p /opt/conda \
+ && tar -xzf /tmp/tbrowser.tar.gz -C /opt/conda \
+ && /opt/conda/bin/conda-unpack || true
+ENV PATH="/opt/conda/bin:${PATH}"
+
+# OS deps you need at runtime
+RUN rm -f /etc/apt/sources.list.d/*mongo* \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+      bcftools samtools tabix file gzip dos2unix netcat-traditional \
  && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# If you don't need /usr/local from pybase, drop this (it can clobber things)
+# COPY --from=pybase /usr/local /usr/local
+
+# app code
+COPY --from=nodeBase /usr/local/ /usr/local/
+
+RUN node -v && npm -v && jbrowse --version
+
 COPY backend/src/scripts /app/scripts
-COPY backend/src/scripts/requirements.txt /app
-COPY ./backend /app/backend
-COPY ./tbconfig.json /app/
-COPY gp_data /app/gp_data
-COPY add_example_dataset.sh /app/
+COPY backend /app/backend
 
+COPY config.json /app/config.json
+COPY tbconfig.json /app/tbconfig.json
+COPY modules_for_setup.py /app/modules_for_setup.py
+COPY setup_new_tbrowser_dataset.py /app/setup_new_tbrowser_dataset.py
+COPY add_example_dataset.sh /app/add_example_dataset.sh
+COPY init-entrypoint.sh /app/init-entrypoint.sh
+RUN chmod +x /app/init-entrypoint.sh /app/add_example_dataset.sh
 
-RUN pip install --no-cache-dir -r requirements.txt
-RUN chmod u+x add_example_dataset.sh
-# Add wait-for script
-
-ARG CACHE_BUST=1
-RUN ./add_example_d
+ENTRYPOINT ["/app/init-entrypoint.sh"]

@@ -1,0 +1,149 @@
+<!-- Show/hide like before -->
+<div *ngIf="visible" class="introgression-shell"
+  [ngClass]="{ floating: floating, minimized: minimized, maximized: maximized }" [style.width]="width"
+  [style.height]="height">
+
+  <!-- Header (drag handle when floating) -->
+  <div class="shell-header" cdkDrag cdkDragRootElement=".introgression-shell" [cdkDragDisabled]="!floating">
+    <div class="title">Introgression analysis</div>
+    <span class="spacer"></span>
+
+    <!-- Controls -->
+    <button pButton type="button" [text]="true" icon="pi pi-minus" (click)="toggleMinimize()" [disabled]="maximized"
+      pTooltip="Minimize"></button>
+
+    <button pButton type="button" [text]="true" icon="pi pi-external-link" (click)="toggleFloating()"
+      pTooltip="{{ floating ? 'Dock' : 'Float' }}"></button>
+
+    <button pButton type="button" [text]="true" [icon]="maximized ? 'pi pi-window-restore' : 'pi pi-window-maximize'"
+      (click)="toggleMaximize()" pTooltip="{{ maximized ? 'Restore' : 'Maximize' }}"></button>
+
+    <button pButton type="button" [text]="true" icon="pi pi-times" (click)="cancel()" pTooltip="Close"></button>
+  </div>
+
+  <!-- Body (hidden when minimized) -->
+  <div class="shell-body" *ngIf="!minimized">
+    <div class="layout">
+      <!-- Left: Form (1/4 width) -->
+      <form [formGroup]="form" class="form-pane" (ngSubmit)="onSubmit()">
+        <!-- Choose outgroup -->
+        <div class="field">
+          <label class="block" for="outgroup">Choose outgroup</label>
+          <p-dropdown inputId="outgroup" formControlName="outgroup" [options]="taxaOptions" optionLabel="label"
+            optionValue="value" [filter]="true" placeholder="Select an outgroup" styleClass="w-full"
+            [filterBy]="'label'" [filterMatchMode]="'contains'" filterPlaceholder="Search taxa..."
+            [showClear]="true"></p-dropdown>
+          <small class="error" *ngIf="ctrl('outgroup').touched && ctrl('outgroup').invalid">
+            Outgroup is required.
+          </small>
+        </div>
+
+        <!-- Quartet for window scan analysis -->
+        <div class="field">
+          <label class="block" for="quartet">Choose 4 taxa (must include outgroup)</label>
+          <small class="sub">Quartet for window scan analysis</small>
+
+          <p-multiSelect inputId="quartet" formControlName="quartet" [options]="taxaOptions" optionLabel="label"
+            optionValue="value" [filter]="true" placeholder="Select exactly 4 taxa including the outgroup"
+            [selectionLimit]="4" styleClass="w-full" [filterBy]="'label'" [filterMatchMode]="'contains'"
+            filterPlaceholder="Search taxa..." [showClear]="true"></p-multiSelect>
+
+          <ng-container *ngIf="ctrl('quartet').touched || submitted">
+            <small class="error" *ngIf="quartetMissingOutgroup">Quartet must include the selected outgroup.</small>
+            <small class="error" *ngIf="quartetSizeInvalid">Please select exactly 4 taxa.</small>
+          </ng-container>
+        </div>
+
+        <div class="field">
+          <label class="block" for="blockSize">Block size</label>
+          <small class="sub">Amount of gene trees per block</small>
+          <p-inputnumber formControlName="blockSize" [min]="5" [max]="100" />
+
+          <ng-container *ngIf="ctrl('blockSize').touched || submitted">
+            <small class="error" *ngIf="ctrl('blockSize').invalid">
+              Block size is required (5-100).
+            </small>
+          </ng-container>
+        </div>
+
+        <div class="field">
+          <label class="block" for="maxReticulations">Max reticulations</label>
+          <small class="sub">Maximum number of reticulations to be used in phylonet</small>
+          <p-inputnumber formControlName="maxReticulations" [min]="2" [max]="4" />
+
+          <ng-container *ngIf="ctrl('maxReticulations').touched || submitted">
+            <small class="error" *ngIf="ctrl('maxReticulations').invalid">
+              Max reticulations is required (2-4).
+            </small>
+          </ng-container>
+        </div>
+
+        <div class="actions">
+          <p-button label="Cancel" (onClick)="cancel()" [text]="true" severity="secondary"></p-button>
+          <p-button type="submit" label="Run analysis" [loading]="loading"
+            [disabled]="form.invalid || loading"></p-button>
+          <p-button label="Clear results" (onClick)="clearResults()" [text]="true"
+            *ngIf="!loading && (result || error)"></p-button>
+        </div>
+      </form>
+
+      <!-- Divider -->
+      <div class="v-divider" aria-hidden="true"></div>
+
+      <!-- Right: Results (3/4 width) -->
+      <section class="result-pane">
+        <ng-container *ngIf="loading">
+          <div class="center">
+            <p-progressSpinner styleClass="spinner"></p-progressSpinner>
+            <p>Running analysis…</p>
+            <p>{{ status }}</p>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!loading && error">
+          <div class="error-box">
+            <strong>Error:</strong> {{ error }}
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!loading && !error && result">
+          <h3>Results</h3>
+          <div class="legend">
+            <div class="legend-item">
+              <span class="legend-color" style="background:#999999"></span>
+              T1 — Species tree topology
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background:#1f77b4"></span>
+              T2 — Discordant topology 1
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background:#ff7f0e"></span>
+              T3 — Discordant topology 2
+            </div>
+          </div>
+
+          <app-introgression-visualizer *ngIf="intro" [data]="intro.data"></app-introgression-visualizer>
+          <div *ngIf="phylonetLoading">
+
+            <p>Running PhyloNet analysis…</p>
+            <p>{{ status }}</p>
+          </div>
+          <div *ngIf="phylonetResults">
+            <a [href]="phylonetResults.phyloText" target="download">Download PhyloNet output</a>
+            <h4>PhyloNet Plot</h4>
+            <img height="400px" width="800px" [src]="phylonetResults.phyloPlot" alt="PhyloNet Plot"
+              class="phylo-plot" />
+            <h4>PhyloNet Output</h4>
+            <img height="400px" width="800px" [src]="phylonetResults.phyloIntroPlot" alt="PhyloNet Introgression Plot"
+              class="phylo-plot" />
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!loading && !error && !result">
+          <div class="placeholder">Results will appear here after you run the analysis.</div>
+        </ng-container>
+      </section>
+    </div>
+  </div>
+</div>

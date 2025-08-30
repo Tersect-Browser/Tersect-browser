@@ -27,6 +27,7 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
     if verbose:
         print("Loading %s as %s" % (reference_file, reference_id))
 
+    print(cfg['mongoHost'], cfg)
     client = MongoClient(cfg['mongoHost'])
     chrom_index = client[cfg['dbName']]['chromosomes']
 

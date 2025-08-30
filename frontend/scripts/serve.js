@@ -12,7 +12,7 @@ const argv = yargs.options({
     'host': {
         type: 'string',
         description: 'development server host',
-        default: '127.0.0.1'
+        default: '0.0.0.0'
     },
     'config': {
         alias: 'c',
@@ -34,7 +34,7 @@ const serveCommand = 'ng serve'
   + ' --deployUrl=' + deployUrl
   + ' --port ' + argv.port
   + ' --host=' + argv.host
-  + ' --disable-host-check' 
+  + ' --disable-host-check'
 
 console.log('Running:', serveCommand); // debug
 

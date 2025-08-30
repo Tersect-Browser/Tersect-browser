@@ -16,12 +16,12 @@ const PROXY_CONFIG = [
             url.resolve(baseHref, 'tbapi'),
             url.resolve(baseHref, 'tgrc')
         ],
-            target: `http://0.0.0.0:${devPort}`,
+            target: `http://backend:${devPort}`,
             secure: false,
             changeOrigin: true,      // often helpful for Host header rewriting
             logLevel: 'debug'        // optional: see full proxy logs
 
-    }
+    },
 ];
 
 module.exports = PROXY_CONFIG;

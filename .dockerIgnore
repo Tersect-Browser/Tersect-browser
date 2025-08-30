@@ -1,0 +1,31 @@
+node_modules*.log.git
+# --- big, never needed in builds ---
+test-data/
+gp_data_copy/
+mongo-data/
+db-data/
+**/.venv/
+**/.mamba/
+**/.conda/
+**/__pycache__/
+**/*.pyc
+
+# Node junk
+**/node_modules/
+**/.next/
+**/dist/
+**/build/
+**/.cache/
+**/coverage/
+
+# VCS and IDE
+.git/
+.git-lfs/
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# OS/temporary
+*~
+*.swp

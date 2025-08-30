@@ -6,7 +6,7 @@ from pathlib import Path
 import getopt
 import shutil
 import json
-from Bio import SeqIO
+
 
 def usage():
     print("\nTersectBrowser+: Script to add a new dataset to browser deployment")
@@ -28,6 +28,7 @@ def run_with_retry(command, module_name=None):
     try:
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
+        print(f"Command failed: {e}.")
         if module_name:
             print(f"Command failed: {e}. Trying to load module {module_name} and retry...")
             if try_load_module(module_name):
@@ -40,10 +41,25 @@ def run_with_retry(command, module_name=None):
             print(f"Command failed: {e}. Exiting...")
             sys.exit(1)
 
+def _modules_available():
+    return (
+        shutil.which('modulecmd') or
+        os.path.exists('/etc/profile.d/modules.sh') or
+        os.path.exists('/usr/share/modules/init/bash')
+    )
+
 def try_load_module(module_name):
-    """Try to load a software module using 'module load'."""
+    """Try to load an HPC module if the module system exists."""
+    if not _modules_available():
+        return False
+    # when shell=True, pass a string, and source the init script first
+    cmd = r'''
+      set -e
+      source /etc/profile.d/modules.sh 2>/dev/null || source /usr/share/modules/init/bash
+      module load {}
+    '''.format(module_name)
     try:
-        subprocess.run(["module", "load", module_name], check=True, shell=True, executable='/bin/bash')
+        subprocess.run(cmd, shell=True, executable='/bin/bash', check=True)
         print(f"Module {module_name} loaded.")
         return True
     except subprocess.CalledProcessError:
@@ -52,6 +68,7 @@ def try_load_module(module_name):
 
 def check_install(program_name, module_name):
     """Check if the program is installed, try installing or loading module as a fallback."""
+    print(program_name, module_name)
     try:
         subprocess.run([program_name, "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(f"{program_name} is installed.")
@@ -116,9 +133,9 @@ def decompress_file(file):
     elif file.endswith(".gz"):
         # zipped VCF
         decompressed_file = file[:-3]  # Assuming it ends with '.gz'
-        print(f"Decompressing {file} using gzcat...")
+        print(f"Decompressing {file} using zcat...")
         with open(decompressed_file, 'w') as output_file:
-            subprocess.run(["gzcat", file], stdout=output_file)
+            subprocess.run(["zcat", file], stdout=output_file)
         return decompressed_file, True
 
 def ensure_bgzip_compression(file_path):
@@ -137,7 +154,7 @@ def ensure_bgzip_compression(file_path):
             subprocess.run(["bgzip", "-f", file_path], check=True)
         print(f"BGZIP of {base_name} worked.")
         return base_name + ".gz"
-    return file_path  
+    return file_path
 
 def build_tersect_index(dataset_name, vcf_files):
     """Create Tersect index from VCF files."""
@@ -152,10 +169,10 @@ def ensure_fasta_index(fasta_path):
     fasta_path= decompress_file(fasta_path)[0]
     #fasta_path = ensure_bgzip_compression(fasta_path)  # Ensure fasta is bgzipped if necessary
     fasta_index = fasta_path + ".fai"
-    
+
     if not os.path.exists(fasta_path):
         raise FileNotFoundError(f"Decompressed fasta file {fasta_path} does not exist")
-    
+
     if not os.path.exists(fasta_index):
         print(f"Index for {fasta_path} not found. Creating...")
         run_with_retry(["samtools", "faidx", fasta_path], module_name="SAMtools")
@@ -165,9 +182,9 @@ def ensure_vcf_index(vcf_path):
     """Ensure VCF file is BGZF-compressed and indexed."""
     # Compress with BGZF if needed
     bgzipped_vcf= ensure_bgzip_compression(vcf_path)
-    vcf_index = bgzipped_vcf + ".tbi"
+    # vcf_index = bgzipped_vcf + ".tbi"
     print(f"Indexing {bgzipped_vcf} with tabix...")
-    run_with_retry(["tabix", "-p", "vcf", bgzipped_vcf], module_name="htslib")
+    run_with_retry(["/opt/conda/bin/tabix", "-p", "-f", "vcf", bgzipped_vcf], module_name="tabix")
     return bgzipped_vcf
 
 def write_to_shell_script(dataset_name, reference_path, dataset_path):
@@ -175,7 +192,7 @@ def write_to_shell_script(dataset_name, reference_path, dataset_path):
     Writes the required command to the add_example_dataset.sh script.
     NB: the data.tsi file points to the root dir location
     NB: the reference file should also now be in the root dir location
-    
+
     """
     if not (dataset_name and reference_path and dataset_path):
         print("Required parameters missing for shell script creation.")
@@ -186,7 +203,7 @@ def write_to_shell_script(dataset_name, reference_path, dataset_path):
 SCRIPT="./backend/src/scripts/add_dataset.py"
 CONFIG_FILE="./tbconfig.json"
 DATASET_NAME="{dataset_name}"
-TSI_FILE="{dataset_path}/{dataset_name}.tsi"  
+TSI_FILE="{dataset_path}/{dataset_name}.tsi"
 REFERENCE_NAME="{os.path.relpath(reference_path)}"
 REFERENCE="./{os.path.relpath(reference_path)}"
 
@@ -194,7 +211,7 @@ $SCRIPT $CONFIG_FILE -f \\
 "$DATASET_NAME" "$TSI_FILE" \\
 "$REFERENCE_NAME" \\
 -r $REFERENCE
-"""  
+"""
     # Writing to add_example_dataset.sh file
     shell_script_path = "./add_example_dataset.sh"
     with open(shell_script_path, 'w') as file:
@@ -210,7 +227,8 @@ def copy_files(fasta, gff_file, vcf_files, destination):
     os.makedirs(destination_dir, exist_ok=True)
 
     # Files to copy: FASTA and index
-    fasta_index = os.path.basename(fasta) + ".fai"
+    fasta_index = "/app/gp_data_copy/" + os.path.basename(fasta) + ".fai"
+    print(fasta, fasta_index, 'fasta file paths*****************************')
     shutil.copy2(os.path.basename(fasta), destination_dir)
     if os.path.exists(fasta_index):
         shutil.copy2(fasta_index, destination_dir)
@@ -229,7 +247,8 @@ def copy_files(fasta, gff_file, vcf_files, destination):
     # Files to copy: Only the first two VCF files and their indexes
     vcf_subset = vcf_files[:2]  # Select first two VCF files
     for vcf in vcf_subset:
-        vcf_index = os.path.basename(vcf) + ".tbi"
+        print(vcf, 'vcf file paths*****************************')
+        vcf_index = "/app/gp_data_copy/" + os.path.basename(vcf) + ".tbi"
         shutil.copy2(os.path.basename(vcf), destination_dir)
         if os.path.exists(vcf_index):
             shutil.copy2(vcf_index, destination_dir)
@@ -254,7 +273,7 @@ def add_example_dataset():
     Activates the virtual environment and runs the add_example_dataset.sh script.
     """
     # Path to the external script
-    external_script = "./venv_run.sh"
+    external_script = "./add_example_dataset.sh"
 
     # Ensure the script exists
     if not os.path.exists(external_script):
@@ -269,7 +288,7 @@ def add_example_dataset():
         # Attempt to run the external shell script
         subprocess.run(["bash", external_script], check=True)
         print("Dataset generation completed successfully.")
-  
+
     except subprocess.CalledProcessError as e:
         print(f"Error detected: {e}")
         if "python3" in str(e) or "No such file or directory" in str(e) or "env" in str(e):
@@ -291,14 +310,9 @@ def add_example_dataset():
             sys.exit(1)
 
 def run_command_with_node(version, command):
-    script_path = "./nvm_change.sh"
-
-    if not os.path.exists(script_path):
-        raise FileNotFoundError(f"Script {script_path} not found.")
-
     # Run the shell script with the specified Node.js version and command
     try:
-        subprocess.run(["bash", script_path, version, command], check=True)
+        subprocess.run(["bash", command], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e}")
     except Exception as e:
@@ -316,7 +330,7 @@ def rename_chromosomes_in_gff(gff_path, fasta_index):
     # write the changes to a temporaru file
     with open(gff_path, 'r') as gff_in, open(temp_gff_path, 'w') as gff_out:
         for line in gff_in:
-            if line.startswith('#'): 
+            if line.startswith('#'):
                 gff_out.write(line)  # Write comment lines unchanged
             else:
                 fields = line.split('\t')
@@ -349,7 +363,7 @@ def ensure_gff_index(gff_path, fasta_index):
         print(gff_index)
         if not os.path.exists(gff_index):
             print(f"Index for {gff_path} not found. Creating...")
-            run_with_retry(["tabix", "-p", "gff", gff_path], module_name="htslib")
+            run_with_retry(["/opt/conda/bin/tabix", "-p", "-f", "gff", gff_path], module_name="tabix")
         return(gff_path)
     except subprocess.CalledProcessError as e:
         print(f"Exception during jbrowse sort-gff: {e}")
@@ -375,7 +389,7 @@ def copy_json_tracks(config):
     # Load JSON config
     with open("./config.json", 'r') as json_file:
         config_data = json.load(json_file)
-  
+
     # Extract assemblies and tracks
     assemblies = config_data.get("assemblies", [])
     tracks = config_data.get("tracks", [])
@@ -383,7 +397,7 @@ def copy_json_tracks(config):
     if assemblies:
         # Assume you want to modify the first assembly in the list
         assembly = assemblies[0]
-        
+
         # Modify the assembly information
         new_assembly = {
             "name": assembly.get("name", ""),
@@ -412,7 +426,7 @@ def copy_json_tracks(config):
         ts_assembly_content = "export default " + json.dumps(new_assembly, indent=2) + ";"
 
         # Write to assembly.ts
-        with open("extension/genome-browser/src/app/react-components/assembly.ts", 'w') as assembly_file:
+        with open("extension/tersect-browser-extended/src/app/react-components/assembly.ts", 'w') as assembly_file:
             assembly_file.write(ts_assembly_content)
             print("Assembly data written to assembly.ts")
     else:
@@ -425,7 +439,7 @@ def copy_json_tracks(config):
         for track in tracks:
             # Update track name (remove file extension)
             track["name"] = os.path.splitext(track["name"])[0]
-  
+
             # Update URI locations for gffGzLocation and index location
             if track["type"] == "VariantTrack":
                 adapter = track["adapter"]
@@ -484,7 +498,7 @@ def copy_json_tracks(config):
         json_tracks_content = json.dumps(new_json_tracks, indent=2)
 
         # Write to tracks.ts
-        tracks_file_path = Path("extension/genome-browser/src/app/react-components/tracks.ts")
+        tracks_file_path = Path("extension/tersect-browser-extended/src/app/react-components/tracks.ts")
         tracks_file_path.parent.mkdir(parents=True, exist_ok=True)
         with tracks_file_path.open("w", encoding="utf-8") as tracks_file:
             tracks_file.write(ts_tracks_content)
@@ -501,5 +515,5 @@ def deploy_browser():
     run_command_with_node("16","npm start")
     os.chdir("~/")  # Change to root directory
     subprocess.run(["mongod", "--dbpath", "mongo-data"], check=True)
-    os.chdir("extension/genome-browser/")
+    os.chdir("extension/tersect-browser-extended/")
     run_command_with_node("22", "npm start")

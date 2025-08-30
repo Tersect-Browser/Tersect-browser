@@ -6,7 +6,7 @@
 - [How to load data set](#how-to-load-data-set)
   - [Generating the dataset](#generating-the-dataset)
   - [Loading the dataset](#additional-requirement-for-running-the-browser)
-- [Development server](#development-server)
+- [Running the app with docker](#development-server)
 - [Code scaffolding](#code-scaffolding)
 - [Build](#build)
 - [Running unit tests](#running-unit-tests)
@@ -16,6 +16,8 @@
 ## How to install
 
 Ensure you have nvm installed on your machine and perform the following steps;
+
+Note: On Windows, use [git bash](https://git-scm.com/downloads/win) to follow along.
 
 - Run `nvm use 16` to switch to a compatible node version
 - In the root of the application run `npm install`
@@ -71,7 +73,7 @@ The extension server should be available on port 3200.
 
 ## How to load the dataset
 
-Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). The latest stable version worked fine while building the application.
+Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). MongoDB v8.0 is compatible with this version of TersectBrowser+.
 
 After successful installation, start the MongoDB server by running `mongod`. By default, MongoDB will try to create and store data in a `/data/db` path. 
 There is a tendency that on Mac, this is a read-only path. If that is the case, you may need to use a different path.  `db-data/mongo-data` was used to test the application.
@@ -83,7 +85,7 @@ When your database is up and running, you can start the backend server (However,
 ### Installing Python dependencies
 The python dependencies available in conda are listed in the requirements.txt in `/tersect-browser/backend/src/scripts`
 
-Some dependencies are available with [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) as tersect browser  originally managed its virtual environment with pip related virtual managers like venv.
+Some dependencies are available with [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) as Tersect Browser  originally managed its virtual environment with pip related virtual managers like venv.
 
 These dependencies are present in the requirements.venv.txt in `/tersect-browser/backend/src/scripts`
 
@@ -95,21 +97,23 @@ We are using python 3.11 because numpy has issues when we try to install via pyt
 - Activate the virtual environment
 `source .tersect/bin/activate`
 
-- Install the dependencies in the requirements.venv.txt file, conda channels does not have the version of hashids  needed for tersect cli, therefore tersect dependencies are in requirements.venv.txt
+- Install the dependencies in the requirements.venv.txt file. As conda channels does not have the version of hashids  needed for tersect cli, tersect dependencies are in requirements.venv.txt.
 `pip3 install -r /path/to/requirements.venv.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
 
 - If there are errors during the installation here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
 
 - Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
 
+- Note: It is recommended to install SAMtools manually prior to running the setup scripts. Although the script will try and install all the necessary tools, missing dependencies might cause errors.
+
 
 ### Generating the dataset
 
-To generate the data set, copy the data in the `gp_data_copy` folder on Elvis to your selected database folder. i.e the value of `tbconfig.localDbPath`. 
+A folder exists in the root directory of Elvis called `test-data`, containing the basic necessary files to run the setup scripts to generate the dataset.
 
-To test the setup script quickly, the test dataset at the root of tersect browser repository can be used. copy the TSI file and fasta file from Elvis to that folder.
+To generate the dataset, copy the data in the `test-data` folder on Elvis to your selected database folder. i.e the value of `tbconfig.localDbPath`, as `gp_data_copy` folder. 
 
-The credentials for elvis will be bundled with the submission in a credentials.txt file.
+The credentials for Elvis will be bundled with the submission in a credentials.txt file.
 
 Example `tbconfig.localDbPath` tree looks like this
 ```
@@ -127,7 +131,7 @@ Example `tbconfig.localDbPath` tree looks like this
 ...
 
 ```
-Note: The files on elvis will be more as they contain the processed vcf files and index files needed for the search functionality
+Note: The total number of files in `gp_data_copy` on Elvis will be greater as it contains the processed vcf files and index files needed for the search functionality
 
 At the root of tersect browser, run the `setup_new_tbrowser_dataset.py` script to setup datasets automatically.
 
@@ -182,8 +186,8 @@ E.G
 
 
 
-### Additional Requirement For Running The Browser
-[RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood, git clone the repository, and run make in the root.
+### Additional Requirement For Running The Browser without docker
+[RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood. Git clone the repository, and run make in the root.
 
 NB mac users with M series chip
 Install Rosetta (if not already):
@@ -221,21 +225,30 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 #### Clear angular cache
 In the event that an error message stating an .angular/cache/ file does not exist, this error can be resolved by navigating to `{path-to}/Tersect-browser/extension/genome-browser/.angular/` and running `ng cache clean` to clean the cache
 
-## Development server
+## Running the app with docker
 
-At the root of tersect-browser, run `turbo dev` to start the frontend and backend development server.
+Ensure the location of your dataset (i.e gp_data_copy) matches the location of the volumes specified in the docker-compose.yml file.
 
-Change directory to the genome browser in the extensions folder
+You can run the following commands;
 
-` nvm use 22`;
-` npm start `;
+```
+git clone https://github.com/Tersect-Browser/tersect-browser
+cd tersect-browser
+docker compose pull        # grabs backend, frontend & extension + mongo
+docker compose up 
+```
+If on a machine with no previous database
 
-It should load the extensions on port 3200
+```
+git clone https://github.com/Tersect-Browser/tersect-browser
+cd tersect-browser
+docker compose pull     
+docker compose up -d database
+docker compose up -d db_user_init
+docker compose up -d db_init // after generating the trees and populating the database move the dataset into the database folder as in the gp_data_copy structure above
+docker compose up 
 
-Change the path in the index.html to reference this port in `/tersect-browser/frontend/src/index.html`;
-
-  `<script  type="module" src="http://localhost:3200/main.js"></script>`
-
+```
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
@@ -246,60 +259,7 @@ Run `npm run-script build` to build the frontend and backend application
 
 ## Deployment
 
-- Git checkout to the deployment branch `Chore-Deployment`
-- Configure `tbconfig` to use correct paths and host
-
-EG
-```
-{
-    "serverPort": 4300,
-    "serverHost": // Elvis server host,
-    "vcfLocation": "/gp_data_copy/vcf_location",
-    "tsiPath": // Elvis TSI Path,
-    "datasetName": "SGN_aer_hom_snps",
-    "fileLoadingRoute": "/tbapi/datafiles/",
-    "bcftoolsLocation": Path to bcf tools on elvis,
-    "fastaName": "SL2.50.fa",
-    "frontendHost": // Elvis frontend host,
-    "baseHref": "/TersectBrowserGP/",
-    "mongoHost": "mongodb://localhost:27017",
-    "dbName": "tersect_browser_gp",
-    "localDbPath": // Path to local database folder on elvis,
-    "indexPartitions": [
-        100000000,
-        50000000,
-        25000000,
-        10000000,
-        5000000,
-        1000000
-    ]
-}
-
-```
-
-Change directory to the genome-browser application
-  `cd /tersect-browser/extension/genome-browser `
-
-Switch to a compatible node version
-
-  `nvm use 22`
-
-Trigger a release to NPM
-
-  `npm run release`
-
-Change the path in the index.html to reference this release in `/tersect-browser/frontend/src/index.html`;
-
-  `<script  type="module" src="http://localhost:3200/main.js"></script>`
-
-Change directory to the root of tersect browser
-
-  `cd /tersect-browser/`
-
-Run deployment scripts
-
-  `npm run-script build`
-  `npm run-script deploy`
+Deploy with docker as in the development server section.
 
 ## Running unit tests
 
