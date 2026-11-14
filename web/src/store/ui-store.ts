@@ -3,6 +3,9 @@ import { create } from "zustand"
 import type { PlotPointerEvent } from "@/lib/types"
 
 export interface BarcodeTarget {
+  /** Accession id, as named in the Tersect index. */
+  accession: string
+  /** Display label. */
   accessionName: string
   chromosome: string
   start: number

@@ -3,6 +3,8 @@ from Bio import SeqIO
 import datetime
 from os.path import abspath
 import os
+import re
+import sys
 
 
 # parse tersect output to get dict of variants (original base, alternate base) based on seq position
@@ -187,7 +189,8 @@ if __name__ == "__main__":
         print('Barcode size too large!')
     
     # Load reference genome and window
-    ref = SeqIO.to_dict(SeqIO.parse(args.fasta, "fasta"))[args.chrom].seq
+    # Indexed access (plain or bgzipped FASTA) loads only this chromosome.
+    ref = SeqIO.index(args.fasta, "fasta")[args.chrom].seq
     ref_window = ref[args.start - 1:args.end]  # 1-based inclusive
 
     # Load variant sets
@@ -212,11 +215,14 @@ if __name__ == "__main__":
     print('barcodes generated - now printing to file')
 
     # # find system date and time
-    ct = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    ct = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
     # # create file to hold output results
     try:
-        filename = '_'.join([str(ct), "TB_Barcode_Gen", str(args.accession)]) + '.tsv'
+        # The accession comes from a request: keep only file-name-safe
+        # characters so it cannot point outside the output folder.
+        safe_accession = re.sub(r'[^A-Za-z0-9._-]+', '_', str(args.accession))
+        filename = '_'.join([str(ct), "TB_Barcode_Gen", safe_accession]) + '.tsv'
         print('created file name', filename)
         outputFolder = local_db_path + '/gp_data_copy/barcodes/'
         # outputFolder = '../~/mongo-data/gp_data_copy/barcodes/'
@@ -316,6 +322,10 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"Error with file I/O when writing to file: {e}")
+        sys.exit(1)
+
+    # Last line of output: the backend reads the result file name from it.
+    print(fullPath)
     
 
 

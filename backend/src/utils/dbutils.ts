@@ -14,7 +14,7 @@ import {
 import {
     spawn, ChildProcess
 } from 'node:child_process';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, unlink, writeFile } from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { generateTreeAsync } from '../controllers/generateTree';
@@ -71,7 +71,11 @@ export function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string
 
     merge(progress$, result$).pipe(
         concatMap(update => NewickTree.updateOne(dbQuery, update).exec())
-    ).subscribe(() => { });
+    ).subscribe({
+        // The merged matrix is temporary; remove it once the tree is built.
+        complete: () => { unlink(phylipFile).catch(() => {}); },
+        error: () => { unlink(phylipFile).catch(() => {}); },
+    });
 }
 
 /**

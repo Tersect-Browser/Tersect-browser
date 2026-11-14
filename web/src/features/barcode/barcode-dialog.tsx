@@ -35,7 +35,7 @@ function BarcodeForm({ target }: { target: BarcodeTarget }) {
         throw new Error("No dataset is loaded")
       }
       const response = await generateBarcodes(datasetId, {
-        accessionName: target.accessionName,
+        accessionName: target.accession,
         chrom: target.chromosome,
         start: target.start,
         end: target.end,
@@ -137,7 +137,7 @@ export function BarcodeDialog() {
         </DialogHeader>
         {target && (
           <BarcodeForm
-            key={`${target.accessionName}:${target.start}`}
+            key={`${target.accession}:${target.start}`}
             target={target}
           />
         )}

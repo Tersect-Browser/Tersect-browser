@@ -4,12 +4,10 @@ import * as os from "node:os";
 import * as path from "node:path";
 import pLimit = require("p-limit");
 import { ensureBuildSpeciesTree } from "../utils/dbutils";
-import { Dataset } from "../models/dataset";
 import {
     accessionsKey,
     moveFile,
     randomId,
-    resolveTsiPath,
     runIntrogressionAnalysis,
     runPhylonetAnalysis,
     sanitizeTreeStr,
@@ -19,12 +17,21 @@ import { NewickTree } from "../models/newicktree";
 import { generateTreeAsync } from "../controllers/generateTree";
 import { tbConfig } from "../load-config";
 import { publishSSE, sseKey, subscribeSSE } from "./sse";
+import {
+    accessionsOf,
+    integer,
+    regionOf,
+    ValidationError,
+} from "../utils/validate";
+
+/** Upper limit on gene-tree windows per analysis. */
+const MAX_WINDOWS = 5000;
 
 const introgressionController = async (req, res) => {
     const tmpBase = await mkdtemp(path.join(os.tmpdir(), "introgress-"));
     const windowsDir = path.join(tmpBase, "windows");
     const keyId = randomId();
-    const key = sseKey(req.body.datasetId, keyId);
+    const key = sseKey(req.params.datasetId, keyId);
     const windowsCsvPath = path.join(windowsDir, "windows.csv");
     const speciesTreePath = path.join(tmpBase, "species_tree_astral.tre");
     const cleanup = async () => {
@@ -44,23 +51,48 @@ const introgressionController = async (req, res) => {
     };
 
     try {
-        const {
-            datasetId,
-            chromosome,
-            interval,
-            accessions,
-            wholeAccessions,
-            step = 50000,
-            mu = 7e-9,
-            ne = 1.5e4,
-            blockSize = 50,
-            maxReticulations = 2,
-            outgroup,
-        } = req.body;
-        const dataset = await Dataset.findById(datasetId).exec();
-        if (!dataset)
-            return res.status(404).json({ error: "Dataset not found" });
-        dataset.tsi_location = resolveTsiPath(dataset.tsi_location);
+        // Loaded (and its index path resolved) by the /query/:datasetId
+        // middleware.
+        const dataset = res.locals.dataset;
+        const datasetId: string = dataset._id;
+        const body = req.body ?? {};
+        const mu = body.mu ?? 7e-9;
+        const ne = body.ne ?? 1.5e4;
+
+        // These values are passed to the analysis scripts, so they are
+        // checked against the dataset before anything runs.
+        let chromosome: string, interval: [number, number];
+        let accessions: string[], wholeAccessions: string[], outgroup: string;
+        let step: number, blockSize: number, maxReticulations: number;
+        try {
+            chromosome = body.chromosome;
+            interval = await regionOf(dataset, chromosome, body.interval);
+            accessions = await accessionsOf(dataset, body.accessions,
+                                            "accessions", 4, 4);
+            wholeAccessions = await accessionsOf(dataset, body.wholeAccessions,
+                                                 "wholeAccessions", 4);
+            if (typeof body.outgroup !== "string"
+                || !accessions.includes(body.outgroup)) {
+                throw new ValidationError(
+                    "outgroup must be one of the four accessions");
+            }
+            outgroup = body.outgroup;
+            step = integer(body.step ?? 50000, "step", 1000, 100_000_000);
+            blockSize = integer(body.blockSize ?? 50, "blockSize", 2, 1000);
+            maxReticulations = integer(body.maxReticulations ?? 2,
+                                       "maxReticulations", 1, 5);
+            if ((interval[1] - interval[0]) / step > MAX_WINDOWS) {
+                throw new ValidationError(
+                    `The interval would need more than ${MAX_WINDOWS} windows; `
+                    + "use a larger step or a smaller interval");
+            }
+        } catch (error) {
+            await cleanup();
+            if (error instanceof ValidationError) {
+                return res.status(400).json({ error: error.message });
+            }
+            throw error;
+        }
 
         res.status(202).json({ datasetId, accKey: key });
         const runPipeline = async () => {

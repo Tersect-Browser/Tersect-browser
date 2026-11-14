@@ -156,6 +156,7 @@ export function PlotContextMenu() {
                   const chromosome = usePlotStore.getState().chromosome
                   if (chromosome) {
                     setBarcodeTarget({
+                      accession: target.accession,
                       accessionName: target.accessionLabel,
                       chromosome: chromosome.name,
                       start: target.startPosition,

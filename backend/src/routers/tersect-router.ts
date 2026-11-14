@@ -1,5 +1,4 @@
 import {
-    exec,
     spawn,
     execFile
 } from 'node:child_process';
@@ -29,18 +28,23 @@ import { ChromosomeIndex } from '../models/chromosomeindex';
 import { Dataset, DatasetPublic } from '../models/dataset';
 import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
-import { formatRegion, resolveTsiPath, writeAccessions } from '../utils/utils';
+import { formatRegion, resolveTsiPath, runCommand, writeAccessions } from '../utils/utils';
+import {
+    accessionOf,
+    accessionsOf,
+    datasetSamples,
+    identifier,
+    integer,
+    oneOf,
+    regionOf,
+    ValidationError
+} from '../utils/validate';
 import { collectSampleNames, Pool, processKeys } from '../utils/pool';
 import introgressionController from './introgression-router';
 import { generateTree } from '../controllers/generateTree';
 import { subscribeSSE, unsubscribeSSE } from './sse';
 
-// Per-chromosome variant indices built by build_annotate_per_chrom.sh
-const DATA_DIR = path.join(tbConfig.localDbPath, 'gp_data_copy', 'trix_indices');
 
-function isValidChrom(chr: string): boolean {
-    return /^SL2\.50ch(0[0-9]|1[0-2])$/.test(chr);
-}
 
 
 
@@ -72,6 +76,12 @@ async function findFileRecursive(dir, targetFileName) {
 
     return null;
 }
+
+/** snpEff impact levels accepted by the variant search. */
+const IMPACT_LEVELS = ['HIGH', 'MODERATE', 'LOW', 'MODIFIER'] as const;
+
+// Per-chromosome variant indices built by build_annotate_per_chrom.sh
+const DATA_DIR = path.join(tbConfig.localDbPath, 'gp_data_copy', 'trix_indices');
 
 export const router = Router();
 
@@ -178,24 +188,14 @@ router.get('/datafiles/:filename', async (req, res) => {
 
 
 router.route('/query/:datasetId/samples')
-    .get((req, res) => {
-        const options = {
-            maxBuffer: 5 * 1024 * 1024 // 5 megabytes
-        };
-        const tsiLocation = res.locals.dataset.tsi_location;
-        const tersectCommand = `tersect samples -n "${tsiLocation}"`;
-        exec(tersectCommand, options, (err, stdout, stderr) => {
-            if (err) {
-                console.error('Error executing tersect samples:', err);
-                res.status(500).json(err);
-            } else if (stderr) {
-                res.json(stderr);
-            } else {
-                // Strip the last, empty element
-                const samples = stdout.split('\n').slice(0, -1);
-                res.json(samples);
-            }
-        });
+    .get(async (req, res) => {
+        try {
+            const samples = await datasetSamples(res.locals.dataset.tsi_location);
+            res.json([...samples]);
+        } catch (err) {
+            console.error('Error executing tersect samples:', err);
+            res.status(500).send('Accessions could not be retrieved');
+        }
     });
 
 
@@ -203,17 +203,23 @@ router.route(
   '/query/:datasetId/variants/:chrom').get(async (req, res, next) => {
     try {
       /* ───────── 0. Params & validation ───────── */
+      // These end up in a bcftools filter expression, so only known values
+      // are accepted.
+      const dataset = res.locals.dataset;
       const chrom   = req.params.chrom;
-      const start   = Number(req.query.start);
-      const end     = Number(req.query.end);
-      const filter  = (req.query?.filter ?? 'HIGH') as string;
-      const gene  = req.query?.term as string | undefined;
-      const tsiPath = res.locals.dataset.tsi_location;
-
-      if (!isValidChrom(chrom))
-        return res.status(400).json({ error: 'invalid chromosome' });
-      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < start)
-        return res.status(400).json({ error: 'invalid start/end' });
+      let start: number, end: number, filter: string, gene: string | undefined;
+      try {
+        [start, end] = await regionOf(dataset, chrom,
+                                      [req.query.start, req.query.end]);
+        filter = oneOf(req.query.filter ?? 'HIGH', 'filter', IMPACT_LEVELS);
+        gene = req.query.term ? identifier(req.query.term, 'term') : undefined;
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          return res.status(400).json({ error: error.message });
+        }
+        throw error;
+      }
+      const tsiPath = dataset.tsi_location;
 
       const vcfPath = path.join(DATA_DIR, 'all_samples.vcf.gz');
       if (!fs.existsSync(vcfPath))
@@ -347,63 +353,48 @@ router.route('/query/:datasetId/gaps/:chromosome')
     });
 
 router.route('/query/:datasetId/dist')
-    .post((req, res) => {
+    .post(async (req, res) => {
+        const dataset = res.locals.dataset;
+        const query: DistanceBinQuery = req.body ?? {};
+        let accFile: string | undefined;
         try {
+            const [start, end] = await regionOf(dataset, query.chromosome_name,
+                                                query.interval);
+            const reference = await accessionOf(dataset, query.reference,
+                                                'reference');
+            const accessions = await accessionsOf(dataset, query.accessions);
+            const binsize = integer(query.binsize, 'binsize', 1, 100_000_000);
 
-            const options = {
-                maxBuffer: 200 * 1024 * 1024 // 200 megabytes
-            };
+            accFile = await writeAccessions(accessions);
+            const stdout = await runCommand('tersect', [
+                'dist', '-j', dataset.tsi_location,
+                '-a', reference,
+                '--b-list-file', accFile,
+                formatRegion(query.chromosome_name, start, end),
+                '-B', String(binsize),
+            ], { maxBuffer: 200 * 1024 * 1024 });
 
-            const tsiLocation = res.locals.dataset.tsi_location;
-            const distBinQuery: DistanceBinQuery = req.body;
-
-            const region = formatRegion(distBinQuery.chromosome_name,
-                distBinQuery.interval[0],
-                distBinQuery.interval[1]);
-
-            const reference = distBinQuery.reference;
-            const binsize = distBinQuery.binsize;
-
-            writeAccessions(distBinQuery.accessions).then(accFile => {
-                const tersectCommand = `tersect dist -j ${tsiLocation} \
--a "${reference}" --b-list-file ${accFile} ${region} -B ${binsize}`;
-
-console.log(tersectCommand, 'Tersect command');
-
-                const output: DistanceBins = {
-                    query: distBinQuery,
-                    bins: {}
-                };
-                try {
-                    exec(tersectCommand, options, (err, stdout, stderr) => {
-                        fs.promises.unlink(accFile).catch(() => {});
-                        if (err) {
-                            res.json(err);
-                        } else if (stderr) {
-                            res.json(stderr);
-                        } else {
-                            const tersectOutput = JSON.parse(stdout);
-                            const accessions = tersectOutput['columns'];
-                            accessions.forEach((accessionName: string) => {
-                                output.bins[accessionName] = [];
-                            });
-                            tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
-                                binMatrix[0].forEach((dist: number, i: number) => {
-                                    output.bins[accessions[i]].push(dist);
-                                });
-                            });
-                            res.json(output);
-                        }
-                    });
-                } catch (error) {
-
-                }
-
+            const tersectOutput = JSON.parse(stdout);
+            const columns: string[] = tersectOutput['columns'];
+            const output: DistanceBins = { query, bins: {} };
+            columns.forEach(accession => { output.bins[accession] = []; });
+            tersectOutput['matrix'].forEach((binMatrix: number[][]) => {
+                binMatrix[0].forEach((dist: number, i: number) => {
+                    output.bins[columns[i]].push(dist);
+                });
             });
+            res.json(output);
         } catch (error) {
-            console.log(error);
-            res.status(500).send('Error processing request');
-
+            if (error instanceof ValidationError) {
+                res.status(400).send(error.message);
+            } else {
+                console.error('Distance calculation failed:', error);
+                res.status(500).send('Distances could not be calculated');
+            }
+        } finally {
+            if (accFile) {
+                fs.promises.unlink(accFile).catch(() => {});
+            }
         }
     });
 
@@ -471,8 +462,11 @@ router.route('/views/export')
 router.route('/query/:datasetId/tree')
     .post(async (req, res) => {
         try {
-            const tsiLocation = res.locals.dataset.tsi_location;
-            const treeQuery: TreeQuery = req.body;
+            const dataset = res.locals.dataset;
+            const tsiLocation = dataset.tsi_location;
+            const treeQuery: TreeQuery = req.body ?? {};
+            await regionOf(dataset, treeQuery.chromosomeName, treeQuery.interval);
+            await accessionsOf(dataset, treeQuery.accessions);
             const dbQuery: TreeDatabaseQuery = {
                 datasetId: req.params.datasetId,
                 'query.chromosomeName': treeQuery.chromosomeName,
@@ -508,6 +502,9 @@ router.route('/query/:datasetId/tree')
             });
             res.json(phyloTree);
         } catch (error) {
+            if (error instanceof ValidationError) {
+                return res.status(400).send(error.message);
+            }
             console.log('Error creating tree');
             console.log(error);
             res.status(500).send('Tree creation failed');
@@ -516,41 +513,49 @@ router.route('/query/:datasetId/tree')
 
     });
 
-router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
-    try{
-        console.log('Barcode scripts added')
-    const { accessionName, chrom, start, end, size, maxVar } = req.body;
-
-    // define path to tsi and fasta
-    const tsiLocation = res.locals.dataset.tsi_location;
-    const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/${tbConfig.fastaName}`;
-
-
-    const args = [accessionName, chrom, start, end, size, maxVar, fasta_file, tsiLocation, tbConfig.localDbPath];
-
-    const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
-
-    execFile(scriptPath, args, (error, stdout, stderr) => {
-        if (error) {
-          console.error('Shell script error:', error);
-          return res.status(500).send('Error running barcode script!');
-        }
-
-        const outputFile = stdout.trim();
-        const filename = path.basename(outputFile); // just the filename
-
-        console.log('outputpath', outputFile);
-
-
-        const downloadableURL = `${tbConfig.serverHost}/datafiles/barcodes/${filename}`
-        res.json({downloadableURL})
-
-      });
+router.route('/query/:datasetId/generate-barcodes').post(async (req, res) => {
+    const dataset = res.locals.dataset;
+    const body = req.body ?? {};
+    let args: string[];
+    try {
+        const accession = await accessionOf(dataset, body.accessionName);
+        const [start, end] = await regionOf(dataset, body.chrom,
+                                            [body.start, body.end]);
+        const size = integer(body.size, 'size', 10, 1000);
+        const maxVar = body.maxVar === null || body.maxVar === undefined
+            ? 'null' : String(integer(body.maxVar, 'maxVar', 0, 1000));
+        // The dataset's reference prepared by prepare_genome_browser.py,
+        // otherwise the reference named in tbconfig.json.
+        const datasetReference = path.join(
+            tbConfig.localDbPath, 'gp_data_copy', 'genomes',
+            String(dataset._id).replace(/[^A-Za-z0-9._-]+/g, '_'),
+            'reference.fa.gz');
+        const fastaFile = fs.existsSync(datasetReference)
+            ? datasetReference
+            : path.join(tbConfig.localDbPath, 'gp_data_copy', tbConfig.fastaName);
+        args = [accession, body.chrom, String(start), String(end),
+                String(size), maxVar, fastaFile, dataset.tsi_location,
+                tbConfig.localDbPath];
     } catch (error) {
-        console.log(error)
-        res.status(500).json(error)
+        if (error instanceof ValidationError) {
+            return res.status(400).send(error.message);
+        }
+        console.error(error);
+        return res.status(500).send('Error running barcode script!');
     }
 
+    const scriptPath = path.join(__dirname, '../scripts/barcode_finder.sh');
+    execFile(scriptPath, args, (error, stdout) => {
+        if (error) {
+            console.error('Shell script error:', error);
+            return res.status(500).send('Error running barcode script!');
+        }
+        // The script reports the output file on its last line.
+        const lines = stdout.trim().split('\n');
+        const filename = path.basename(lines[lines.length - 1].trim());
+        const downloadableURL = `${tbConfig.serverHost}/datafiles/barcodes/${encodeURIComponent(filename)}`;
+        res.json({ downloadableURL });
+    });
 });
 
 

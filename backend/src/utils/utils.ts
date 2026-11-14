@@ -1,6 +1,6 @@
 
 import {
-    exec,
+    execFile,
     spawn,
 } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
@@ -46,17 +46,46 @@ export function formatRegion(chromosomeName: string,
 }
 
 
-export function execPromise(command: string, options = {}) {
+/**
+ * Run a program with an argument list and resolve with its standard output.
+ * No shell is involved, so arguments are never interpreted: always use this
+ * (or spawn/execFile) rather than building a command string.
+ */
+export function runCommand(command: string, args: string[],
+                           options: { maxBuffer?: number } = {}): Promise<string> {
     return new Promise((resolve, reject) => {
-        exec(command, options, (error, stdout, stderr) => {
+        execFile(command, args, {
+            maxBuffer: options.maxBuffer ?? 10 * 1024 * 1024,
+        }, (error, stdout, stderr) => {
             if (error) {
-                reject(error);
-                return;
-            } else if (stderr) {
-                reject(stderr);
+                reject(new Error(`${command} failed: ${stderr || error.message}`));
                 return;
             }
             resolve(stdout);
+        });
+    });
+}
+
+/**
+ * Run a program with an argument list, writing its standard output to a
+ * file (the safe equivalent of `command args > file`).
+ */
+export function runCommandToFile(command: string, args: string[],
+                                 outputFile: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const out = fs.createWriteStream(outputFile);
+        const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+        let stderr = '';
+        child.stderr.on('data', (chunk) => { stderr += chunk; });
+        child.stdout.pipe(out);
+        child.on('error', reject);
+        child.on('close', (code) => {
+            out.close();
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(new Error(`${command} exited with ${code}: ${stderr.trim()}`));
+            }
         });
     });
 }
