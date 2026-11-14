@@ -1,0 +1,33 @@
+# Dataset pipeline: builds datasets from manifests (pipeline/README.md).
+#
+# Unlike tersect-base this has no analysis toolchain (Julia, R, PhyloNet), so
+# it builds for the host architecture and runs natively on Apple Silicon.
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake git flex bison curl bzip2 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+# Tersect
+RUN git clone https://github.com/tomkurowski/tersect.git /tmp/tersect \
+ && mkdir /tmp/tersect/build && cd /tmp/tersect/build \
+ && cmake .. -DCMAKE_C_FLAGS="-fcommon" && make -j"$(nproc)" && make install \
+ && rm -rf /tmp/tersect
+
+# bcftools, htslib, samtools, snpEff, Snakemake and the Python libraries
+ARG MAMBA_VERSION=2.0.5
+ARG TARGETARCH
+ENV MAMBA_ROOT_PREFIX=/opt/conda
+RUN case "${TARGETARCH:-amd64}" in arm64) platform=linux-aarch64 ;; *) platform=linux-64 ;; esac \
+ && curl -fsSL "https://micro.mamba.pm/api/micromamba/${platform}/${MAMBA_VERSION}" \
+  | tar -xj -C /usr/local/bin --strip-components=1 bin/micromamba
+COPY pipeline/environment.yml /tmp/environment.yml
+RUN micromamba create -y -n pipeline -f /tmp/environment.yml && micromamba clean -a -y
+ENV PATH="/opt/conda/envs/pipeline/bin:${PATH}"
+
+RUN printf '%s\n' '#!/bin/sh' 'PYTHONPATH=/app/pipeline exec python -m tbpipeline.cli "$@"' \
+    > /usr/local/bin/tb-dataset && chmod +x /usr/local/bin/tb-dataset
+
+# The repository is bind-mounted here (docker-compose.yml).
+WORKDIR /app
+ENTRYPOINT ["tb-dataset"]

@@ -6,6 +6,7 @@ import type {
   DatasetPublic,
   DistanceBinQuery,
   DistanceBins,
+  GeneMatch,
   NewickTree,
   SequenceInterval,
   TreeQuery,
@@ -200,4 +201,32 @@ export async function getTgrcGeneAlleles(
     }
   }
   return output
+}
+
+/** Genes whose id, name or description contains `term`. */
+export function searchGenes(
+  datasetId: string,
+  term: string,
+  chromosome?: string,
+  signal?: AbortSignal
+) {
+  const params = new URLSearchParams({ q: term })
+  if (chromosome) {
+    params.set("chrom", chromosome)
+  }
+  return request<GeneMatch[]>(`${dataset(datasetId)}/genes?${params}`, {
+    signal,
+  })
+}
+
+/** Variants affecting a gene, optionally with an effect of one impact level. */
+export function searchVariantsInGene(
+  datasetId: string,
+  gene: string,
+  impact?: string
+) {
+  const params = new URLSearchParams(impact ? { filter: impact } : {})
+  return request<VariantSearchResult>(
+    `${dataset(datasetId)}/genes/${encodeURIComponent(gene)}/variants?${params}`
+  )
 }

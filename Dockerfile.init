@@ -1,9 +1,0 @@
-# One-shot job that registers a dataset and prepares its genome browser files.
-# Uses the same toolchain as the backend (tersect, htslib, samtools, Python).
-# The repository is bind-mounted at /app, see docker-compose.yml.
-FROM tersect-base
-
-COPY init-entrypoint.sh /usr/local/bin/init-entrypoint.sh
-RUN chmod +x /usr/local/bin/init-entrypoint.sh
-
-ENTRYPOINT ["/usr/local/bin/init-entrypoint.sh"]

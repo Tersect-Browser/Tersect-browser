@@ -1,0 +1,71 @@
+# Tomato resequencing panel (Aflitos et al., 2014, The Plant Journal 80:136-148,
+# https://doi.org/10.1111/tpj.12616), SL2.50 VCFs from the Sol Genomics Network.
+#
+# Eight of the 84 accessions, including the quartet used to validate the
+# introgression scan (S. pimpinellifolium LYC2798 into Moneymaker LA2706 and
+# AllRound LYC1365, chromosome 6, with LYC2740 as outgroup). Add more samples
+# below and rebuild; see tomato-sl250-accessions.tsv for the RF number of each.
+#
+# Build:  ./scripts/dataset build datasets/tomato-sl250.yaml
+
+id: Tomato SL2.50 (Aflitos 2014)
+description: >-
+  Resequenced tomato accessions and wild relatives (Aflitos et al., 2014),
+  aligned to the Heinz 1706 SL2.50 assembly and annotated with ITAG2.4.
+
+reference:
+  id: SL2.50
+  fasta: https://solgenomics.net/ftp/tomato_genome/assembly/build_2.50/S_lycopersicum_chromosomes.2.50.fa.gz
+  gff: https://solgenomics.net/ftp/tomato_genome/annotation/ITAG2.4_release/ITAG2.4_gene_models.gff3.gz
+  # SL2.50ch00 holds unplaced scaffolds; leave it out of the browser.
+  chromosomes: [SL2.50ch01, SL2.50ch02, SL2.50ch03, SL2.50ch04, SL2.50ch05,
+                SL2.50ch06, SL2.50ch07, SL2.50ch08, SL2.50ch09, SL2.50ch10,
+                SL2.50ch11, SL2.50ch12]
+
+# Variant effects. "build" builds a snpEff database from the FASTA and GFF
+# above; alternatively give the name of a prebuilt snpEff database, or "none"
+# to skip annotation (variant search then has no effects or genes).
+annotation:
+  snpeff: build
+
+# Distance index (Tersect). The original tomato browser used homozygous SNPs.
+tersect:
+  homozygous: true
+  types: snps
+
+# One entry per accession. `vcf` is a path (relative to this file) or URL;
+# `vcf_sample` selects a sample from a multi-sample VCF (default: the first).
+# Names may contain letters, digits, '.', '_' and '-'.
+samples:
+  - name: S_lyc_LA2706
+    label: S.lyc LA2706 (Moneymaker)
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz
+  - name: S_lyc_LA2838A
+    label: S.lyc LA2838A
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_002_SZAXPI009284-57.vcf.gz.snpeff.vcf.gz
+  - name: S_lyc_LA1090
+    label: S.lyc LA1090
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_004_SZAXPI009286-74.vcf.gz.snpeff.vcf.gz
+  - name: S_lyc_EA00488
+    label: S.lyc EA00488
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_006_SZAXPI009288-79.vcf.gz.snpeff.vcf.gz
+  - name: S_lyc_EA00371
+    label: S.lyc EA00371
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_008_SZAXPI009290-87.vcf.gz.snpeff.vcf.gz
+  - name: S_lyc_LYC1365
+    label: S.lyc LYC1365 (AllRound)
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_011_SZAXPI009291-88.vcf.gz.snpeff.vcf.gz
+  - name: S_pim_LYC2798
+    label: S.pim LYC2798
+    group: S. pimpinellifolium
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_044_SZAXPI009323-108.vcf.gz.snpeff.vcf.gz
+  - name: S_lyc_LYC2740
+    label: S.lyc LYC2740
+    group: S. lycopersicum
+    vcf: https://solgenomics.net/ftp/genomes/tomato_150/150_VCFs_2.50/RF_045_SZAXPI009324-109.vcf.gz.snpeff.vcf.gz

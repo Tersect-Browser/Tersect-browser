@@ -619,7 +619,7 @@
     "@jbrowse/quick-lru" "^8.0.0"
     generic-filehandle2 "^2.5.1"
 
-"@gmod/trix@^3.0.12", "@gmod/trix@^3.2.2":
+"@gmod/trix@^3.0.12":
   version "3.2.2"
   resolved "https://registry.npmjs.org/@gmod/trix/-/trix-3.2.2.tgz"
   integrity sha512-67P4zyE5UAs9sh1oO5T4dgdgua0FvvgMZ/DnxF8htK1IfsQldWMrsK6rO8ctwafGpQe1d0PHr2t2jY0FTAAImQ==

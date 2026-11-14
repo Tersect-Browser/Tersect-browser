@@ -52,6 +52,9 @@ export interface DatasetPublic {
   dataset_id: string
   view_id: string
   reference: string
+  description?: string
+  /** Built from VCF files: variant and gene search are available. */
+  variant_search?: boolean
 }
 
 export type AccessionDisplayStyle = "labels" | "tree_simple" | "tree_linear"
@@ -123,19 +126,44 @@ export interface PlotPointerEvent {
   target: PlotTarget
 }
 
+export interface VariantEffect {
+  effect: string
+  impact: string
+  gene: string
+  feature: string
+  hgvs_c: string
+  hgvs_p: string
+}
+
 export interface Variant {
   chr: string
   pos: { start: number }
   ref: string
   alt: string
+  /** Effects as "effect(IMPACT|gene)" entries. */
   eff: string
+  effects?: VariantEffect[]
   accessions: string[]
+  /** Alternative allele count per accession (1 het, 2 hom). */
+  dosage?: number[]
 }
 
 export interface VariantSearchResult {
   region: string
   filter: string
+  /** Variants returned (at most a few thousand)... */
   count: number
+  /** ...of this many matching. */
+  total?: number
   variants: Variant[]
   totalAccessions: string[]
+}
+
+export interface GeneMatch {
+  gene_id: string
+  name: string
+  chrom: string
+  start: number
+  end: number
+  description: string
 }

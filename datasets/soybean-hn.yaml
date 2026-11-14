@@ -1,0 +1,15 @@
+# Soybean accessions bundled with the repository as a Tersect index only.
+# Without VCF files there is no variant search; the distance plot, trees,
+# introgression scan and genome browser work.
+#
+# Build:  ./scripts/dataset build datasets/soybean-hn.yaml
+
+id: Soybean (HN)
+description: Soybean accessions on the Williams 82 a2 assembly.
+
+reference:
+  id: Wm82.a2
+  fasta: https://data.legumeinfo.org/Glycine/max/genomes/Wm82.gnm2.DTC4/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
+  gff: https://data.legumeinfo.org/Glycine/max/annotations/Wm82.gnm2.ann1.RVB6/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
+
+index: ../HN-Soybean-data.tsi

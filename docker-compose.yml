@@ -1,12 +1,13 @@
 # Tersect Browser development stack.
 #
-#   ./start_all.sh                 build everything, seed the database, start
+#   ./start_all.sh                 build everything, build datasets, start
 #   docker compose up -d           start again later
 #
 # Open http://localhost:4200/TersectBrowserGP/
 #
-# Data lives in ./test-data (gitignored): the database in test-data/docker-db,
-# dataset files in test-data/mongo-data. The repository is bind-mounted at
+# Data lives in ./test-data (gitignored): MongoDB in test-data/docker-db,
+# ClickHouse in test-data/clickhouse, dataset files in test-data/mongo-data.
+# Datasets are built with ./scripts/dataset (pipeline/README.md). The repository is bind-mounted at
 # /app, so backend and frontend source changes apply without rebuilding.
 
 x-app-env: &app-env
@@ -15,9 +16,11 @@ x-app-env: &app-env
   TB_DB_NAME: tersect_browser_gp
   TB_LOCAL_DB_PATH: /app/test-data/mongo-data
   TB_SERVER_HOST: http://localhost:4300/TersectBrowserGP
+  TB_CLICKHOUSE_HOST: clickhouse
+  TB_CLICKHOUSE_PORT: "8123"
 
 services:
-  # Shared toolchain image, used by backend and db_init. Built by start_all.sh.
+  # Analysis toolchain image the backend is built on. Built by start_all.sh.
   tersect-base:
     image: tersect-base:latest
     platform: linux/amd64
@@ -76,36 +79,63 @@ services:
           print("User already exists");
         }
     restart: "no"
-    profiles: ["init"]
+    profiles: ["init", "pipeline"]
     networks: [app-net]
 
-  # One-shot: register a dataset. Defaults to the soybean data bundled with
-  # the repository; its reference and gene models are downloaded on first run.
-  db_init:
-    image: tersect-browser-init:latest
-    platform: linux/amd64
+  # Variant search store (clickhouse/schema.sql). The schema and a read-only
+  # user for the backend are created on first start.
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: tersect
+      CLICKHOUSE_USER: tersect_admin
+      CLICKHOUSE_PASSWORD: tersect_admin
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      CLICKHOUSE_READER_USER: tersect_reader
+      CLICKHOUSE_READER_PASSWORD: tersect_reader
+    volumes:
+      - ./test-data/clickhouse:/var/lib/clickhouse
+      - ./clickhouse/schema.sql:/schema/schema.sql:ro
+      - ./clickhouse/users.sh:/docker-entrypoint-initdb.d/01-users.sh:ro
+    ports:
+      # Host access for debugging only (HTTP interface).
+      - "127.0.0.1:8123:8123"
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "tersect_admin",
+             "--password", "tersect_admin", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks: [app-net]
+
+  # Dataset pipeline (pipeline/README.md). Run with scripts/dataset, e.g.
+  #   ./scripts/dataset build datasets/tomato-sl250.yaml
+  # Manifests may point at files under /app (this repository) or under
+  # /data, which is TB_DATA_DIR on the host (default ./test-data/datasets).
+  pipeline:
+    image: tersect-pipeline:latest
     build:
       context: .
-      dockerfile: Dockerfile.init
+      dockerfile: Dockerfile.pipeline
     environment:
       <<: *app-env
-      DATASET_ID: "Soybean (HN)"
-      DATASET_TSI: /app/HN-Soybean-data.tsi
-      REFERENCE_ID: Wm82.a2
-      REFERENCE_FASTA: /app/test-data/downloads/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
-      REFERENCE_FASTA_URL: https://data.legumeinfo.org/Glycine/max/genomes/Wm82.gnm2.DTC4/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
-      GENE_MODELS: /app/test-data/downloads/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
-      GENE_MODELS_URL: https://data.legumeinfo.org/Glycine/max/annotations/Wm82.gnm2.ann1.RVB6/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
-      VARIANTS: tsi
+      TB_CLICKHOUSE_USER: tersect_admin
+      TB_CLICKHOUSE_PASSWORD: tersect_admin
     volumes:
       - ./:/app
+      - ${TB_DATA_DIR:-./test-data/datasets}:/data:ro
     depends_on:
       database:
+        condition: service_healthy
+      clickhouse:
         condition: service_healthy
       db_user_init:
         condition: service_completed_successfully
     restart: "no"
-    profiles: ["init"]
+    profiles: ["pipeline"]
     networks: [app-net]
 
   backend:
@@ -116,6 +146,8 @@ services:
       dockerfile: Dockerfile
     environment:
       <<: *app-env
+      TB_CLICKHOUSE_USER: tersect_reader
+      TB_CLICKHOUSE_PASSWORD: tersect_reader
     ports:
       - "4300:4300"
     volumes:
@@ -124,6 +156,8 @@ services:
       - /app/backend/node_modules
     depends_on:
       database:
+        condition: service_healthy
+      clickhouse:
         condition: service_healthy
     restart: unless-stopped
     networks: [app-net]

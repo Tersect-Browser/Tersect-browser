@@ -1,0 +1,21 @@
+# Toolchain for the dataset pipeline (Dockerfile.pipeline).
+name: pipeline
+channels:
+  - conda-forge
+  - bioconda
+channel_priority: strict
+
+dependencies:
+  - python=3.12
+  - snakemake-minimal=9.27
+  - bcftools=1.25
+  - htslib=1.25          # bgzip, tabix
+  - samtools=1.25
+  - snpeff=5.4.0c         # brings its own Java runtime
+  - pyarrow=26.*
+  - clickhouse-connect=1.12.*
+  - pymongo=4.10.*
+  - pyyaml=6.*
+  - numpy=2.*            # merge_phylip.py, used by the distance index
+  - biopython=1.85       # reference gaps
+  - hashids=1.3.*

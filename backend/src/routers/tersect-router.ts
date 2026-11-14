@@ -1,8 +1,6 @@
 import {
-    spawn,
     execFile
 } from 'node:child_process';
-import * as readline from 'node:readline';
 
 import {
     Request,
@@ -32,6 +30,7 @@ import { formatRegion, resolveTsiPath, runCommand, writeAccessions } from '../ut
 import {
     accessionOf,
     accessionsOf,
+    chromosomeOf,
     datasetSamples,
     identifier,
     integer,
@@ -39,7 +38,12 @@ import {
     regionOf,
     ValidationError
 } from '../utils/validate';
-import { collectSampleNames, Pool, processKeys } from '../utils/pool';
+import {
+    IMPACT_LEVELS,
+    searchGenes,
+    variantsInGene,
+    variantsInInterval
+} from '../utils/variant-store';
 import introgressionController from './introgression-router';
 import { generateTree } from '../controllers/generateTree';
 import { subscribeSSE, unsubscribeSSE } from './sse';
@@ -76,12 +80,6 @@ async function findFileRecursive(dir, targetFileName) {
 
     return null;
 }
-
-/** snpEff impact levels accepted by the variant search. */
-const IMPACT_LEVELS = ['HIGH', 'MODERATE', 'LOW', 'MODIFIER'] as const;
-
-// Per-chromosome variant indices built by build_annotate_per_chrom.sh
-const DATA_DIR = path.join(tbConfig.localDbPath, 'gp_data_copy', 'trix_indices');
 
 export const router = Router();
 
@@ -199,124 +197,61 @@ router.route('/query/:datasetId/samples')
     });
 
 
-router.route(
-  '/query/:datasetId/variants/:chrom').get(async (req, res, next) => {
-    try {
-      /* ───────── 0. Params & validation ───────── */
-      // These end up in a bcftools filter expression, so only known values
-      // are accepted.
-      const dataset = res.locals.dataset;
-      const chrom   = req.params.chrom;
-      let start: number, end: number, filter: string, gene: string | undefined;
-      try {
-        [start, end] = await regionOf(dataset, chrom,
-                                      [req.query.start, req.query.end]);
-        filter = oneOf(req.query.filter ?? 'HIGH', 'filter', IMPACT_LEVELS);
-        gene = req.query.term ? identifier(req.query.term, 'term') : undefined;
-      } catch (error) {
-        if (error instanceof ValidationError) {
-          return res.status(400).json({ error: error.message });
-        }
-        throw error;
-      }
-      const tsiPath = dataset.tsi_location;
-
-      const vcfPath = path.join(DATA_DIR, 'all_samples.vcf.gz');
-      if (!fs.existsSync(vcfPath))
-        return res.status(404).json({ error: 'VCF not found' });
-
-      /* ───────── 1. Run bcftools ───────── */
-      const region   = `${chrom}:${start}-${end}`;
-
-       const withGene = (gene: string, filter: string) => {
-          const expression = `INFO/EFF~"${gene}" && INFO/EFF~"${filter}"`;
-        return spawn('bcftools', [
-            'query',
-            '-i', expression,
-            '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
-            vcfPath,
-        ]);
-        };
-
-      const withoutGene =(filter:string) => {
-        return spawn('bcftools', [
-        'query',
-        '-i', `INFO/EFF~"${filter}"`,
-        '-r', region,
-        '-f', '%CHROM:%POS:%REF:%ALT\t%INFO/EFF\n',
-        vcfPath,
-      ]);
-      }
-      const bcftools = gene ? withGene(gene, filter): withoutGene(filter);
-
-
-      bcftools.stderr.on('data', b =>
-        console.error('[bcftools]', b.toString().trim())
-      );
-
-      bcftools.on('close', (code) => {
-        if (code !== 0) {
-            console.error(`[bcftools] exited with code ${code}`);
-        }
-        });
-
-      /* ───────── 2. Collect output ───────── */
-      const lines: { key: string; eff: string }[] = [];
-      const keys  = new Set<string>();
-      const rl = readline.createInterface({ input: bcftools.stdout });
-
-      for await (const line of rl) {
-        if (!line) continue;
-        const tab = line.indexOf('\t');
-        const key = line.slice(0, tab);          // CHROM:POS:REF:ALT
-        const eff = line.slice(tab + 1);         // INFO/EFF
-        lines.push({ key, eff });
-        keys.add(key);
-      }
-      rl.close();
-
-
-    const tsiResults = await processKeys(keys, tsiPath);
-
-    const allSampleNames = collectSampleNames(tsiResults as unknown as [string, string][])
-
-
-      const accMap = new Map<string, string>(
-        tsiResults as unknown as [string, string][]
-        );
-
-      const variants = lines.map(({ key, eff }) => {
-        const [chr, pos, ref, alt] = key.split(':');
-
-        // `tersectForKey` gives a single comma-separated string (or undefined)
-        const accStr = accMap.get(key) ?? '';
-        const accessions = accStr
-            .split(/[, \t]+/)       // split on commas *or* stray whitespace
-            .filter(Boolean);       // drop empties
-
-        return {
-            chr,
-            pos: { start: Number(pos) },
-            ref,
-            alt,
-            eff,                    // keep INFO/EFF
-            accessions,             // ← the per-variant list
-        };
-        });
-
-        return res.status(200).json({
-        region,
-        filter,
-        count: variants.length,
-        variants,
-        totalAccessions:  Array.from(new Set(allSampleNames))         // each item already contains its accession list
-        });
-    } catch (err) {
-      console.error(err);
-      next(err);
+/** Answers a variant search, or 404 for datasets built without VCF files. */
+async function variantSearch(req: Request, res: Response,
+                             run: (dataset: Dataset) => Promise<unknown>) {
+    const dataset: Dataset = res.locals.dataset;
+    if (!dataset.variant_search) {
+        res.status(404).json({ error: 'This dataset has no variant search; '
+                                      + 'it was not built from VCF files.' });
+        return;
     }
-  },
-);
+    try {
+        res.json(await run(dataset));
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        console.error('Variant search failed:', error);
+        res.status(500).json({ error: 'The variant search failed' });
+    }
+}
+
+// Variants in an interval with an effect of the given impact (default HIGH).
+router.get('/query/:datasetId/variants/:chrom', (req, res) =>
+    variantSearch(req, res, async dataset => {
+        const [start, end] = await regionOf(dataset, req.params.chrom,
+                                            [req.query.start, req.query.end]);
+        const impact = oneOf(req.query.filter ?? 'HIGH', 'filter', IMPACT_LEVELS);
+        return variantsInInterval(dataset._id, req.params.chrom, start, end, impact);
+    }));
+
+// Variants affecting a gene, optionally limited to one impact level.
+router.get('/query/:datasetId/genes/:gene/variants', (req, res) =>
+    variantSearch(req, res, async dataset => {
+        const gene = identifier(req.params.gene, 'gene');
+        const impact = req.query.filter === undefined ? undefined
+            : oneOf(req.query.filter, 'filter', IMPACT_LEVELS);
+        return variantsInGene(dataset._id, gene, impact);
+    }));
+
+// Gene suggestions: id, name or description containing `q`.
+router.get('/query/:datasetId/genes', (req, res) =>
+    variantSearch(req, res, async dataset => {
+        const term = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+        if (term.length < 2 || term.length > 100) {
+            throw new ValidationError('q must be 2 to 100 characters');
+        }
+        let chromosome: string | undefined;
+        if (req.query.chrom !== undefined) {
+            chromosome = String(req.query.chrom);
+            await chromosomeOf(dataset, chromosome);
+        }
+        const limit = req.query.limit === undefined ? 20
+            : integer(req.query.limit, 'limit', 1, 100);
+        return searchGenes(dataset._id, term, chromosome, limit);
+    }));
 
 
 router.route('/query/:datasetId/chromosomes')
@@ -406,7 +341,9 @@ router.route('/datasets')
                 return {
                     dataset_id: dataset._id,
                     view_id: dataset.view_id,
-                    reference: dataset.reference
+                    reference: dataset.reference,
+                    description: dataset.description ?? '',
+                    variant_search: dataset.variant_search === true
                 };
             });
             res.json(output);

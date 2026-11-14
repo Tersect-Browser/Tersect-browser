@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Build and manage datasets with the pipeline container.
+#
+#   ./scripts/dataset validate datasets/tomato-sl250.yaml
+#   ./scripts/dataset build datasets/tomato-sl250.yaml [--cores 4] [--force]
+#   ./scripts/dataset status
+#   ./scripts/dataset remove "Dataset id"
+#
+# Manifest paths are relative to the repository (mounted at /app). Data
+# outside the repository goes in TB_DATA_DIR (default ./test-data/datasets),
+# mounted at /data: refer to it as /data/... in manifests.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+mkdir -p "${TB_DATA_DIR:-./test-data/datasets}"
+exec docker compose --profile pipeline run --rm -T pipeline "$@"
