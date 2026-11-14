@@ -44,6 +44,7 @@ import {
     variantsInGene,
     variantsInInterval
 } from '../utils/variant-store';
+import { binnedDistances } from '../utils/window-trees';
 import introgressionController from './introgression-router';
 import { generateTree } from '../controllers/generateTree';
 import { subscribeSSE, unsubscribeSSE } from './sse';
@@ -300,6 +301,14 @@ router.route('/query/:datasetId/dist')
             const accessions = await accessionsOf(dataset, query.accessions);
             const binsize = integer(query.binsize, 'binsize', 1, 100_000_000);
 
+            if (dataset.variant_search && dataset.tersect) {
+                const bins = await binnedDistances(
+                    dataset._id, query.chromosome_name, start, end, binsize,
+                    reference, accessions, dataset.tersect);
+                res.json({ query, bins } satisfies DistanceBins);
+                return;
+            }
+
             accFile = await writeAccessions(accessions);
             const stdout = await runCommand('tersect', [
                 'dist', '-j', dataset.tsi_location,
@@ -337,13 +346,20 @@ router.route('/datasets')
     .get(async (req, res) => {
         try {
             const r = await Dataset.find().exec();
+            // Accession counts from each dataset's default view.
+            const views = await ViewSettings.find(
+                { _id: { $in: r.map(dataset => dataset.view_id) } },
+                { 'settings.accession_infos.id': 1 }).lean().exec();
+            const counts = new Map(views.map((view: any) => [
+                view._id, view.settings?.accession_infos?.length]));
             const output: DatasetPublic[] = r.map(dataset => {
                 return {
                     dataset_id: dataset._id,
                     view_id: dataset.view_id,
                     reference: dataset.reference,
                     description: dataset.description ?? '',
-                    variant_search: dataset.variant_search === true
+                    variant_search: dataset.variant_search === true,
+                    accession_count: counts.get(dataset.view_id)
                 };
             });
             res.json(output);
@@ -489,9 +505,15 @@ router.route('/query/:datasetId/generate-barcodes').post(async (req, res) => {
         }
         // The script reports the output file on its last line.
         const lines = stdout.trim().split('\n');
-        const filename = path.basename(lines[lines.length - 1].trim());
+        const outputPath = lines[lines.length - 1].trim();
+        const filename = path.basename(outputPath);
         const downloadableURL = `${tbConfig.serverHost}/datafiles/barcodes/${encodeURIComponent(filename)}`;
-        res.json({ downloadableURL });
+        // Barcodes are the rows after the '#' comment and header lines.
+        fs.promises.readFile(outputPath, 'utf8')
+            .then(text => text.split('\n')
+                              .filter(line => line && !line.startsWith('#')).length)
+            .catch(() => undefined)
+            .then(count => res.json({ downloadableURL, filename, count }));
     });
 });
 

@@ -176,3 +176,41 @@ export async function windowTrees(
     }
     return trees;
 }
+
+/**
+ * Distances from a reference accession to each accession, per bin, as
+ * `tersect dist -a <reference> -B <binsize>` reports them: bin k covers
+ * [start + k·binsize, start + (k+1)·binsize). Used for datasets in the
+ * variant store; tersect's binned mode loses all counts after a bin whose
+ * variants straddle a compressed run in its bit arrays (seen on assembly
+ * gaps), while whole-region distances are unaffected.
+ */
+export async function binnedDistances(
+    dataset: string, chromosome: string, start: number, end: number,
+    binsize: number, reference: string, accessions: string[],
+    rules: DistanceRules
+): Promise<Record<string, number[]>> {
+    const rows = await queryVariantStore<{ bin: number; counts: number[] }>(
+        `SELECT intDiv(pos - {start:UInt32}, {binsize:UInt32}) AS bin,
+                sumForEach(arrayMap(a -> toUInt32(has(present, a) != has(present, {reference:String})),
+                                    {accessions:Array(String)})) AS counts
+         FROM (
+             SELECT pos, arrayFilter((c, d) -> d >= {minDosage:UInt8}, carriers, dosage) AS present
+             FROM variants
+             WHERE dataset = {dataset:String} AND chrom = {chrom:String}
+               AND pos BETWEEN {start:UInt32} AND {end:UInt32}
+               AND hasAny(carriers, arrayPushBack({accessions:Array(String)}, {reference:String}))
+               ${TYPE_FILTERS[rules.types]}
+         )
+         GROUP BY bin`,
+        { dataset, chrom: chromosome, start, end, binsize, reference, accessions,
+          minDosage: rules.homozygous ? 2 : 1 });
+    const nbins = Math.ceil((end - start + 1) / binsize);
+    const bins: Record<string, number[]> = {};
+    accessions.forEach(accession => { bins[accession] = new Array<number>(nbins).fill(0); });
+    for (const row of rows) {
+        const bin = Number(row.bin);
+        accessions.forEach((accession, i) => { bins[accession][bin] = Number(row.counts[i]); });
+    }
+    return bins;
+}

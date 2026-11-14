@@ -35,6 +35,7 @@ export interface DatasetPublic {
     reference: string;
     description: string;
     variant_search: boolean;
+    accession_count?: number;
 }
 
 export const Dataset = model<Dataset>('datasets', DatasetSchema, 'datasets');

@@ -55,6 +55,7 @@ export interface DatasetPublic {
   description?: string
   /** Built from VCF files: variant and gene search are available. */
   variant_search?: boolean
+  accession_count?: number
 }
 
 export type AccessionDisplayStyle = "labels" | "tree_simple" | "tree_linear"

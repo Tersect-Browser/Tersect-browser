@@ -22,6 +22,11 @@ from . import settings
 
 SCHEMA = os.path.join(settings.REPO, 'clickhouse', 'schema.sql')
 TABLES = ('variants', 'genes')
+# --group-1 ... --group-19 from docs/design/tersect-theme.css
+GROUP_COLORS = ['#E5A50A', '#8E5BA8', '#F07F1A', '#7DB7E8', '#CF2440', '#B9A774',
+                '#17995C', '#E890B1', '#1F78B4', '#F4937A', '#6C5CB8', '#B5477A',
+                '#D4C81E', '#9A3A1E', '#8DB51A', '#7A5630', '#E4592A', '#3F6B4A',
+                '#2BB3B1']
 
 
 def _literal(value):
@@ -115,9 +120,10 @@ def _view_settings(manifest, accessions):
             info.setdefault(key, '')
     settings_ = {'dataset_id': manifest.id, 'accession_infos': infos, 'plugins': []}
     if groups:
-        settings_['accession_groups'] = [{'name': name, 'category': 'Group',
-                                          'accessions': members}
-                                         for name, members in groups.items()]
+        settings_['accession_groups'] = [
+            {'name': name, 'category': 'Group', 'accessions': members,
+             'color': GROUP_COLORS[i % len(GROUP_COLORS)]}
+            for i, (name, members) in enumerate(groups.items())]
     return settings_
 
 

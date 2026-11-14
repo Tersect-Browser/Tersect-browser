@@ -121,7 +121,7 @@ export function generateBarcodes(
     maxVar: number | null
   }
 ) {
-  return post<{ downloadableURL: string }>(
+  return post<{ downloadableURL: string; filename?: string; count?: number }>(
     `${dataset(datasetId)}/generate-barcodes`,
     payload
   )

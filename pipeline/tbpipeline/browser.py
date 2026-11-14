@@ -12,6 +12,7 @@ copied as they are.
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 
@@ -40,7 +41,8 @@ def _tracks_from_index(tsi, variants_dir, log):
     return tracks
 
 
-def jbrowse_config(reference_id, data_root, reference, genes, variants):
+def jbrowse_config(reference_id, data_root, reference, genes, variants,
+                   annotation=None):
     """Paths in the configuration are relative to the served data root."""
     def location(path):
         return {'uri': os.path.relpath(path, data_root), 'locationType': 'UriLocation'}
@@ -61,6 +63,8 @@ def jbrowse_config(reference_id, data_root, reference, genes, variants):
         },
         'tracks': [],
         'geneTrackId': None,
+        # Shown beside the gene track, e.g. ITAG2.4_gene_models
+        'annotation': annotation,
     }
     if genes:
         config['geneTrackId'] = 'genes'
@@ -113,6 +117,10 @@ def prepare(manifest, reference, gff, tracks, tsi=None, log=None):
     os.makedirs(config_dir, exist_ok=True)
     config_path = os.path.join(config_dir, manifest.slug + '.json')
     with open(config_path, 'w') as handle:
+        annotation = None
+        if manifest.gff:
+            name = os.path.basename(manifest.gff.split('?')[0])
+            annotation = re.sub(r'(\.(gff3?|gtf|gz))+$', '', name)
         json.dump(jbrowse_config(manifest.reference_id, root, reference_out,
-                                 genes_out, variants), handle, indent=2)
+                                 genes_out, variants, annotation), handle, indent=2)
     return {'config': config_path, 'tracks': len(variants)}
