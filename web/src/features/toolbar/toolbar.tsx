@@ -2,13 +2,13 @@ import {
   DatabaseIcon,
   DownloadIcon,
   EraserIcon,
+  GitMergeIcon,
   ListIcon,
   MinusIcon,
   PlusIcon,
   SearchIcon,
   Share2Icon,
   DnaIcon,
-  WaypointsIcon,
 } from "lucide-react"
 import { useMemo, useState } from "react"
 import type { ReactNode } from "react"
@@ -43,6 +43,7 @@ import {
   MIN_ZOOM_LEVEL,
   usePlotStore,
 } from "@/store/plot-store"
+import { clearVariantResults } from "@/features/variants/search"
 import { useUiStore } from "@/store/ui-store"
 
 /** Label shown beside the icon from this width up; tooltip only below. */
@@ -304,9 +305,19 @@ export function Toolbar({ plotReady }: ToolbarProps) {
     (state) => state.setIntrogressionTarget
   )
   const hasMatches = usePlotStore((state) => state.variantMatches !== null)
-  const setVariantMatches = usePlotStore((state) => state.setVariantMatches)
+  const introgressionOpen = useUiStore(
+    (state) => state.introgressionTarget !== null
+  )
+  const requestIntrogressionClose = useUiStore(
+    (state) => state.requestIntrogressionClose
+  )
 
-  const startIntrogression = () => {
+  const toggleIntrogression = () => {
+    if (introgressionOpen) {
+      // The panel asks for confirmation if a job is running.
+      requestIntrogressionClose()
+      return
+    }
     const { chromosome, interval } = usePlotStore.getState()
     if (chromosome && interval) {
       setIntrogressionTarget({ chromosome: chromosome.name, interval })
@@ -349,7 +360,7 @@ export function Toolbar({ plotReady }: ToolbarProps) {
                   className="-ml-px rounded-l-none"
                   aria-label="Clear variant highlighting"
                   disabled={!hasMatches}
-                  onClick={() => setVariantMatches(null)}
+                  onClick={clearVariantResults}
                 >
                   <EraserIcon />
                 </Button>
@@ -359,14 +370,16 @@ export function Toolbar({ plotReady }: ToolbarProps) {
           </div>
           <ActionButton
             variant="outline"
-            icon={<WaypointsIcon />}
+            aria-pressed={introgressionOpen}
+            className={cn(introgressionOpen && "bg-accent")}
+            icon={<GitMergeIcon />}
             label="Introgression"
-            onClick={startIntrogression}
+            onClick={toggleIntrogression}
           />
           <ActionButton
-            variant={genomeTrackVisible ? "secondary" : "outline"}
+            variant="outline"
             aria-pressed={genomeTrackVisible}
-            className={cn(genomeTrackVisible && "border-primary text-primary")}
+            className={cn(genomeTrackVisible && "bg-accent")}
             icon={<DnaIcon />}
             label="Gene track"
             onClick={toggleGenomeTrack}

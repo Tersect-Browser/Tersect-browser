@@ -31,7 +31,14 @@ interface UiState {
   genomeDialogTarget: GenomeDialogTarget | null
   barcodeTarget: BarcodeTarget | null
   variantSearch: { open: boolean; interval?: [number, number] }
+  /** A variant search is running (it continues if the dialog is closed). */
+  variantSearching: boolean
+  variantSearchError: string | null
+  /** The variant results table under the plot is shown. */
+  variantTableOpen: boolean
   introgressionTarget: IntrogressionTarget | null
+  /** Incremented to ask the introgression panel to close (it may confirm). */
+  introgressionCloseRequest: number
   contextMenu: PlotPointerEvent | null
 
   setAccessionSheetOpen: (open: boolean) => void
@@ -40,7 +47,10 @@ interface UiState {
   setBarcodeTarget: (target: BarcodeTarget | null) => void
   openVariantSearch: (interval?: [number, number]) => void
   closeVariantSearch: () => void
+  setVariantSearching: (searching: boolean, error?: string | null) => void
+  setVariantTableOpen: (open: boolean) => void
   setIntrogressionTarget: (target: IntrogressionTarget | null) => void
+  requestIntrogressionClose: () => void
   setContextMenu: (menu: PlotPointerEvent | null) => void
   reset: () => void
 }
@@ -51,7 +61,11 @@ const initialState = {
   genomeDialogTarget: null,
   barcodeTarget: null,
   variantSearch: { open: false },
+  variantSearching: false,
+  variantSearchError: null,
+  variantTableOpen: false,
   introgressionTarget: null,
+  introgressionCloseRequest: 0,
   contextMenu: null,
 }
 
@@ -65,7 +79,14 @@ export const useUiStore = create<UiState>()((set) => ({
   openVariantSearch: (interval) =>
     set({ variantSearch: { open: true, interval } }),
   closeVariantSearch: () => set({ variantSearch: { open: false } }),
+  setVariantSearching: (variantSearching, error = null) =>
+    set({ variantSearching, variantSearchError: error }),
+  setVariantTableOpen: (variantTableOpen) => set({ variantTableOpen }),
   setIntrogressionTarget: (introgressionTarget) => set({ introgressionTarget }),
+  requestIntrogressionClose: () =>
+    set((state) => ({
+      introgressionCloseRequest: state.introgressionCloseRequest + 1,
+    })),
   setContextMenu: (contextMenu) => set({ contextMenu }),
   reset: () => set(initialState),
 }))

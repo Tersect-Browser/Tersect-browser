@@ -14,6 +14,10 @@ import { Toolbar } from "@/features/toolbar/toolbar"
 import { VariantSearchDialog } from "@/features/variants/variant-search-dialog"
 import { usePlotData } from "@/hooks/use-plot-data"
 import {
+  VariantResultsBanner,
+  VariantResultsTable,
+} from "@/features/variants/variant-results"
+import {
   getAccessionNames,
   getChromosomes,
   getExportedSettings,
@@ -85,30 +89,37 @@ function Browser() {
   return (
     <div className="flex h-full flex-col">
       <Toolbar plotReady={plotReady} />
-      {genomeTrackVisible && (
-        <Suspense
-          fallback={
-            <div className="px-3 py-2 text-xs text-muted-foreground">
-              Loading genome track...
-            </div>
-          }
-        >
-          <GenomeTrack />
-        </Suspense>
-      )}
-      <IntrogressionPanel />
-      <div className="relative min-h-0 flex-1">
-        <DistancePlot
-          status={status}
-          onClick={(event) => {
-            setTooltip(null)
-            setContextMenu(event)
-          }}
-          onHover={setTooltip}
-          onMove={() => setTooltip(null)}
-        />
+      {/* Everything under the toolbar; the introgression panel floats over,
+          or when maximised covers, this area. */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <VariantResultsBanner />
+        <IntrogressionPanel />
+        {genomeTrackVisible && (
+          <Suspense
+            fallback={
+              <div className="flex h-[58px] shrink-0 items-center gap-1.5 border-b bg-card px-3 text-muted-foreground">
+                <Spinner />
+                Loading gene models…
+              </div>
+            }
+          >
+            <GenomeTrack />
+          </Suspense>
+        )}
+        <div className="relative min-h-0 flex-1">
+          <DistancePlot
+            status={status}
+            onClick={(event) => {
+              setTooltip(null)
+              setContextMenu(event)
+            }}
+            onHover={setTooltip}
+            onMove={() => setTooltip(null)}
+          />
+        </div>
+        <VariantResultsTable />
+        <StatusBar />
       </div>
-      <StatusBar />
 
       <PlotTooltip event={tooltip} />
       <PlotContextMenu />
