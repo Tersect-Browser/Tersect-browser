@@ -16,6 +16,10 @@ interface RunState {
   phylonetLoading: boolean
   /** Latest progress message from the server. */
   status: string
+  /** Current stage (index into JOB_STAGES); JOB_STAGES.length when done. */
+  stage: number
+  /** Stage at which the job failed, if it did. */
+  failedStage: number | null
   error: string | null
   scan: ScanResponse | null
   phylonet: PhylonetResult | null
@@ -25,6 +29,8 @@ const idle: RunState = {
   loading: false,
   phylonetLoading: false,
   status: "",
+  stage: 0,
+  failedStage: null,
   error: null,
   scan: null,
   phylonet: null,
@@ -35,6 +41,24 @@ interface PipelineMessage {
   message?: string
   type?: string
   data?: unknown
+}
+
+/** Stage a server status message belongs to; undefined if unknown. */
+function stageOf(message: string): number | undefined {
+  const text = message.toLowerCase()
+  if (text.includes("species tree") || text.includes("analysis started")) {
+    return 0
+  }
+  if (text.includes("gene tree generation completed")) {
+    return 2
+  }
+  if (text.includes("gene tree")) {
+    return 1
+  }
+  if (text.includes("phylonet")) {
+    return 3
+  }
+  return undefined
 }
 
 function parse(event: MessageEvent): PipelineMessage {
@@ -66,6 +90,13 @@ export function useIntrogressionRun() {
       setState({ ...idle, loading: true, status: "Starting analysis" })
       const update = (patch: Partial<RunState>) =>
         setState((current) => ({ ...current, ...patch }))
+      // Unknown messages update the status line only.
+      const progress = (text: string) =>
+        setState((current) => ({
+          ...current,
+          status: text,
+          stage: Math.max(current.stage, stageOf(text) ?? current.stage),
+        }))
 
       try {
         const response = await startIntrogressionScan(request)
@@ -83,20 +114,15 @@ export function useIntrogressionRun() {
           handler: (message: PipelineMessage) => void
         ) => events.addEventListener(type, (event) => handler(parse(event)))
 
-        on("pipeline:start", (message) =>
-          update({ loading: true, status: message.message ?? "" })
-        )
-        on("pipeline:progress", (message) =>
-          update({
-            status: `Working ${message.stage ?? ""} ${message.message ?? ""}`,
-          })
-        )
+        on("pipeline:start", (message) => progress(message.message ?? ""))
+        on("pipeline:progress", (message) => progress(message.message ?? ""))
         on("introgression:result", (message) => {
           if (message.type === "topology_scan") {
             update({
               loading: false,
               phylonetLoading: true,
-              status: "Introgression results received",
+              status: "Window scan complete; PhyloNet analysis running",
+              stage: 3,
               scan: message.data as ScanResponse,
             })
           } else if (message.type === "phylonet_result") {
@@ -104,6 +130,7 @@ export function useIntrogressionRun() {
             update({
               loading: false,
               phylonetLoading: false,
+              stage: 4,
               phylonet: {
                 phyloText: result.phyloText && toSameOrigin(result.phyloText),
                 phyloPlot: result.phyloPlot && toSameOrigin(result.phyloPlot),
@@ -117,17 +144,20 @@ export function useIntrogressionRun() {
           update({
             loading: false,
             phylonetLoading: false,
-            status: "Pipeline complete",
+            stage: 4,
+            status: "All analyses completed",
           })
           closeStream()
         })
         on("pipeline:error", (message) => {
-          update({
+          setState((current) => ({
+            ...current,
             loading: false,
-            phylonetLoading: message.stage !== "fatal",
-            status: "Error",
+            phylonetLoading: false,
+            failedStage: current.stage,
+            status: `Stopped at stage ${current.stage + 1} of 4`,
             error: message.message ?? "Pipeline error",
-          })
+          }))
           if (message.stage === "fatal") {
             closeStream()
           }

@@ -1,378 +1,376 @@
-import * as d3 from "d3"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-import { formatMbp } from "@/lib/format"
+import { useVizTokens } from "@/hooks/use-viz-tokens"
 
-import type { ScanResponse, TripletBlock } from "./types"
+import { isSignificant, type ScanResponse, type TripletBlock } from "./types"
 
-const TRACK_HEIGHT = 160
-/** Widest a topology bar may be, in pixels. */
-const MAX_BAR_WIDTH = 24
-const TRACK_GAP = 18
-const MARGIN = { top: 40, right: 64, bottom: 36, left: 64 }
-const TOTAL_HEIGHT = MARGIN.top + TRACK_HEIGHT * 3 + TRACK_GAP * 2 + 40
+/** Three tracks sharing an x-axis (9.4). */
+const LEFT = 40
+const RIGHT = 10
+const TRACK_HEIGHT = 118
+const TRACK_TOPS = [20, 172, 324]
+const HEIGHT = TRACK_TOPS[2] + TRACK_HEIGHT + 32
+const TITLES = [
+  "Topology proportion",
+  "BLT (Mann–Whitney U)",
+  "Distance-weighted discordance",
+]
+/** Significance level drawn as the BLT threshold. */
+const ALPHA = 0.05
 
-const COLORS = {
-  T1: "var(--chart-topology-1)",
-  T2: "var(--chart-topology-2)",
-  T3: "var(--chart-topology-3)",
-  expected: "var(--chart-expected)",
-  significant: "var(--chart-significant)",
-  significantFill: "var(--chart-significant-fill)",
+interface Placed {
+  block: TripletBlock
+  index: number
+  start: number
+  end: number
+  mid: number
+  t1: number
+  t2: number
+  t3: number
 }
 
-const formatExponent = (value?: number | null) =>
-  value != null ? value.toExponential(2) : "NA"
-const formatFixed = (value?: number | null) =>
-  value != null ? value.toFixed(3) : "NA"
-
-/** Blocks where the species tree dominates and T2 outnumbers T3. */
-const isCandidate = (block: TripletBlock) =>
-  block.n_T3 < block.n_T2 && block.n_T1 > block.n_T2
-
-function tooltipHtml(block: TripletBlock): string {
-  const discordant = (block.n_T2 + block.n_T3) / Math.max(1, block.n_total ?? 1)
-  return `
-    mid: ${(block.mid_BP / 1e6).toFixed(2)} Mb<br/>
-    <b>DCT</b><br/>
-    n: ${block.n_total} (T2=${block.n_T2}, T3=${block.n_T3})<br/>
-    disc. frac: ${discordant.toFixed(3)}<br/>
-    expected: ${formatFixed(block.exp_disc_frac)}<br/>
-    p_sym(FDR): ${formatExponent(block.p_sym_fdr)}<br/>
-    p_sym: ${formatExponent(block.p_sym)}<br/>
-    <b>BLT</b><br/>
-    mannwhitneyu: ${formatExponent(block.p_blt)}<br/>
-    delta: ${formatFixed(block.delta)} &nbsp; p_blt(FDR): ${formatExponent(block.p_blt_fdr)}<br/>
-    <b>Hybrid</b><br/>
-    mean_discordance: ${formatFixed(block.obs_disc_frac)}<br/>
-    asymmetry: ${formatFixed(block.asymmetry_score)}<br/>
-  `
-}
-
-function render(element: HTMLDivElement, data: ScanResponse) {
-  const width = element.clientWidth
-  element.replaceChildren()
-  const blocks = [...(data.blocks ?? [])].sort((a, b) => a.mid_BP - b.mid_BP)
-  if (!width || blocks.length === 0) {
-    return
-  }
-  const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right)
-
-  const svg = d3
-    .select(element)
-    .append("svg")
-    .attr("width", width)
-    .attr("height", TOTAL_HEIGHT)
-    .style("color", "var(--foreground)")
-    .style("font-family", "inherit")
-  const root = svg
-    .append("g")
-    .attr("transform", `translate(${MARGIN.left},${MARGIN.top})`)
-
-  const tooltip = d3
-    .select(element)
-    .append("div")
-    .attr(
-      "class",
-      "pointer-events-none absolute hidden rounded-md border bg-popover px-2 py-1.5 text-xs text-popover-foreground shadow-md"
-    )
-  const showTip = (event: MouseEvent, block: TripletBlock) => {
-    const [x, y] = d3.pointer(event, element)
-    tooltip
-      .classed("hidden", false)
-      .html(tooltipHtml(block))
-      .style("left", `${Math.min(x + 14, width - 240)}px`)
-      .style("top", `${y + 14}px`)
-  }
-  const hideTip = () => tooltip.classed("hidden", true)
-
-  const x = d3
-    .scaleLinear()
-    .domain(d3.extent(blocks, (block) => block.mid_BP) as [number, number])
-    .nice()
-    .range([0, innerWidth])
-
-  const axisLabel = (
-    track: d3.Selection<SVGGElement, unknown, null, undefined>,
-    text: string
-  ) =>
-    track
-      .append("text")
-      .attr("x", -TRACK_HEIGHT / 2)
-      .attr("y", -44)
-      .attr("transform", "rotate(-90)")
-      .attr("text-anchor", "middle")
-      .attr("fill", "currentColor")
-      .style("font-size", "12px")
-      .text(text)
-
-  /* ------------------------------------ Track 1: topology proportions -- */
-  const track1 = root.append("g")
-  const y1 = d3.scaleLinear().domain([0, 1]).nice().range([TRACK_HEIGHT, 0])
-  track1.append("g").call(d3.axisLeft(y1).ticks(5))
-  axisLabel(track1, "Topology proportion")
-
-  const barWidth = Math.min((innerWidth / blocks.length) * 0.6, MAX_BAR_WIDTH)
-  // Keep marks that sit at the edge of the domain inside the plot area.
-  const clipId = `introgression-clip-${Math.random().toString(36).slice(2)}`
-  svg
-    .append("defs")
-    .append("clipPath")
-    .attr("id", clipId)
-    .append("rect")
-    .attr("width", innerWidth)
-    .attr("height", TRACK_HEIGHT)
-  const bars = track1.append("g").attr("clip-path", `url(#${clipId})`)
-  for (const block of blocks) {
-    let yBase = TRACK_HEIGHT
-    for (const key of ["T1", "T2", "T3"] as const) {
-      const proportion =
-        block.n_total > 0 ? block[`n_${key}`] / block.n_total : 0
-      const height = TRACK_HEIGHT - y1(proportion)
-      bars
-        .append("rect")
-        .attr("x", x(block.mid_BP) - barWidth / 2)
-        .attr("y", yBase - height)
-        .attr("width", barWidth)
-        .attr("height", height)
-        .style("fill", COLORS[key])
-        .attr("opacity", key === "T1" ? 0.8 : 0.85)
-      yBase -= height
-    }
-  }
-  bars
-    .selectAll<SVGRectElement, unknown>("rect")
-    .on("mousemove", (event: MouseEvent) => {
-      const [px] = d3.pointer(event, bars.node())
-      const position = x.invert(px)
-      const nearest = d3.least(blocks, (block) =>
-        Math.abs(block.mid_BP - position)
-      )
-      if (nearest) {
-        showTip(event, nearest)
-      }
-    })
-    .on("mouseleave", hideTip)
-
-  const expected = blocks.find(
-    (block) => block.exp_disc_frac != null
-  )?.exp_disc_frac
-  if (expected != null) {
-    track1
-      .append("line")
-      .attr("x1", 0)
-      .attr("x2", innerWidth)
-      .attr("y1", y1(expected))
-      .attr("y2", y1(expected))
-      .style("stroke", COLORS.expected)
-      .attr("stroke-dasharray", "4,3")
-      .attr("stroke-width", 1.2)
-    track1
-      .append("text")
-      .attr("x", innerWidth - 4)
-      .attr("y", y1(expected) - 6)
-      .attr("text-anchor", "end")
-      .style("fill", COLORS.expected)
-      .style("font-size", "11px")
-      .text("expected discordance")
-  }
-
-  track1
-    .selectAll("text.star")
-    .data(
-      blocks.filter(
-        (block) =>
-          isCandidate(block) && Math.abs(block.asymmetry_score ?? 0) < 1
-      )
-    )
-    .enter()
-    .append("text")
-    .attr("class", "star")
-    .attr("x", (block) => x(block.mid_BP))
-    .attr("y", (block) =>
-      y1(block.n_total > 0 ? block.n_T1 / block.n_total : 0)
-    )
-    .attr("text-anchor", "middle")
-    .style("fill", COLORS.significant)
-    .style("font-size", "12px")
-    .text("★")
-
-  /* ------------------------------------------ Track 2: branch lengths -- */
-  const track2 = root
-    .append("g")
-    .attr("transform", `translate(0,${TRACK_HEIGHT + TRACK_GAP})`)
-  const withDelta = blocks.filter(
-    (block): block is TripletBlock & { delta: number } => block.delta != null
+function css(name: string) {
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+    "#888"
   )
-  const deltas = blocks
-    .map((block) => block.delta ?? 0)
-    .filter((value) => Number.isFinite(value))
-  const deltaMin = d3.min(deltas) ?? -0.1
-  const deltaMax = d3.max(deltas) ?? 0.1
-  const deltaPad = (deltaMax - deltaMin) * 0.1 || 0.05
-  const y2 = d3
-    .scaleLinear()
-    .domain([deltaMin - deltaPad, deltaMax + deltaPad])
-    .nice()
-    .range([TRACK_HEIGHT, 0])
-  track2.append("g").call(d3.axisLeft(y2).ticks(5))
-  axisLabel(track2, "BLT (Mann-Whitney U)")
-
-  track2
-    .append("line")
-    .attr("x1", 0)
-    .attr("x2", innerWidth)
-    .attr("y1", y2(0))
-    .attr("y2", y2(0))
-    .attr("stroke", "currentColor")
-    .attr("opacity", 0.5)
-    .attr("stroke-dasharray", "4,3")
-  track2
-    .append("path")
-    .datum(withDelta)
-    .attr("fill", "none")
-    .style("stroke", COLORS.T2)
-    .attr("stroke-width", 1.6)
-    .attr(
-      "d",
-      d3
-        .line<TripletBlock & { delta: number }>()
-        .x((block) => x(block.mid_BP))
-        .y((block) => y2(block.delta))
-    )
-  track2
-    .selectAll("circle.blt")
-    .data(withDelta)
-    .enter()
-    .append("circle")
-    .attr("class", "blt")
-    .attr("cx", (block) => x(block.mid_BP))
-    .attr("cy", (block) => y2(block.delta))
-    .attr("r", 3)
-    .style("fill", COLORS.T2)
-    .attr("opacity", 0.8)
-    .on("mousemove", (event: MouseEvent, block) => showTip(event, block))
-    .on("mouseleave", hideTip)
-  // Ring around blocks significant after FDR correction.
-  track2
-    .selectAll("circle.blt-significant")
-    .data(withDelta.filter((block) => (block.p_blt_fdr ?? 1) < 0.05))
-    .enter()
-    .append("circle")
-    .attr("class", "blt-significant")
-    .attr("cx", (block) => x(block.mid_BP))
-    .attr("cy", (block) => y2(block.delta))
-    .attr("r", 6)
-    .attr("fill", "none")
-    .style("stroke", COLORS.T2)
-    .attr("stroke-width", 1.5)
-    .on("mousemove", (event: MouseEvent, block) => showTip(event, block))
-    .on("mouseleave", hideTip)
-
-  /* --------------------------- Track 3: distance-weighted discordance -- */
-  const track3 = root
-    .append("g")
-    .attr("transform", `translate(0,${(TRACK_HEIGHT + TRACK_GAP) * 2})`)
-  const withObserved = blocks.filter(
-    (block): block is TripletBlock & { obs_disc_frac: number } =>
-      block.obs_disc_frac != null && Number.isFinite(block.obs_disc_frac)
-  )
-  const observedMin = d3.min(withObserved, (block) => block.obs_disc_frac) ?? 0
-  const observedMax = d3.max(withObserved, (block) => block.obs_disc_frac) ?? 1
-  const observedPad = (observedMax - observedMin) * 0.1 || 0.05
-  const y3 = d3
-    .scaleLinear()
-    .domain([observedMin - observedPad, observedMax + observedPad])
-    .nice()
-    .range([TRACK_HEIGHT, 0])
-  track3.append("g").call(d3.axisLeft(y3).ticks(5))
-  axisLabel(track3, "Dist weighted discordance")
-
-  track3
-    .append("path")
-    .datum(withObserved)
-    .attr("fill", "none")
-    .attr("stroke", "currentColor")
-    .attr("stroke-width", 1.6)
-    .attr(
-      "d",
-      d3
-        .line<TripletBlock & { obs_disc_frac: number }>()
-        .x((block) => x(block.mid_BP))
-        .y((block) => y3(block.obs_disc_frac))
-    )
-  track3
-    .selectAll("path.hybrid")
-    .data(withObserved)
-    .enter()
-    .append("path")
-    .attr("class", "hybrid")
-    .attr("d", (block) =>
-      d3
-        .symbol()
-        .type(isCandidate(block) ? d3.symbolStar : d3.symbolCircle)
-        .size(80)()
-    )
-    .attr(
-      "transform",
-      (block) => `translate(${x(block.mid_BP)},${y3(block.obs_disc_frac)})`
-    )
-    .style("fill", (block) =>
-      isCandidate(block) ? COLORS.significantFill : "currentColor"
-    )
-    .attr("opacity", 0.9)
-    .on("mousemove", (event: MouseEvent, block) => showTip(event, block))
-    .on("mouseleave", hideTip)
-
-  /* -------------------------------------------- shared axis and title -- */
-  root
-    .append("g")
-    .attr(
-      "transform",
-      `translate(0,${(TRACK_HEIGHT + TRACK_GAP) * 2 + TRACK_HEIGHT})`
-    )
-    .call(
-      d3
-        .axisBottom(x)
-        .ticks(8)
-        .tickFormat((value) => formatMbp(Number(value)))
-    )
-  root
-    .append("text")
-    .attr("x", 0)
-    .attr("y", -14)
-    .attr("font-weight", 600)
-    .attr("fill", "currentColor")
-    .style("font-size", "13px")
-    .text(
-      `Triplet scan (B=${data.params.block_size}) - DCT (top), BLT (middle), Hybrid (bottom)`
-    )
 }
 
-/**
- * Results of the window scan along the region, as three tracks sharing one
- * genomic axis: topology proportions, branch-length test and hybrid score.
- */
+function star(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  color: string
+) {
+  ctx.fillStyle = color
+  ctx.beginPath()
+  for (let i = 0; i < 10; i++) {
+    const angle = -Math.PI / 2 + (i * Math.PI) / 5
+    const r = i % 2 ? radius * 0.45 : radius
+    ctx.lineTo(x + Math.cos(angle) * r, y + Math.sin(angle) * r)
+  }
+  ctx.closePath()
+  ctx.fill()
+}
+
+/** Tick step in Mb giving about `count` ticks over `span` Mb. */
+function tickStep(span: number, count: number) {
+  const raw = span / count
+  const power = 10 ** Math.floor(Math.log10(raw))
+  return [1, 2, 5, 10].map((m) => m * power).find((s) => s >= raw) ?? raw
+}
+
 export function IntrogressionChart({ data }: { data: ScanResponse }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [width, setWidth] = useState(0)
+  const [hover, setHover] = useState<number | null>(null)
+  const tokens = useVizTokens()
 
   useEffect(() => {
     const element = containerRef.current
     if (!element) {
       return
     }
-    let width = element.clientWidth
-    render(element, data)
-    // Rendering changes the height; only a new width needs a redraw.
-    const observer = new ResizeObserver(() => {
-      if (element.clientWidth !== width) {
-        width = element.clientWidth
-        render(element, data)
-      }
-    })
+    const observer = new ResizeObserver(() => setWidth(element.clientWidth))
     observer.observe(element)
     return () => observer.disconnect()
+  }, [])
+
+  const placed = useMemo<Placed[]>(() => {
+    const blocks = data.blocks
+    return blocks.map((block, index) => {
+      const total = Math.max(1, block.n_T1 + block.n_T2 + block.n_T3)
+      // Older results have only the midpoint: span to the neighbours.
+      const prev = blocks[index - 1]?.mid_BP
+      const next = blocks[index + 1]?.mid_BP
+      const half =
+        ((next ?? block.mid_BP) - (prev ?? block.mid_BP)) /
+        (prev !== undefined && next !== undefined ? 4 : 2)
+      return {
+        block,
+        index,
+        start: block.start_BP ?? block.mid_BP - half,
+        end: block.end_BP ?? block.mid_BP + half,
+        mid: block.mid_BP,
+        t1: block.n_T1 / total,
+        t2: block.n_T2 / total,
+        t3: block.n_T3 / total,
+      }
+    })
   }, [data])
 
-  return <div ref={containerRef} className="relative w-full" />
+  const [domainStart, domainEnd] = useMemo(() => {
+    if (!placed.length) {
+      return [0, 1]
+    }
+    return [
+      Math.min(...placed.map((p) => p.start)),
+      Math.max(...placed.map((p) => p.end)),
+    ]
+  }, [placed])
+  const plotWidth = Math.max(1, width - LEFT - RIGHT)
+  const x = (position: number) =>
+    LEFT +
+    ((position - domainStart) / (domainEnd - domainStart || 1)) * plotWidth
+
+  const dwdMax = useMemo(
+    () =>
+      Math.max(
+        1,
+        ...placed.map((p) =>
+          Number.isFinite(p.block.obs_disc_frac)
+            ? (p.block.obs_disc_frac ?? 0)
+            : 0
+        )
+      ),
+    [placed]
+  )
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !width) {
+      return
+    }
+    const ratio = window.devicePixelRatio || 1
+    canvas.width = width * ratio
+    canvas.height = HEIGHT * ratio
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${HEIGHT}px`
+    const ctx = canvas.getContext("2d")
+    if (!ctx) {
+      return
+    }
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
+    ctx.clearRect(0, 0, width, HEIGHT)
+
+    const color = {
+      t1: css("--viz-t1"),
+      t2: css("--viz-t2"),
+      t3: css("--viz-t3"),
+      sig: css("--viz-sig"),
+      gold: css("--viz-sig-gold"),
+      expected: css("--viz-expected"),
+      threshold: css("--viz-threshold"),
+      label: css("--viz-label"),
+      leader: css("--viz-leader"),
+      selection: css("--viz-selection"),
+      muted: css("--muted-foreground"),
+    }
+    const sans = css("--font-sans")
+    const mono = css("--font-mono")
+    const yOf = (track: number, value: number) =>
+      TRACK_TOPS[track] + TRACK_HEIGHT * (1 - value)
+
+    // Hovered block: a band down all three tracks.
+    if (hover !== null && placed[hover]) {
+      const p = placed[hover]
+      ctx.fillStyle = color.selection
+      ctx.globalAlpha = 0.14
+      ctx.fillRect(
+        x(p.start),
+        TRACK_TOPS[0],
+        Math.max(2, x(p.end) - x(p.start)),
+        TRACK_TOPS[2] + TRACK_HEIGHT - TRACK_TOPS[0]
+      )
+      ctx.globalAlpha = 1
+    }
+
+    // Frames, titles and y labels
+    TRACK_TOPS.forEach((top, track) => {
+      ctx.font = `600 11px ${sans}`
+      ctx.fillStyle = color.label
+      ctx.textAlign = "left"
+      ctx.textBaseline = "alphabetic"
+      ctx.fillText(TITLES[track], LEFT, top - 6)
+      ctx.strokeStyle = color.leader
+      ctx.lineWidth = 1
+      ctx.strokeRect(LEFT + 0.5, top + 0.5, plotWidth, TRACK_HEIGHT)
+      ctx.font = `10px ${mono}`
+      ctx.fillStyle = color.muted
+      ctx.textAlign = "right"
+      ctx.textBaseline = "middle"
+      const labels =
+        track === 2
+          ? [dwdMax, dwdMax / 2, 0].map((v) => v.toFixed(1))
+          : ["1.0", "0.5", "0"]
+      labels.forEach((text, i) =>
+        ctx.fillText(text, LEFT - 5, top + (i * TRACK_HEIGHT) / 2)
+      )
+    })
+
+    // 1. Topology proportion: stacked T1, T2, T3
+    for (const p of placed) {
+      const left = x(p.start) + 1
+      const barWidth = Math.max(1, x(p.end) - x(p.start) - 2)
+      let y = yOf(0, 0)
+      for (const [value, fill] of [
+        [p.t1, color.t1],
+        [p.t2, color.t2],
+        [p.t3, color.t3],
+      ] as const) {
+        const h = value * TRACK_HEIGHT
+        ctx.fillStyle = fill
+        ctx.fillRect(left, y - h, barWidth, h)
+        y -= h
+      }
+    }
+    const dashed = (y: number, stroke: string) => {
+      ctx.strokeStyle = stroke
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([5, 4])
+      ctx.beginPath()
+      ctx.moveTo(LEFT, y)
+      ctx.lineTo(LEFT + plotWidth, y)
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+    // Expected discordance under ILS: where T1 would end.
+    const expected = placed.find((p) => p.block.exp_disc_frac != null)?.block
+      .exp_disc_frac
+    if (expected != null) {
+      dashed(yOf(0, 1 - expected), color.expected)
+    }
+    for (const p of placed) {
+      if (isSignificant(p.block)) {
+        star(ctx, x(p.mid), TRACK_TOPS[0] + 9, 5, color.sig)
+      }
+    }
+
+    // 2. BLT: p-value per block, with the significance threshold
+    dashed(yOf(1, ALPHA), color.threshold)
+    const line = (
+      track: number,
+      value: (p: Placed) => number | null | undefined,
+      stroke: string
+    ) => {
+      ctx.strokeStyle = stroke
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      let started = false
+      for (const p of placed) {
+        const v = value(p)
+        if (v == null || !Number.isFinite(v)) {
+          continue
+        }
+        const px = x(p.mid)
+        const py = yOf(track, v)
+        if (started) {
+          ctx.lineTo(px, py)
+        } else {
+          ctx.moveTo(px, py)
+          started = true
+        }
+      }
+      ctx.stroke()
+    }
+    line(1, (p) => p.block.p_blt, color.t2)
+    for (const p of placed) {
+      const v = p.block.p_blt
+      if (v != null && Number.isFinite(v)) {
+        ctx.fillStyle = color.t2
+        ctx.beginPath()
+        ctx.arc(x(p.mid), yOf(1, v), 2.5, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // 3. Distance-weighted discordance
+    const dwd = (p: Placed) =>
+      p.block.obs_disc_frac == null ? null : p.block.obs_disc_frac / dwdMax
+    line(2, dwd, color.label)
+    for (const p of placed) {
+      const v = dwd(p)
+      if (v == null || !Number.isFinite(v)) {
+        continue
+      }
+      if (isSignificant(p.block)) {
+        star(ctx, x(p.mid), yOf(2, v), 6, color.gold)
+      } else {
+        ctx.fillStyle = color.label
+        ctx.beginPath()
+        ctx.arc(x(p.mid), yOf(2, v), 2.5, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // Shared x-axis in Mb
+    ctx.font = `10px ${mono}`
+    ctx.fillStyle = color.muted
+    ctx.textAlign = "center"
+    ctx.textBaseline = "top"
+    const startMb = domainStart / 1e6
+    const endMb = domainEnd / 1e6
+    const step = tickStep(endMb - startMb, Math.max(2, plotWidth / 90))
+    for (let mb = Math.ceil(startMb / step) * step; mb <= endMb; mb += step) {
+      ctx.fillText(
+        mb.toFixed(step < 1 ? 1 : 0),
+        x(mb * 1e6),
+        TRACK_TOPS[2] + TRACK_HEIGHT + 5
+      )
+    }
+    ctx.fillText(
+      "Position (Mb)",
+      LEFT + plotWidth / 2,
+      TRACK_TOPS[2] + TRACK_HEIGHT + 18
+    )
+    // x() and plotWidth only change with the inputs listed below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placed, width, hover, tokens, dwdMax, domainStart, domainEnd])
+
+  const hovered = hover !== null ? placed[hover] : undefined
+
+  return (
+    <div ref={containerRef} className="relative">
+      <canvas
+        ref={canvasRef}
+        className="block"
+        aria-label="Introgression scan results"
+        role="img"
+        onMouseMove={(event) => {
+          const rect = event.currentTarget.getBoundingClientRect()
+          const px = event.clientX - rect.left
+          const found = placed.findIndex(
+            (p) => px >= x(p.start) && px <= x(p.end)
+          )
+          setHover(found >= 0 ? found : null)
+        }}
+        onMouseLeave={() => setHover(null)}
+      />
+      {hovered && (
+        <div
+          className="pointer-events-none absolute top-[30px] z-10 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-px rounded-[4px] border bg-popover px-2 py-1.5 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow-[0_4px_14px_rgb(0_0_0/0.2)]"
+          style={
+            x(hovered.end) + 220 < width
+              ? { left: x(hovered.end) + 8 }
+              : { right: width - x(hovered.start) + 8 }
+          }
+        >
+          <span className="col-span-2 font-sans font-semibold">
+            Block {hovered.index + 1}
+            {isSignificant(hovered.block) && " · significant"}
+          </span>
+          <span className="col-span-2 mb-[3px] text-muted-foreground">
+            {(hovered.start / 1e6).toFixed(2)} –{" "}
+            {(hovered.end / 1e6).toFixed(2)} Mb
+          </span>
+          <span>T1</span>
+          <span className="text-right">{hovered.t1.toFixed(3)}</span>
+          <span>T2</span>
+          <span className="text-right">{hovered.t2.toFixed(3)}</span>
+          <span>T3</span>
+          <span className="text-right">{hovered.t3.toFixed(3)}</span>
+          <span>BLT p</span>
+          <span className="text-right">
+            {hovered.block.p_blt?.toPrecision(2) ?? "–"}
+          </span>
+          <span>DWD</span>
+          <span className="text-right">
+            {hovered.block.obs_disc_frac?.toFixed(3) ?? "–"}
+          </span>
+        </div>
+      )}
+    </div>
+  )
 }
