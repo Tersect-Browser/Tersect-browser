@@ -67,10 +67,14 @@ interface RawRow {
     dosage: number[];
 }
 
-async function rows<T>(query: string, params: Record<string, unknown>): Promise<T[]> {
+/** Runs a parameterised query against the variant store. */
+export async function queryVariantStore<T>(query: string,
+                                           params: Record<string, unknown>): Promise<T[]> {
     const result = await client.query({ query, query_params: params, format: 'JSONEachRow' });
     return result.json<T>();
 }
+
+const rows = queryVariantStore;
 
 function toVariant(row: RawRow): VariantRow {
     const effects = row.effect.map((effect, i) => ({

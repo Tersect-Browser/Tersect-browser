@@ -15,6 +15,7 @@ import {
 import SpeciesTreeCache from "../models/SpeciesTreeCache";
 import { NewickTree } from "../models/newicktree";
 import { generateTreeAsync } from "../controllers/generateTree";
+import { windowTrees } from "../utils/window-trees";
 import { tbConfig } from "../load-config";
 import { publishSSE, sseKey } from "./sse";
 import {
@@ -156,67 +157,83 @@ const introgressionController = async (req, res) => {
                 windows.push([s, e]);
             }
 
-            // Pick a safe concurrency:
-            const concurrency = Math.min(
-                8,
-                Math.max(2, os.availableParallelism() - 1)
-            );
-            const limit = pLimit(concurrency);
+            // Datasets without a variant store: one tersect + rapidNJ run per window.
+            const treesFromIndex = async () => {
+                // Pick a safe concurrency:
+                const concurrency = Math.min(
+                    8,
+                    Math.max(2, os.availableParallelism() - 1)
+                );
+                const limit = pLimit(concurrency);
 
-            const tasks = windows.map(([s, e]) =>
-                limit(async () => {
-                    const dbQuery: any = {
-                        datasetId,
-                        "query.chromosomeName": chromosome,
-                        "query.interval": [s, e],
-                        "query.accessions": accessions,
-                    };
-
-                    let rec: any = await NewickTree.findOne(dbQuery)
-                        .lean()
-                        .exec();
-                    if (!rec) {
-                        await new (NewickTree as any)({
+                const tasks = windows.map(([s, e]) =>
+                    limit(async () => {
+                        const dbQuery: any = {
                             datasetId,
-                            query: {
-                                chromosomeName: chromosome,
-                                interval: [s, e],
-                                accessions,
-                            },
-                            status: "Collating data...",
-                        }).save();
+                            "query.chromosomeName": chromosome,
+                            "query.interval": [s, e],
+                            "query.accessions": accessions,
+                        };
 
-                        const response = await generateTreeAsync(
-                            dataset.tsi_location,
-                            {
-                                chromosomeName: chromosome,
-                                interval: [s, e],
-                                accessions,
-                            },
-                            dbQuery
+                        let rec: any = await NewickTree.findOne(dbQuery)
+                            .lean()
+                            .exec();
+                        if (!rec) {
+                            await new (NewickTree as any)({
+                                datasetId,
+                                query: {
+                                    chromosomeName: chromosome,
+                                    interval: [s, e],
+                                    accessions,
+                                },
+                                status: "Collating data...",
+                            }).save();
+
+                            const response = await generateTreeAsync(
+                                dataset.tsi_location,
+                                {
+                                    chromosomeName: chromosome,
+                                    interval: [s, e],
+                                    accessions,
+                                },
+                                dbQuery
+                            );
+
+                            rec = await NewickTree.findOne(dbQuery).lean().exec();
+                            console.log(
+                                "got rec",
+                                JSON.stringify(response, null, 2)
+                            );
+                        }
+
+                        if (!rec) return null;
+
+                        const fileName = `tree_${s}_${e}.nwk`;
+                        const filePath = path.join(windowsDir, fileName);
+                        await writeFile(
+                            filePath,
+                            sanitizeTreeStr(rec.tree),
+                            "utf8"
                         );
-
-                        rec = await NewickTree.findOne(dbQuery).lean().exec();
-                        console.log(
-                            "got rec",
-                            JSON.stringify(response, null, 2)
-                        );
-                    }
-
-                    if (!rec) return null;
-
-                    const fileName = `tree_${s}_${e}.nwk`;
-                    const filePath = path.join(windowsDir, fileName);
-                    await writeFile(
-                        filePath,
-                        sanitizeTreeStr(rec.tree),
-                        "utf8"
-                    );
-                    return `${filePath},${s},${e}`;
-                })
-            );
-
-            const results = await Promise.all(tasks);
+                        return `${filePath},${s},${e}`;
+                    })
+                );
+                return Promise.all(tasks);
+            };
+            let results: (string | null)[];
+            if (dataset.variant_search && dataset.tersect) {
+                // All windows from one variant-store query, trees built here.
+                const trees = await windowTrees(datasetId, chromosome, start, end,
+                                                step, accessions, dataset.tersect);
+                results = await Promise.all(trees.map(async tree => {
+                    const filePath = path.join(windowsDir,
+                                               `tree_${tree.start}_${tree.end}.nwk`);
+                    await writeFile(filePath, sanitizeTreeStr(tree.newick), "utf8");
+                    return `${filePath},${tree.start},${tree.end}`;
+                }));
+            } else {
+                results = await treesFromIndex();
+            }
             const rows = [
                 "tree,start,end",
                 ...(results.filter(Boolean) as string[]),

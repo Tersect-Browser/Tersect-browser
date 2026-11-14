@@ -142,7 +142,7 @@ def publish(manifest, tsi_next, reference_fasta, accessions, variant_search,
         _script('build_tersect_index.py', manifest.id, tsi, '-f')
         if existing:
             # Cached trees were built from the previous data.
-            db.trees.delete_many({'dataset_id': manifest.id})
+            db.trees.delete_many({'datasetId': manifest.id})
             db.speciestreecaches.delete_many({'datasetId': manifest.id})
 
         # 2. Variant search tables.
@@ -171,6 +171,10 @@ def publish(manifest, tsi_next, reference_fasta, accessions, variant_search,
             'reference': manifest.reference_id,
             'description': manifest.description,
             'variant_search': variant_search,
+            # What the distance index counts; window distances computed from
+            # the variant store use the same rules.
+            'tersect': {'homozygous': manifest.tersect_homozygous,
+                        'types': manifest.tersect_types},
             'build': build_info,
         }
         db.datasets.replace_one({'_id': manifest.id}, record, upsert=True)

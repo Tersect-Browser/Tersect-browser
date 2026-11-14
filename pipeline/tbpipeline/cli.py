@@ -81,7 +81,8 @@ def remove(args):
         sys.exit('No dataset "%s"' % args.dataset_id)
     db.datasets.delete_one({'_id': args.dataset_id})
     db.views.delete_many({'settings.dataset_id': args.dataset_id})
-    db.trees.delete_many({'dataset_id': args.dataset_id})
+    db.trees.delete_many({'datasetId': args.dataset_id})
+    db.speciestreecaches.delete_many({'datasetId': args.dataset_id})
     for matrix in db.matrices.find({'dataset_id': args.dataset_id}):
         if os.path.isfile(matrix.get('matrix_file', '')):
             os.remove(matrix['matrix_file'])
