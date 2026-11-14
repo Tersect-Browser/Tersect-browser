@@ -3,45 +3,42 @@ import { ChromosomeIndex } from '../models/chromosomeindex';
 import { NewickTree } from '../models/newicktree';
 import {
     concatMap,
+    fromEvent,
     map,
+    merge,
     reduce,
     take,
     takeUntil,
-    throttleTime,
-    withLatestFrom,
-    shareReplay
-} from 'rxjs/operators';
-import { fromEvent, merge, of, throwError,  } from 'rxjs';
+    throttleTime
+} from 'rxjs';
 import {
     spawn, ChildProcess
-} from 'child_process';
-
-import * as os from 'os';
-import * as path from 'path';
-import { generateTree, generateTreeAsync } from '../controllers/generateTree';
+} from 'node:child_process';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { generateTreeAsync } from '../controllers/generateTree';
 import SpeciesTreeCache from '../models/SpeciesTreeCache';
-import { mkdirpP, writeFileP, readFileP, rimrafP } from '../routers/introgression-router';
 import { publishSSE } from '../routers/sse';
 import { accessionsKey, sanitizeTreeStr, execFileLogged } from './utils';
 
 export async function cleanDatabase() {
     // Clean up unfinished trees.
-    await NewickTree.deleteMany({ 'status': { $ne: 'ready' }}, err => {
-        if (err) {
-            console.log(err);
-            process.exit(0);
-        }
-    }).then(out => {
+    try {
+        const out = await NewickTree.deleteMany({ 'status': { $ne: 'ready' }});
         if (out.deletedCount) {
             console.log(`Removed ${out.deletedCount} incomplete tree(s).`);
         }
-    });
+    } catch (err) {
+        console.log(err);
+        process.exit(0);
+    }
 }
 
 export async function fetchChromosomes(reference: string): Promise<Array<{ name: string; size: number }>> {
   return ChromosomeIndex
     .find({ reference }, { name: 1, size: 1, _id: 0 })
-    .lean()
+    .lean<Array<{ name: string; size: number }>>()
     .exec();
 }
 
@@ -51,7 +48,7 @@ export function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string
     const stdoutClose$ = fromEvent(rapidnj.stdout, 'close').pipe(take(1));
     const stderrClose$ = fromEvent(rapidnj.stderr, 'close').pipe(take(1));
 
-    const progress$ = fromEvent(rapidnj.stderr, 'data').pipe(
+    const progress$ = fromEvent<Buffer>(rapidnj.stderr, 'data').pipe(
         takeUntil(stderrClose$),
         throttleTime(500),
         map(data => {
@@ -63,7 +60,7 @@ export function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string
         map(statusUpdate => ({ status: statusUpdate }))
     );
 
-    const result$ = fromEvent(rapidnj.stdout, 'data').pipe(
+    const result$ = fromEvent<Buffer>(rapidnj.stdout, 'data').pipe(
         takeUntil(stdoutClose$),
         reduce((newickOutput, chunk) => newickOutput + chunk, ''),
         map(newickOutput => ({
@@ -73,7 +70,7 @@ export function createRapidnjTree(dbQuery: TreeDatabaseQuery, phylipFile: string
     );
 
     merge(progress$, result$).pipe(
-        concatMap(update => NewickTree.updateOne(dbQuery, update))
+        concatMap(update => NewickTree.updateOne(dbQuery, update).exec())
     ).subscribe(() => { });
 }
 
@@ -100,7 +97,7 @@ export function createRapidnjTreePromise(
     let stdoutBuf = '';
     let stderrBytes = 0;
     let settled = false;
-    let timer: NodeJS.Timer | null = null;
+    let timer: NodeJS.Timeout | null = null;
 
     const rapidnj: ChildProcess = spawn('rapidnj', ['-a', 'jc', '-i', 'pd', phylipFile], {
       stdio: ['ignore', 'pipe', 'pipe']
@@ -205,7 +202,7 @@ export async function ensureBuildSpeciesTree(opts: {
         const astralTreePath = path.join(tmpRoot, 'species_tree_astral.tre');
 
         try {
-            await mkdirpP(tmpRoot);
+            await mkdir(tmpRoot, { recursive: true });
 
             const reference = dataset.reference;
             const chroms = await fetchChromosomes(reference);
@@ -226,7 +223,7 @@ export async function ensureBuildSpeciesTree(opts: {
                 let immediateTree;
                 if (!rec) {
                     immediateTree = await generateTreeAsync(
-                        '/app/gp_data_copy/SGN_aer_hom_snps.tsi',
+                        dataset.tsi_location,
                         { chromosomeName: name, interval: [0, size], accessions },
                         q
                     );
@@ -245,7 +242,7 @@ export async function ensureBuildSpeciesTree(opts: {
 
             if (!lines.length) throw new Error('No per‑chromosome trees available');
 
-            await writeFileP(allChrTreesPath, lines.join('\n') + '\n', 'utf8');
+            await writeFile(allChrTreesPath, lines.join('\n') + '\n', 'utf8');
 
             const cmd = (opts.astralCmd && opts.astralCmd.length)
                 ? { bin: opts.astralCmd[0], args: opts.astralCmd.slice(1) }
@@ -255,7 +252,7 @@ export async function ensureBuildSpeciesTree(opts: {
             publishSSE(keyForSSE, 'progress', { datasetId, accKey, stage: 'astral', message: 'running' });
             await execFileLogged(cmd.bin, args, tmpRoot);
 
-            const newick = (await readFileP(astralTreePath, 'utf8')).trim();
+            const newick = (await readFile(astralTreePath, 'utf8')).trim();
 
             await SpeciesTreeCache.updateOne(
                 { datasetId, accessionsKey: accKey, kind: 'astral' },
@@ -266,13 +263,16 @@ export async function ensureBuildSpeciesTree(opts: {
             publishSSE(keyForSSE, 'ready', { datasetId, accKey, ok: true });
 
         } catch (err) {
+            console.error('Species tree build failed:', err);
             await SpeciesTreeCache.updateOne(
                 { datasetId, accessionsKey: accKey, kind: 'astral' },
-                { $set: { status: 'error', error: String(err), updatedAt: new Date() } }
+                { $set: { status: 'error', error: String(err), updatedAt: new Date() } },
+                { upsert: true }
             ).exec();
             publishSSE(keyForSSE, 'error', { datasetId, accKey, error: String(err) });
+            throw err;
         } finally {
-            await rimrafP(tmpRoot); // best‑effort cleanup
+            await rm(tmpRoot, { recursive: true, force: true }); // best‑effort cleanup
         }
     ;
 

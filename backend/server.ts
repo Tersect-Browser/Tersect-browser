@@ -1,5 +1,5 @@
 import express = require('express');
-import path = require('path');
+import path = require('node:path');
 
 import { app } from './src/app';
 import { tbConfig } from './src/load-config';

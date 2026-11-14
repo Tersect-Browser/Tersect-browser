@@ -4,7 +4,7 @@
  * matrices have to be generated using Tersect.
  */
 
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 
 import { TreeQuery } from '../../../common/PheneticTree';
 
@@ -35,6 +35,10 @@ export function partitionQuery(tsiLocation: string,
     const chromosomePartitions = loadChromosomePartitions(tsiLocation,
                                                           indexPartitions);
 
+    if (!(query.chromosomeName in chromosomePartitions)) {
+        throw new Error(`Chromosome ${query.chromosomeName} is not in the `
+                        + `Tersect index ${tsiLocation}`);
+    }
     const partitions = partitionInterval({
         start: query.interval[0], end: query.interval[1]
     }, chromosomePartitions[query.chromosomeName]);

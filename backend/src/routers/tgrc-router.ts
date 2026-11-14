@@ -14,42 +14,41 @@ router.use((req, res, next) => {
 });
 
 router.route('/genes')
-      .get((req, res) => {
-    GeneTGRC.find({}).exec((err, result: GeneTGRC) => {
-        if (err) {
-            return res.status(500).send('Genes could not be retrieved');
-        } else {
-            return res.json(result);
-        }
-    });
+      .get(async (req, res) => {
+    try {
+        const result = await GeneTGRC.find({}).exec();
+        return res.json(result);
+    } catch (err) {
+        return res.status(500).send('Genes could not be retrieved');
+    }
 });
 
 router.route('/accessions/:gene?/:filter?')
-      .get((req, res) => {
+      .get(async (req, res) => {
     const gene = req.params.gene;
     const filter = req.params.filter || false;
     const query = gene ? { 'alleles.gene': gene } : {};
     const projection = { _id: 0, accession: 1, alleles: 1};
-    AccessionTGRC.find(AccessionTGRC.translateAliases(query),
-                       AccessionTGRC.translateAliases(projection))
-                 .exec((err, result: AccessionTGRC[]) => {
-        if (err) {
-            return res.status(500).send('Accessions could not be retrieved');
-        } else {
-            const output = result.map(acc => {
-                const accObj = acc.toObject();
-                return {
-                    accession: accObj.accession,
-                    alleles: accObj.alleles
-                };
+    try {
+        const result = await AccessionTGRC.find(
+            AccessionTGRC.translateAliases(query),
+            AccessionTGRC.translateAliases(projection)
+        ).exec();
+        const output = result.map(acc => {
+            const accObj = acc.toObject<Pick<AccessionTGRC, 'accession' | 'alleles'>>();
+            return {
+                accession: accObj.accession,
+                alleles: accObj.alleles
+            };
+        });
+        if (filter) {
+            // Exclude other genes from result
+            output.forEach(acc => {
+                acc.alleles = acc.alleles.filter(a => a.gene === gene);
             });
-            if (filter) {
-                // Exclude other genes from result
-                output.forEach(acc => {
-                    acc.alleles = acc.alleles.filter(a => a.gene === gene);
-                });
-            }
-            return res.json(output);
         }
-    });
+        return res.json(output);
+    } catch (err) {
+        return res.status(500).send('Accessions could not be retrieved');
+    }
 });

@@ -1,15 +1,14 @@
 import { fileSync } from "tmp";
-import * as path from 'path';
+import * as path from 'node:path';
 import { TreeDatabaseQuery, TreeQuery } from "../../../common/PheneticTree";
 import { DBMatrix } from "../models/dbmatrix";
 import { partitionQuery } from "../utils/partitioning";
 import { execPromise, formatRegion, mapToAppPath, writeAccessions } from "../utils/utils";
 import { createRapidnjTree , createRapidnjTreePromise} from "../utils/dbutils";
 import { tbConfig } from "../load-config";
-import * as fs from "fs";
-import * as rimraf from "rimraf";
-import { promisify } from "util";
-import * as os from "os";
+import * as fs from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import * as os from "node:os";
 
 export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
     dbQuery: TreeDatabaseQuery) {
@@ -143,9 +142,7 @@ export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuer
             negativeMatrixFiles.push(tersectOutputFiles[i]);
         }
     });
-    const mkdtempP = promisify(fs.mkdtemp);
-    const rimrafP = promisify(rimraf);
-    const tmpBase = await mkdtempP(path.join(os.tmpdir(), "accessions"));
+    const tmpBase = await mkdtemp(path.join(os.tmpdir(), "accessions"));
     const writtenAccessions = await writeAccessions(treeQuery.accessions, tmpBase);
     const resultOfNegativeMatrixFiles = await Promise.all(negativeMatrixFiles);
     const resultOfPositiveMatrixFiles = await Promise.all(positiveMatrixFiles);
@@ -175,7 +172,7 @@ export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuer
     console.log('Generated tree:', response);
     const cleanup = async () => {
         try {
-            await rimrafP(tmpBase);
+            await rm(tmpBase, { recursive: true, force: true });
         } catch (e) {
             console.error('Error cleaning up:', e);
         }

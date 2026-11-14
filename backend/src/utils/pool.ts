@@ -1,7 +1,7 @@
 /* helpers ----------------------------------------------------------- */
-import { spawn }   from 'child_process';
-import * as os from 'os'
-import * as pLimit from 'p-limit';
+import { spawn }   from 'node:child_process';
+import * as os from 'node:os';
+import pLimit = require('p-limit');
 
 
 export class Pool {
@@ -39,7 +39,7 @@ export function collectSampleNames(
 }
 
 function getOptimalConcurrency() {
-  const cores = os.cpus().length;
+  const cores = os.availableParallelism();
   return Math.max(cores - 1, 1); // leave one core free
 }
 

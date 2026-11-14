@@ -27,4 +27,4 @@ export interface DatasetPublic {
     reference: string;
 }
 
-export const Dataset = model('datasets', DatasetSchema, 'datasets');
+export const Dataset = model<Dataset>('datasets', DatasetSchema, 'datasets');

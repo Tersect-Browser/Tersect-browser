@@ -1,17 +1,15 @@
 // file: routes/introgression.ts
-import * as fs from "fs";
-import * as rimraf from "rimraf";
-import { promisify } from "util";
-import * as mkdirp from "mkdirp";
-import * as pLimit from "p-limit";
-import * as path from "path";
-import * as os from "os";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import * as os from "node:os";
+import * as path from "node:path";
+import pLimit = require("p-limit");
 import { ensureBuildSpeciesTree } from "../utils/dbutils";
 import { Dataset } from "../models/dataset";
 import {
     accessionsKey,
     moveFile,
     randomId,
+    resolveTsiPath,
     runIntrogressionAnalysis,
     runPhylonetAnalysis,
     sanitizeTreeStr,
@@ -22,14 +20,8 @@ import { generateTreeAsync } from "../controllers/generateTree";
 import { tbConfig } from "../load-config";
 import { publishSSE, sseKey, subscribeSSE } from "./sse";
 
-export const writeFileP = promisify(fs.writeFile);
-export const readFileP = promisify(fs.readFile);
-export const mkdirpP = promisify(mkdirp);
-export const rimrafP = promisify(rimraf);
-const mkdtempP = promisify(fs.mkdtemp);
-
 const introgressionController = async (req, res) => {
-    const tmpBase = await mkdtempP(path.join(os.tmpdir(), "introgress-"));
+    const tmpBase = await mkdtemp(path.join(os.tmpdir(), "introgress-"));
     const windowsDir = path.join(tmpBase, "windows");
     const keyId = randomId();
     const key = sseKey(req.body.datasetId, keyId);
@@ -37,8 +29,18 @@ const introgressionController = async (req, res) => {
     const speciesTreePath = path.join(tmpBase, "species_tree_astral.tre");
     const cleanup = async () => {
         try {
-            await rimrafP(tmpBase);
+            await rm(tmpBase, { recursive: true, force: true });
         } catch (_) {}
+    };
+    const onFatal = async (e: unknown) => {
+        console.log(e);
+        await cleanup();
+        publishSSE(key, "pipeline:error", {
+            at: Date.now(),
+            stage: "fatal",
+            message: "Pipeline crashed",
+            details: (e as Error)?.message ?? String(e),
+        });
     };
 
     try {
@@ -58,9 +60,10 @@ const introgressionController = async (req, res) => {
         const dataset = await Dataset.findById(datasetId).exec();
         if (!dataset)
             return res.status(404).json({ error: "Dataset not found" });
+        dataset.tsi_location = resolveTsiPath(dataset.tsi_location);
 
         res.status(202).json({ datasetId, accKey: key });
-        setTimeout(async () => {
+        const runPipeline = async () => {
             await new Promise((r) => setTimeout(r, 1000)); // let client connect
             publishSSE(key, "pipeline:start", {
                 at: Date.now(),
@@ -74,26 +77,35 @@ const introgressionController = async (req, res) => {
                 stage: "introgression",
                 message: "Generating species tree",
             });
-            const existing: any = await SpeciesTreeCache.findOne({
-                datasetId,
-                accessionsKey: accKey,
-                kind: "astral",
-            })
-                .lean()
-                .exec();
+            const findSpeciesTree = async () => {
+                const cached: any = await SpeciesTreeCache.findOne({
+                    datasetId,
+                    accessionsKey: accKey,
+                    kind: "astral",
+                    status: "ready",
+                })
+                    .lean()
+                    .exec();
+                return cached?.tree as string | undefined;
+            };
 
-            if (!existing && !existing?.tree) {
-                // Kick off background build (non‑blocking)
+            // The species tree is built once per set of accessions and cached.
+            let speciesTree = await findSpeciesTree();
+            if (!speciesTree) {
                 await ensureBuildSpeciesTree({
                     datasetId: dataset.id,
                     dataset,
                     accessions: wholeAccessions,
-                }).catch(() => {});
+                });
+                speciesTree = await findSpeciesTree();
+            }
+            if (!speciesTree) {
+                throw new Error("The species tree could not be built");
             }
 
-            await writeFileP(
+            await writeFile(
                 speciesTreePath,
-                String(existing.tree).trim() + "\n",
+                String(speciesTree).trim() + "\n",
                 "utf8"
             );
 
@@ -105,7 +117,7 @@ const introgressionController = async (req, res) => {
                 message: "Generating gene trees",
             });
 
-            await mkdirpP(windowsDir);
+            await mkdir(windowsDir, { recursive: true });
             const windows: Array<[number, number]> = [];
             for (let s = start; s < end; s += step) {
                 const e = Math.min(s + step, end);
@@ -115,7 +127,7 @@ const introgressionController = async (req, res) => {
             // Pick a safe concurrency:
             const concurrency = Math.min(
                 8,
-                Math.max(2, require("os").cpus().length - 1)
+                Math.max(2, os.availableParallelism() - 1)
             );
             const limit = pLimit(concurrency);
 
@@ -143,7 +155,7 @@ const introgressionController = async (req, res) => {
                         }).save();
 
                         const response = await generateTreeAsync(
-                            "/app/gp_data_copy/SGN_aer_hom_snps.tsi",
+                            dataset.tsi_location,
                             {
                                 chromosomeName: chromosome,
                                 interval: [s, e],
@@ -163,7 +175,7 @@ const introgressionController = async (req, res) => {
 
                     const fileName = `tree_${s}_${e}.nwk`;
                     const filePath = path.join(windowsDir, fileName);
-                    await writeFileP(
+                    await writeFile(
                         filePath,
                         sanitizeTreeStr(rec.tree),
                         "utf8"
@@ -182,7 +194,7 @@ const introgressionController = async (req, res) => {
                 stage: "introgression",
                 message: "gene tree generation completed",
             });
-            await writeFileP(windowsCsvPath, rows.join("\n") + "\n", "utf8");
+            await writeFile(windowsCsvPath, rows.join("\n") + "\n", "utf8");
             console.log("Windows CSV written:", windowsCsvPath);
             const jsonPath = path.resolve(tmpBase, "scan.json");
             const phyloTextPath = path.resolve(tmpBase, "phylo.txt");
@@ -204,7 +216,7 @@ const introgressionController = async (req, res) => {
                     tmpBase,
                     accessions,
                 });
-                const text = await readFileP(jsonPath, "utf8");
+                const text = await readFile(jsonPath, "utf8");
                 let data;
                 try {
                     data = JSON.parse(text);
@@ -256,9 +268,9 @@ const introgressionController = async (req, res) => {
             const TEXT_ROOT = tbConfig.localDbPath + "/gp_data_copy/text/";
             const NETWORK_ROOT =
                 tbConfig.localDbPath + "/gp_data_copy/networks/";
-            await mkdirpP(TEXT_ROOT);
-            await mkdirpP(PLOT_ROOT);
-            await mkdirpP(NETWORK_ROOT);
+            await mkdir(TEXT_ROOT, { recursive: true });
+            await mkdir(PLOT_ROOT, { recursive: true });
+            await mkdir(NETWORK_ROOT, { recursive: true });
             const finalPath = path.join(PLOT_ROOT, fileName);
             const finalTextPath = path.join(TEXT_ROOT, textFileName);
             const finalNetworkPath = path.join(NETWORK_ROOT, networkFileName);
@@ -283,16 +295,15 @@ const introgressionController = async (req, res) => {
                 at: Date.now(),
                 message: "All analyses completed",
             });
+            await cleanup();
+        };
+        // The pipeline outlives the request. A rejection left unhandled here
+        // would terminate the process, so route it to the SSE error channel.
+        setTimeout(() => {
+            runPipeline().catch(onFatal);
         });
     } catch (e) {
-        console.log(e);
-        await cleanup();
-        publishSSE(key, "pipeline:error", {
-            at: Date.now(),
-            stage: "fatal",
-            message: "Pipeline crashed",
-            details: (e as Error)?.message ?? String(e),
-        });
+        await onFatal(e);
         // res.status(500).json({ error: String(e) });
     }
 };

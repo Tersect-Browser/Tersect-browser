@@ -2,19 +2,18 @@ import {
     exec,
     spawn,
     execFile
-} from 'child_process';
-import * as readline from 'readline';
+} from 'node:child_process';
+import * as readline from 'node:readline';
 
 import {
     Request,
     Response,
     Router
 } from 'express';
-import * as fs from 'fs';
-import {
-    default as Hashids
-} from 'hashids';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import { access, readdir, stat } from 'node:fs/promises';
+import Hashids from 'hashids';
+import * as path from 'node:path';
 
 import {
     DistanceBinQuery,
@@ -30,18 +29,14 @@ import { ChromosomeIndex } from '../models/chromosomeindex';
 import { Dataset, DatasetPublic } from '../models/dataset';
 import { NewickTree } from '../models/newicktree';
 import { ViewSettings } from '../models/viewsettings';
-import { formatRegion, writeAccessions } from '../utils/utils';
+import { formatRegion, resolveTsiPath, writeAccessions } from '../utils/utils';
 import { collectSampleNames, Pool, processKeys } from '../utils/pool';
 import introgressionController from './introgression-router';
 import { generateTree } from '../controllers/generateTree';
 import { subscribeSSE, unsubscribeSSE } from './sse';
 
-const util = require('util');
-
-const readdir = util.promisify(fs.readdir);
-const stat = util.promisify(fs.stat);
-const access = util.promisify(fs.access);
-const DATA_DIR = `/app/gp_data_copy/trix_indices`;
+// Per-chromosome variant indices built by build_annotate_per_chrom.sh
+const DATA_DIR = path.join(tbConfig.localDbPath, 'gp_data_copy', 'trix_indices');
 
 function isValidChrom(chr: string): boolean {
     return /^SL2\.50ch(0[0-9]|1[0-2])$/.test(chr);
@@ -97,22 +92,22 @@ router.use((req, res, next) => {
     next();
 });
 
-router.use('/query/:datasetId', (req, res, next) => {
-    Dataset.findOne({ _id: req.params.datasetId })
-        .exec((err, dataset: Dataset) => {
-            if (err) {
-                res.send(err);
-                return;
-            } else if (!dataset) {
-                res.status(404).send('Dataset not found');
-                return;
-            } else {
-
-                res.locals.dataset = dataset;
-                res.locals.datasetId = dataset._id;
-                return next();
-            }
-        });
+router.use('/query/:datasetId', async (req, res, next) => {
+    let dataset: Dataset | null;
+    try {
+        dataset = await Dataset.findOne({ _id: req.params.datasetId }).exec();
+    } catch (err) {
+        res.send(err);
+        return;
+    }
+    if (!dataset) {
+        res.status(404).send('Dataset not found');
+        return;
+    }
+    dataset.tsi_location = resolveTsiPath(dataset.tsi_location);
+    res.locals.dataset = dataset;
+    res.locals.datasetId = dataset._id;
+    return next();
 })
 
 
@@ -187,8 +182,8 @@ router.route('/query/:datasetId/samples')
         const options = {
             maxBuffer: 5 * 1024 * 1024 // 5 megabytes
         };
-        const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
-        const tersectCommand = `tersect samples -n ${tsiLocation}`;
+        const tsiLocation = res.locals.dataset.tsi_location;
+        const tersectCommand = `tersect samples -n "${tsiLocation}"`;
         exec(tersectCommand, options, (err, stdout, stderr) => {
             if (err) {
                 console.error('Error executing tersect samples:', err);
@@ -211,8 +206,8 @@ router.route(
       const chrom   = req.params.chrom;
       const start   = Number(req.query.start);
       const end     = Number(req.query.end);
-      const filter  = req.query?.filter ?? 'HIGH';
-      const gene  = req.query?.term;
+      const filter  = (req.query?.filter ?? 'HIGH') as string;
+      const gene  = req.query?.term as string | undefined;
       const tsiPath = res.locals.dataset.tsi_location;
 
       if (!isValidChrom(chrom))
@@ -319,34 +314,36 @@ router.route(
 
 
 router.route('/query/:datasetId/chromosomes')
-    .get((req, res) => {
-        ChromosomeIndex.find({
-            reference: res.locals.dataset.reference
-        }, { 'name': 1, 'size': 1, '_id': 0 }).exec((err, chroms) => {
-            if (err) {
-                res.send(err);
-            } else if (!chroms) {
+    .get(async (req, res) => {
+        try {
+            const chroms = await ChromosomeIndex.find({
+                reference: res.locals.dataset.reference
+            }, { 'name': 1, 'size': 1, '_id': 0 }).exec();
+            if (!chroms) {
                 res.status(404).send('Chromosomes not found');
             } else {
                 res.json(chroms);
             }
-        });
+        } catch (err) {
+            res.send(err);
+        }
     });
 
 router.route('/query/:datasetId/gaps/:chromosome')
-    .get((req, res) => {
-        ChromosomeIndex.findOne({
-            reference: res.locals.dataset.reference,
-            name: req.params.chromosome
-        }, 'gaps').exec((err, gaps) => {
-            if (err) {
-                res.send(err);
-            } else if (!gaps) {
+    .get(async (req, res) => {
+        try {
+            const gaps = await ChromosomeIndex.findOne({
+                reference: res.locals.dataset.reference,
+                name: req.params.chromosome
+            }, 'gaps').exec();
+            if (!gaps) {
                 res.status(404).send('Chromosome not found');
             } else {
                 res.json(gaps['gaps']);
             }
-        });
+        } catch (err) {
+            res.send(err);
+        }
     });
 
 router.route('/query/:datasetId/dist')
@@ -357,7 +354,7 @@ router.route('/query/:datasetId/dist')
                 maxBuffer: 200 * 1024 * 1024 // 200 megabytes
             };
 
-            const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
+            const tsiLocation = res.locals.dataset.tsi_location;
             const distBinQuery: DistanceBinQuery = req.body;
 
             const region = formatRegion(distBinQuery.chromosome_name,
@@ -379,6 +376,7 @@ console.log(tersectCommand, 'Tersect command');
                 };
                 try {
                     exec(tersectCommand, options, (err, stdout, stderr) => {
+                        fs.promises.unlink(accFile).catch(() => {});
                         if (err) {
                             res.json(err);
                         } else if (stderr) {
@@ -410,33 +408,31 @@ console.log(tersectCommand, 'Tersect command');
     });
 
 router.route('/datasets')
-    .get((req, res) => {
-        Dataset.find().exec((err, r: Dataset[]) => {
-            if (err || !r) {
-                res.json(undefined);
-            } else {
-                const output: DatasetPublic[] = r.map(dataset => {
-                    return {
-                        dataset_id: dataset._id,
-                        view_id: dataset.view_id,
-                        reference: dataset.reference
-                    };
-                });
-                res.json(output);
-            }
-        });
+    .get(async (req, res) => {
+        try {
+            const r = await Dataset.find().exec();
+            const output: DatasetPublic[] = r.map(dataset => {
+                return {
+                    dataset_id: dataset._id,
+                    view_id: dataset.view_id,
+                    reference: dataset.reference
+                };
+            });
+            res.json(output);
+        } catch (err) {
+            res.json(undefined);
+        }
     });
 
 router.route('/views/share/:id')
-    .get((req, res) => {
-        ViewSettings.findOne({ '_id': req.params.id })
-            .exec((err, r) => {
-                if (err || !r) {
-                    res.json(undefined);
-                } else {
-                    res.json(r['settings']);
-                }
-            });
+    .get(async (req, res) => {
+        try {
+            const r = await ViewSettings.findOne({ '_id': req.params.id })
+                                        .exec();
+            res.json(r ? r['settings'] : undefined);
+        } catch (err) {
+            res.json(undefined);
+        }
     });
 
 const DEFAULT_VIEW_SALT = 'tersectsalt';
@@ -447,7 +443,7 @@ function randomHash(): string {
     return hash.encode(Math.floor(Math.random() * MAX_VIEW_ID));
 }
 
-function exportView(req: Request, res: Response) {
+async function exportView(req: Request, res: Response) {
     const nextId = randomHash();
     // Casting to any to fix compilation bug where the settings are not
     // recognized as a known property
@@ -456,28 +452,26 @@ function exportView(req: Request, res: Response) {
         _id: nextId,
         settings: req.body
     } as any);
-    exportedView.save(err => {
-        if (err) {
-            if (err.code === 11000) {
-                // Duplicate key error, retry
-                exportView(req, res);
-            } else {
-                res.json(err);
-            }
-            return;
-        }
+    try {
+        await exportedView.save();
         res.json(nextId);
-    });
+    } catch (err) {
+        if (err.code === 11000) {
+            // Duplicate key error, retry
+            await exportView(req, res);
+        } else {
+            res.json(err);
+        }
+    }
 }
 
 router.route('/views/export')
     .post(exportView);
 
 router.route('/query/:datasetId/tree')
-    .post((req, res) => {
+    .post(async (req, res) => {
         try {
-            const tsiLocation = "/app/gp_data_copy/SGN_aer_hom_snps.tsi";
-            console.log(tsiLocation, req.body, 'tsi');
+            const tsiLocation = res.locals.dataset.tsi_location;
             const treeQuery: TreeQuery = req.body;
             const dbQuery: TreeDatabaseQuery = {
                 datasetId: req.params.datasetId,
@@ -486,30 +480,33 @@ router.route('/query/:datasetId/tree')
                 'query.accessions': treeQuery.accessions
             };
 
-            NewickTree.findOne(dbQuery)
-                .exec((err, result: NewickTree) => {
-                    if (err) {
-                        return res.status(500).send('Tree creation failed');
-                    } else if (!result) {
-                        // Generating new tree
-                        const phyloTree = new NewickTree({
-                            datasetId: req.params.datasetId,
-                            'query.chromosomeName': treeQuery.chromosomeName,
-                            'query.interval': treeQuery.interval,
-                            'query.accessions': treeQuery.accessions,
-                            status: 'Collating data...'
-                        }).save(saveErr => {
-                            if (saveErr) {
-                                return res.status(500).send('Tree creation failed');
-                            }
-                            generateTree(tsiLocation, treeQuery, dbQuery);
-                        });
-                        res.json(phyloTree);
-                    } else {
-                        // Retrieved previously generated tree
-                        res.json(result);
-                    }
-                });
+            const result = await NewickTree.findOne(dbQuery).exec();
+            if (result) {
+                // Retrieved previously generated tree
+                return res.json(result);
+            }
+
+            // Generating new tree
+            const phyloTree = await new NewickTree({
+                datasetId: req.params.datasetId,
+                'query.chromosomeName': treeQuery.chromosomeName,
+                'query.interval': treeQuery.interval,
+                'query.accessions': treeQuery.accessions,
+                status: 'Collating data...'
+            }).save();
+            // Runs in the background; the client polls this route for status.
+            // A failure left unhandled here would terminate the process.
+            new Promise(resolve => {
+                resolve(generateTree(tsiLocation, treeQuery, dbQuery));
+            }).catch(async err => {
+                console.error('Tree generation failed:', err);
+                // Clients poll the status, so record the failure. Unfinished
+                // trees are removed when the server starts, allowing a retry.
+                await NewickTree.updateOne(dbQuery, {
+                    status: 'Error: the tree could not be built'
+                }).exec().catch(() => {});
+            });
+            res.json(phyloTree);
         } catch (error) {
             console.log('Error creating tree');
             console.log(error);
@@ -525,7 +522,7 @@ router.route('/query/:datasetId/generate-barcodes').post((req, res) => {
     const { accessionName, chrom, start, end, size, maxVar } = req.body;
 
     // define path to tsi and fasta
-    const tsiLocation = `${tbConfig.tsiPath}/${tbConfig.datasetName}.tsi`;
+    const tsiLocation = res.locals.dataset.tsi_location;
     const fasta_file = `${tbConfig.localDbPath}/gp_data_copy/${tbConfig.fastaName}`;
 
 
