@@ -2,6 +2,7 @@ import {
   createViewState,
   JBrowseLinearGenomeView,
 } from "@jbrowse/react-linear-genome-view2"
+import { ScanSearchIcon } from "lucide-react"
 import { when } from "mobx"
 import { useEffect, useState } from "react"
 
@@ -16,8 +17,9 @@ import { Spinner } from "@/components/ui/spinner"
 import { usePlotStore } from "@/store/plot-store"
 import { useUiStore, type GenomeDialogTarget } from "@/store/ui-store"
 
-import { getConfiguration, type JBrowseDatasetConfig } from "./config"
-import { useJBrowseConfig } from "./use-jbrowse-config"
+import type { JBrowseDatasetConfig } from "./config"
+import { jbrowseConfiguration, styleTracks, type JBrowseTokens } from "./theme"
+import { useJBrowseConfig, useJBrowseTokens } from "./use-jbrowse-config"
 
 type ViewState = ReturnType<typeof createViewState>
 
@@ -27,16 +29,18 @@ const DEFAULT_SPAN = 100_000
 function AccessionGenomeView({
   target,
   config,
+  tokens,
 }: {
   target: GenomeDialogTarget
   config: JBrowseDatasetConfig
+  tokens: JBrowseTokens
 }) {
   const [viewState] = useState<ViewState>(() => {
     const chromosome = usePlotStore.getState().chromosome
     return createViewState({
       assembly: config.assembly,
-      tracks: config.tracks,
-      configuration: getConfiguration(),
+      tracks: styleTracks(config.tracks, tokens),
+      configuration: jbrowseConfiguration(tokens),
       defaultSession: {
         name: "default session",
         view: {
@@ -98,11 +102,12 @@ function AccessionGenomeView({
 
 function DialogBody({ target }: { target: GenomeDialogTarget }) {
   const config = useJBrowseConfig()
+  const tokens = useJBrowseTokens()
   if (config.isPending) {
     return (
       <div className="flex items-center gap-2 p-4 text-muted-foreground">
         <Spinner className="size-3" />
-        Loading genome browser...
+        Loading genome browser…
       </div>
     )
   }
@@ -113,7 +118,17 @@ function DialogBody({ target }: { target: GenomeDialogTarget }) {
       </p>
     )
   }
-  return <AccessionGenomeView target={target} config={config.data} />
+  return (
+    <div className="overflow-hidden rounded-xl border bg-card">
+      {/* Rebuilt when the theme changes, so JBrowse follows the page. */}
+      <AccessionGenomeView
+        key={`${tokens.dark}:${tokens.primary}`}
+        target={target}
+        config={config.data}
+        tokens={tokens}
+      />
+    </div>
+  )
 }
 
 /** Genome browser for one accession: sequence, gene models and its variants. */
@@ -126,12 +141,13 @@ export function GenomeDialog() {
       open={target !== null}
       onOpenChange={(open) => !open && setTarget(null)}
     >
-      <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[80vw]">
-        <DialogHeader>
-          <DialogTitle>{target?.accessionName}</DialogTitle>
-          <DialogDescription>
-            Reference sequence, gene models and the variants of this accession.
-          </DialogDescription>
+      <DialogContent className="max-h-[90vh] w-[80vw] overflow-auto sm:max-w-none">
+        <DialogHeader className="flex-row items-center gap-2 pr-8">
+          <ScanSearchIcon className="size-3.5 text-muted-foreground" />
+          <DialogTitle className="font-mono">
+            {target?.accessionName}
+          </DialogTitle>
+          <DialogDescription>Genome browser</DialogDescription>
         </DialogHeader>
         {target && (
           <DialogBody

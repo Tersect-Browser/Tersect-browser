@@ -7,6 +7,8 @@ export interface JBrowseDatasetConfig {
   tracks: any[]
   /** The gene model track, shown under the ruler and in every dialog. */
   geneTrackId: string | undefined
+  /** Name of the gene annotation, e.g. ITAG2.4_gene_models. */
+  annotation?: string
 }
 
 /**
@@ -59,30 +61,6 @@ export async function loadJBrowseConfig(
     assembly: relocate(config.assembly),
     tracks: relocate(config.tracks ?? []),
     geneTrackId: config.geneTrackId ?? undefined,
-  }
-}
-
-/** JBrowse (Material UI) theme, from the design tokens in effect now. */
-export function getConfiguration() {
-  const style = getComputedStyle(document.documentElement)
-  const token = (name: string) => style.getPropertyValue(name).trim()
-  const primary = { main: token("--primary") }
-  return {
-    theme: {
-      palette: {
-        primary,
-        secondary: primary,
-        tertiary: { main: token("--viz-ruler") },
-        quaternary: primary,
-      },
-      typography: { fontFamily: token("--font-sans") },
-      components: {
-        MuiPaper: {
-          styleOverrides: {
-            root: { boxShadow: "none", padding: "0 !important" },
-          },
-        },
-      },
-    },
+    annotation: config.annotation ?? undefined,
   }
 }
