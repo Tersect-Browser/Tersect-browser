@@ -146,10 +146,11 @@ def main():
         except Exception:
             gene_trees.append(None)
 
-    per_tree = []   # list of (topo, d) where d is the pairwise distance matching the topology
+    per_tree = []   # (topo, d, external_d, window index); d: distance of the sister pair
     total_n = total_n2 = total_n3 = 0
+    unresolved = 0
 
-    for gt in gene_trees:
+    for window, gt in enumerate(gene_trees):
         if gt is None:
             continue
         try:
@@ -158,6 +159,17 @@ def main():
             gt_q.prune([p1, p2, p3, args.outgroup], preserve_branch_length=True)
 
             topo = label_topology_quartet(gt_q, p1, p2, p3, args.outgroup)
+
+            # A quartet whose internal branch is shorter than a quarter of one
+            # difference over the window is unresolved: its topology only
+            # reflects how the tree builder broke a tie, so it is not counted.
+            if topo in ("T1", "T2", "T3"):
+                pair = {"T1": (p1, p2), "T2": (p1, p3), "T3": (p2, p3)}[topo]
+                length = float(mapping_df["end"].iloc[window] - mapping_df["start"].iloc[window])
+                cherry = gt_q.get_common_ancestor(gt_q & pair[0], gt_q & pair[1])
+                if length > 0 and cherry.dist < 0.25 / length:
+                    unresolved += 1
+                    continue
 
             # distance for the *sister pair of that topology* (logic)
             d = None
@@ -192,7 +204,7 @@ def main():
                 external_d = (d1 + d2) / 2.0
 
             if d is not None and np.isfinite(d) and d > 0:
-                per_tree.append((topo, float(d), float(external_d) if external_d is not None and np.isfinite(external_d) and external_d > 0 else None))
+                per_tree.append((topo, float(d), float(external_d) if external_d is not None and np.isfinite(external_d) and external_d > 0 else None, window))
         except Exception:
             continue
 
@@ -216,8 +228,12 @@ def main():
 
     for start_idx in range(0, len(per_tree), B):
         trees = per_tree[start_idx:start_idx + B]
-
-        mid = float(mapping_df["mid_bp"].iloc[start_idx:start_idx + B].mean())
+        # Position from the windows these trees came from (windows without a
+        # usable tree are skipped, so block k need not cover windows kB..).
+        windows = [w for _, _, _, w in trees]
+        mid = float(mapping_df["mid_bp"].iloc[windows].mean())
+        block_start = int(mapping_df["start"].iloc[windows[0]])
+        block_end = int(mapping_df["end"].iloc[windows[-1]])
 
         # ------ per-block logic ------
         n1 = n2 = n3 = 0
@@ -226,7 +242,7 @@ def main():
         total_evolutionary_distance = 0.0
         discordant_distance = 0.0
 
-        for topo, d, e in trees:
+        for topo, d, e, _ in trees:
             if d is None or d <= 0:
                 continue
             total_evolutionary_distance += d
@@ -275,6 +291,8 @@ def main():
         records.append({
             "start_idx": int(start_idx),
             "mid_BP": mid,
+            "start_BP": block_start,
+            "end_BP": block_end,
 
             # Hybrid/original outputs
             "tau_hat": float(tau_hat_global),
@@ -314,7 +332,10 @@ def main():
         },
         "global": {
             "methods": ["HYBRID", "DCT", "BLT"],
-            "notes": "Hybrid/mode uses ONLY obs_disc vs global expectation and asymmetry_score. DCT/BLT are computed independently."
+            "notes": "Hybrid/mode uses ONLY obs_disc vs global expectation and asymmetry_score. DCT/BLT are computed independently.",
+            "windows": int(len(mapping_df)),
+            "trees_used": int(len(per_tree)),
+            "unresolved": int(unresolved),
         },
         "blocks": dfb.replace({np.nan: None}).to_dict(orient="records")
     }
