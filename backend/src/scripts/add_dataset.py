@@ -8,8 +8,9 @@ import json
 import subprocess
 
 from pymongo import errors, MongoClient
-from tbutils import abspath, randomHash
-from tersectutils import get_accession_names, rename_accession
+from tbutils import abspath, load_config, randomHash
+from tersectutils import (get_accession_names, get_chromosome_sizes,
+                          rename_accession)
 
 # Supporting up to two billion views
 # NOTE: this is meant to match MAX_VIEW_ID in tersect-router.ts
@@ -97,6 +98,31 @@ def load_groups(groups_filepath, acc_name_map=None):
                     group['accessions'][i] = acc_name_map[old_name]
     return groups
 
+def add_chromosomes_from_index(cfg, tsi_file, reference_id):
+    """Register the chromosomes of a reference from the Tersect index.
+
+    Used when no reference FASTA is given. Sizes come from the index; gaps
+    cannot be known without the sequence, so none are recorded. Does nothing
+    if the reference is already registered.
+    """
+    client = MongoClient(cfg['mongoHost'])
+    chrom_index = client[cfg['dbName']]['chromosomes']
+    if chrom_index.find_one({'reference': reference_id}) is not None:
+        client.close()
+        return
+    chromosomes = get_chromosome_sizes(tsi_file) or []
+    print("No reference FASTA given; registering %d chromosomes of '%s' "
+          "from the Tersect index (without gap information)."
+          % (len(chromosomes), reference_id))
+    for chrom in chromosomes:
+        chrom_index.insert_one({
+            'reference': reference_id,
+            'name': chrom['name'],
+            'size': chrom['size'],
+            'gaps': []
+        })
+    client.close()
+
 def remove_dataset_matrices(cfg, dataset_id):
     client = MongoClient(cfg['mongoHost'])
     matrices = client[cfg['dbName']]['matrices']
@@ -182,8 +208,7 @@ parser.add_argument('-p', dest='plugins', required=False, action='append', defau
 args = parser.parse_args()
 
 config_file = abspath(args.config_file)
-with open(config_file, 'r') as cfg_file:
-    cfg = json.load(cfg_file)
+cfg = load_config(config_file)
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -209,10 +234,15 @@ if args.reference_file is not None:
     if (args.f):
         command.append('-f')
     subprocess.call(command, cwd=os.getcwd())
+else:
+    add_chromosomes_from_index(cfg, tsi_file, args.reference_id)
 
 dataset = add_dataset(cfg, args.dataset_id, tsi_file, args.reference_id,
                       groups_file=groups_file, infos_file=infos_file,
                       plugins=args.plugins, force=args.f, verbose=True)
+if dataset is None:
+    # Already registered and not overwritten.
+    exit()
 
 command = [
     os.path.join(script_path, 'build_tersect_index.py'),

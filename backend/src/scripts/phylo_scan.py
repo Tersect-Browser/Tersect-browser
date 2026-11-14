@@ -1,4 +1,4 @@
-import argparse, glob, os, re, subprocess, sys
+import argparse, glob, os, re, shutil, subprocess, sys
 import numpy as np
 import pandas as pd
 
@@ -92,11 +92,9 @@ def write_enewick(s: str, path: str):
 
 
 def run_julia_plot(enewick_path: str, out_image: str):
-    # Absolute path to Julia in the container (you can also just use "julia")
-    julia = "/usr/local/bin/julia"
-
-    # Resolve the script path robustly (adjust if your layout differs)
-    script = "/app/backend/src/scripts/plot_phylonet.jl"
+    julia = shutil.which("julia") or "/usr/local/bin/julia"
+    script = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          "plot_phylonet.jl")
 
     # Make sure depot is visible (already set in Dockerfile, but safe to enforce)
     # env = os.environ.copy()

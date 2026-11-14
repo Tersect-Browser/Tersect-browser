@@ -8,7 +8,7 @@ from pymongo import ASCENDING, MongoClient
 from pymongo.collection import Collection
 from math import ceil
 from timeit import default_timer as timer
-from tbutils import merge_phylip_files, open_phylip_file, get_db_location, abspath
+from tbutils import merge_phylip_files, open_phylip_file, get_db_location, abspath, load_config
 from tersectutils import get_chromosome_sizes
 
 def add_region_index_db(matrices: Collection, dataset_id,
@@ -146,7 +146,6 @@ parser.add_argument('-f', required=False, action='store_true', help='force dista
 args = parser.parse_args()
 
 config_file = abspath(args.config_file)
-with open(config_file, 'r') as cfg_file:
-    cfg = json.load(cfg_file)
+cfg = load_config(config_file)
 
 generate_indices(cfg, args.dataset_id, args.tsi_file, args.f, verbose=True)

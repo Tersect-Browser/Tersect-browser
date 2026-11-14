@@ -8,7 +8,8 @@ from pymongo import ASCENDING, MongoClient
 from timeit import default_timer as timer
 from Bio import SeqIO # requires Biopython
 
-from tbutils import abspath
+from tbutils import abspath, load_config
+from tersectutils import get_chromosome_sizes
 
 def extract_gaps(chromosome, min_gap_size, verbose=False):
     sequence = str(chromosome.seq.upper())
@@ -22,12 +23,11 @@ def extract_gaps(chromosome, min_gap_size, verbose=False):
     return(gaps)
 
 def add_reference_genome(cfg, reference_file, reference_id, force=False,
-                         verbose=False, min_gap_size=1000):
+                         verbose=False, min_gap_size=1000, only=None):
     start = timer()
     if verbose:
         print("Loading %s as %s" % (reference_file, reference_id))
 
-    print(cfg['mongoHost'], cfg)
     client = MongoClient(cfg['mongoHost'])
     chrom_index = client[cfg['dbName']]['chromosomes']
 
@@ -50,6 +50,9 @@ def add_reference_genome(cfg, reference_file, reference_id, force=False,
 
     chromosomes = SeqIO.index(reference_file, 'fasta').values()
     for chromosome in chromosomes:
+        if only is not None and chromosome.name not in only:
+            # e.g. unplaced scaffolds absent from the dataset's index
+            continue
         if verbose:
             print("Processing %s" % chromosome.name)
         chrom_index.insert_one({
@@ -70,6 +73,8 @@ parser.add_argument('reference_file', type=str, help='reference genome FASTA fil
 parser.add_argument('reference_id', type=str, nargs='?',
                     help='reference genome identifier which will be used internally by Tersect Browser')
 parser.add_argument('-f', required=False, action='store_true', help='force reference genome overwrite')
+parser.add_argument('--tsi', dest='tsi_file', default=None,
+                    help='only register sequences present in this Tersect index')
 
 args = parser.parse_args()
 
@@ -77,8 +82,11 @@ if (args.reference_id is None):
     args.reference_id = os.path.basename(args.reference_file)
 
 config_file = abspath(args.config_file)
-with open(config_file, 'r') as cfg_file:
-    cfg = json.load(cfg_file)
+cfg = load_config(config_file)
+
+only = None
+if args.tsi_file is not None:
+    only = {chrom['name'] for chrom in get_chromosome_sizes(abspath(args.tsi_file)) or []}
 
 add_reference_genome(cfg, args.reference_file, args.reference_id,
-                     force=args.f, verbose=True)
+                     force=args.f, verbose=True, only=only)

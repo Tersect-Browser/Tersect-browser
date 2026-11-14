@@ -103,7 +103,7 @@ def main():
 
     # --- Load windows mapping ---
     mapping_df = pd.read_csv(args.windows_csv).sort_values("start", ignore_index=True)
-    mapping_df["mid_bp"] = (mapping_df["start"] + mapping_df["end"])
+    mapping_df["mid_bp"] = (mapping_df["start"] + mapping_df["end"]) / 2
 
     # --- Species tree, quartet order ---
     sp = Tree(load_newick(args.species_tree), format=1)

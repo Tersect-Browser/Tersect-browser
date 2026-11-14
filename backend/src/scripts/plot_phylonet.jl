@@ -3,12 +3,18 @@
 
 import Pkg
 
-# Activate a project at the script location so packages persist between runs.
-try
-    Pkg.activate(@__DIR__)
-catch e
-    @warn "Could not activate project at script dir; using shared env" exception=(e, catch_backtrace())
-    Pkg.activate(; shared=true)
+const PACKAGES = ["ArgParse", "PhyloNetworks", "PhyloPlots", "RCall"]
+
+# Use the default environment when it already has the packages (as in the
+# Docker image). Otherwise use a project next to this script, so packages
+# installed on first run persist between runs.
+if any(pkg -> Base.find_package(pkg) === nothing, PACKAGES)
+    try
+        Pkg.activate(@__DIR__)
+    catch e
+        @warn "Could not activate project at script dir; using shared env" exception=(e, catch_backtrace())
+        Pkg.activate(; shared=true)
+    end
 end
 
 # Install + load a package list, then `using` them into Main
@@ -23,12 +29,7 @@ function _ensure_and_load(pkgs::Vector{String})
 end
 
 # NOTE: PhyloPlots uses R graphics, so we need RCall available.
-_ensure_and_load([
-    "ArgParse",
-    "PhyloNetworks",
-    "PhyloPlots",
-    "RCall",
-])
+_ensure_and_load(PACKAGES)
 
 using ArgParse
 using PhyloNetworks
