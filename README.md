@@ -6,7 +6,7 @@
 - [How to load data set](#how-to-load-data-set)
   - [Generating the dataset](#generating-the-dataset)
   - [Loading the dataset](#additional-requirement-for-running-the-browser)
-- [Running the app with docker](#development-server)
+- [Running the app with docker](#running-the-app-with-docker)
 - [Code scaffolding](#code-scaffolding)
 - [Build](#build)
 - [Running unit tests](#running-unit-tests)
@@ -19,7 +19,7 @@ Ensure you have nvm installed on your machine and perform the following steps;
 
 Note: On Windows, use [git bash](https://git-scm.com/downloads/win) to follow along.
 
-- Run `nvm use 16` to switch to a compatible node version
+- Run `nvm use 16` to switch to a node version compatible with the frontend (Angular 8)
 - In the root of the application run `npm install`
   If errors with this, do:
   - Run `npm config set registry https://registry.npmjs.org/`to ensure the right npm registry
@@ -55,7 +55,20 @@ Note: On Windows, use [git bash](https://git-scm.com/downloads/win) to follow al
     ]
 }
 ```
-- Run `turbo dev` to start the application (it'll load the frontend and backend application).
+- The backend requires Node 26 (see `backend/.nvmrc`), so the frontend and backend run on different node versions. Start each in its own terminal:
+  - Frontend: `nvm use 16`, then `npm run frontend` from the root of the application
+  - Backend: `cd backend`, `nvm install 26 && nvm use`, `npm install`, then `npm start`
+
+### React frontend (replaces the Angular frontend and the extension)
+
+`web/` is a single React application that combines the Angular frontend and the genome-browser extension. It needs only the backend; the steps below for the extension do not apply to it.
+
+- `cd web`, then `nvm use 22` (or newer) and `npm install`
+- `npm run dev` serves it on port 4200 under the `baseHref` from `tbconfig.json`, proxying API requests to the backend on `serverPort`
+- `npm run build` writes the production build to `dist/frontend`, which is where the backend's `npm run deploy` serves the frontend from
+- With Docker: `./start_all.sh` serves it on port 4200 (see [Running the app with docker](#running-the-app-with-docker))
+
+See `web/README.md` for details.
 
 - cd to the genome-browser application
 
@@ -72,6 +85,48 @@ cd /tersect-browser/extension/genome-browser
 The extension server should be available on port 3200.
 
 ## How to load the dataset
+
+### Quick start: the bundled soybean dataset
+
+The repository includes a complete Tersect index for a small soybean dataset (`HN-Soybean-data.tsi`: 7 accessions, 20 chromosomes, reference Wm82.a2). It needs no other files, so it is the quickest way to get a working local setup. It has no reference FASTA, so chromosome sizes are taken from the index and no sequence gaps are shown; the genome track and variant search do not apply to it.
+
+Requirements: MongoDB 8, `tersect`, `rapidnj` and Python 3.11.
+
+```sh
+# Python environment for the dataset scripts (and for merge_phylip.py, which the backend runs)
+python3.11 -m venv .tersect
+.tersect/bin/pip install "pymongo>=4.10" numpy "hashids==1.2.0" biopython
+
+# Database, kept under test-data/ (gitignored)
+mkdir -p test-data/db test-data/mongo-data
+mongod --dbpath test-data/db --bind_ip 127.0.0.1 --fork --logpath test-data/mongod.log
+```
+
+Copy `tbconfig.example.json` to `tbconfig.json` (its defaults point at a local MongoDB and keep data in `test-data/mongo-data`). Then register the dataset and start the backend with the venv on the `PATH`:
+
+```sh
+export PATH="$PWD/.tersect/bin:$PATH"
+backend/src/scripts/add_dataset.py tbconfig.json "Soybean (HN)" HN-Soybean-data.tsi Wm82.a2
+cd backend && npm start
+```
+
+`add_dataset.py` copies the index into `localDbPath`, registers the dataset and its chromosomes, and precomputes distance matrices (a few seconds for this dataset). Pass `-f` to replace an existing dataset of the same name.
+
+For the genome browser (gene track and per-accession variant tracks), download the reference and gene models from the Legume Information System and prepare them; this also records sequence gaps for the plot:
+
+```sh
+mkdir -p test-data/downloads && cd test-data/downloads
+curl -LO https://data.legumeinfo.org/Glycine/max/genomes/Wm82.gnm2.DTC4/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
+curl -LO https://data.legumeinfo.org/Glycine/max/annotations/Wm82.gnm2.ann1.RVB6/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
+cd ../..
+backend/src/scripts/prepare_genome_browser.py tbconfig.json "Soybean (HN)" \
+  --fasta test-data/downloads/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz \
+  --gff test-data/downloads/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz \
+  --variants-from-tsi --reference-id Wm82.a2
+```
+
+Introgression analysis needs the conda environment from `environment.yml`, PhyloNet and Julia; the Docker setup below includes all of them. To run it locally, set `TB_ANALYSIS_PYTHON` to that environment's Python (default: `micromamba run -n tersect python`).
+
 
 Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). MongoDB v8.0 is compatible with this version of TersectBrowser+.
 
@@ -227,28 +282,23 @@ In the event that an error message stating an .angular/cache/ file does not exis
 
 ## Running the app with docker
 
-Ensure the location of your dataset (i.e gp_data_copy) matches the location of the volumes specified in the docker-compose.yml file.
+The Docker stack runs MongoDB, the backend (with the full analysis toolchain: Tersect, rapidNJ, ASTRAL, PhyloNet, Julia and R) and the React frontend, and registers the bundled soybean dataset.
 
-You can run the following commands;
+```sh
+./start_all.sh
+```
 
-```
-git clone https://github.com/Tersect-Browser/tersect-browser
-cd tersect-browser
-docker compose pull        # grabs backend, frontend & extension + mongo
-docker compose up 
-```
-If on a machine with no previous database
+Then open http://localhost:4200/TersectBrowserGP/
 
-```
-git clone https://github.com/Tersect-Browser/tersect-browser
-cd tersect-browser
-docker compose pull     
-docker compose up -d database
-docker compose up -d db_user_init
-docker compose up -d db_init // after generating the trees and populating the database move the dataset into the database folder as in the gp_data_copy structure above
-docker compose up 
+The first run builds the `tersect-base` image (about 15 minutes on Apple Silicon, where it builds for amd64 under emulation) and downloads the soybean reference and gene models (about 300 MB) from the Legume Information System. Later runs reuse both; `docker compose up -d` starts the stack again.
 
-```
+- **Data:** everything is kept in `test-data/` (gitignored): the database in `test-data/docker-db`, dataset files in `test-data/mongo-data`.
+- **Development:** the repository is mounted into the containers, so changes to `backend/` and `web/src` reload without rebuilding.
+- **Configuration:** `start_all.sh` creates `tbconfig.json` from `tbconfig.example.json` if it is missing. Inside the containers the database and data paths come from the `TB_*` variables in `docker-compose.yml`.
+- **Ports:** web 4200, backend 4300, MongoDB `127.0.0.1:27018` (so a local `mongod` can keep 27017). Stop local dev servers on 4200 and 4300 first.
+- **Other datasets:** set the `db_init` variables in `docker-compose.yml` (`DATASET_ID`, `DATASET_TSI`, `REFERENCE_ID`, `REFERENCE_FASTA`, `GENE_MODELS`, `VARIANTS`; see `init-entrypoint.sh`) and run `docker compose --profile init run --rm db_init`. Add `-e FORCE=1` to rebuild an existing dataset.
+- **Legacy frontend:** the Angular frontend and extension are available with `docker compose --profile legacy up frontend extension` (frontend on port 4100).
+
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
