@@ -1,0 +1,145 @@
+import {
+  createViewState,
+  JBrowseLinearGenomeView,
+} from "@jbrowse/react-linear-genome-view2"
+import { when } from "mobx"
+import { useEffect, useState } from "react"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Spinner } from "@/components/ui/spinner"
+import { usePlotStore } from "@/store/plot-store"
+import { useUiStore, type GenomeDialogTarget } from "@/store/ui-store"
+
+import { getConfiguration, type JBrowseDatasetConfig } from "./config"
+import { useJBrowseConfig } from "./use-jbrowse-config"
+
+type ViewState = ReturnType<typeof createViewState>
+
+/** Region shown when the dialog opens for a whole accession, in bp. */
+const DEFAULT_SPAN = 100_000
+
+function AccessionGenomeView({
+  target,
+  config,
+}: {
+  target: GenomeDialogTarget
+  config: JBrowseDatasetConfig
+}) {
+  const [viewState] = useState<ViewState>(() => {
+    const chromosome = usePlotStore.getState().chromosome
+    return createViewState({
+      assembly: config.assembly,
+      tracks: config.tracks,
+      configuration: getConfiguration(),
+      defaultSession: {
+        name: "default session",
+        view: {
+          type: "LinearGenomeView",
+          id: "1",
+          displayedRegions: chromosome
+            ? [
+                {
+                  assemblyName: config.assembly.name,
+                  refName: chromosome.name,
+                  start: 0,
+                  end: chromosome.size,
+                },
+              ]
+            : [],
+        },
+      },
+    })
+  })
+
+  useEffect(() => {
+    const chromosome = usePlotStore.getState().chromosome
+    const view = viewState.session.views[0]
+    if (!chromosome || !view) {
+      return
+    }
+    // Tracks can only be shown once the view knows its width.
+    return when(
+      () => view.initialized,
+      () => {
+        const variantTrack = config.tracks.find(
+          (track) =>
+            track.trackId === target.accession ||
+            track.trackId === target.accessionName
+        )
+        view.showTrack(config.assembly.sequence.trackId)
+        if (config.geneTrackId) {
+          view.showTrack(config.geneTrackId)
+        }
+        if (variantTrack) {
+          view.showTrack(variantTrack.trackId)
+        }
+        // From a label: the start of the plotted interval.
+        const plotStart = usePlotStore.getState().interval?.[0] ?? 1
+        const [start, end] = target.interval ?? [
+          plotStart,
+          Math.min(plotStart + DEFAULT_SPAN, chromosome.size),
+        ]
+        void view.navToLocString(
+          `${chromosome.name}:${start}..${end}`,
+          config.assembly.name
+        )
+      }
+    )
+  }, [viewState, config, target])
+
+  return <JBrowseLinearGenomeView viewState={viewState} />
+}
+
+function DialogBody({ target }: { target: GenomeDialogTarget }) {
+  const config = useJBrowseConfig()
+  if (config.isPending) {
+    return (
+      <div className="flex items-center gap-2 p-4 text-muted-foreground">
+        <Spinner className="size-3" />
+        Loading genome browser...
+      </div>
+    )
+  }
+  if (!config.data) {
+    return (
+      <p className="p-4 text-muted-foreground">
+        This dataset has no genome browser configuration.
+      </p>
+    )
+  }
+  return <AccessionGenomeView target={target} config={config.data} />
+}
+
+/** Genome browser for one accession: sequence, gene models and its variants. */
+export function GenomeDialog() {
+  const target = useUiStore((state) => state.genomeDialogTarget)
+  const setTarget = useUiStore((state) => state.setGenomeDialogTarget)
+
+  return (
+    <Dialog
+      open={target !== null}
+      onOpenChange={(open) => !open && setTarget(null)}
+    >
+      <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[80vw]">
+        <DialogHeader>
+          <DialogTitle>{target?.accessionName}</DialogTitle>
+          <DialogDescription>
+            Reference sequence, gene models and the variants of this accession.
+          </DialogDescription>
+        </DialogHeader>
+        {target && (
+          <DialogBody
+            key={`${target.accession}:${target.interval?.join("-")}`}
+            target={target}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
