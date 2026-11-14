@@ -1,12 +1,13 @@
-FROM node:23
+# Legacy genome-browser extension. Build context: repository root.
+FROM node:22
+
 WORKDIR /app
-COPY . /app
-COPY ../../tbconfig.json /app/tbconfig.json
-RUN npm install
+COPY extension/tersect-browser-extended/package.json extension/tersect-browser-extended/package-lock.json ./
+RUN npm ci
+COPY extension/tersect-browser-extended /app
+COPY tbconfig.json /app/tbconfig.json
 
-# tell CRA to listen on all interfaces
-ENV HOST 0.0.0.0
-ENV PORT 3200
-
+ENV HOST=0.0.0.0
+ENV PORT=3200
 EXPOSE 3200
 CMD ["npm", "start"]

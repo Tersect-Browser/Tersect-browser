@@ -1,125 +1,81 @@
 #!/usr/bin/env bash
-# set -euo pipefail
+# Registers a dataset in the database and prepares its genome browser files.
+# Configured with environment variables (defaults: the bundled soybean data):
+#
+#   DATASET_ID           dataset name shown in the browser
+#   DATASET_TSI          Tersect index (.tsi)
+#   REFERENCE_ID         reference genome id
+#   REFERENCE_FASTA      reference FASTA (optional; plain, gzip or bgzip)
+#   REFERENCE_FASTA_URL  where to download REFERENCE_FASTA if it is missing
+#   GENE_MODELS          gene models GFF3 (optional)
+#   GENE_MODELS_URL      where to download GENE_MODELS if it is missing
+#   VARIANTS             "tsi": one variant track per accession from the index;
+#                        a directory: one track per *.vcf.gz in it; "none"
+#   FORCE                1 to replace an existing dataset of the same name
+#
+# Database and data paths come from TB_MONGO_HOST, TB_DB_NAME and
+# TB_LOCAL_DB_PATH, which override tbconfig.json.
+set -euo pipefail
 
-# DB_PATH="/data/db"
-# LOG_FILE="${DB_PATH}/mongod.log"
-# PID_FILE="/tmp/mongod.pid"
+CONFIG="${CONFIG:-/app/tbconfig.json}"
+SCRIPTS=/app/backend/src/scripts
+DATASET_ID="${DATASET_ID:?DATASET_ID is required}"
+DATASET_TSI="${DATASET_TSI:?DATASET_TSI is required}"
+REFERENCE_ID="${REFERENCE_ID:?REFERENCE_ID is required}"
+VARIANTS="${VARIANTS:-tsi}"
+FORCE="${FORCE:-0}"
 
-# # if [ -d "$DB_PATH" ] && [ "$(ls -A "$DB_PATH")" ]; then
-# #   echo "[db_init] Database already exists at $DB_PATH, skipping initialization."
-# #   exit 0
-# # fi
+log() { printf '[db_init] %s\n' "$*"; }
 
-# echo "[db_init] No database found, initializing..."
-# mkdir -p "$DB_PATH"
-# chown -R mongodb:mongodb "$DB_PATH"
+fetch() { # file url
+  local file="$1" url="${2:-}"
+  if [[ -n "$file" && ! -s "$file" && -n "$url" ]]; then
+    log "Downloading $(basename "$file")..."
+    mkdir -p "$(dirname "$file")"
+    curl -fL --retry 3 -o "$file.part" "$url"
+    mv "$file.part" "$file"
+  fi
+}
 
-# touch "$LOG_FILE"
-# chown mongodb:mongodb "$LOG_FILE"
+registered() {
+  python3 - "$CONFIG" "$DATASET_ID" <<'PY'
+import sys
+sys.path.insert(0, "/app/backend/src/scripts")
+from pymongo import MongoClient
+from tbutils import load_config
+cfg = load_config(sys.argv[1])
+client = MongoClient(cfg["mongoHost"])
+found = client[cfg["dbName"]]["datasets"].find_one({"_id": sys.argv[2]})
+sys.exit(0 if found else 1)
+PY
+}
 
-# echo "[db_init] Starting temporary mongod..."
-# su -s /bin/sh -c "mongod --dbpath '$DB_PATH' \
-#   --bind_ip_all \
-#   --logpath '$LOG_FILE' \
-#   --pidfilepath '$PID_FILE' \
-#   --fork" mongodb
+if registered && [[ "$FORCE" != "1" ]]; then
+  log "Dataset '$DATASET_ID' is already registered (set FORCE=1 to rebuild)."
+  exit 0
+fi
 
-# # Wait for mongod
-# for i in {1..60}; do
-#   if mongosh --quiet --eval "db.runCommand({ ping: 1 }).ok" >/dev/null 2>&1; then
-#     echo "[db_init] MongoDB is ready."
-#     break
-#   fi
-#   sleep 1
-# done
+fetch "${REFERENCE_FASTA:-}" "${REFERENCE_FASTA_URL:-}"
+fetch "${GENE_MODELS:-}" "${GENE_MODELS_URL:-}"
 
+log "Registering '$DATASET_ID' and building its distance index..."
+add_args=("$CONFIG" "$DATASET_ID" "$DATASET_TSI" "$REFERENCE_ID")
+[[ "$FORCE" == "1" ]] && add_args+=(-f)
+python3 "$SCRIPTS/add_dataset.py" "${add_args[@]}"
 
-# # Run seeding
-# python /app/setup_new_tbrowser_dataset.py \
-#   -f /app/gp_data_copy/SL2.50.fa \
-#   -g /app/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
-#   -V /app/gp_data_copy/vcf_location/ \
-#   -c /app/tbconfig.json
+if [[ -n "${REFERENCE_FASTA:-}" && -s "$REFERENCE_FASTA" ]]; then
+  log "Preparing genome browser files..."
+  prep_args=("$CONFIG" "$DATASET_ID" --fasta "$REFERENCE_FASTA"
+             --reference-id "$REFERENCE_ID")
+  [[ -n "${GENE_MODELS:-}" && -s "$GENE_MODELS" ]] && prep_args+=(--gff "$GENE_MODELS")
+  if [[ "$VARIANTS" == "tsi" ]]; then
+    prep_args+=(--variants-from-tsi)
+  elif [[ -d "$VARIANTS" ]]; then
+    for vcf in "$VARIANTS"/*.vcf.gz; do prep_args+=(--vcf "$vcf"); done
+  fi
+  python3 "$SCRIPTS/prepare_genome_browser.py" "${prep_args[@]}"
+else
+  log "No reference FASTA: skipping the genome browser (chromosomes come from the index)."
+fi
 
-# bash /app/add_example_dataset.sh || true
-
-# # Shutdown temp mongod
-# mongosh --quiet --eval "db.adminCommand({ shutdown: 1 })" || true
-# sleep 2
-
-# echo "[db_init] Database initialization complete."
-
-
-set -eu
-
-DB_PATH="/data/db"
-LOG_FILE="${DB_PATH}/mongod.log"
-PID_FILE="/tmp/mongod.pid"
-
-# echo "[db_init] Ensuring $DB_PATH exists and is writable..."
-# mkdir -p "$DB_PATH"
-# official mongo image uses 'mongodb' user
-# chown -R mongodb:mongodb "$DB_PATH"
-
-# If DB already initialized, skip seeding
-# if [ -f "${DB_PATH}/WiredTiger" ] || [ -d "${DB_PATH}/journal" ]; then
-#   echo "[db_init] Existing MongoDB data detected at $DB_PATH. Skipping initialization."
-#   exit 0
-# fi
-
-# echo "[db_init] No database found, initializing..."
-
-# Clean any stale locks
-# rm -f "${DB_PATH}/mongod.lock" "${DB_PATH}/WiredTiger.lock" || true
-
-# Prepare log file with proper ownership
-# : > "$LOG_FILE"
-# chown mongodb:mongodb "$LOG_FILE"
-
-# echo "[db_init] Starting temporary mongod (foreground, backgrounded)..."
-# su -s /bin/sh -c "
-#   mongod --dbpath '$DB_PATH' \
-#          --bind_ip 127.0.0.1 \
-#          --logpath '$LOG_FILE' \
-#          --pidfilepath '$PID_FILE' \
-#          --storageEngine wiredTiger \
-#          --nounixsocket \
-#          >> '$LOG_FILE' 2>&1 & echo \$! > '$PID_FILE'
-# " mongodb
-
-# Wait for readiness (max ~90s)
-# echo "[db_init] Waiting for MongoDB to accept connections..."
-# i=0
-# ready=0
-# while [ $i -lt 90 ]; do
-#   if mongosh --quiet --host 127.0.0.1 --eval "db.runCommand({ ping: 1 }).ok" >/dev/null 2>&1; then
-#     ready=1
-#     break
-#   fi
-#   i=$((i+1))
-#   sleep 1
-# done
-# if [ "$ready" -ne 1 ]; then
-#   echo "[db_init] ERROR: mongod did not become ready. Last 80 log lines:"
-#   tail -n 80 "$LOG_FILE" || true
-#   mongosh --quiet --host 127.0.0.1 --eval "db.adminCommand({ shutdown: 1 })" >/dev/null 2>&1 || true
-#   exit 1
-# fi
-# echo "[db_init] MongoDB is ready."
-
-which tabix
-
-python /app/setup_new_tbrowser_dataset.py \
-  -f /app/gp_data_copy/SL2.50.fa \
-  -g /app/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
-  -V /app/gp_data_copy/vcf_location/ \
-  -c /app/tbconfig.json
-
-# sh /app/add_example_dataset.sh || true
-# --------------------------------
-
-echo "[db_init] Shutting down temporary mongod..."
-mongo --quiet --host 127.0.0.1 --eval "db.adminCommand({ shutdown: 1 })" || true
-sleep 2
-
-echo "[db_init] Database initialization complete."
+log "Done."

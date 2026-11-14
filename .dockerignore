@@ -1,10 +1,12 @@
-node_modules*.log.git
 # --- big, never needed in builds ---
 test-data/
 gp_data_copy/
 mongo-data/
 db-data/
+"test dataset"/
+"VARIANTS DUMP"/
 **/.venv/
+.tersect/
 **/.mamba/
 **/.conda/
 **/__pycache__/
@@ -16,6 +18,7 @@ db-data/
 **/dist/
 **/build/
 **/.cache/
+**/.angular/
 **/coverage/
 
 # VCS and IDE

@@ -1,13 +1,13 @@
+# Backend API. The repository is bind-mounted at /app in docker-compose.yml,
+# so source changes are picked up without rebuilding (tsx watch).
 FROM tersect-base
 
-WORKDIR /app
-COPY ./backend /app/backend
-COPY ./frontend /app/frontend
-COPY ./common /app/common
-COPY ./tbconfig.json /app/
-
 WORKDIR /app/backend
-RUN npm install && npm run build
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci
+
+COPY common /app/common
+COPY backend /app/backend
 
 EXPOSE 4300
-CMD ["npm","run","start"]
+CMD ["npm", "start"]

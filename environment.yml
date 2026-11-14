@@ -10,6 +10,8 @@ dependencies:
 
   # Bio tools
   - bcftools=1.21
+  - htslib=1.21      # bgzip, tabix
+  - samtools=1.21
   - aster=1.16
   - biopython=1.85
   - ete3=3.1.3

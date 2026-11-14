@@ -1,122 +1,166 @@
+# Tersect Browser development stack.
+#
+#   ./start_all.sh                 build everything, seed the database, start
+#   docker compose up -d           start again later
+#
+# Open http://localhost:4200/TersectBrowserGP/
+#
+# Data lives in ./test-data (gitignored): the database in test-data/docker-db,
+# dataset files in test-data/mongo-data. The repository is bind-mounted at
+# /app, so backend and frontend source changes apply without rebuilding.
+
+x-app-env: &app-env
+  # Override tbconfig.json for the containers.
+  TB_MONGO_HOST: mongodb://tersect2:tersect20@database:27017
+  TB_DB_NAME: tersect_browser_gp
+  TB_LOCAL_DB_PATH: /app/test-data/mongo-data
+  TB_SERVER_HOST: http://localhost:4300/TersectBrowserGP
+
 services:
+  # Shared toolchain image, used by backend and db_init. Built by start_all.sh.
   tersect-base:
-    image: tersect-base:latest            # tag used by FROM tersect-base
-    platform: linux/amd64                 # force amd64 build on Apple Silicon
+    image: tersect-base:latest
+    platform: linux/amd64
     build:
-        context: .
-        dockerfile: Dockerfile.base
-    command: ["true"]                     # no-op container
-    restart: "no"
-    profiles: ["build"]                   # optional: keeps it out of normal `up`
-    networks: [app-net]
+      context: .
+      dockerfile: Dockerfile.base
+    command: ["true"]
+    profiles: ["build"]
+
   database:
-    platform: linux/amd64                # keep 4.4 on amd64; OK on Apple Silicon
-    image: mongo:4.4
+    image: mongo:8.0
     restart: unless-stopped
-    command: ["mongod", "--bind_ip_all", "--dbpath", "/data/db"]
+    command: ["mongod", "--bind_ip_all"]
     environment:
-      # seed a root user so your bash sidecar can auth
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpass
-      MONGO_INITDB_DATABASE: tersect_browser_gp
     volumes:
-      - ./test-data/mongo-data:/data/db
-      - ./gp_data_copy:/app/gp_data_copy
+      - ./test-data/docker-db:/data/db
     ports:
-      - "27017:27017"
+      # Host access for debugging only; 27018 so a local mongod can keep 27017.
+      - "127.0.0.1:27018:27017"
     stop_grace_period: 60s
-
     healthcheck:
-      # mongo:4.4 uses `mongo` client, not `mongosh`
-      test: ["CMD", "mongo", "--quiet", "admin",
-             "-u", "root", "-p", "rootpass", "--authenticationDatabase", "admin",
-             "--eval", "db.adminCommand({ ping: 1 })"]
+      test: ["CMD", "mongosh", "--quiet", "-u", "root", "-p", "rootpass",
+             "--authenticationDatabase", "admin", "--eval", "db.adminCommand({ ping: 1 })"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
     networks: [app-net]
 
-  # one-shot: create your app user
+  # One-shot: create the application user (read/write on the app database).
   db_user_init:
-    image: mongo:4.4
-    platform: linux/amd64
+    image: mongo:8.0
     depends_on:
       database:
         condition: service_healthy
-    networks: [app-net]
-    command:
-    - bash
-    - -c
-    - >
-      echo "Waiting for Mongo to accept connections...";
-      until mongo --host database:27017 -u root -p rootpass --authenticationDatabase admin --quiet --eval 'db.runCommand({ ping: 1 })' >/dev/null; do
-        sleep 1;
-      done;
-      echo "Creating app user if needed...";
-      mongo --host database:27017 -u root -p rootpass --authenticationDatabase admin --quiet --eval '
-        const dbName="tersect_browser_gp";
-        const u="tersect2", p="tersect20";
-        const d=db.getSiblingDB(dbName);
-        if (!d.getUser(u)) {
-          d.createUser({ user:u, pwd:p, roles:[{ role:"readWrite", db:dbName }] });
+    entrypoint:
+      - mongosh
+      - --quiet
+      - --host
+      - database
+      - -u
+      - root
+      - -p
+      - rootpass
+      - --authenticationDatabase
+      - admin
+      - --eval
+      - |
+        const admin = db.getSiblingDB("admin");
+        if (!admin.getUser("tersect2")) {
+          admin.createUser({ user: "tersect2", pwd: "tersect20",
+                             roles: [{ role: "readWrite", db: "tersect_browser_gp" }] });
           print("User created");
         } else {
           print("User already exists");
         }
-      ';
-
     restart: "no"
     profiles: ["init"]
+    networks: [app-net]
 
-  # one-shot: seed dataset (runs after db_user_init)
+  # One-shot: register a dataset. Defaults to the soybean data bundled with
+  # the repository; its reference and gene models are downloaded on first run.
   db_init:
+    image: tersect-browser-init:latest
     platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile.init
+    environment:
+      <<: *app-env
+      DATASET_ID: "Soybean (HN)"
+      DATASET_TSI: /app/HN-Soybean-data.tsi
+      REFERENCE_ID: Wm82.a2
+      REFERENCE_FASTA: /app/test-data/downloads/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
+      REFERENCE_FASTA_URL: https://data.legumeinfo.org/Glycine/max/genomes/Wm82.gnm2.DTC4/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
+      GENE_MODELS: /app/test-data/downloads/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
+      GENE_MODELS_URL: https://data.legumeinfo.org/Glycine/max/annotations/Wm82.gnm2.ann1.RVB6/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
+      VARIANTS: tsi
     volumes:
-        - ./test-data/mongo-data:/data/db
-        - ./test-data/gp_data_copy:/app/gp_data_copy
-        - ./extension/tersect-browser-extended:/app/extension/tersect-browser-extended
-    networks: [app-net]
-    profiles: ["init"]
-    restart: "no"
+      - ./:/app
     depends_on:
       database:
         condition: service_healthy
       db_user_init:
         condition: service_completed_successfully
+    restart: "no"
+    profiles: ["init"]
+    networks: [app-net]
 
   backend:
-    platform: linux/amd64
     image: tersect-browser-backend:latest
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      <<: *app-env
     ports:
       - "4300:4300"
     volumes:
-      - ./test-data/mongo-data:/data/db
-      - ./test-data/gp_data_copy:/app/gp_data_copy
       - ./:/app
-    environment:
-      # use explicit authSource to avoid surprises
-      MONGO_URL: mongodb://tersect2:tersect20@database:27017/tersect_browser_gp?authSource=tersect_browser_gp
-    networks: [app-net]
+      # Keep the image's Linux dependencies rather than the host's.
+      - /app/backend/node_modules
     depends_on:
       database:
         condition: service_healthy
+    restart: unless-stopped
+    networks: [app-net]
 
+  # React frontend (web/).
+  web:
+    image: tersect-browser-web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    environment:
+      BACKEND_URL: http://backend:4300
+    ports:
+      - "4200:4200"
+    volumes:
+      # Source is live-reloaded; dependencies come from the image.
+      - ./web/src:/app/web/src
+      - ./web/public:/app/web/public
+      - ./web/index.html:/app/web/index.html
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks: [app-net]
+
+  # Legacy Angular frontend and genome-browser extension, replaced by `web`.
+  # Start with: docker compose --profile legacy up frontend extension
   extension:
     image: tersect-browser-extension:latest
     build:
-      context: ./extension/tersect-browser-extended
+      context: .
+      dockerfile: extension/tersect-browser-extended/Dockerfile
     ports:
       - "3200:3200"
     depends_on:
       - backend
-    networks:
-      - app-net
+    profiles: ["legacy"]
+    networks: [app-net]
 
   frontend:
     image: tersect-browser-frontend:latest
@@ -124,16 +168,12 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "4200:4200"
-    networks:
-      - app-net
+      - "4100:4200"
     depends_on:
       - backend
       - extension
-    develop:
-      watch:
-        - action: rebuild
-          path: ./frontend
+    profiles: ["legacy"]
+    networks: [app-net]
 
 networks:
   app-net:
