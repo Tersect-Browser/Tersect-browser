@@ -11,6 +11,7 @@ export function StatusBar() {
   const accessionCount = usePlotStore(
     (state) => state.orderedAccessions?.length ?? 0
   )
+  const hasVariants = usePlotStore((state) => state.variantMatches !== null)
   const query = distanceBins?.query
   const binCount = distanceBins
     ? (Object.values(distanceBins.bins)[0]?.length ?? 0)
@@ -19,7 +20,9 @@ export function StatusBar() {
   return (
     <footer className="flex h-6 shrink-0 items-center gap-4 border-t bg-card px-2.5 text-[11px] text-muted-foreground">
       <div className="flex items-center gap-1.5">
-        <span>Distance to reference</span>
+        <span className="font-medium text-foreground">
+          Distance to reference
+        </span>
         <span className="font-mono">0</span>
         <span
           className="h-[9px] w-[110px] rounded-[2px] border"
@@ -31,6 +34,12 @@ export function StatusBar() {
         <span className="size-[9px] rounded-[2px] border bg-(--viz-gap)" />
         <span>Gap in reference</span>
       </div>
+      {hasVariants && (
+        <div className="flex items-center gap-1.5">
+          <span className="size-[9px] rounded-[2px] bg-(--viz-variant)" />
+          <span>Variant match</span>
+        </div>
+      )}
       {query && (
         <div className="ml-auto flex items-center gap-4 font-mono">
           <span>

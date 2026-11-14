@@ -21,6 +21,13 @@ const TREE_LINE_WIDTH = 0.1
  * Draw the accession labels or tree. The image is rendered once to an
  * off-screen canvas and blitted on scroll.
  */
+/** Largest label font; rows may be taller. */
+const MAX_LABEL_FONT = 13
+
+function labelFontSize(treeView: AccessionTreeView) {
+  return Math.min(treeView.textSize, MAX_LABEL_FONT)
+}
+
 export function drawTree(
   treeView: AccessionTreeView,
   theme: PlotTheme,
@@ -86,8 +93,10 @@ function generateTree(treeView: AccessionTreeView, theme: PlotTheme) {
     treeView.offscreenCanvas.width,
     treeView.offscreenCanvas.height
   )
-  ctx.font = formatCanvasFont(treeView.textSize, theme.monoFont)
-  ctx.textBaseline = "top"
+  // Rows can be taller than a useful label size: cap the font and centre
+  // each label in its row.
+  ctx.font = formatCanvasFont(labelFontSize(treeView), theme.monoFont)
+  ctx.textBaseline = "middle"
 
   if (treeView.accessionStyle === "labels" || !treeView.tree.root) {
     const right = treeView.alignLabelsRight
@@ -102,7 +111,9 @@ function generateTree(treeView: AccessionTreeView, theme: PlotTheme) {
       ctx.fillText(
         getAccessionLabel(treeView.accessionDictionary, accession),
         x,
-        index * treeView.textSize + treeView.canvasOffsetY
+        (index + 0.5) * treeView.textSize + treeView.canvasOffsetY,
+        // Fit the pane: long labels are narrowed rather than cut off.
+        right ? Math.max(1, x - LABEL_RIGHT_MARGIN) : undefined
       )
     })
     ctx.textAlign = "left"
@@ -175,7 +186,7 @@ function drawLabelTree(
       subtree.taxon?.name ?? ""
     )
     ctx.fillStyle = labelColor(treeView, theme, subtree.taxon?.name)
-    ctx.fillText(label, basePosX, prevPosY)
+    ctx.fillText(label, basePosX, prevPosY + treeView.textSize / 2)
     drawTrailingLine(
       ctx,
       treeView,
@@ -283,7 +294,7 @@ function updateOffscreenCanvasWidth(
   if (!ctx) {
     return
   }
-  ctx.font = formatCanvasFont(treeView.textSize, theme.monoFont)
+  ctx.font = formatCanvasFont(labelFontSize(treeView), theme.monoFont)
   if (treeView.paneWidth !== undefined) {
     treeView.offscreenCanvas.width = treeView.paneWidth
     return

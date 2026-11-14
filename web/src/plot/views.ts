@@ -295,6 +295,8 @@ export class ScaleView {
   binWidth: number
   scaleBarHeight: number
   containerSize: ContainerSize | undefined
+  /** Bins (column indices) marked along the bottom edge, e.g. variant hits. */
+  markedBins: number[] = []
 
   constructor(
     interval: number[],

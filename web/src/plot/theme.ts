@@ -13,6 +13,8 @@ export interface PlotTheme {
   tree: string
   leader: string
   ruler: string
+  /** --viz-variant as a CSS colour, for canvas fills. */
+  variantColor: string
   monoFont: string
 }
 
@@ -56,6 +58,7 @@ export function readPlotTheme(): PlotTheme {
     tree: value("--viz-tree"),
     leader: value("--viz-leader"),
     ruler: value("--viz-ruler"),
+    variantColor: value("--viz-variant"),
     monoFont: value("--font-mono") || "monospace",
   }
 }

@@ -46,18 +46,40 @@ const COLOR_TRACK_GAP = 2
 const LEADER_DASH = [2, 3]
 
 const STYLE_NAMES: Record<AccessionDisplayStyle, string> = {
-  labels: "Labels",
+  labels: "Accessions",
   tree_linear: "Phenetic tree",
-  tree_simple: "Simplified tree",
+  tree_simple: "Phenetic tree (simplified)",
 }
 
-/** Pixel sizes of one bin at the current zoom level. */
-function binGeometry(zoomLevel: number) {
+/** Largest row height (and label size) used to fill the plot at 100%. */
+const MAX_FIT_ROW = 16
+
+/**
+ * Row height at 100% zoom: the legacy 2px for large panels, growing to fill
+ * the plot (up to MAX_FIT_ROW) when there are few accessions, so a handful of
+ * rows is readable without zooming.
+ */
+function baseRowHeight(rows: number, plotHeight: number) {
+  if (rows <= 0 || plotHeight <= 0) {
+    return 1 / ASPECT_RATIO
+  }
+  return Math.max(
+    1 / ASPECT_RATIO,
+    Math.min(MAX_FIT_ROW, Math.floor(plotHeight / rows))
+  )
+}
+
+/**
+ * Pixel sizes of one bin at the current zoom level. Horizontally one bin is
+ * one pixel at 100%, so a chromosome fits the screen; rows and labels share
+ * one height. Both scale with zoom.
+ */
+function binGeometry(zoomLevel: number, rowHeight = 1 / ASPECT_RATIO) {
   const zoomFactor = zoomLevel / 100
   return {
     zoomFactor,
     binWidth: zoomFactor,
-    binHeight: zoomFactor / ASPECT_RATIO,
+    binHeight: rowHeight * zoomFactor,
   }
 }
 
@@ -96,6 +118,7 @@ export function DistancePlot({
     tokens?: unknown
   }>({})
   const dragStart = useRef({ x: 0, y: 0 })
+  const rowBase = useRef(1 / ASPECT_RATIO)
 
   const accessionStyle = usePlotStore((state) => state.accessionStyle)
   const zoomLevel = usePlotStore((state) => state.zoomLevel)
@@ -160,11 +183,15 @@ export function DistancePlot({
       return
     }
 
+    rowBase.current = baseRowHeight(state.orderedAccessions.length, size.height)
     const current = views.current
     const themeChanged = current.tokens !== tokens
     current.tokens = tokens
 
-    const { binWidth, binHeight } = binGeometry(state.zoomLevel)
+    const { binWidth, binHeight } = binGeometry(
+      state.zoomLevel,
+      rowBase.current
+    )
     const offsetY = ceilTo(state.plotPosition.y * binHeight, binHeight)
 
     // Labels / tree
@@ -204,6 +231,7 @@ export function DistancePlot({
       { width: size.width, height: SCALE_BAR_SIZE }
     )
     scaleView.plotPosition = state.plotPosition
+    scaleView.markedBins = binHighlights ? [...binHighlights.keys()] : []
     drawScale(scaleView, tokens, 0, scaleCanvas)
 
     // Heatmap
@@ -226,7 +254,7 @@ export function DistancePlot({
       binView.redrawRequired = true
       current.binInputs = binInputs
     }
-    binView.aspectRatio = ASPECT_RATIO
+    binView.aspectRatio = binWidth / binHeight
     binView.binHeight = binHeight
     binView.containerSize = size
     binView.orderedAccessions = state.orderedAccessions
@@ -271,7 +299,10 @@ export function DistancePlot({
     if (!state.orderedAccessions || !state.distanceBins || !binView) {
       return { type: "background" } satisfies PlotTarget
     }
-    const { binWidth, binHeight } = binGeometry(state.zoomLevel)
+    const { binWidth, binHeight } = binGeometry(
+      state.zoomLevel,
+      rowBase.current
+    )
     const binIndex = Math.floor(position.x / binWidth) - state.plotPosition.x
     const accessionIndex =
       Math.floor(position.y / binHeight) - state.plotPosition.y
@@ -300,7 +331,10 @@ export function DistancePlot({
     dragCursor: "move",
     onDragStart: (start) => {
       const state = usePlotStore.getState()
-      const { binWidth, binHeight } = binGeometry(state.zoomLevel)
+      const { binWidth, binHeight } = binGeometry(
+        state.zoomLevel,
+        rowBase.current
+      )
       // Dragging is 'rounded' to accession / bin indices.
       dragStart.current = {
         x: start.x / binWidth - state.plotPosition.x,
@@ -313,7 +347,10 @@ export function DistancePlot({
       if (!binView) {
         return
       }
-      const { binWidth, binHeight } = binGeometry(state.zoomLevel)
+      const { binWidth, binHeight } = binGeometry(
+        state.zoomLevel,
+        rowBase.current
+      )
       state.setPlotPosition({
         x: clamp(
           Math.round(position.x / binWidth - dragStart.current.x),
@@ -340,7 +377,7 @@ export function DistancePlot({
       if (!state.orderedAccessions) {
         return { type: "background" }
       }
-      const { binHeight } = binGeometry(state.zoomLevel)
+      const { binHeight } = binGeometry(state.zoomLevel, rowBase.current)
       const accessionIndex =
         Math.floor(position.y / binHeight) - state.plotPosition.y
       const accession = state.orderedAccessions[accessionIndex]
@@ -357,7 +394,7 @@ export function DistancePlot({
     dragCursor: "move",
     onDragStart: (start) => {
       const state = usePlotStore.getState()
-      const { binHeight } = binGeometry(state.zoomLevel)
+      const { binHeight } = binGeometry(state.zoomLevel, rowBase.current)
       dragStart.current = {
         x: 0,
         y: start.y / binHeight - state.plotPosition.y,
@@ -366,7 +403,7 @@ export function DistancePlot({
     onDrag: (position) => {
       // Only vertical dragging, rounded to accession indices.
       const state = usePlotStore.getState()
-      const { binHeight } = binGeometry(state.zoomLevel)
+      const { binHeight } = binGeometry(state.zoomLevel, rowBase.current)
       const rowNum = state.orderedAccessions?.length ?? 1
       state.setPlotPosition({
         x: state.plotPosition.x,
@@ -391,7 +428,7 @@ export function DistancePlot({
       return { type: "background" } satisfies PlotTarget
     }
     const { interval, binsize } = state.distanceBins.query
-    const { zoomFactor } = binGeometry(state.zoomLevel)
+    const { zoomFactor } = binGeometry(state.zoomLevel, rowBase.current)
     const bpPerPixel = binsize / zoomFactor
     const bpPosition =
       position.x * bpPerPixel + interval[0] - state.plotPosition.x * binsize
@@ -482,6 +519,7 @@ export function DistancePlot({
       return null
     }
     const { interval, binsize } = distanceBins.query
+    // Horizontal only, so the row height does not matter here.
     const { zoomFactor, binWidth } = binGeometry(zoomLevel)
     const bpPerPixel = binsize / zoomFactor
     return {
@@ -513,11 +551,13 @@ export function DistancePlot({
     >
       {/* Corner */}
       <div
-        className="absolute top-0 left-0 flex items-center justify-between gap-2 border-r border-b bg-card px-2"
+        className="absolute top-0 left-0 flex items-center gap-1.5 border-r border-b bg-card px-2.5 text-[11px] text-muted-foreground"
         style={{ width: paneWidth, height: SCALE_BAR_SIZE }}
       >
-        <span className="caption truncate">{STYLE_NAMES[accessionStyle]}</span>
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="truncate font-semibold text-foreground">
+          {STYLE_NAMES[accessionStyle]}
+        </span>
+        <span className="font-mono">
           {orderedAccessions?.length ?? selectedCount}
         </span>
       </div>

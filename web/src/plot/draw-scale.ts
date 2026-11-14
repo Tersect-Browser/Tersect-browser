@@ -57,6 +57,20 @@ export function drawScale(
 
   drawAllTicks(scaleView, ctx)
 
+  // Marked bins: a 4px band along the bottom edge.
+  if (scaleView.markedBins.length) {
+    ctx.fillStyle = theme.variantColor
+    const width = Math.max(1, scaleView.binWidth)
+    for (const bin of scaleView.markedBins) {
+      ctx.fillRect(
+        bin * scaleView.binWidth - 0.5,
+        scaleView.scaleBarHeight - 4.5,
+        width,
+        4
+      )
+    }
+  }
+
   // Hide scale over labels
   ctx.clearRect(-fullOffsetX, 0, offsetX, targetCanvas.height)
 }

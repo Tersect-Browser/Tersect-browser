@@ -2,12 +2,12 @@ import {
   ArrowLeftToLineIcon,
   ArrowRightToLineIcon,
   BarcodeIcon,
-  BinocularsIcon,
+  EyeOffIcon,
+  GitMergeIcon,
+  LocateFixedIcon,
   MoveHorizontalIcon,
   SearchIcon,
-  StarIcon,
-  WaypointsIcon,
-  XIcon,
+  ScanSearchIcon,
 } from "lucide-react"
 
 import {
@@ -40,11 +40,11 @@ function AccessionItems({
         {target.accessionLabel}
       </DropdownMenuLabel>
       <DropdownMenuItem onSelect={() => setReference(target.accession)}>
-        <StarIcon />
+        <LocateFixedIcon />
         Set as reference
       </DropdownMenuItem>
       <DropdownMenuItem onSelect={() => removeAccession(target.accession)}>
-        <XIcon />
+        <EyeOffIcon />
         Remove from plot
       </DropdownMenuItem>
       <DropdownMenuItem
@@ -59,7 +59,7 @@ function AccessionItems({
           })
         }
       >
-        <BinocularsIcon />
+        <ScanSearchIcon />
         View in genome browser
       </DropdownMenuItem>
     </DropdownMenuGroup>
@@ -214,7 +214,7 @@ export function PlotContextMenu() {
                 }
               }}
             >
-              <WaypointsIcon />
+              <GitMergeIcon />
               Search for introgressions
             </DropdownMenuItem>
           </DropdownMenuGroup>
