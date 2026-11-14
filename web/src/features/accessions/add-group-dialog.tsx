@@ -1,7 +1,7 @@
-import { PlusIcon } from "lucide-react"
+import { CircleAlertIcon } from "lucide-react"
+import { toast } from "sonner"
 import { useState } from "react"
 
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -33,8 +33,15 @@ export function AddGroupDialog({
   const [name, setName] = useState("")
   const [category, setCategory] = useState("")
 
+  const [submitted, setSubmitted] = useState(false)
+
   const groupName = name.trim()
   const nameInUse = groups.some((group) => group.name === groupName)
+  const nameError = !groupName
+    ? "A group name is required."
+    : nameInUse
+      ? "A group with this name already exists."
+      : null
 
   const save = () => {
     const group: AccessionGroup = {
@@ -45,52 +52,58 @@ export function AddGroupDialog({
       group.category = category.trim()
     }
     onSave(group)
+    toast.success("Group saved")
     onClose()
   }
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-[300px]">
         <DialogHeader>
-          <DialogTitle>Add group</DialogTitle>
-          <DialogDescription>
+          <DialogTitle>Save as a group</DialogTitle>
+          <DialogDescription className="text-foreground">
             Saving{" "}
-            <b>
-              {selectedAccessions.length > 1
-                ? selectedAccessions.length
-                : "one"}
-            </b>{" "}
-            selected accession{selectedAccessions.length > 1 ? "s" : ""} as a
+            <b className="font-mono font-medium">{selectedAccessions.length}</b>{" "}
+            selected accession{selectedAccessions.length === 1 ? "" : "s"} as a
             new group.
           </DialogDescription>
         </DialogHeader>
 
         <form
           id="add-group-form"
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-2.5"
           onSubmit={(event) => {
             event.preventDefault()
-            if (groupName && !nameInUse) {
+            setSubmitted(true)
+            if (!nameError) {
               save()
             }
           }}
         >
-          {nameInUse && (
-            <Alert variant="destructive">
-              <AlertDescription>Group name already in use</AlertDescription>
-            </Alert>
-          )}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="group-name">Group name (required)</Label>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="group-name">
+              Group name <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="group-name"
               autoFocus
+              placeholder="e.g. Cherry types"
               value={name}
-              aria-invalid={nameInUse}
+              aria-invalid={(submitted || nameInUse) && !!nameError}
+              aria-describedby="group-name-error"
               onChange={(event) => setName(event.target.value)}
             />
+            {(submitted || nameInUse) && nameError && (
+              <span
+                id="group-name-error"
+                className="flex items-center gap-1 text-[11px] text-destructive"
+              >
+                <CircleAlertIcon className="size-3" />
+                {nameError}
+              </span>
+            )}
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <Label htmlFor="group-category">Category</Label>
             <Input
               id="group-category"
@@ -103,18 +116,21 @@ export function AddGroupDialog({
                 <option key={option} value={option} />
               ))}
             </datalist>
+            <span className="text-[11px] text-muted-foreground">
+              Pick a category or type a new one.
+            </span>
           </div>
         </form>
 
         <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
             type="submit"
             form="add-group-form"
-            disabled={
-              selectedAccessions.length === 0 || !groupName || nameInUse
-            }
+            disabled={selectedAccessions.length === 0}
           >
-            <PlusIcon />
             Save
           </Button>
         </DialogFooter>

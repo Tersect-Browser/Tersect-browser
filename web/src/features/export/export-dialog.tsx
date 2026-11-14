@@ -1,4 +1,4 @@
-import { DownloadIcon } from "lucide-react"
+import { CircleAlertIcon, DownloadIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
+import { Spinner } from "@/components/ui/spinner"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { clamp } from "@/lib/genome"
 import type { AccessionDisplayStyle } from "@/lib/types"
@@ -144,12 +144,12 @@ function NumberField({
   value: number
 }) {
   return (
-    <div className="grid grid-cols-[8rem_1fr] items-center gap-2">
+    <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         type="number"
-        className="w-28 font-mono"
+        className="w-full text-right font-mono"
         value={Number.isFinite(value) ? value : ""}
         readOnly={readOnly}
         {...props}
@@ -198,15 +198,17 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[360px]">
         <DialogHeader>
           <DialogTitle>Export plot image</DialogTitle>
         </DialogHeader>
 
-        <fieldset disabled={loading} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <div className="text-sm font-medium">Labels</div>
+        <fieldset disabled={loading} className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-1.5">
+            <Label id="export-labels">Labels</Label>
             <RadioGroup
+              aria-labelledby="export-labels"
+              className="gap-1.5"
               value={options.accessionStyle}
               onValueChange={(value) =>
                 setOptions((current) => ({
@@ -221,7 +223,10 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
                     value={style.value}
                     id={`export-style-${style.value}`}
                   />
-                  <Label htmlFor={`export-style-${style.value}`}>
+                  <Label
+                    htmlFor={`export-style-${style.value}`}
+                    className="font-normal"
+                  >
                     {style.label}
                   </Label>
                 </div>
@@ -229,8 +234,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
             </RadioGroup>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="text-sm font-medium">Image size (px)</div>
+          <div className="grid grid-cols-2 gap-2.5">
             <NumberField
               id="export-bin-height"
               label="Bin / font size"
@@ -250,7 +254,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
             />
             <NumberField
               id="export-label-width"
-              label="Label width"
+              label="Label width (px)"
               min={options.binHeight}
               step={options.binHeight}
               value={labelWidth}
@@ -265,24 +269,15 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
                 }))
               }
             />
-            <NumberField
-              id="export-total-width"
-              label="Total width"
-              value={totalSize.width}
-              readOnly
-            />
-            <NumberField
-              id="export-total-height"
-              label="Total height"
-              value={totalSize.height}
-              readOnly
-            />
+            <ReadOnlySize label="Total width" value={totalSize.width} />
+            <ReadOnlySize label="Total height" value={totalSize.height} />
           </div>
         </fieldset>
 
-        {loading && <Progress className="animate-pulse" value={100} />}
+        {loading && <IndeterminateProgress />}
         {errorMessage && (
           <Alert variant="destructive">
+            <CircleAlertIcon />
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
@@ -292,11 +287,32 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
             Cancel
           </Button>
           <Button disabled={loading || !views} onClick={download}>
-            <DownloadIcon />
-            {loading ? "Loading..." : "Download"}
+            {loading ? <Spinner /> : <DownloadIcon />}
+            {loading ? "Loading…" : "Download PNG"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** A computed size: 14px mono with a px suffix. */
+function ReadOnlySize({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono text-sm">
+        {Number.isFinite(value) ? value.toLocaleString("en-US") : "–"} px
+      </span>
+    </div>
+  )
+}
+
+/** 3px indeterminate progress bar. */
+function IndeterminateProgress() {
+  return (
+    <div className="relative h-[3px] overflow-hidden rounded-full bg-secondary">
+      <div className="absolute inset-y-0 w-2/5 animate-[indeterminate_1.2s_linear_infinite] bg-primary" />
+    </div>
   )
 }

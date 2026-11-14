@@ -3,12 +3,8 @@ import { CheckIcon, CopyIcon } from "lucide-react"
 import { useState } from "react"
 import type { ReactNode } from "react"
 
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
@@ -50,31 +46,32 @@ export function SharePopover({ trigger }: { trigger: ReactNode }) {
       }}
     >
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent align="end" className="flex w-96 flex-col gap-2">
-        <div className="font-semibold">Link to current view</div>
+      <PopoverContent align="end" className="flex w-[340px] flex-col gap-1.5">
+        <div className="font-medium">Link to current view</div>
         {share.isError ? (
           <p className="text-sm text-destructive">
             The link could not be created.
           </p>
         ) : !share.data ? (
-          <Skeleton className="h-(--control)" />
+          <Skeleton className="h-(--control) animate-pulse" />
         ) : (
-          <InputGroup>
-            <InputGroupInput
+          <div className="flex gap-1.5">
+            <Input
               readOnly
               aria-label="Share link"
-              className="font-mono"
+              className="min-w-0 flex-1 bg-muted font-mono text-[11px]"
               value={share.data}
               onFocus={(event) => event.target.select()}
             />
-            <InputGroupAddon align="inline-end">
-              <InputGroupButton onClick={copy}>
-                {copied ? <CheckIcon /> : <CopyIcon />}
-                {copied ? "Copied" : "Copy"}
-              </InputGroupButton>
-            </InputGroupAddon>
-          </InputGroup>
+            <Button variant="outline" onClick={copy}>
+              {copied ? <CheckIcon /> : <CopyIcon />}
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          </div>
         )}
+        <p className="text-[11px] text-muted-foreground">
+          Captures reference, interval, bin size, zoom, selection and groups.
+        </p>
       </PopoverContent>
     </Popover>
   )

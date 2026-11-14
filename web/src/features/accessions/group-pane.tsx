@@ -25,6 +25,8 @@ import {
 import { ColorPicker, ColorSwatch } from "@/features/accessions/color-picker"
 import { uniqueArray } from "@/lib/genome"
 import type { AccessionGroup } from "@/lib/types"
+import { toast } from "sonner"
+
 import { cn } from "@/lib/utils"
 
 const UNCATEGORIZED = "Uncategorized"
@@ -85,7 +87,7 @@ export function GroupPane({
             key={category ?? UNCATEGORIZED}
             value={category ?? UNCATEGORIZED}
           >
-            <AccordionTrigger className="px-3 py-2 text-xs">
+            <AccordionTrigger className="h-6 items-center rounded-none border-t border-sidebar-border px-2 py-0 text-xs font-semibold hover:no-underline">
               {category ?? UNCATEGORIZED}
             </AccordionTrigger>
             <AccordionContent className="pb-1">
@@ -98,10 +100,10 @@ export function GroupPane({
                       <li
                         key={group.name}
                         className={cn(
-                          "flex items-center gap-2 px-3 py-1 text-xs",
+                          "flex h-[22px] items-center gap-1.5 pr-1.5 pl-2.5 text-xs",
                           selected
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-accent"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "hover:bg-sidebar-accent"
                         )}
                       >
                         <Popover
@@ -115,7 +117,7 @@ export function GroupPane({
                           >
                             <ColorSwatch color={group.color} />
                           </PopoverTrigger>
-                          <PopoverContent align="start" className="w-60">
+                          <PopoverContent align="start" className="w-[232px]">
                             <ColorPicker
                               color={group.color}
                               onCancel={() => setColorTarget(null)}
@@ -140,19 +142,16 @@ export function GroupPane({
                         >
                           {group.name}
                         </button>
-                        <span className="font-mono font-semibold">
+                        <span className="font-mono text-[11px] font-medium">
                           {group.accessions.length}
                         </span>
                         <button
                           type="button"
                           aria-label={`Delete group ${group.name}`}
-                          className={cn(
-                            "hover:opacity-70",
-                            !selected && "text-destructive"
-                          )}
+                          className="rounded-[3px] p-0.5 text-destructive hover:bg-destructive/15"
                           onClick={() => setDeleteTarget(group)}
                         >
-                          <Trash2Icon className="size-3.5" />
+                          <Trash2Icon className="size-3" />
                         </button>
                       </li>
                     )
@@ -167,13 +166,12 @@ export function GroupPane({
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="data-[size=default]:sm:max-w-[360px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm group deletion</AlertDialogTitle>
+            <AlertDialogTitle>Delete group?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete the group &lsquo;
-              <b>{deleteTarget?.name}</b>&rsquo;? This will not remove any
-              accessions.
+              {deleteTarget?.name}&rsquo;? This will not remove any accessions.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -182,6 +180,7 @@ export function GroupPane({
               variant="destructive"
               onClick={() => {
                 if (deleteTarget) {
+                  toast.success("Group deleted")
                   onGroupsChange(groups.filter((g) => g !== deleteTarget))
                   onSelectedGroupsChange(
                     selectedGroups.filter((name) => name !== deleteTarget.name)
@@ -189,7 +188,6 @@ export function GroupPane({
                 }
               }}
             >
-              <Trash2Icon />
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
