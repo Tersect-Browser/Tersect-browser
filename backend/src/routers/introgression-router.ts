@@ -16,7 +16,7 @@ import SpeciesTreeCache from "../models/SpeciesTreeCache";
 import { NewickTree } from "../models/newicktree";
 import { generateTreeAsync } from "../controllers/generateTree";
 import { tbConfig } from "../load-config";
-import { publishSSE, sseKey, subscribeSSE } from "./sse";
+import { publishSSE, sseKey } from "./sse";
 import {
     accessionsOf,
     integer,

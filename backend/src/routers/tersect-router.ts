@@ -461,15 +461,15 @@ router.route('/query/:datasetId/generate-barcodes').post(async (req, res) => {
         const size = integer(body.size, 'size', 10, 1000);
         const maxVar = body.maxVar === null || body.maxVar === undefined
             ? 'null' : String(integer(body.maxVar, 'maxVar', 0, 1000));
-        // The dataset's reference prepared by prepare_genome_browser.py,
-        // otherwise the reference named in tbconfig.json.
-        const datasetReference = path.join(
+        // The dataset's reference, prepared by the dataset pipeline.
+        const fastaFile = path.join(
             tbConfig.localDbPath, 'gp_data_copy', 'genomes',
             String(dataset._id).replace(/[^A-Za-z0-9._-]+/g, '_'),
             'reference.fa.gz');
-        const fastaFile = fs.existsSync(datasetReference)
-            ? datasetReference
-            : path.join(tbConfig.localDbPath, 'gp_data_copy', tbConfig.fastaName);
+        if (!fs.existsSync(fastaFile)) {
+            return res.status(404).send(
+                'This dataset has no reference sequence, so barcodes cannot be generated.');
+        }
         args = [accession, body.chrom, String(start), String(end),
                 String(size), maxVar, fastaFile, dataset.tsi_location,
                 tbConfig.localDbPath];

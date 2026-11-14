@@ -182,33 +182,6 @@ services:
     restart: unless-stopped
     networks: [app-net]
 
-  # Legacy Angular frontend and genome-browser extension, replaced by `web`.
-  # Start with: docker compose --profile legacy up frontend extension
-  extension:
-    image: tersect-browser-extension:latest
-    build:
-      context: .
-      dockerfile: extension/tersect-browser-extended/Dockerfile
-    ports:
-      - "3200:3200"
-    depends_on:
-      - backend
-    profiles: ["legacy"]
-    networks: [app-net]
-
-  frontend:
-    image: tersect-browser-frontend:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports:
-      - "4100:4200"
-    depends_on:
-      - backend
-      - extension
-    profiles: ["legacy"]
-    networks: [app-net]
-
 networks:
   app-net:
     driver: bridge

@@ -1,4 +1,6 @@
 'use strict';
+// Production build: the web app into dist/frontend, then the backend into
+// dist/, which serves both (npm run deploy).
 const cp = require('child_process');
 const path = require('path');
 const yargs = require('yargs');
@@ -13,14 +15,14 @@ const argv = yargs.option('config', {
 }).argv;
 
 const configFile = toAbsolutePath(argv.config);
-const buildCommand = 'npm run build -- --config ' + configFile;
 
-cp.execSync(buildCommand, {
-    cwd: path.join(__dirname, '../frontend/'),
+cp.execFileSync('npm', ['run', 'build'], {
+    cwd: path.join(__dirname, '../web/'),
+    env: { ...process.env, TB_CONFIG: configFile },
     stdio: 'inherit'
 });
 
-cp.execSync(buildCommand, {
+cp.execFileSync('npm', ['run', 'build'], {
     cwd: path.join(__dirname, '../backend/'),
     stdio: 'inherit'
 });

@@ -1,288 +1,20 @@
-# TersectBrowser
-
-## Table of Contents
-
-- [How to install](#how-to-install)
-- [How to load data set](#how-to-load-data-set)
-  - [Generating the dataset](#generating-the-dataset)
-  - [Loading the dataset](#additional-requirement-for-running-the-browser)
-- [Running the app with docker](#running-the-app-with-docker)
-- [Code scaffolding](#code-scaffolding)
-- [Build](#build)
-- [Running unit tests](#running-unit-tests)
-- [Running end-to-end tests](#running-end-to-end-tests)
-- [Further help](#further-help)
-
-## How to install
-
-Ensure you have nvm installed on your machine and perform the following steps;
-
-Note: On Windows, use [git bash](https://git-scm.com/downloads/win) to follow along.
-
-- Run `nvm use 16` to switch to a node version compatible with the frontend (Angular 8)
-- In the root of the application run `npm install`
-  If errors with this, do:
-  - Run `npm config set registry https://registry.npmjs.org/`to ensure the right npm registry
-  - Run `npm cache clear --force` to remove package discrepancies
-  - Run `npm install` with no errors
-- Run `npm install -g turbo` to install turbo
-- Add a `tbconfig.json` with the following values (remove commented line)
-  - mongoHost relates to the local mongodb installation that is probably in this path: ~/mongo-data
-  - localDbPath is how we host the reference file and tbi + vcf files for each accession. These should be within your Tersect-browser project, at the path: Tersect-browser/db-data/mongo-data/gp_data_copy
-
-```json
-{
-    "serverPort": 4300,
-    "serverHost": "http://127.0.0.1:4300/TersectBrowserGP",
-    "vcfLocation": "/gp_data_copy/vcf_location",
-    "tsiPath": "/Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy", // parent directory of the tsi file should be relative to localdb path
-    "datasetName": "SGN_aer_hom_snps",
-    "fileLoadingRoute": "/tbapi/datafiles/",
-    "bcftoolsLocation": "bcftools", // may vary per individual machine
-    "fastaName": "SL2.50.fa", 
-    "frontendHost": "http://127.0.0.1:4200/TersectBrowserGP",
-    "baseHref": "/TersectBrowserGP/",
-    "mongoHost": "mongodb://localhost:27017", // adjust as necessary
-    "dbName": "tersect_browser_gp",
-    "localDbPath":"/Users/user/msc_project/tersect-browser/test-data/mongo-data", // adjust as necessary
-    "indexPartitions": [
-        100000000,
-        50000000,
-        25000000,
-        10000000,
-        5000000,
-        1000000
-    ]
-}
-```
-- The backend requires Node 26 (see `backend/.nvmrc`), so the frontend and backend run on different node versions. Start each in its own terminal:
-  - Frontend: `nvm use 16`, then `npm run frontend` from the root of the application
-  - Backend: `cd backend`, `nvm install 26 && nvm use`, `npm install`, then `npm start`
-
-### React frontend (replaces the Angular frontend and the extension)
-
-`web/` is a single React application that combines the Angular frontend and the genome-browser extension. It needs only the backend; the steps below for the extension do not apply to it.
-
-- `cd web`, then `nvm use 22` (or newer) and `npm install`
-- `npm run dev` serves it on port 4200 under the `baseHref` from `tbconfig.json`, proxying API requests to the backend on `serverPort`
-- `npm run build` writes the production build to `dist/frontend`, which is where the backend's `npm run deploy` serves the frontend from
-- With Docker: `./start_all.sh` serves it on port 4200 (see [Running the app with docker](#running-the-app-with-docker))
-
-See `web/README.md` for details.
-
-- cd to the genome-browser application
-
-```
-cd /tersect-browser/extension/genome-browser
-```
-
-- run `nvm use 22`
-
-- run `npm install`
-
-- run `npm start`
-
-The extension server should be available on port 3200.
-
-## How to load the dataset
-
-### Quick start: the bundled soybean dataset
-
-The repository includes a complete Tersect index for a small soybean dataset (`HN-Soybean-data.tsi`: 7 accessions, 20 chromosomes, reference Wm82.a2). It needs no other files, so it is the quickest way to get a working local setup. It has no reference FASTA, so chromosome sizes are taken from the index and no sequence gaps are shown; the genome track and variant search do not apply to it.
-
-Requirements: MongoDB 8, `tersect`, `rapidnj` and Python 3.11.
-
-```sh
-# Python environment for the dataset scripts (and for merge_phylip.py, which the backend runs)
-python3.11 -m venv .tersect
-.tersect/bin/pip install "pymongo>=4.10" numpy "hashids==1.2.0" biopython
-
-# Database, kept under test-data/ (gitignored)
-mkdir -p test-data/db test-data/mongo-data
-mongod --dbpath test-data/db --bind_ip 127.0.0.1 --fork --logpath test-data/mongod.log
-```
-
-Copy `tbconfig.example.json` to `tbconfig.json` (its defaults point at a local MongoDB and keep data in `test-data/mongo-data`). Then register the dataset and start the backend with the venv on the `PATH`:
-
-```sh
-export PATH="$PWD/.tersect/bin:$PATH"
-backend/src/scripts/add_dataset.py tbconfig.json "Soybean (HN)" HN-Soybean-data.tsi Wm82.a2
-cd backend && npm start
-```
-
-`add_dataset.py` copies the index into `localDbPath`, registers the dataset and its chromosomes, and precomputes distance matrices (a few seconds for this dataset). Pass `-f` to replace an existing dataset of the same name.
-
-For the genome browser (gene track and per-accession variant tracks), download the reference and gene models from the Legume Information System and prepare them; this also records sequence gaps for the plot:
-
-```sh
-mkdir -p test-data/downloads && cd test-data/downloads
-curl -LO https://data.legumeinfo.org/Glycine/max/genomes/Wm82.gnm2.DTC4/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz
-curl -LO https://data.legumeinfo.org/Glycine/max/annotations/Wm82.gnm2.ann1.RVB6/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz
-cd ../..
-backend/src/scripts/prepare_genome_browser.py tbconfig.json "Soybean (HN)" \
-  --fasta test-data/downloads/glyma.Wm82.gnm2.DTC4.genome_main.fna.gz \
-  --gff test-data/downloads/glyma.Wm82.gnm2.ann1.RVB6.gene_models_main.gff3.gz \
-  --variants-from-tsi --reference-id Wm82.a2
-```
-
-Introgression analysis needs the conda environment from `environment.yml`, PhyloNet and Julia; the Docker setup below includes all of them. To run it locally, set `TB_ANALYSIS_PYTHON` to that environment's Python (default: `micromamba run -n tersect python`).
-
-
-Loading the dataset requires a valid MongoDB installation. Refer to this documentation [here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/). MongoDB v8.0 is compatible with this version of TersectBrowser+.
-
-After successful installation, start the MongoDB server by running `mongod`. By default, MongoDB will try to create and store data in a `/data/db` path. 
-There is a tendency that on Mac, this is a read-only path. If that is the case, you may need to use a different path.  `db-data/mongo-data` was used to test the application.
-
-To start MongoDB with a different path, create the path by running `mkdir -p db-data/mongo-data`, then run MongoDB with this path `mongod --dbpath db-data/mongo-data`.
-
-When your database is up and running, you can start the backend server (However, there will be no datasets at this point).
-
-### Installing Python dependencies
-The python dependencies available in conda are listed in the requirements.txt in `/tersect-browser/backend/src/scripts`
-
-Some dependencies are available with [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) as Tersect Browser  originally managed its virtual environment with pip related virtual managers like venv.
-
-These dependencies are present in the requirements.venv.txt in `/tersect-browser/backend/src/scripts`
-
-- Create a python virtual environment with venv at the root of the `tersect_browser` folder.
-`python3.11 -m venv .tersect`
-
-We are using python 3.11 because numpy has issues when we try to install via python > 3.12.
-
-- Activate the virtual environment
-`source .tersect/bin/activate`
-
-- Install the dependencies in the requirements.venv.txt file. As conda channels does not have the version of hashids  needed for tersect cli, tersect dependencies are in requirements.venv.txt.
-`pip3 install -r /path/to/requirements.venv.txt` the file is in `./backend/src/scripts` if you are in the root of the `tersect_browser` folder.
-
-- If there are errors during the installation here, cat the requirements.txt file and install each tool individually. If the numpy install gives errors, run without the version specification.
-
-- Follow the installation instructions on the tersect-cli [GitHub page](https://github.com/tomkurowski/tersect?tab=readme-ov-file#macos) to install tersect CLI on your machine.
-
-- Note: It is recommended to install SAMtools manually prior to running the setup scripts. Although the script will try and install all the necessary tools, missing dependencies might cause errors.
-
-
-### Generating the dataset
-
-A folder exists in the root directory of Elvis called `test-data`, containing the basic necessary files to run the setup scripts to generate the dataset.
-
-To generate the dataset, copy the data in the `test-data` folder on Elvis to your selected database folder. i.e the value of `tbconfig.localDbPath`, as `gp_data_copy` folder. 
-
-The credentials for Elvis will be bundled with the submission in a credentials.txt file.
-
-Example `tbconfig.localDbPath` tree looks like this
-```
-...
-├── gp_data_copy
-    ├── ITAG2.4_gene_models.gff3
-    ├── ITAG2.4_gene_models.sorted.gff3.gz
-    ├── ITAG2.4_gene_models.sorted.gff3.gz.tbi
-    ├── SGN_aer_hom_snps.tsi
-    ├── SL2.50.fa
-    ├── SL2.50.fa.fai
-    └── vcf_location
-        └── RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz
-        ...
-...
-
-```
-Note: The total number of files in `gp_data_copy` on Elvis will be greater as it contains the processed vcf files and index files needed for the search functionality
-
-At the root of tersect browser, run the `setup_new_tbrowser_dataset.py` script to setup datasets automatically.
-
-Its correct usage is 
-` python setup_new_tbrowser_dataset.py -f {fasta file path} -g {gff gz path} -V {vcf files path} -c {tbconfig.json path}`
-
-E.G
-```
- python setup_new_tbrowser_dataset.py \
- -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa \
- -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
- -V /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/ \
- -c /Users/user/msc_project/tersect-browser/tbconfig.json 
-```
-
-`-V can be replaced with -v to use a comma separated list of vcf file paths instead`
-
-E.G
-```
- python setup_new_tbrowser_dataset.py \
- -f /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SL2.50.fa \
- -g /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/ITAG2.4_gene_models.sorted.gff3.gz \
- -v /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/vcf_location/RF_001_SZAXPI008746-45.vcf.gz.snpeff.vcf.gz \
- -c /Users/user/msc_project/tersect-browser/tbconfig.json 
-```
-
-After the data set is loaded you can start the server and see the loaded dataset on the home page
-
-### Creating the search Index
-
-#### VCF Index
-
-- Navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
-
-- Run the `build_annotate_per_chrom.sh` script to generate the indexes for each chromosome
-
-E.G
-```
-./build_annotate_per_chrom.sh ../../../test-data/mongo-data/gp_data_copy/tracks.json /Users/user/msc_project/tersect-browser/test-data/mongo-data/SGN_aer_hom_snps.tsi /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/trix_indicies
-
-```
-#### TRIX Index
-
-- Navigate to the scripts folder in the backend `cd /tersect-browser/backend/src/scripts`
-
-- Run the `tersect_trix_builder.sh` script to generate the trix indexes for each chromosome
-
-```
-./tersect_trix_builder.sh /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/trix_indices /Users/user/msc_project/tersect-browser/test-data/mongo-data/gp_data_copy/SGN_aer_hom_snps.tsi
-
-```
-
-
-
-### Additional Requirement For Running The Browser without docker
-[RapidNJ](https://github.com/somme89/rapidNJ) is required for generating the phylogenetic tree under the hood. Git clone the repository, and run make in the root.
-
-NB mac users with M series chip
-Install Rosetta (if not already):
-
-```
-softwareupdate --install-rosetta
-```
-
-Run the Terminal in Rosetta:
-
-Go to Applications > Utilities > Terminal.
-
-Right-click → Get Info.
-
-Check “Open using Rosetta”.
-
-Run `make` again in the Rosetta terminal.
-
-This way, clang++ will target x86_64 and the SSE2 instructions will work.
-
-
-Making it available system wide:
-
-After running `make` cd into the bin directory
-
-run ls as shown below to check that the binary exists
-`ls -l rapidnj`
-
-move it to the usr path
-`sudo mv rapidnj /usr/local/bin/`
-
-
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.1.
-
-#### Clear angular cache
-In the event that an error message stating an .angular/cache/ file does not exist, this error can be resolved by navigating to `{path-to}/Tersect-browser/extension/genome-browser/.angular/` and running `ng cache clean` to clean the cache
-
-## Running the app with docker
-
-The Docker stack runs MongoDB, the backend (with the full analysis toolchain: Tersect, rapidNJ, ASTRAL, PhyloNet, Julia and R) and the React frontend, and registers the bundled soybean dataset.
+# Tersect Browser
+
+Interactive exploration of genetic distances between resequenced accessions,
+with phenetic trees, a genome browser (JBrowse 2), variant search, barcode
+generation and automated introgression detection.
+
+| Directory | |
+|---|---|
+| `web/` | React frontend ([web/README.md](web/README.md)) |
+| `backend/` | Express API (Node 26), and the analysis scripts it runs (`backend/src/scripts`) |
+| `pipeline/` | Dataset pipeline: builds datasets from VCF files ([pipeline/README.md](pipeline/README.md)) |
+| `datasets/` | Dataset manifests |
+| `clickhouse/` | Schema of the variant search store |
+| `common/` | Types shared by backend and frontend |
+| `docs/`, `HANDOFF.md` | Design brief and design-system handoff |
+
+## Running with Docker
 
 ```sh
 ./start_all.sh
@@ -290,35 +22,79 @@ The Docker stack runs MongoDB, the backend (with the full analysis toolchain: Te
 
 Then open http://localhost:4200/TersectBrowserGP/
 
-The first run builds the `tersect-base` image (about 15 minutes on Apple Silicon, where it builds for amd64 under emulation) and downloads the soybean reference and gene models (about 300 MB) from the Legume Information System. Later runs reuse both; `docker compose up -d` starts the stack again.
+This starts MongoDB, ClickHouse, the backend (with the analysis toolchain:
+Tersect, rapidNJ, ASTRAL, PhyloNet, Julia and R) and the web app, and builds
+the datasets listed in `DATASETS` (by default the bundled soybean index and
+eight accessions of the Aflitos et al. tomato panel).
 
-- **Data:** everything is kept in `test-data/` (gitignored): the database in `test-data/docker-db`, dataset files in `test-data/mongo-data`.
-- **Development:** the repository is mounted into the containers, so changes to `backend/` and `web/src` reload without rebuilding.
-- **Configuration:** `start_all.sh` creates `tbconfig.json` from `tbconfig.example.json` if it is missing. Inside the containers the database and data paths come from the `TB_*` variables in `docker-compose.yml`.
-- **Ports:** web 4200, backend 4300, MongoDB `127.0.0.1:27018` (so a local `mongod` can keep 27017). Stop local dev servers on 4200 and 4300 first.
-- **Other datasets:** set the `db_init` variables in `docker-compose.yml` (`DATASET_ID`, `DATASET_TSI`, `REFERENCE_ID`, `REFERENCE_FASTA`, `GENE_MODELS`, `VARIANTS`; see `init-entrypoint.sh`) and run `docker compose --profile init run --rm db_init`. Add `-e FORCE=1` to rebuild an existing dataset.
-- **Legacy frontend:** the Angular frontend and extension are available with `docker compose --profile legacy up frontend extension` (frontend on port 4100).
+- **First run:** builds the `tersect-base` image (about 15 minutes on Apple
+  Silicon, where it builds for amd64 under emulation) and downloads the
+  datasets' inputs (about 1 GB). Later runs reuse both, and datasets that
+  are already built are skipped. `docker compose up -d` starts the stack
+  again.
+- **Data:** kept in `test-data/` (gitignored): MongoDB in
+  `test-data/docker-db`, ClickHouse in `test-data/clickhouse`, dataset files
+  in `test-data/mongo-data`.
+- **Development:** the repository is mounted into the containers, so changes
+  to `backend/` and `web/src` reload without rebuilding.
+- **Configuration:** `start_all.sh` creates `tbconfig.json` from
+  `tbconfig.example.json` if it is missing. Inside the containers, database
+  and data paths come from the `TB_*` variables in `docker-compose.yml`.
+- **Ports:** web 4200, backend 4300, MongoDB `127.0.0.1:27018`, ClickHouse
+  `127.0.0.1:8123`.
 
-## Code scaffolding
+## Datasets
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+A dataset is described by a manifest naming its reference FASTA, gene models
+and one VCF per accession (paths or URLs):
 
-## Build
+```sh
+./scripts/dataset validate datasets/tomato-sl250.yaml
+./scripts/dataset build datasets/tomato-sl250.yaml
+./scripts/dataset status
+```
 
-Run `npm run-script build` to build the frontend and backend application
+The pipeline normalises the VCFs, builds the Tersect index, annotates
+variants with snpEff, loads them into ClickHouse for variant search,
+prepares the genome browser files and registers the dataset. See
+[pipeline/README.md](pipeline/README.md) for the manifest format and how it
+works. `datasets/tomato-sl250-accessions.tsv` maps the SGN VCF files of the
+tomato panel to accession names.
 
-## Deployment
+## Development without Docker
 
-Deploy with docker as in the development server section.
+The backend needs MongoDB 8, ClickHouse (with `clickhouse/schema.sql`
+applied) and, on the `PATH`, `tersect`, `rapidnj`, `bcftools`, `tabix`,
+`samtools` and a Python with `backend/src/scripts/requirements.venv.txt`.
+Introgression analysis also needs the conda environment from
+`environment.yml` (set `TB_ANALYSIS_PYTHON` to its Python), PhyloNet and
+Julia; `Dockerfile.base` shows the full setup.
 
-## Running unit tests
+```sh
+cp tbconfig.example.json tbconfig.json   # then adjust mongoHost and localDbPath
+npm install                              # backend and web dependencies
+npm run dev                              # backend on 4300, web on 4200
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+The backend reads ClickHouse settings from `TB_CLICKHOUSE_HOST`,
+`TB_CLICKHOUSE_PORT`, `TB_CLICKHOUSE_USER` and `TB_CLICKHOUSE_PASSWORD`.
+Datasets can be built locally with the pipeline's environment
+(`pipeline/environment.yml`):
+`PYTHONPATH=pipeline python -m tbpipeline.cli build datasets/<name>.yaml`.
 
-## Running end-to-end tests
+rapidNJ uses SSE2 instructions; on Apple Silicon build it under Rosetta
+(`arch -x86_64 make`), or use Docker.
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+## Production build
 
-## Further help
+```sh
+npm run build      # web app into dist/frontend, backend into dist/
+npm run deploy     # serves both on serverPort
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+## Checks
+
+```sh
+npm run typecheck
+npm run lint
+```

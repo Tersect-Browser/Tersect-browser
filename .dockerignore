@@ -3,8 +3,6 @@ test-data/
 gp_data_copy/
 mongo-data/
 db-data/
-"test dataset"/
-"VARIANTS DUMP"/
 **/.venv/
 .tersect/
 **/.mamba/
@@ -18,7 +16,6 @@ db-data/
 **/dist/
 **/build/
 **/.cache/
-**/.angular/
 **/coverage/
 
 # VCS and IDE

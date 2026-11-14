@@ -3,26 +3,21 @@
     "version": "0.9.0",
     "description": "Tersect Browser application monorepo",
     "scripts": {
-        "install-frontend": "cd frontend && npm install",
-        "install-extenssion": "cd extension/genome-browser && npm install",
         "install-backend": "cd backend && npm install",
         "install-web": "cd web && npm install",
-        "install": "npm-run-all install-frontend install-backend",
-        "lint-frontend": "cd frontend && npm run lint",
-        "lint-backend": "cd backend && npm run lint",
-        "lint": "npm-run-all lint-frontend lint-backend",
-        "frontend": "cd frontend && npm start",
-        "extension": "cd extension/genome-browser && npm start",
+        "install": "npm-run-all install-backend install-web",
         "backend": "cd backend && npm start",
         "web": "cd web && npm run dev",
-        "build-web": "cd web && npm run build",
-        "start": "npm-run-all -p frontend backend",
-        "dev": "npm-run-all -p frontend backend",
+        "dev": "npm-run-all -p backend web",
+        "typecheck": "npm-run-all \"typecheck:*\"",
+        "typecheck:backend": "cd backend && npm run typecheck",
+        "typecheck:web": "cd web && npm run typecheck",
+        "lint": "npm-run-all \"lint:*\"",
+        "lint:backend": "cd backend && npm run lint",
+        "lint:web": "cd web && npm run lint",
         "build": "node scripts/build.js",
         "deploy": "node --trace-warnings ./dist/server.js --config tbconfig.json",
-        "clean-frontend": "cd frontend && npm run clean",
-        "clean-backend": "cd backend && npm run clean",
-        "clean": "npm-run-all clean-frontend clean-backend && rimraf dist/ && rimraf node_modules/"
+        "clean": "cd backend && npm run clean && cd .. && rimraf dist/ node_modules/"
     },
     "private": true,
     "repository": {
@@ -36,13 +31,8 @@
     "license": "MIT",
     "homepage": "https://bitbucket.org/tomkurowski/tersect-browser#readme",
     "devDependencies": {
-        "@types/node": "^12.12.5",
-        "@types/yargs": "^13.0.3",
         "npm-run-all": "^4.1.5",
         "rimraf": "^3.0.0",
-        "turbo": "^2.4.4",
-        "yargs": "^14.2.0"
-    },
-    "packageManager": "npm@8.5.0",
-    "workspace": "^1.0.0"
+        "yargs": "^17.7.2"
+    }
 }

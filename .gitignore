@@ -1,72 +1,29 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
-
-# compiled output
+# Build output
 dist/
-.turbo/
-/dist-server
-/tmp
-/out-tsc
-*.pyc
-__pycache__/
+*.tsbuildinfo
 
-# local data storage
-/local_db
-
-# dependencies
+# Dependencies
 node_modules/
+__pycache__/
+*.pyc
+.tersect/
 
-# generated documentation
-/documentation
+# Local configuration and data (see tbconfig.example.json, start_all.sh)
+tbconfig.json
+test-data/
+db-data/
+gp_data/
+gp_data_copy/
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Logs
+*.log
 
-# IDE - VSCode
-.vscode
+# Editors and OS
+.idea/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
-
-# e2e
-/e2e/*.js
-/e2e/*.map
-
-# System Files
 .DS_Store
 Thumbs.db
-
-# Test directories
-test/
-
-.turbo/
-
-tbconfig.json
-db-data/
-test-data/
-.tersect
-gp_data
-db-data/
-
-~/mongo-data/
-tmp_outputs/
-./gp_data_copy/*
-./test-data2/*
-

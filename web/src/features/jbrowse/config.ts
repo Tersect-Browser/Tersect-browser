@@ -1,8 +1,5 @@
 import { DATAFILES_URL, toSameOrigin } from "@/lib/config"
 
-import generatedAssembly from "./generated/assembly"
-import generatedTracks from "./generated/tracks"
-
 /* eslint-disable @typescript-eslint/no-explicit-any -- JBrowse configuration
    is plain JSON whose shape is defined by JBrowse. */
 export interface JBrowseDatasetConfig {
@@ -36,34 +33,26 @@ function relocate<T>(value: T): T {
   return value
 }
 
-/** File-name-safe version of a dataset id; matches prepare_genome_browser.py. */
+/** File-name-safe version of a dataset id; matches the pipeline (manifest.slug). */
 function slug(text: string): string {
   return text.replace(/[^A-Za-z0-9._-]+/g, "_")
 }
 
-/** Configuration bundled at build time (written by modules_for_setup.py). */
-function bundledConfig(): JBrowseDatasetConfig {
-  const tracks = relocate(generatedTracks as any[])
-  return {
-    assembly: relocate(generatedAssembly),
-    tracks,
-    geneTrackId: tracks[0]?.trackId,
-  }
-}
-
 /**
- * Genome browser configuration of a dataset, as written by
- * prepare_genome_browser.py, or the bundled configuration when the dataset
- * has none.
+ * Genome browser configuration of a dataset, as written by the dataset
+ * pipeline, or null for a dataset without a reference sequence.
  */
 export async function loadJBrowseConfig(
   datasetId: string
-): Promise<JBrowseDatasetConfig> {
+): Promise<JBrowseDatasetConfig | null> {
   const response = await fetch(
     `${DATAFILES_URL}/jbrowse/${encodeURIComponent(slug(datasetId))}.json`
   )
+  if (response.status === 404) {
+    return null
+  }
   if (!response.ok) {
-    return bundledConfig()
+    throw new Error(`Genome browser configuration: ${response.status}`)
   }
   const config = (await response.json()) as JBrowseDatasetConfig
   return {

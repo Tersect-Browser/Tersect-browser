@@ -1,7 +1,8 @@
 # Tersect Browser — web
 
-The Tersect Browser frontend: a single React application that replaces the
-Angular frontend (`frontend/`) and the genome-browser extension (`extension/`).
+The Tersect Browser frontend: a single React application, including the
+genome browser (JBrowse 2), variant search, barcodes and introgression
+analysis.
 
 Stack: React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui (Radix), Zustand,
 TanStack Query, D3 and JBrowse 2.
@@ -36,8 +37,7 @@ npm run format
 ```
 
 `npm run build` writes to `../dist/frontend`, the directory the deployed
-backend serves the frontend from. The Angular build writes to the same place,
-so build one or the other.
+backend serves the frontend from.
 
 ## Layout
 
@@ -81,8 +81,8 @@ Numbers shown to the user (positions, ranges, loci, Mbp, sizes) go through
 
 ## Genome browser configuration
 
-`src/features/jbrowse/generated/` holds the JBrowse assembly and track
-definitions. They are written by the dataset setup scripts
-(`modules_for_setup.py`) and should not be edited by hand. File locations in
-them are re-rooted onto the current origin at load time, so the host that was
-configured when the dataset was set up does not matter.
+Each dataset's JBrowse configuration (assembly and tracks) is written by
+the dataset pipeline to `gp_data_copy/jbrowse/<dataset>.json`, which the
+backend serves; `src/features/jbrowse/config.ts` loads it. File locations in
+it are re-rooted onto the current origin at load time. Datasets without a
+reference sequence have no configuration, and the genome track is hidden.
