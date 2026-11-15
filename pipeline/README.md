@@ -226,6 +226,12 @@ the builder at the host:
     ollama pull qwen3:14b
     TB_ASSISTANT_URL=http://host.docker.internal:11434/v1 docker compose up -d builder
 
+**Writing prompts for it.** A small model does well with exact locations and
+explicit rules, and badly with vague requests. `.claude/skills/tersect-dataset-prompt/SKILL.md`
+teaches a stronger model (Claude Code loads it as a skill; for any other LLM,
+paste the file in) to find and verify the data and write the prompt to paste
+into the panel, with a template and worked examples.
+
 **Tools.** Read: `read_paper` (Crossref metadata; Europe PMC full text for
 open-access papers: data availability, methods excerpts, supplementary files,
 inline tables; otherwise the landing page or PDF, which many publishers
