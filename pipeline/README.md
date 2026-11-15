@@ -30,6 +30,7 @@ existing Tersect index only).
 | `annotation.snpeff` | `build` (snpEff database from the FASTA and GFF), a prebuilt snpEff database name, or `none` |
 | `tersect.homozygous`, `tersect.types` | Which variants the distance index counts (`tersect build -H`, `-t`) |
 | `samples[]` | `name`, `vcf` (path or URL), optional `label`, `group`, `vcf_sample` (to pick a sample from a multi-sample VCF) and `info` (extra columns) |
+| `samples[].rename_contigs` | Optional map of VCF contig name → reference sequence name, for VCFs named differently from the FASTA (e.g. `chr1: SL2.50ch01`). Applied first in normalise (`bcftools annotate --rename-chrs`); contigs not in the map keep their names |
 | `index` | Instead of `samples`: an existing `.tsi` (no variant search) |
 
 URLs are downloaded once into a shared cache, with retries and resume. Local
@@ -52,13 +53,18 @@ LOAD        stage: Parquet → ClickHouse staging tables
                      → dataset record (MongoDB): the dataset appears here
 ```
 
-**Normalise** (`genomics.normalise_sample`): select the sample, keep the chosen
+**Normalise** (`genomics.normalise_sample`): rename contigs (`rename_contigs`), select the sample, keep the chosen
 chromosomes, drop existing annotations, split multi-allelic sites and
 left-align indels against the reference. Sites whose REF disagrees with the
 reference are dropped and counted. Then keep only sites where the accession
 carries the alternative allele, and rename the sample to the manifest name.
 Contig names that do not match the reference fail here, with both lists in
-the message.
+the message; a `rename_contigs` map fixes them.
+
+**Failures** (`tbpipeline/failures.py`): each step records the exception it
+raised in `failures/` in the working directory, with its rule and wildcards.
+`tb-dataset status` shows the first one; the builder service turns it into
+the build's error (stage, accession, file, what to fix).
 
 **Annotate**: snpEff runs once per chromosome on the merged accessions, so a
 variant shared by many accessions is annotated once. Upstream and downstream
@@ -143,15 +149,107 @@ Extrapolating to the full 84-accession panel gives a few tens of millions of
 variants and on the order of 10^8 carrier entries. That still fits one machine
 and one ClickHouse server comfortably, which is the basis for "no PySpark".
 
+## Builder service
+
+The web UI's dataset upload flow talks to a FastAPI service in
+`tbpipeline/server/` (contract: `web/src/features/datasets/types.ts`). It runs
+in the pipeline image as the compose service `builder`, started by
+`docker compose up`, on port 4310 under `/api`; the web dev server proxies
+`<base>api/*` to it (`BUILDER_URL`). Outside Docker:
+`PYTHONPATH=pipeline python -m tbpipeline.server`. API docs at `/api/docs`.
+
+| Route | |
+|---|---|
+| `GET /api/config`, `/api/storage` | Feature flags; free and total bytes on the data disk |
+| `GET /api/server-files?path=` | Browse the shared server folders |
+| `POST /api/datasets/check-urls` | HEAD (or a one-byte GET; FTP `SIZE`) per URL |
+| `POST /api/datasets/inspect` | FASTA sequences, VCF samples and contigs, GFF seqids, `.tsi` samples |
+| `/api/uploads` | Resumable uploads, [tus 1.0.0](https://tus.io/protocols/resumable-upload) with creation, termination and checksum |
+| `/api/drafts` | Wizard drafts (MongoDB `dataset_drafts`) |
+| `/api/datasets`, `/api/builds` | Published datasets and the build queue |
+| `PATCH /api/datasets/{id}` | `{listed}`: show the dataset in, or hide it from, the public dataset list (share links keep working) |
+| `POST /api/assistant` | Dataset assistant, server-sent events (below); 503 unless configured |
+
+**Files.** Uploads go to `<localDbPath>/uploads/<id>/<file name>` with
+`upload.json` (size, offset, sha256 computed on the server, complete).
+Server folders are `TB_SERVER_FOLDERS` (colon-separated, default `/data`,
+mounted read-only) and are read in place; paths are confined to them by real
+path, so `..` and symlinks cannot leave them. `TB_PIPELINE_ALLOWED_ROOTS`
+must cover the uploads folder and the server folders (see
+`docker-compose.yml`).
+
+**URLs** must be http, https or ftp. Hosts that resolve to private, loopback
+or link-local addresses are refused, including on redirects
+(`TB_BUILDER_ALLOW_PRIVATE_URLS=1` allows them, for development).
+
+**Inspect** reads only what it needs: VCF headers (`bcftools view -h`, also
+remote), FASTA indexes (`samtools faidx`, written to
+`pipeline/cache/inspect/` because server folders are read-only; plain gzip is
+read in Python). A FASTA given by URL uses `<url>.fai` if the server has
+one; otherwise it is downloaded in the background into the pipeline's
+download cache, which the build then reuses, and inspect returns a note until
+it has finished. Results are cached by path, size and modification time.
+
+Other settings: `TB_MAX_UPLOAD` (bytes, no limit by default),
+`TB_BUILDER_PORT` (4310), and the assistant's below.
+
+### Dataset assistant
+
+An optional chat panel in the wizard (`server/assistant*.py`, contract
+`web/src/features/datasets/assistant/types.ts`). It reads papers, folder
+listings and supplementary tables and *proposes* form values; it cannot save,
+build or delete anything, and proposals only enter the manifest when the user
+accepts them in the form, through the usual validation. The server checks
+every proposed URL (as `check-urls` does), leaves unreachable ones out and
+offers no Apply on a card without a reachable link. Each proposal carries the
+source the model cited.
+
+It talks to any OpenAI-compatible chat completions endpoint with tool
+calling, meant to run on this machine or network so that no paper, file name
+or genotype goes to an outside model service (papers themselves are fetched
+from Crossref, Europe PMC or the publisher). Off unless `TB_ASSISTANT_URL`
+is set; the panel is then absent.
+
+| Variable | |
+|---|---|
+| `TB_ASSISTANT_URL` | Base URL including `/v1`, e.g. `http://host.docker.internal:11434/v1` |
+| `TB_ASSISTANT_MODEL` | Default `qwen3:14b` (~10 GB with an 8k context; on a 16 GB Mac keep Docker's memory cap near 6 GB). `qwen3:8b` is lighter and also reliable; both can show their reasoning (`think`). `mistral:7b` was tried and rarely calls tools |
+| `TB_ASSISTANT_API_KEY` | Sent as a bearer token, if the server needs one |
+| `TB_ASSISTANT_TIMEOUT` | Seconds per turn, default 600 |
+| `TB_ASSISTANT_CONTEXT_CHARS` | Prompt budget in characters (older tool results are shortened first). 14000 for an 8k model context (compose default), 24000 for 16k |
+| `TB_ASSISTANT_REASONING` | `reasoning_effort` sent to the server, default `none` (no thinking); `default` omits it |
+
+With Ollama on a Mac, run it natively (Docker on macOS has no GPU) and point
+the builder at the host:
+
+    OLLAMA_CONTEXT_LENGTH=8192 ollama serve      # Ollama's default context is too small
+    ollama pull qwen3:14b
+    TB_ASSISTANT_URL=http://host.docker.internal:11434/v1 docker compose up -d builder
+
+**Tools.** Read: `read_paper` (Crossref metadata; Europe PMC full text for
+open-access papers: data availability, methods excerpts, supplementary files,
+inline tables; otherwise the landing page or PDF, which many publishers
+refuse to automated clients, then the Europe PMC abstract), `list_directory`
+(HTTP index pages and FTP), `read_table` (CSV, TSV, XLSX, also inside a zip
+as `url#member`, such as Europe PMC's supplementary archive), `check_urls`.
+Propose: `propose_reference`, `propose_accessions`, `propose_rename_map`
+(computed from the form's VCF contigs and reference sequences by chromosome
+number when it can be), `propose_options`, `propose_sheet`. All fetches go
+through the SSRF guard with size and time limits; results are short,
+sectioned text, labelled so that the model can cite them.
+
+**Limits.** At most 12 rounds of tool calls per turn, 6 calls per round;
+malformed calls are answered with the validation error and the model may try
+again. Thinking is turned off and any `<think>` output is removed before it
+is streamed. Models that cannot call tools get a clear error. Tests use a
+fake model server: `pytest tests/test_assistant.py` (`TB_NETWORK_TESTS=1`
+also reads real papers and folders).
+
 ## Towards uploads from the UI
 
 The pieces an upload feature needs are in place: a manifest is the job
 description, `validate` is the input check, builds are recorded in MongoDB,
-and publishing is atomic. Still to do:
+publishing is atomic, and the builder service above takes uploads and runs
+builds. Still to do:
 
-- an upload endpoint that stores files under a per-user directory and writes
-  a manifest there (`TB_PIPELINE_ALLOWED_ROOTS` confines it)
-- a job queue: one worker container running `tb-dataset build`, polling
-  `dataset_builds`
-- progress over SSE, from the step logs
-- ownership and visibility of datasets
+- ownership and visibility of datasets (uploads and drafts are not per user yet)

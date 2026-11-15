@@ -27,3 +27,6 @@ gp_data_copy/
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+
+# Captured Snakemake output used by the pipeline tests
+!pipeline/tests/data/*.log

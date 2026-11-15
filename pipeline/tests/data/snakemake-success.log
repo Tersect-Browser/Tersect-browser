@@ -1,0 +1,213 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-11-14 17:13:34
+  Workflow ID: 7023629b-6645-4953-9094-3782fa3afeb0
+  Platform: Linux-6.10.14-linuxkit-aarch64-with-glibc2.36
+  Host: 8963b3c86920
+  User: root
+  Snakemake version: 9.27.1
+  Python version: 3.12.16 (main, Oct 26 2026, 11:41:19) [GCC 15.3.0]
+  Command: /opt/conda/envs/pipeline/bin/snakemake --snakefile /app/pipeline/Snakefile --directory /app/test-data/mongo-data/pipeline/Tiny_capture --config manifest=/app/test-data/datasets/tiny/tiny-rename.yaml --cores 4 --rerun-incomplete --keep-going --printshellcmds --show-failed-logs --resources mem_mb=3217
+  Snakefile: /app/pipeline/Snakefile
+  Base directory: /app/pipeline
+  Run directory: /app
+  Working directory: /app/test-data/mongo-data/pipeline/Tiny_capture
+  Config file(s): []
+  Config MD5: b5a6ed2c61e885d0537cedbe888a4036
+
+Building DAG of jobs...
+Updating checkpoint dependencies.
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Provided resources: mem_mb=Resource("mem_mb", 3217)
+Job stats:
+job               count
+--------------  -------
+normalise             2
+annotate              2
+genome_browser        1
+tersect_index         1
+variants_table        2
+stage                 1
+publish               1
+all                   1
+total                11
+
+Select jobs to execute...
+Execute 2 jobs...
+
+[Sat Nov 14 17:13:34 2026]
+localrule normalise:
+    input: inputs/reference.fa.gz, chromosomes.json
+    output: samples/B.vcf.gz, samples/B.vcf.gz.tbi, qc/B.json
+    log: logs/normalise/B.log
+    jobid: 7
+    reason: Missing output files: samples/B.vcf.gz
+    wildcards: sample=B
+    resources: tmpdir=/tmp, mem_mb=1500, mem=1.5 GB, mem_mib=1431
+Shell command: None
+
+[Sat Nov 14 17:13:34 2026]
+localrule normalise:
+    input: inputs/reference.fa.gz, chromosomes.json
+    output: samples/E.vcf.gz, samples/E.vcf.gz.tbi, qc/E.json
+    log: logs/normalise/E.log
+    jobid: 8
+    reason: Missing output files: samples/E.vcf.gz
+    wildcards: sample=E
+    resources: tmpdir=/tmp, mem_mb=1500, mem=1.5 GB, mem_mib=1431
+Shell command: None
+[Sat Nov 14 17:13:36 2026]
+Finished jobid: 8 (Rule: normalise)
+1 of 11 steps (9%) done
+[Sat Nov 14 17:13:36 2026]
+Finished jobid: 7 (Rule: normalise)
+2 of 11 steps (18%) done
+Select jobs to execute...
+Execute 2 jobs...
+
+[Sat Nov 14 17:13:36 2026]
+localrule annotate:
+    input: samples/A.vcf.gz, samples/C.vcf.gz, samples/D.vcf.gz, samples/B.vcf.gz, samples/E.vcf.gz, snpeff.json
+    output: annotated/tiny_ch02.vcf.gz
+    log: logs/annotate/tiny_ch02.log
+    jobid: 26
+    reason: Updated input files: samples/A.vcf.gz, samples/D.vcf.gz, samples/C.vcf.gz; Input files updated by another job: samples/E.vcf.gz, samples/B.vcf.gz
+    wildcards: chrom=tiny_ch02
+    threads: 2
+    resources: tmpdir=/tmp, mem_mb=3217, mem=3.22 GB, mem_mib=3068
+Shell command: None
+
+[Sat Nov 14 17:13:36 2026]
+localrule genome_browser:
+    input: inputs/reference.fa.gz, inputs/genes.gff3.gz, samples/A.vcf.gz, samples/C.vcf.gz, samples/D.vcf.gz, samples/B.vcf.gz, samples/E.vcf.gz
+    output: browser.json
+    log: logs/genome_browser.log
+    jobid: 12
+    reason: Updated input files: samples/A.vcf.gz, samples/D.vcf.gz, samples/C.vcf.gz; Input files updated by another job: samples/E.vcf.gz, samples/B.vcf.gz
+    resources: tmpdir=/tmp
+Shell command: None
+Select jobs to execute...
+[Sat Nov 14 17:13:38 2026]
+Finished jobid: 12 (Rule: genome_browser)
+3 of 11 steps (27%) done
+[Sat Nov 14 17:13:38 2026]
+Finished jobid: 26 (Rule: annotate)
+4 of 11 steps (36%) done
+Execute 2 jobs...
+
+[Sat Nov 14 17:13:38 2026]
+localrule variants_table:
+    input: annotated/tiny_ch02.vcf.gz
+    output: parquet/variants/tiny_ch02.parquet, qc/variants-tiny_ch02.json
+    jobid: 25
+    reason: Input files updated by another job: annotated/tiny_ch02.vcf.gz
+    wildcards: chrom=tiny_ch02
+    resources: tmpdir=/tmp
+Shell command: None
+
+[Sat Nov 14 17:13:38 2026]
+localrule annotate:
+    input: samples/A.vcf.gz, samples/C.vcf.gz, samples/D.vcf.gz, samples/B.vcf.gz, samples/E.vcf.gz, snpeff.json
+    output: annotated/tiny_ch01.vcf.gz
+    log: logs/annotate/tiny_ch01.log
+    jobid: 23
+    reason: Updated input files: samples/A.vcf.gz, samples/D.vcf.gz, samples/C.vcf.gz; Input files updated by another job: samples/E.vcf.gz, samples/B.vcf.gz
+    wildcards: chrom=tiny_ch01
+    threads: 2
+    resources: tmpdir=/tmp, mem_mb=3217, mem=3.22 GB, mem_mib=3068
+Shell command: None
+Select jobs to execute...
+[Sat Nov 14 17:13:39 2026]
+Finished jobid: 23 (Rule: annotate)
+5 of 11 steps (45%) done
+Execute 2 jobs...
+
+[Sat Nov 14 17:13:39 2026]
+localrule variants_table:
+    input: annotated/tiny_ch01.vcf.gz
+    output: parquet/variants/tiny_ch01.parquet, qc/variants-tiny_ch01.json
+    jobid: 22
+    reason: Input files updated by another job: annotated/tiny_ch01.vcf.gz
+    wildcards: chrom=tiny_ch01
+    resources: tmpdir=/tmp
+Shell command: None
+
+[Sat Nov 14 17:13:39 2026]
+localrule tersect_index:
+    input: samples/A.vcf.gz, samples/C.vcf.gz, samples/D.vcf.gz, samples/B.vcf.gz, samples/E.vcf.gz
+    output: tersect/next.tsi
+    log: logs/tersect.log
+    jobid: 2
+    reason: Missing output files: tersect/next.tsi; Input files updated by another job: samples/E.vcf.gz, samples/B.vcf.gz; Set of input files has changed since last execution; Code has changed since last execution
+    resources: tmpdir=/tmp, mem_mb=2000, mem=2 GB, mem_mib=1908
+Shell command: None
+[Sat Nov 14 17:13:39 2026]
+Finished jobid: 25 (Rule: variants_table)
+6 of 11 steps (55%) done
+[Sat Nov 14 17:13:41 2026]
+Finished jobid: 2 (Rule: tersect_index)
+7 of 11 steps (64%) done
+[Sat Nov 14 17:13:43 2026]
+Finished jobid: 22 (Rule: variants_table)
+8 of 11 steps (73%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Nov 14 17:13:43 2026]
+localrule stage:
+    input: parquet/variants/tiny_ch01.parquet, parquet/variants/tiny_ch02.parquet, parquet/genes.parquet
+    output: staged.json
+    jobid: 9
+    reason: Input files updated by another job: parquet/variants/tiny_ch02.parquet, parquet/variants/tiny_ch01.parquet
+    resources: tmpdir=/tmp
+Shell command: None
+[Sat Nov 14 17:13:44 2026]
+Finished jobid: 9 (Rule: stage)
+9 of 11 steps (82%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Nov 14 17:13:44 2026]
+localrule publish:
+    input: tersect/next.tsi, staged.json, browser.json, inputs/reference.fa.gz
+    output: published.json
+    log: logs/publish.log
+    jobid: 1
+    reason: Missing output files: published.json; Input files updated by another job: staged.json, tersect/next.tsi, browser.json
+    resources: tmpdir=/tmp
+Shell command: None
+Loading /app/test-data/mongo-data/pipeline/Tiny_capture/inputs/reference.fa.gz as tiny1
+Processing tiny_ch01
+Found 0 gaps, inserting...
+Processing tiny_ch02
+Found 0 gaps, inserting...
+Index generation completed in: 0.054041124996729195
+Generating indices for tiny_ch01
+Generating whole chromosome index for tiny_ch01
+    Adding index for tiny_ch01:1-29683
+Generating indices for tiny_ch02
+Generating whole chromosome index for tiny_ch02
+    Adding index for tiny_ch02:1-19715
+Index generation completed in: 0.05810112500330433
+[Sat Nov 14 17:13:47 2026]
+Finished jobid: 1 (Rule: publish)
+10 of 11 steps (91%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Nov 14 17:13:47 2026]
+localrule all:
+    input: published.json
+    jobid: 0
+    reason: Input files updated by another job: published.json
+    resources: tmpdir=/tmp
+Shell command: None
+[Sat Nov 14 17:13:47 2026]
+Finished jobid: 0 (Rule: all)
+11 of 11 steps (100%) done
+Complete log(s): /app/test-data/mongo-data/pipeline/Tiny_capture/.snakemake/log/2026-11-14T171334.065552.snakemake.log
+Elapsed time: 0:00:13.751249

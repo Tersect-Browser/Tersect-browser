@@ -1,7 +1,10 @@
 # Tersect Browser development stack.
 #
 #   ./start_all.sh                 build everything, build datasets, start
-#   docker compose up -d           start again later
+#                                  (and the dataset assistant's model on a Mac)
+#   DATASETS="" ./start_all.sh     start again later, without rebuilding datasets
+#   docker compose up -d           also starts again, but with the assistant off
+#                                  unless TB_ASSISTANT_URL is set
 #
 # Open http://localhost:4200/TersectBrowserGP/
 #
@@ -138,6 +141,55 @@ services:
     profiles: ["pipeline"]
     networks: [app-net]
 
+  # Builder service (pipeline/tbpipeline/server): uploads, file inspection
+  # and dataset builds for the web UI, on port 4310 under /api. Builds run
+  # the pipeline inside this container. Uploads are stored under
+  # <localDbPath>/uploads; TB_SERVER_FOLDERS (colon-separated) are the
+  # folders users may pick files from, read in place.
+  builder:
+    image: tersect-pipeline:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    entrypoint: ["python", "-m", "tbpipeline.server"]
+    environment:
+      <<: *app-env
+      TB_CLICKHOUSE_USER: tersect_admin
+      TB_CLICKHOUSE_PASSWORD: tersect_admin
+      PYTHONPATH: /app/pipeline
+      TB_SERVER_FOLDERS: /data
+      # Manifests built from the UI may only point at uploads and the
+      # shared folders (keep in step with TB_SERVER_FOLDERS).
+      TB_PIPELINE_ALLOWED_ROOTS: /app/test-data/mongo-data/uploads:/data
+      # Dataset assistant (pipeline/README.md): off unless TB_ASSISTANT_URL is
+      # set, e.g. to a native Ollama on the host:
+      #   TB_ASSISTANT_URL=http://host.docker.internal:11434/v1 docker compose up -d builder
+      TB_ASSISTANT_URL: ${TB_ASSISTANT_URL:-}
+      TB_ASSISTANT_MODEL: ${TB_ASSISTANT_MODEL:-qwen3:14b}
+      # Prompt budget in characters; must fit the model server's context.
+      TB_ASSISTANT_CONTEXT_CHARS: ${TB_ASSISTANT_CONTEXT_CHARS:-14000}
+      TB_ASSISTANT_API_KEY: ${TB_ASSISTANT_API_KEY:-}
+    extra_hosts:
+      # host.docker.internal on Linux too (Docker Desktop provides it already).
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/app
+      - ${TB_DATA_DIR:-./test-data/datasets}:/data:ro
+    ports:
+      - "127.0.0.1:4310:4310"
+    depends_on:
+      database:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      # Created by start_all.sh (profile "init"); required: false lets the
+      # builder start with a plain `docker compose up`.
+      db_user_init:
+        condition: service_completed_successfully
+        required: false
+    restart: unless-stopped
+    networks: [app-net]
+
   backend:
     image: tersect-browser-backend:latest
     platform: linux/amd64
@@ -170,6 +222,7 @@ services:
       dockerfile: Dockerfile.web
     environment:
       BACKEND_URL: http://backend:4300
+      BUILDER_URL: http://builder:4310
     ports:
       - "4200:4200"
     volumes:
