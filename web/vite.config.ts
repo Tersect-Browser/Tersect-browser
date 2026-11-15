@@ -29,6 +29,9 @@ const base = tbConfig.baseHref ?? "/"
 const backend =
   process.env.BACKEND_URL ?? `http://127.0.0.1:${tbConfig.serverPort ?? 4300}`
 
+// Builder service (uploads and dataset builds), pipeline/tbpipeline/server.
+const builder = process.env.BUILDER_URL ?? "http://127.0.0.1:4310"
+
 const proxied = [
   `${base}tbapi`,
   `${base}tgrc`,
@@ -51,9 +54,16 @@ export default defineConfig({
     // Extra host names the dev server may be reached under (comma-separated),
     // e.g. when it is published through a tunnel.
     allowedHosts: process.env.TB_ALLOWED_HOSTS?.split(","),
-    proxy: Object.fromEntries(
-      proxied.map((path) => [path, { target: backend, changeOrigin: true }])
-    ),
+    proxy: {
+      ...Object.fromEntries(
+        proxied.map((path) => [path, { target: backend, changeOrigin: true }])
+      ),
+      [`${base}api`]: {
+        target: builder,
+        changeOrigin: true,
+        rewrite: (path) => path.slice(base.length - 1),
+      },
+    },
   },
   build: {
     // The backend serves the built app from dist/frontend.

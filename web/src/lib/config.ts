@@ -3,6 +3,8 @@ export const BASE_URL = import.meta.env.BASE_URL
 
 export const TB_API_URL = `${BASE_URL}tbapi`
 export const TGRC_API_URL = `${BASE_URL}tgrc`
+/** Builder service: uploads, dataset builds (pipeline/tbpipeline/server). */
+export const BUILDER_API_URL = `${BASE_URL}api`
 
 /** The backend serves dataset files (indices, plots, barcodes) from here. */
 export const DATAFILES_URL = "/TersectBrowserGP/datafiles"

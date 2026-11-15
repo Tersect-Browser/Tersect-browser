@@ -1,17 +1,27 @@
-import { ArrowRightIcon } from "lucide-react"
-import { Link } from "react-router"
+import { useQuery } from "@tanstack/react-query"
+import { ArrowRightIcon, DatabaseIcon, HistoryIcon, PlusIcon } from "lucide-react"
+import { useEffect, useRef } from "react"
+import { Link, useLocation, useNavigate } from "react-router"
+import { toast } from "sonner"
 
 import { useDatasets } from "@/components/app-shell"
+import { Button } from "@/components/ui/button"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
+import { datasetsQuery, draftsQuery } from "@/features/datasets/api"
+import { DatasetRow } from "@/features/datasets/home/dataset-row"
+import { DraftRow } from "@/features/datasets/home/draft-row"
+import { GRID, ROW } from "@/features/datasets/home/layout"
 import type { DatasetPublic } from "@/lib/types"
 
-/** Fields the API may provide in future; rows render without them. */
-type Dataset = DatasetPublic & {
-  description?: string
-  accession_count?: number
-}
-
-const GRID = "grid grid-cols-[1fr_9rem_7rem_1.5rem] items-center gap-4 px-4"
+const BUILDER_DOWN = "The dataset builder is not running on this server."
 
 function Message({ title, detail }: { title: string; detail: string }) {
   return (
@@ -22,9 +32,127 @@ function Message({ title, detail }: { title: string; detail: string }) {
   )
 }
 
-export function HomePage() {
+function LoadingRows() {
+  return [0, 1, 2].map((row) => (
+    <div key={row} className={ROW}>
+      <Skeleton className="h-4 w-48" />
+      <Skeleton className="h-4 w-16" />
+      <Skeleton className="ml-auto h-4 w-10" />
+      <Skeleton className="h-4 w-14" />
+      <span />
+    </div>
+  ))
+}
+
+function NewDatasetButton({ disabled }: { disabled?: boolean }) {
+  if (disabled) {
+    return (
+      <Button size="sm" disabled title={BUILDER_DOWN}>
+        <PlusIcon /> New dataset
+      </Button>
+    )
+  }
+  return (
+    <Button size="sm" asChild>
+      <Link to="/datasets/new">
+        <PlusIcon /> New dataset
+      </Link>
+    </Button>
+  )
+}
+
+function EmptyDatasets() {
+  return (
+    <Empty className="rounded-xl border border-dashed">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <DatabaseIcon />
+        </EmptyMedia>
+        <EmptyTitle>No datasets yet</EmptyTitle>
+        <EmptyDescription className="text-xs">
+          A dataset is a reference genome and the accessions called against it,
+          from their VCF files.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <NewDatasetButton />
+      </EmptyContent>
+    </Empty>
+  )
+}
+
+/** Without the builder: the datasets the browser serves, as plain rows. */
+function PublishedList() {
   const datasets = useDatasets()
-  const rows = (datasets.data ?? []) as Dataset[]
+  const rows = (datasets.data ?? []) as DatasetPublic[]
+  return (
+    <>
+      {datasets.isPending && <LoadingRows />}
+      {datasets.isError && (
+        <Message
+          title="Datasets could not be loaded"
+          detail="The server did not respond. Check that the backend is running."
+        />
+      )}
+      {datasets.isSuccess && rows.length === 0 && (
+        <Message
+          title="No datasets yet"
+          detail="Datasets appear here once they have been added to the server."
+        />
+      )}
+      {rows.map((dataset) => (
+        <Link
+          key={dataset.dataset_id}
+          to={`/share/${dataset.view_id}`}
+          className={`${ROW} hover:bg-accent`}
+        >
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold">
+              {dataset.dataset_id}
+            </span>
+            {dataset.description && (
+              <span className="block truncate text-muted-foreground">
+                {dataset.description}
+              </span>
+            )}
+          </span>
+          <span className="truncate font-mono">{dataset.reference}</span>
+          <span className="text-right font-mono">
+            {dataset.accession_count?.toLocaleString("en-US")}
+          </span>
+          <span />
+          <ArrowRightIcon className="size-[13px] text-muted-foreground" />
+        </Link>
+      ))}
+    </>
+  )
+}
+
+/** Shows `state.error` from a redirect (e.g. New dataset with no builder) once. */
+function useRedirectError() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const shown = useRef<string | null>(null)
+  const error = (location.state as { error?: string } | null)?.error
+
+  useEffect(() => {
+    if (!error || shown.current === location.key) return
+    shown.current = location.key
+    toast.error(error)
+    // Drop the state so a reload or Back does not show it again.
+    navigate(".", { replace: true, state: null })
+  }, [error, location.key, navigate])
+}
+
+export function HomePage() {
+  useRedirectError()
+  const managed = useQuery(datasetsQuery)
+  const drafts = useQuery(draftsQuery)
+  const builderDown = managed.isError
+
+  const datasets = managed.data ?? []
+  const openDrafts = (drafts.data ?? []).filter((draft) => draft.build_id == null)
+  const empty = managed.isSuccess && datasets.length === 0 && openDrafts.length === 0
 
   return (
     <div className="h-full overflow-auto">
@@ -41,64 +169,57 @@ export function HomePage() {
           </p>
         </div>
 
-        <section className="overflow-hidden rounded-xl border bg-card">
-          <div className={`${GRID} caption border-b py-2`}>
-            <span>Dataset</span>
-            <span>Reference</span>
-            <span className="text-right">Accessions</span>
-            <span />
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="caption">Datasets</h2>
+            {builderDown && (
+              <span className="text-[11px] text-muted-foreground">
+                {BUILDER_DOWN} Datasets cannot be added or changed here.
+              </span>
+            )}
+            <span className="ml-auto flex gap-2">
+              {builderDown ? (
+                <Button size="sm" variant="outline" disabled title={BUILDER_DOWN}>
+                  <HistoryIcon /> Builds
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/builds">
+                    <HistoryIcon /> Builds
+                  </Link>
+                </Button>
+              )}
+              <NewDatasetButton disabled={builderDown} />
+            </span>
           </div>
 
-          {datasets.isPending &&
-            [0, 1, 2].map((row) => (
-              <div
-                key={row}
-                className={`${GRID} border-b py-3 last:border-b-0`}
-              >
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="ml-auto h-4 w-10" />
-                <span />
+          {empty ? (
+            <EmptyDatasets />
+          ) : (
+            <section className="overflow-hidden rounded-xl border bg-card">
+              <div className={`${GRID} caption border-b py-2`}>
+                <span>Dataset</span>
+                <span>Reference</span>
+                <span className="text-right">Accessions</span>
+                <span>Status</span>
+                <span className="sr-only">Actions</span>
               </div>
-            ))}
-
-          {datasets.isError && (
-            <Message
-              title="Datasets could not be loaded"
-              detail="The server did not respond. Check that the backend is running."
-            />
+              {builderDown ? (
+                <PublishedList />
+              ) : (
+                <>
+                  {managed.isPending && <LoadingRows />}
+                  {datasets.map((dataset) => (
+                    <DatasetRow key={dataset.id} dataset={dataset} />
+                  ))}
+                  {openDrafts.map((draft) => (
+                    <DraftRow key={draft.id} draft={draft} />
+                  ))}
+                </>
+              )}
+            </section>
           )}
-          {datasets.isSuccess && rows.length === 0 && (
-            <Message
-              title="No datasets yet"
-              detail="Datasets appear here once they have been added to the server."
-            />
-          )}
-
-          {rows.map((dataset) => (
-            <Link
-              key={dataset.dataset_id}
-              to={`/share/${dataset.view_id}`}
-              className={`${GRID} border-b py-3 last:border-b-0 hover:bg-accent`}
-            >
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold">
-                  {dataset.dataset_id}
-                </span>
-                {dataset.description && (
-                  <span className="block truncate text-muted-foreground">
-                    {dataset.description}
-                  </span>
-                )}
-              </span>
-              <span className="font-mono">{dataset.reference}</span>
-              <span className="text-right font-mono">
-                {dataset.accession_count?.toLocaleString("en-US")}
-              </span>
-              <ArrowRightIcon className="size-[13px] text-muted-foreground" />
-            </Link>
-          ))}
-        </section>
+        </div>
       </div>
     </div>
   )

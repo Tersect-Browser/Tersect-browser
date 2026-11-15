@@ -62,11 +62,20 @@ function CurrentDataset() {
   )
 }
 
-function NavItem({ to, children }: { to: string; children: string }) {
+function NavItem({
+  to,
+  end = true,
+  children,
+}: {
+  to: string
+  /** Active only on this exact path (false: also on its sub-paths). */
+  end?: boolean
+  children: string
+}) {
   return (
     <NavLink
       to={to}
-      end
+      end={end}
       className={({ isActive }) =>
         cn(
           "rounded-lg px-2 py-1 hover:bg-accent",
@@ -91,6 +100,9 @@ export function AppShell() {
         <CurrentDataset />
         <nav className="ml-auto flex shrink-0 items-center gap-1 font-medium">
           <NavItem to="/">Home</NavItem>
+          <NavItem to="/builds" end={false}>
+            Builds
+          </NavItem>
           <NavItem to="/about">About</NavItem>
           <ThemeToggle />
           <a
