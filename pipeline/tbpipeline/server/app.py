@@ -1,7 +1,7 @@
 """FastAPI application: one router per area."""
 from fastapi import FastAPI
 
-from . import builds, datasets, drafts, files, uploads
+from . import assistant, builds, datasets, drafts, files, uploads
 
 app = FastAPI(title='Tersect Browser builder', docs_url='/api/docs',
               openapi_url='/api/openapi.json')
@@ -18,6 +18,8 @@ app.include_router(drafts.router, prefix='/api')
 app.include_router(datasets.router, prefix='/api')
 # builds: /api/builds[/{id}[/events|/cancel|/retry|/manifest.yaml]]
 app.include_router(builds.router, prefix='/api')
+# assistant: /api/assistant (SSE); absent unless TB_ASSISTANT_URL is set
+app.include_router(assistant.router, prefix='/api')
 
 
 @app.on_event('startup')
