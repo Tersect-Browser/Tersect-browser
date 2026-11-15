@@ -75,21 +75,8 @@ def status(args):
 
 
 def remove(args):
-    client, db = settings.mongo()
-    dataset = db.datasets.find_one({'_id': args.dataset_id})
-    if not dataset:
+    if not store.remove_dataset(args.dataset_id):
         sys.exit('No dataset "%s"' % args.dataset_id)
-    db.datasets.delete_one({'_id': args.dataset_id})
-    db.views.delete_many({'settings.dataset_id': args.dataset_id})
-    db.trees.delete_many({'datasetId': args.dataset_id})
-    db.speciestreecaches.delete_many({'datasetId': args.dataset_id})
-    for matrix in db.matrices.find({'dataset_id': args.dataset_id}):
-        if os.path.isfile(matrix.get('matrix_file', '')):
-            os.remove(matrix['matrix_file'])
-    db.matrices.delete_many({'dataset_id': args.dataset_id})
-    client.close()
-    if dataset.get('variant_search'):
-        store.remove_variants(args.dataset_id)
     print('Removed "%s" (files under %s are kept)'
           % (args.dataset_id, settings.dataset_dir(manifests.slug(args.dataset_id))))
 

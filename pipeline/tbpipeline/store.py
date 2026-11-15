@@ -182,6 +182,9 @@ def publish(manifest, tsi_next, reference_fasta, accessions, variant_search,
             'tersect': {'homozygous': manifest.tersect_homozygous,
                         'types': manifest.tersect_types},
             'build': build_info,
+            # Shown in the public dataset list; unlisting (from the builder)
+            # survives rebuilds. Share links work either way.
+            'listed': existing.get('listed', True) if existing else True,
         }
         db.datasets.replace_one({'_id': manifest.id}, record, upsert=True)
         return record
@@ -189,14 +192,49 @@ def publish(manifest, tsi_next, reference_fasta, accessions, variant_search,
         client.close()
 
 
+def remove_dataset(dataset_id):
+    """Unpublish a dataset: its record, views, cached trees, distance
+    matrices and variant tables. Files under datasets/<slug>/ are kept.
+    Returns False if there was no such dataset."""
+    client, db = settings.mongo()
+    try:
+        dataset = db.datasets.find_one({'_id': dataset_id})
+        if not dataset:
+            return False
+        db.datasets.delete_one({'_id': dataset_id})
+        db.views.delete_many({'settings.dataset_id': dataset_id})
+        db.trees.delete_many({'datasetId': dataset_id})
+        db.speciestreecaches.delete_many({'datasetId': dataset_id})
+        for matrix in db.matrices.find({'dataset_id': dataset_id}):
+            if os.path.isfile(matrix.get('matrix_file', '')):
+                os.remove(matrix['matrix_file'])
+        db.matrices.delete_many({'dataset_id': dataset_id})
+    finally:
+        client.close()
+    if dataset.get('variant_search'):
+        remove_variants(dataset_id)
+    return True
+
+
 def record_build(manifest, status, **fields):
-    """Build history, for the command line now and an upload UI later."""
+    """Build history, shown by `tb-dataset status` and the builder service.
+
+    Under the builder service (TB_BUILD_MANAGED set) the service owns the
+    build's `status` and `error`, so the pipeline's view is recorded as
+    `pipeline_status` and `pipeline_error` instead: one writer per field.
+    """
     client, db = settings.mongo()
     try:
         now = datetime.datetime.now(datetime.timezone.utc)
+        managed = bool(os.environ.get('TB_BUILD_MANAGED'))
         update = {'dataset_id': manifest.id, 'manifest': manifest.path,
-                  'manifest_sha256': manifest.sha256, 'status': status,
+                  'manifest_sha256': manifest.sha256,
+                  'pipeline_status' if managed else 'status': status,
                   'updated_at': now}
+        if managed and 'error' in fields:
+            fields['pipeline_error'] = fields.pop('error')
+        if managed:
+            fields.pop('finished_at', None)
         update.update(fields)
         build_id = os.environ.get('TB_BUILD_ID') or '%s@%s' % (manifest.slug, manifest.sha256[:12])
         db.dataset_builds.update_one({'_id': build_id},

@@ -35,7 +35,9 @@ tersect:
 
 # One entry per accession. `vcf` is a path (relative to this file) or URL;
 # `vcf_sample` selects a sample from a multi-sample VCF (default: the first).
-# Names may contain letters, digits, '.', '_' and '-'.
+# Names may contain letters, digits, '.', '_' and '-'. If a VCF names its
+# contigs differently from the FASTA, map them to the reference names:
+#     rename_contigs: {chr1: SL2.50ch01, chr2: SL2.50ch02}
 samples:
   - name: S_lyc_LA2706
     label: S.lyc LA2706 (Moneymaker)

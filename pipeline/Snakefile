@@ -23,7 +23,8 @@ import sys
 import time
 
 sys.path.insert(0, workflow.basedir)
-from tbpipeline import browser, fetch, genomics, manifest as manifests, settings, store, tables
+from tbpipeline import (browser, failures, fetch, genomics, manifest as manifests,
+                        settings, store, tables)
 
 M = manifests.load(config['manifest'])
 SAMPLES = {s.name: s for s in M.samples}
@@ -36,14 +37,20 @@ wildcard_constraints:
 
 
 onstart:
+    # Rule bodies record their exceptions in failures/ (tbpipeline/failures.py).
+    failures.clear(os.getcwd())
     store.record_build(M, 'running', samples=len(M.samples), finished_at=None, error=None)
 
 onsuccess:
     store.record_build(M, 'succeeded', seconds=round(time.time() - STARTED))
 
 onerror:
+    # The first step that failed, in the pipeline's words; the builder service
+    # reads failures/ itself for the details.
+    recorded = failures.read(os.getcwd())
     store.record_build(M, 'failed', seconds=round(time.time() - STARTED),
-                       error='see %s' % os.path.join(settings.work_dir(M.slug), 'logs'))
+                       error=recorded[0]['message'] if recorded else
+                       'see %s' % os.path.join(settings.work_dir(M.slug), 'logs'))
 
 
 def chromosomes(wildcards=None):

@@ -6,7 +6,6 @@ does not download them again. Local files are linked, not copied.
 """
 import hashlib
 import os
-import shutil
 import time
 import urllib.request
 
@@ -14,9 +13,40 @@ from .manifest import is_url
 from . import settings
 
 CHUNK = 1 << 20
+ATTEMPTS = 3
 
 
-def _download(url, target, attempts=4):
+class DownloadError(RuntimeError):
+    """A URL could not be downloaded; `url` names it."""
+
+    def __init__(self, url, message):
+        super().__init__(message)
+        self.url = url
+
+
+def cache_path(location):
+    """Where the download of a URL is kept (whether or not it exists yet)."""
+    key = hashlib.sha256(location.encode()).hexdigest()[:16]
+    name = os.path.basename(location.split('?')[0]) or 'download'
+    return os.path.join(settings.cache_dir(), '%s-%s' % (key, name))
+
+
+def _copy(response, out, progress, offset):
+    """copyfileobj, reporting (bytes so far, total or None) after each chunk."""
+    length = response.headers.get('Content-Length')
+    total = offset + int(length) if length and length.isdigit() else None
+    done = offset
+    while True:
+        block = response.read(CHUNK)
+        if not block:
+            break
+        out.write(block)
+        done += len(block)
+        if progress:
+            progress(done, total)
+
+
+def _download(url, target, attempts=ATTEMPTS, progress=None):
     part = target + '.part'
     for attempt in range(1, attempts + 1):
         try:
@@ -29,30 +59,31 @@ def _download(url, target, attempts=4):
                 if offset and response.status != 206:
                     offset = 0  # range not honoured: start again
                 with open(part, 'ab' if offset else 'wb') as out:
-                    shutil.copyfileobj(response, out, CHUNK)
+                    _copy(response, out, progress, offset)
             os.replace(part, target)
             return
         except OSError as error:
             if attempt == attempts:
-                raise RuntimeError('Download failed after %d attempts: %s (%s)'
-                                   % (attempts, url, error))
+                raise DownloadError(url, 'Download failed after %d attempts: %s (%s)'
+                                    % (attempts, url, error))
             wait = 5 * attempt
             print('  download interrupted (%s); retrying in %ds' % (error, wait))
             time.sleep(wait)
 
 
-def cached(location):
-    """Local path of `location`, downloading it into the cache if a URL."""
+def cached(location, progress=None):
+    """Local path of `location`, downloading it into the cache if a URL.
+
+    `progress(bytes, total)` is called while downloading; it may raise to
+    stop (the partial file is kept and resumed next time).
+    """
     if not is_url(location):
         return location
-    cache = settings.cache_dir()
-    os.makedirs(cache, exist_ok=True)
-    key = hashlib.sha256(location.encode()).hexdigest()[:16]
-    name = os.path.basename(location.split('?')[0]) or 'download'
-    target = os.path.join(cache, '%s-%s' % (key, name))
+    os.makedirs(settings.cache_dir(), exist_ok=True)
+    target = cache_path(location)
     if not os.path.exists(target):
-        print('Downloading %s' % location)
-        _download(location, target)
+        print('Downloading %s' % location, flush=True)
+        _download(location, target, progress=progress)
     return target
 
 

@@ -67,9 +67,11 @@ class atomic_output:
     name, so a resumed build never mistakes it for a finished one.
     """
 
-    def __init__(self, target):
+    def __init__(self, target, suffix=''):
+        # `suffix` for tools that add an extension unless the name has it
+        # (tersect writes "x.partial-1" as "x.partial-1.tsi").
         self.target = target
-        self.path = '%s.partial-%d' % (target, os.getpid())
+        self.path = '%s.partial-%d%s' % (target, os.getpid(), suffix)
 
     def __enter__(self):
         return self.path
@@ -164,14 +166,29 @@ def vcf_samples(vcf):
     return [s for s in output([BCFTOOLS, 'query', '-l', vcf]).splitlines() if s]
 
 
+def _undeclared_contigs(log, start):
+    """Contigs bcftools complained were not in the header, from `log`."""
+    if not log or not os.path.exists(log):
+        return []
+    with open(log, 'rb') as handle:
+        handle.seek(start)
+        text = handle.read(1 << 20).decode(errors='replace')
+    found = []
+    for name in re.findall(r"Contig '([^']+)' is not defined in the header", text):
+        if name not in found:
+            found.append(name)
+    return found[:10]
+
+
 def normalise_sample(vcf, sample, reference, chromosomes, target, qc_path, log):
     """One clean, indexed VCF per accession.
 
-    Selects the sample, keeps the chosen chromosomes, drops existing
-    annotations, splits multi-allelic sites and left-aligns indels against the
-    reference (sites whose REF does not match the reference are dropped and
-    counted), keeps sites where the sample carries the alternative allele and
-    renames the sample.
+    Renames contigs (sample.rename_contigs, e.g. chr1 -> SL2.50ch01), selects
+    the sample, keeps the chosen chromosomes, drops existing annotations,
+    splits multi-allelic sites and left-aligns indels against the reference
+    (sites whose REF does not match the reference are dropped and counted),
+    keeps sites where the sample carries the alternative allele and renames
+    the sample.
     """
     available = vcf_samples(vcf)
     if not available:
@@ -188,24 +205,68 @@ def normalise_sample(vcf, sample, reference, chromosomes, target, qc_path, log):
         # steps and the index know their lengths.
         header = output([BCFTOOLS, 'view', '-h', vcf])
         declared = set(re.findall(r'##contig=<ID=([^,>]+)', header))
+        with open(reference + '.fai') as fai:
+            lengths = dict(line.split('\t')[:2] for line in fai)
+        rename = sample.rename_contigs or {}
+        renaming = []
+        if rename:
+            # A rename runs first, on its own, so everything after it sees
+            # reference names. Contigs to rename that the header does not
+            # declare are declared first (with the length of their target),
+            # or bcftools could not rename them.
+            command = [BCFTOOLS, 'annotate', '-Ou']
+            missing = [c for c in rename if c not in declared]
+            if missing:
+                undeclared = os.path.join(tmp, 'rename-contigs.txt')
+                with open(undeclared, 'w') as handle:
+                    for contig in missing:
+                        length = lengths.get(rename[contig])
+                        handle.write('##contig=<ID=%s%s>\n' % (
+                            contig, ',length=%s' % length if length else ''))
+                command += ['--header-lines', undeclared]
+            rename_file = os.path.join(tmp, 'rename-contigs.map')
+            with open(rename_file, 'w') as handle:
+                for contig, new_name in rename.items():
+                    handle.write('%s\t%s\n' % (contig, new_name))
+            renaming = [command + ['--rename-chrs', rename_file, '-']]
+            declared = {rename.get(c, c) for c in declared | set(rename)}
         contigs = os.path.join(tmp, 'contigs.txt')
-        with open(reference + '.fai') as fai, open(contigs, 'w') as handle:
-            for line in fai:
-                name, length = line.split('\t')[:2]
+        with open(contigs, 'w') as handle:
+            for name, length in lengths.items():
                 if name not in declared:
                     handle.write('##contig=<ID=%s,length=%s>\n' % (name, length))
         unsorted = os.path.join(tmp, 'normalised.bcf')
-        run_chain([
-            # Dropping INFO and FORMAT fields first also removes any tags
-            # the header does not define, which sample selection rejects.
-            [BCFTOOLS, 'annotate', '-Ou', '-x', 'ID,INFO,^FORMAT/GT',
-             '--header-lines', contigs, vcf],
-            [BCFTOOLS, 'view', '-Ou', '--samples', source, '--trim-alt-alleles',
-             '--targets', ','.join(sorted(names))],
-            [BCFTOOLS, 'norm', '-Ou', '--multiallelics', '-any',
-             '--fasta-ref', reference, '--check-ref', 'x'],
-            [BCFTOOLS, 'view', '-Ob', '--include', 'GT="alt"', '-o', unsorted],
-        ], log=log)
+        log_start = os.path.getsize(log) if log and os.path.exists(log) else 0
+        try:
+            run_chain([
+                # Sites with no alternative allele first: all-sites VCFs (the
+                # 3K rice genomes) are >99.9% such records, and every later
+                # step (norm checks each REF against the FASTA) is far slower
+                # per record. This made one accession ~1.5 h instead of minutes.
+                # Text output (-Ov): BCF would need every contig declared, and
+                # older VCFs without ##contig lines get declared further on.
+                [BCFTOOLS, 'view', '-Ov', '--threads', '2', '--exclude-types', 'ref', vcf],
+            ] + renaming + [
+                # Dropping INFO and FORMAT fields first also removes any tags
+                # the header does not define, which sample selection rejects.
+                [BCFTOOLS, 'annotate', '-Ou', '-x', 'ID,INFO,^FORMAT/GT',
+                 '--header-lines', contigs, '-'],
+                [BCFTOOLS, 'view', '-Ou', '--samples', source, '--trim-alt-alleles',
+                 '--targets', ','.join(sorted(names))],
+                [BCFTOOLS, 'norm', '-Ou', '--multiallelics', '-any',
+                 '--fasta-ref', reference, '--check-ref', 'x'],
+                [BCFTOOLS, 'view', '-Ob', '--include', 'GT="alt"', '-o', unsorted],
+            ], log=log)
+        except StepError:
+            # Records on contigs that are neither declared nor in the
+            # reference stop bcftools; say so in the words of the check below.
+            undeclared = _undeclared_contigs(log, log_start)
+            if undeclared:
+                raise StepError(
+                    'No variants left for %s on the chosen chromosomes. Do the VCF '
+                    'contig names (%s) match the reference (%s)?'
+                    % (sample.name, ', '.join(undeclared), ', '.join(sorted(names)[:5])))
+            raise
         renamed = os.path.join(tmp, 'renamed.bcf')
         names_file = os.path.join(tmp, 'names.txt')
         with open(names_file, 'w') as handle:
@@ -213,7 +274,8 @@ def normalise_sample(vcf, sample, reference, chromosomes, target, qc_path, log):
         subprocess.run([BCFTOOLS, 'reheader', '--samples', names_file,
                         '-o', renamed, unsorted], check=True)
         sorted_vcf = os.path.join(tmp, 'sorted.vcf.gz')
-        run_chain([[BCFTOOLS, 'sort', '-Oz', '-m', '1G', '-T', tmp,
+        # Only variant sites reach the sort, so a small buffer is enough.
+        run_chain([[BCFTOOLS, 'sort', '-Oz', '-m', '256M', '-T', tmp,
                     '-o', sorted_vcf, renamed]], log=log)
         subprocess.run([BCFTOOLS, 'index', '-f', '--tbi', sorted_vcf], check=True)
         os.replace(sorted_vcf + '.tbi', target + '.tbi')
@@ -227,13 +289,13 @@ def normalise_sample(vcf, sample, reference, chromosomes, target, qc_path, log):
             per_chromosome[parts[0]] = int(parts[2])
     total = sum(per_chromosome.values())
     if total == 0:
-        contigs = output([BCFTOOLS, 'view', '-h', vcf])
-        found = re.findall(r'##contig=<ID=([^,>]+)', contigs)[:10]
+        found = re.findall(r'##contig=<ID=([^,>]+)', header)[:10]
         raise StepError(
             'No variants left for %s on the chosen chromosomes. Do the VCF '
-            'contig names (%s) match the reference (%s)?'
+            'contig names (%s) match the reference (%s)?%s'
             % (sample.name, ', '.join(found) or 'none declared',
-               ', '.join(sorted(names)[:5])))
+               ', '.join(sorted(names)[:5]),
+               ' The rename map was applied.' if rename else ''))
     with open(qc_path, 'w') as handle:
         json.dump({'sample': sample.name, 'source_sample': source,
                    'variants': total, 'per_chromosome': per_chromosome},
@@ -248,7 +310,7 @@ def tersect_build(vcfs, target, homozygous, types, log):
         command.append('-H')
     if types != 'both':
         command += ['-t', types]
-    with atomic_output(target) as path:
+    with atomic_output(target, suffix='.tsi') as path:
         run_chain([command + [path] + list(vcfs)], stdout=subprocess.DEVNULL, log=log)
 
 
