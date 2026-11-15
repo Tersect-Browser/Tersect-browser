@@ -13,7 +13,10 @@ const DatasetSchema = new Schema({
     // Built from VCF files, with variants in the variant store (ClickHouse)
     variant_search: Boolean,
     // Which variants the Tersect index counts (from the dataset manifest)
-    tersect: { homozygous: Boolean, types: String }
+    tersect: { homozygous: Boolean, types: String },
+    // Shown in the public dataset list (default true). Unlisted datasets
+    // still open from share links.
+    listed: Boolean
 }, { strict: false });
 
 export interface Dataset {
@@ -24,6 +27,7 @@ export interface Dataset {
     description?: string;
     variant_search?: boolean;
     tersect?: { homozygous: boolean; types: 'snps' | 'indels' | 'both' };
+    listed?: boolean;
 }
 
 /**

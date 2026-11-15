@@ -345,7 +345,8 @@ router.route('/query/:datasetId/dist')
 router.route('/datasets')
     .get(async (req, res) => {
         try {
-            const r = await Dataset.find().exec();
+            // Unlisted datasets (set from the builder) are left out.
+            const r = await Dataset.find({ listed: { $ne: false } }).exec();
             // Accession counts from each dataset's default view.
             const views = await ViewSettings.find(
                 { _id: { $in: r.map(dataset => dataset.view_id) } },
