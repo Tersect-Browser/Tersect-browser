@@ -1,0 +1,13 @@
+# Shared login. Written by Terraform.
+%{ if restricted ~}
+# Only asked of clients inside the allowlist: everyone else is refused by
+# allowlist.caddy without being asked, so a password cannot be tried from outside.
+@tersect_allowed remote_ip ${join(" ", allowed_cidrs)}
+basic_auth @tersect_allowed {
+	${username} ${password_hash}
+}
+%{ else ~}
+basic_auth {
+	${username} ${password_hash}
+}
+%{ endif ~}

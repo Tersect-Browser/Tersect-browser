@@ -1,0 +1,39 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is ignored by git.
+
+region = "eu-west-2"
+name   = "tersect"
+
+# The release to run, as pushed by deploy/scripts/push-images.sh.
+image_tag = "1.0.0"
+
+# --- Address -----------------------------------------------------------------
+# With a domain the site gets a real certificate. Without one it is served on
+# the IP address with a self-signed certificate.
+# domain_name     = "tersect.example.org"
+# acme_email      = "you@example.org"
+# route53_zone_id = "Z0123456789ABCDEFGHIJ"   # omit when DNS is elsewhere
+
+# --- Who may connect ---------------------------------------------------------
+# The app has no accounts: anyone who gets in can start builds and delete
+# datasets. Narrow this to your networks if you can.
+# allowed_cidrs = ["203.0.113.0/24", "198.51.100.7/32"]
+
+# basic_auth_username = "tersect"
+# basic_auth_password = "..."   # generated when omitted; better left out of files
+
+# --- Size --------------------------------------------------------------------
+# instance_type       = "m6i.xlarge"   # 4 vCPU, 16 GB
+# data_volume_size_gb = 200
+# With 32 GB or more (for example m6i.2xlarge) let ClickHouse use its defaults:
+# clickhouse_low_memory = false
+
+# --- Dataset assistant (a GPU instance; several times the cost) ---------------
+# enable_assistant        = true
+# assistant_instance_type = "g5.xlarge"
+# assistant_model         = "qwen3:14b"
+# availability_zone       = "eu-west-2a"   # GPU types are not in every zone
+
+# --- Backups -----------------------------------------------------------------
+# snapshot_retention_days = 14
+
+# tags = { Project = "tersect", Owner = "you" }

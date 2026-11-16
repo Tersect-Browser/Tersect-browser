@@ -1,0 +1,21 @@
+# Remote state for the Google Cloud deployment. Copy to backend.tf, fill in,
+# and run "terraform init" (or "tofu init").
+#
+# The state contains every generated password in clear text. Keep it in a
+# private, versioned bucket that only the operators can read, not on a laptop
+# and never in git. Cloud Storage encrypts at rest and the gcs backend locks
+# the state by itself.
+#
+# Create the bucket once, by hand (it must exist before init):
+#
+#   gcloud storage buckets create gs://my-org-tersect-tfstate \
+#     --project my-project --location europe-west2 \
+#     --uniform-bucket-level-access --public-access-prevention
+#   gcloud storage buckets update gs://my-org-tersect-tfstate --versioning
+
+terraform {
+  backend "gcs" {
+    bucket = "my-org-tersect-tfstate"
+    prefix = "tersect/gcp"
+  }
+}

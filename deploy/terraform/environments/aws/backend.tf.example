@@ -1,0 +1,32 @@
+# Remote state for the AWS deployment. Copy to backend.tf, fill in, and run
+# "terraform init" (or "tofu init").
+#
+# The state contains every generated password in clear text. Keep it in a
+# private, encrypted, versioned bucket that only the operators can read, not
+# on a laptop and never in git.
+#
+# Create the bucket once, by hand (it must exist before init):
+#
+#   aws s3api create-bucket --bucket my-org-tersect-tfstate --region eu-west-2 \
+#     --create-bucket-configuration LocationConstraint=eu-west-2
+#   aws s3api put-bucket-versioning --bucket my-org-tersect-tfstate \
+#     --versioning-configuration Status=Enabled
+#   aws s3api put-public-access-block --bucket my-org-tersect-tfstate \
+#     --public-access-block-configuration \
+#     BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+#
+# Locking: "use_lockfile" keeps the lock as an object beside the state. It
+# needs Terraform 1.10 or OpenTofu 1.10 or newer. On older versions use a
+# DynamoDB table instead (a table with the string hash key "LockID"): remove
+# use_lockfile and uncomment dynamodb_table.
+
+terraform {
+  backend "s3" {
+    bucket       = "my-org-tersect-tfstate"
+    key          = "tersect/aws/terraform.tfstate"
+    region       = "eu-west-2"
+    encrypt      = true
+    use_lockfile = true
+    # dynamodb_table = "tersect-tfstate-lock"
+  }
+}
