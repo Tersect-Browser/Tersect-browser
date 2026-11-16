@@ -28,6 +28,13 @@ ENV PATH="/opt/conda/envs/pipeline/bin:${PATH}"
 RUN printf '%s\n' '#!/bin/sh' 'PYTHONPATH=/app/pipeline exec python -m tbpipeline.cli "$@"' \
     > /usr/local/bin/tb-dataset && chmod +x /usr/local/bin/tb-dataset
 
-# The repository is bind-mounted here (docker-compose.yml).
+# In development the repository is bind-mounted over /app (docker-compose.yml).
+# These copies make the image complete on its own for the production stack
+# (deploy/compose): the pipeline, the scripts it shares with the backend, the
+# variant store schema and default settings (overridden by TB_* variables).
+COPY pipeline /app/pipeline
+COPY backend/src/scripts /app/backend/src/scripts
+COPY clickhouse/schema.sql /app/clickhouse/schema.sql
+COPY tbconfig.example.json /app/tbconfig.json
 WORKDIR /app
 ENTRYPOINT ["tb-dataset"]

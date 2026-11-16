@@ -1,0 +1,91 @@
+# Tersect Browser: the single entry point of a deployment.
+#
+# Serves the built web app and routes the API paths the Vite dev server
+# proxies in development (web/vite.config.ts):
+#
+#   /TersectBrowserGP/api/*        -> builder (prefix stripped), uploads + SSE
+#   /TersectBrowserGP/tbapi/*      -> backend
+#   /TersectBrowserGP/tgrc/*       -> backend
+#   /TersectBrowserGP/datafiles/*  -> backend (genome browser files)
+#   /plots/*                       -> backend
+#   /TersectBrowserGP/*            -> the app (static files, SPA fallback)
+#
+# Environment:
+#   TB_SITE_ADDRESS  what to serve: a domain ("tersect.example.org", HTTPS
+#                    with an automatic certificate), ":80" (plain HTTP, e.g.
+#                    behind an SSH tunnel), or "localhost".
+#   TB_TLS_DIRECTIVE optional line for the site block. Empty: automatic HTTPS
+#                    for a domain, none for ":80". "tls internal": a
+#                    self-signed certificate (an IP address, no domain).
+#                    "tls you@example.org": certificate authority contact.
+#   TB_BACKEND, TB_BUILDER   upstreams (default backend:4300, builder:4310).
+#
+# Access control lives in /etc/caddy/site.d/*.caddy, written by the
+# deployment (see deploy/compose/site.d/): a password and an IP allowlist.
+# The app has no accounts, so do not expose it without them.
+{
+	admin off
+	# The allowlist snippet answers outsiders with `respond`. By default Caddy
+	# runs respond after the handle blocks below, which would already have
+	# served the request, so the allowlist would block nobody. Run it first,
+	# before the password prompt too.
+	order respond before basic_auth
+}
+
+{$TB_SITE_ADDRESS::80} {
+	{$TB_TLS_DIRECTIVE}
+	encode zstd gzip
+
+	import /etc/caddy/site.d/*.caddy
+
+	# The app lives under its base path.
+	redir / /TersectBrowserGP/ 302
+
+	@builder path /TersectBrowserGP/api/*
+	handle @builder {
+		uri strip_prefix /TersectBrowserGP
+		reverse_proxy {$TB_BUILDER:builder:4310} {
+			# Build progress and the assistant are server-sent events.
+			flush_interval -1
+			# Uploads are resumable chunks of up to 64 MB; builds stream for hours.
+			transport http {
+				read_timeout 24h
+				write_timeout 24h
+			}
+		}
+	}
+
+	@backend path /TersectBrowserGP/tbapi/* /TersectBrowserGP/tgrc/* /TersectBrowserGP/datafiles/* /plots/*
+	handle @backend {
+		reverse_proxy {$TB_BACKEND:backend:4300} {
+			flush_interval -1
+			transport http {
+				read_timeout 1h
+			}
+		}
+	}
+
+	handle_path /TersectBrowserGP/* {
+		root * /srv/app
+		# Hashed assets never change; index.html must always be fresh.
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

@@ -1,0 +1,158 @@
+# Tersect Browser, production stack. One machine, one data directory.
+#
+#   cp .env.example .env   (fill it in; the Terraform modules write it)
+#   docker compose up -d
+#   docker compose --profile assistant up -d     (with the local model, needs a GPU)
+#
+# Images are self-contained (nothing is mounted from a source checkout). The
+# only state is under TB_DATA_DIR:
+#
+#   tersect/      dataset files, uploads, build work directories (shared by
+#                 backend and builder, which is why this is one machine)
+#   shared/       files users may pick as "server folder" inputs (read-only)
+#   mongo/        MongoDB
+#   clickhouse/   ClickHouse
+#   caddy/        TLS certificates
+#   ollama/       model files (assistant profile)
+#
+# This file expects to sit beside: site.d/ (access control snippets),
+# mongo-init.js, and clickhouse/ (schema.sql, users.sh, low-memory.xml from
+# the repository's clickhouse/ directory).
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "20m", max-file: "5" }
+
+x-app-env: &app-env
+  TB_MONGO_HOST: mongodb://${TB_MONGO_USER}:${TB_MONGO_PASSWORD}@database:27017
+  TB_DB_NAME: ${TB_DB_NAME:-tersect_browser_gp}
+  TB_LOCAL_DB_PATH: /data/tersect
+  TB_SERVER_HOST: ${TB_PUBLIC_URL}/TersectBrowserGP
+  TB_CLICKHOUSE_HOST: clickhouse
+  TB_CLICKHOUSE_PORT: "8123"
+
+services:
+  # Reverse proxy and the built web app; the only published ports.
+  web:
+    image: ${TB_IMAGE_WEB}
+    restart: unless-stopped
+    environment:
+      TB_SITE_ADDRESS: ${TB_SITE_ADDRESS}
+      TB_TLS_DIRECTIVE: ${TB_TLS_DIRECTIVE:-}
+    ports:
+      - "${TB_HTTP_PORT:-80}:80"
+      - "${TB_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./site.d:/etc/caddy/site.d:ro
+      - ${TB_DATA_DIR}/caddy:/data
+    depends_on: [backend, builder]
+    logging: *logging
+
+  backend:
+    image: ${TB_IMAGE_BACKEND}
+    restart: unless-stopped
+    # The image's default command watches the source for changes (development).
+    command: ["npx", "tsx", "server-dev.ts", "--config", "../tbconfig.json"]
+    environment:
+      <<: *app-env
+      NODE_ENV: production
+      TB_CLICKHOUSE_USER: tersect_reader
+      TB_CLICKHOUSE_PASSWORD: ${CLICKHOUSE_READER_PASSWORD}
+    volumes:
+      - ${TB_DATA_DIR}/tersect:/data/tersect
+    depends_on:
+      database: { condition: service_healthy }
+      clickhouse: { condition: service_healthy }
+    logging: *logging
+
+  # Uploads, dataset builds and the assistant endpoint (pipeline/README.md).
+  builder:
+    image: ${TB_IMAGE_PIPELINE}
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "tbpipeline.server"]
+    environment:
+      <<: *app-env
+      PYTHONPATH: /app/pipeline
+      TB_CLICKHOUSE_USER: tersect_admin
+      TB_CLICKHOUSE_PASSWORD: ${CLICKHOUSE_ADMIN_PASSWORD}
+      TB_SERVER_FOLDERS: /data/shared
+      TB_PIPELINE_ALLOWED_ROOTS: /data/tersect/uploads:/data/shared
+      TB_ASSISTANT_URL: ${TB_ASSISTANT_URL:-}
+      TB_ASSISTANT_MODEL: ${TB_ASSISTANT_MODEL:-qwen3:14b}
+      TB_ASSISTANT_CONTEXT_CHARS: ${TB_ASSISTANT_CONTEXT_CHARS:-24000}
+    volumes:
+      - ${TB_DATA_DIR}/tersect:/data/tersect
+      - ${TB_DATA_DIR}/shared:/data/shared:ro
+    depends_on:
+      database: { condition: service_healthy }
+      clickhouse: { condition: service_healthy }
+    logging: *logging
+
+  database:
+    image: mongo:8.0
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all", "--auth"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      TB_MONGO_USER: ${TB_MONGO_USER}
+      TB_MONGO_PASSWORD: ${TB_MONGO_PASSWORD}
+      TB_DB_NAME: ${TB_DB_NAME:-tersect_browser_gp}
+    volumes:
+      - ${TB_DATA_DIR}/mongo:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/10-app-user.js:ro
+    stop_grace_period: 60s
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "-u", "root", "-p", "${MONGO_ROOT_PASSWORD}",
+             "--authenticationDatabase", "admin", "--eval", "db.adminCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    logging: *logging
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: tersect
+      CLICKHOUSE_USER: tersect_admin
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_ADMIN_PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      CLICKHOUSE_READER_USER: tersect_reader
+      CLICKHOUSE_READER_PASSWORD: ${CLICKHOUSE_READER_PASSWORD}
+    volumes:
+      - ${TB_DATA_DIR}/clickhouse:/var/lib/clickhouse
+      - ./clickhouse/schema.sql:/schema/schema.sql:ro
+      - ./clickhouse/users.sh:/docker-entrypoint-initdb.d/01-users.sh:ro
+      # Drop this mount on a machine with 32 GB or more for ClickHouse's own defaults.
+      - ./clickhouse/low-memory.xml:/etc/clickhouse-server/config.d/low-memory.xml:ro
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "tersect_admin",
+             "--password", "${CLICKHOUSE_ADMIN_PASSWORD}", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    logging: *logging
+
+  # The dataset assistant's model. Set TB_ASSISTANT_URL=http://ollama:11434/v1
+  # and start with --profile assistant on a machine with an NVIDIA GPU and the
+  # NVIDIA container toolkit.
+  ollama:
+    image: ollama/ollama:0.40.16
+    restart: unless-stopped
+    profiles: ["assistant"]
+    environment:
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-16384}
+      OLLAMA_FLASH_ATTENTION: "1"
+      OLLAMA_KV_CACHE_TYPE: q8_0
+      OLLAMA_KEEP_ALIVE: 30m
+    volumes:
+      - ${TB_DATA_DIR}/ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - { driver: nvidia, count: all, capabilities: [gpu] }
+    logging: *logging
