@@ -1,0 +1,65 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is ignored by git.
+#
+# This environment has never been run against a real cluster. Read
+# deploy/hpc/README.md ("Before the first run") and expect to adjust.
+
+name = "tersect"
+
+# --- The cluster --------------------------------------------------------------
+login_host = "login.hpc.example.org"
+ssh_user   = "abc123"
+# Authentication: your SSH agent by default (ssh-add -l must list a key the
+# cluster accepts). Or a key file without a passphrase:
+# ssh_private_key_path = "~/.ssh/id_ed25519"
+# Recommended: the login node's host key, so the connection is verified
+# (ssh-keyscan -t ed25519 login.hpc.example.org, without the host name):
+# ssh_host_key = "ssh-ed25519 AAAA..."
+# If the login node is only reachable through a gateway:
+# ssh_bastion_host = "gateway.example.org"
+
+# --- Where it lives -----------------------------------------------------------
+# Project or scratch space that every compute node sees. Not your home
+# directory: the images alone are 10 GB or more.
+deploy_dir = "/project/mygroup/tersect"
+# data_dir   = "/project/mygroup/tersect-data"   # default: <deploy_dir>/data
+# shared_dir = "/project/mygroup/vcf"            # files users may pick as inputs
+# Databases on the node's local disk (faster, but read the README first):
+# node_local_dir = "$TMPDIR"
+
+# --- Images -------------------------------------------------------------------
+# The release pushed by deploy/scripts/push-images.sh.
+image_web      = "registry.example.org/tersect/web:1.0.0"
+image_backend  = "registry.example.org/tersect/backend:1.0.0"
+image_pipeline = "registry.example.org/tersect/pipeline:1.0.0"
+# registry_username = "tersect-pull"
+# registry_password = "..."   # a read-only token; or set TF_VAR_registry_password
+# pull_on = "job"             # if the login node forbids heavy work
+
+# --- Apptainer ----------------------------------------------------------------
+# environment_modules = ["apptainer"]   # if "apptainer" needs "module load"
+# apptainer_command   = "singularity"
+
+# --- The job ------------------------------------------------------------------
+# partition  = "long"
+# account    = "mygroup"
+time_limit = "1-00:00:00" # the longest your partition allows
+cpus       = 8            # dataset builds run inside the job
+memory_gb  = 32
+# auto_resubmit = true     # queue again at the time limit (default)
+
+# --- Access -------------------------------------------------------------------
+# 127.0.0.1: the tunnel ends on the compute node (needs SSH to compute nodes).
+# 0.0.0.0:   the tunnel ends on the login node; the password prompt is then
+#            reachable from the whole cluster network.
+# bind_address = "127.0.0.1"
+# http_port    = 8080     # per node, not per user: change if it is taken
+# basic_auth_password = "..."   # generated when omitted; better left out of files
+
+# --- Dataset assistant (off by default) ----------------------------------------
+# With a model server that already exists on the university network:
+# enable_assistant = true
+# assistant_url    = "https://llm.example.org/v1"
+# assistant_model  = "qwen3:14b"
+# Or Ollama inside the job, on a GPU:
+# enable_assistant = true
+# gres             = "gpu:1"

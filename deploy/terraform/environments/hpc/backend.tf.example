@@ -1,0 +1,15 @@
+# Where the state is kept. Copy to backend.tf and adjust, then run
+# "terraform init" (or "tofu init").
+#
+# The state contains every generated password in clear text (databases, the
+# site login) and the registry token if you set one. Without this file it is
+# written to terraform.tfstate in this directory, which git ignores; that is
+# acceptable on an encrypted laptop for a single operator. To share it, use
+# whatever private remote state your institution has. A local path on a
+# private, backed-up disk:
+
+terraform {
+  backend "local" {
+    path = "/secure/private/tersect-hpc.tfstate"
+  }
+}
