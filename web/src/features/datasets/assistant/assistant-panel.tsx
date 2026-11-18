@@ -216,7 +216,7 @@ export function AssistantPanel({
           const el = event.currentTarget
           stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
         }}
-        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-3 py-3"
+        className="flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto px-3 py-3 [overflow-wrap:anywhere]"
       >
         {messages.length === 0 ? (
           <Starters onPick={prefill} />
@@ -225,7 +225,11 @@ export function AssistantPanel({
             message.role === "user" ? (
               <div
                 key={message.id}
-                className="ml-8 self-end rounded-lg bg-secondary px-2.5 py-1.5 break-words whitespace-pre-wrap text-secondary-foreground"
+                // Prompts for this assistant are mostly long URLs. "anywhere" (set on
+                // the list) lets them break and, unlike break-words, also lets the
+                // bubble shrink: without it a right-aligned bubble grew wider than
+                // the panel and its left side was cut off.
+                className="ml-8 max-w-[calc(100%-2rem)] min-w-0 self-end rounded-lg bg-secondary px-2.5 py-1.5 whitespace-pre-wrap text-secondary-foreground"
               >
                 {message.text}
               </div>
