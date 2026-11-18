@@ -1,0 +1,162 @@
+== Build aa9dd510ef724434 of "Tiny fail" started 2026-11-14T17:15:35.365148Z
+OK: "Tiny fail" (Tiny_fail) from 2 samples; reference tiny1; annotation: build
+Working directory: /app/test-data/mongo-data/pipeline/Tiny_fail
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-11-14 17:15:36
+  Workflow ID: cf347abc-b0e2-4468-99ce-cf2712a96ea0
+  Platform: Linux-6.10.14-linuxkit-aarch64-with-glibc2.36
+  Host: 02243fecae5c
+  User: root
+  Snakemake version: 9.27.1
+  Python version: 3.12.16 (main, Oct 26 2026, 11:41:19) [GCC 15.3.0]
+  Command: /opt/conda/envs/pipeline/bin/snakemake --snakefile /app/pipeline/Snakefile --directory /app/test-data/mongo-data/pipeline/Tiny_fail --config manifest=/app/test-data/mongo-data/builds/aa9dd510ef724434/manifest.yaml --cores 10 --rerun-incomplete --keep-going --printshellcmds --show-failed-logs --resources mem_mb=3105
+  Snakefile: /app/pipeline/Snakefile
+  Base directory: /app/pipeline
+  Run directory: /app/test-data/mongo-data/builds/aa9dd510ef724434
+  Working directory: /app/test-data/mongo-data/pipeline/Tiny_fail
+  Config file(s): []
+  Config MD5: c98803845f8668ed2ba9aff2dd473aa0
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 10
+Rules claiming more threads will be scaled down.
+Provided resources: mem_mb=Resource("mem_mb", 3105)
+Job stats:
+job               count
+--------------  -------
+reference             1
+gene_models           1
+normalise             2
+genes_table           1
+genome_browser        1
+tersect_index         1
+stage                 1
+publish               1
+all                   1
+total                10
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Nov 14 17:15:36 2026]
+localcheckpoint reference:
+    output: inputs/reference.fa.gz, chromosomes.json
+    log: logs/reference.log
+    jobid: 4
+    reason: Missing output files: inputs/reference.fa.gz, chromosomes.json
+    resources: tmpdir=/tmp
+Shell command: None
+DAG of jobs will be updated after completion.
+[Sat Nov 14 17:15:38 2026]
+Finished jobid: 4 (Rule: reference)
+1 of 10 steps (10%) done
+Updating checkpoint dependencies.
+Select jobs to execute...
+Execute 3 jobs...
+
+[Sat Nov 14 17:15:38 2026]
+localrule normalise:
+    input: inputs/reference.fa.gz, chromosomes.json
+    output: samples/E.vcf.gz, samples/E.vcf.gz.tbi, qc/E.json
+    log: logs/normalise/E.log
+    jobid: 5
+    reason: Missing output files: samples/E.vcf.gz
+    wildcards: sample=E
+    resources: tmpdir=/tmp, mem_mb=1500, mem=1.5 GB, mem_mib=1431
+Shell command: None
+
+[Sat Nov 14 17:15:38 2026]
+localrule normalise:
+    input: inputs/reference.fa.gz, chromosomes.json
+    output: samples/A.vcf.gz, samples/A.vcf.gz.tbi, qc/A.json
+    log: logs/normalise/A.log
+    jobid: 3
+    reason: Missing output files: samples/A.vcf.gz
+    wildcards: sample=A
+    resources: tmpdir=/tmp, mem_mb=1500, mem=1.5 GB, mem_mib=1431
+Shell command: None
+
+[Sat Nov 14 17:15:38 2026]
+localrule gene_models:
+    input: chromosomes.json
+    output: inputs/genes.gff3.gz
+    log: logs/gene_models.log
+    jobid: 8
+    reason: Missing output files: inputs/genes.gff3.gz
+    resources: tmpdir=/tmp
+Shell command: None
+RuleException:
+StepError in file "/app/pipeline/rules/vcf.smk", line 50:
+bcftools exited with 255; bcftools exited with 255; bcftools exited with 255; bcftools exited with 255 (see logs/normalise/E.log)
+  File "/app/pipeline/rules/vcf.smk", line 50, in __rule_normalise
+  File "/app/pipeline/tbpipeline/genomics.py", line 225, in normalise_sample
+  File "/app/pipeline/tbpipeline/genomics.py", line 56, in run_chain
+Exiting because a job execution failed. Look above for error messages
+WorkflowError:
+At least one job did not complete successfully.
+[Sat Nov 14 17:15:40 2026]
+Error in rule normalise:
+    message: None
+    jobid: 5
+    input: inputs/reference.fa.gz, chromosomes.json
+    output: samples/E.vcf.gz, samples/E.vcf.gz.tbi, qc/E.json
+    log: logs/normalise/E.log (check log file(s) for error details)
+Logfile logs/normalise/E.log:
+================================================================================
+$ bcftools annotate -Ou -x ID,INFO,^FORMAT/GT --header-lines /app/test-data/mongo-data/pipeline/Tiny_fail/samples/tmppqsu0ul7/contigs.txt /app/test-data/mongo-data/pipeline/Tiny_fail/inputs/samples/E.vcf
+$ bcftools view -Ou --samples E --trim-alt-alleles --targets tiny_ch01,tiny_ch02
+$ bcftools norm -Ou --multiallelics -any --fasta-ref inputs/reference.fa.gz --check-ref x
+$ bcftools view -Ob --include GT="alt" -o /app/test-data/mongo-data/pipeline/Tiny_fail/samples/tmppqsu0ul7/normalised.bcf
+[W::vcf_parse] Contig 'chr1' is not defined in the header. (Quick workaround: index the file with tabix.)
+[W::vcf_parse] Missing headers may cause later processing to fail
+Encountered an error, cannot proceed. Please check the error output above.
+If feeling adventurous, use the --force option. (At your own risk!)
+Failed to read from standard input: unknown file type
+Failed to read from standard input: unknown file type
+Failed to read from standard input: unknown file type
+================================================================================
+[Sat Nov 14 17:15:40 2026]
+Finished jobid: 8 (Rule: gene_models)
+2 of 15 steps (13%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Nov 14 17:15:40 2026]
+localrule genes_table:
+    input: inputs/genes.gff3.gz
+    output: parquet/genes.parquet
+    jobid: 7
+    reason: Missing output files: parquet/genes.parquet; Input files updated by another job: inputs/genes.gff3.gz
+    resources: tmpdir=/tmp
+Shell command: None
+[Sat Nov 14 17:15:40 2026]
+Finished jobid: 3 (Rule: normalise)
+3 of 15 steps (20%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Nov 14 17:15:40 2026]
+localrule snpeff_database:
+    input: inputs/reference.fa.gz, inputs/genes.gff3.gz
+    output: snpeff.json
+    log: logs/snpeff_database.log
+    jobid: 19
+    reason: Missing output files: snpeff.json; Input files updated by another job: inputs/genes.gff3.gz
+    resources: tmpdir=/tmp, mem_mb=3105, mem=3.1 GB, mem_mib=2962
+Shell command: None
+[Sat Nov 14 17:15:42 2026]
+Finished jobid: 7 (Rule: genes_table)
+4 of 15 steps (27%) done
+[Sat Nov 14 17:15:42 2026]
+Finished jobid: 19 (Rule: snpeff_database)
+5 of 15 steps (33%) done
+Exiting because a job execution failed. Look above for error messages
+Complete log(s): /app/test-data/mongo-data/pipeline/Tiny_fail/.snakemake/log/2026-11-14T171536.624997.snakemake.log
+Elapsed time: 0:00:05.586846
+WorkflowError:
+At least one job did not complete successfully.
+== Build failed: bcftools exited with 255; bcftools exited with 255; bcftools exited with 255; bcftools exited with 255 (see logs/normalise/E.log)

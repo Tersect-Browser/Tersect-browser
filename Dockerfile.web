@@ -1,0 +1,12 @@
+# Development server for the React frontend (web/).
+FROM node:26
+
+WORKDIR /app/web
+COPY web/package.json web/package-lock.json ./
+RUN npm ci
+
+COPY tbconfig.json /app/tbconfig.json
+COPY web /app/web
+
+EXPOSE 4200
+CMD ["npm", "run", "dev"]

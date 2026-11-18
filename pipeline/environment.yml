@@ -1,0 +1,30 @@
+# Toolchain for the dataset pipeline (Dockerfile.pipeline).
+name: pipeline
+channels:
+  - conda-forge
+  - bioconda
+channel_priority: strict
+
+dependencies:
+  - python=3.12
+  - snakemake-minimal=9.27
+  - bcftools=1.25
+  - htslib=1.25          # bgzip, tabix
+  - samtools=1.25
+  - snpeff=5.4.0c         # brings its own Java runtime
+  - pyarrow=26.*
+  - clickhouse-connect=1.12.*
+  - pymongo=4.10.*
+  - pyyaml=6.*
+  - numpy=2.*            # merge_phylip.py, used by the distance index
+  - biopython=1.85       # reference gaps
+  - hashids=1.3.*
+  # Builder service (tbpipeline/server): uploads and builds for the web UI
+  - fastapi=0.162.*
+  - uvicorn=0.54.*
+  - httpx=0.28.*         # URL checks
+  - pypdf=7.*            # dataset assistant: papers as PDF
+  - openpyxl=3.1.*       # dataset assistant: supplementary .xlsx tables
+  - pip
+  - pip:
+      - proposer-llm==0.1.0   # the dataset assistant (server/assistant.py)

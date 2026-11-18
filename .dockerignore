@@ -1,0 +1,34 @@
+# --- big, never needed in builds ---
+test-data/
+gp_data_copy/
+mongo-data/
+db-data/
+**/.venv/
+.tersect/
+**/.mamba/
+**/.conda/
+**/__pycache__/
+**/*.pyc
+
+# Node junk
+**/node_modules/
+**/.next/
+**/dist/
+**/build/
+# ...but not source folders that happen to be called "build" (the dataset
+# build screens); without this the production web image fails to compile.
+!web/src/**/build/
+**/.cache/
+**/coverage/
+
+# VCS and IDE
+.git/
+.git-lfs/
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# OS/temporary
+*~
+*.swp

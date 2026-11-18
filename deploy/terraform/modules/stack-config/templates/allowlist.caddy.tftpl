@@ -1,0 +1,11 @@
+# Only these networks may connect. Written by Terraform.
+#
+# Everyone else is sent to a path that no route of the site serves. A plain
+# "respond @outside 403" here would never run: Caddy orders it after the
+# "handle" blocks of the Caddyfile, which answer every request first. The
+# rewrite is ordered before them (and before basic_auth). The respond line
+# takes over, with a proper 403, if the Caddyfile ever sets
+# "order respond before basic_auth".
+@tersect_outside not remote_ip ${join(" ", allowed_cidrs)}
+rewrite @tersect_outside /.forbidden
+respond @tersect_outside "Forbidden" 403

@@ -1,0 +1,277 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* tersect-theme.css defines --text-xs/-sm/-lg (10/11/14px) for its own
+       scale; Tailwind's text-* utilities share those names, so pin them here
+       (inline, so the theme's values do not leak into the utilities). */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.35;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.4;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.5;
+  --font-heading: var(--font-sans);
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  /* The components use rounded-lg on controls (4px), rounded-xl on
+       popovers and menus (6px) and rounded-2xl on dialogs (8px). */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 3);
+  --radius-4xl: calc(var(--radius) * 4);
+}
+
+/* ==========================================================================
+ * THEME TOKENS: verbatim from docs/design/tersect-theme.css (the design
+ * source of truth), with [data-theme="dark"] renamed to .dark. Update both
+ * together; components and canvas code only refer to token names.
+ * ========================================================================== */
+/* --- tersect-theme.css: begin ------------------------------------------- */
+:root {
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius: 0.25rem;
+  /* compact control scale */
+  --control-xs: 20px;
+  --control-sm: 24px;
+  --control: 26px;
+  --control-lg: 32px;
+  --row: 20px;
+  --text-xs: 10px;
+  --text-sm: 11px;
+  --text: 12px;
+  --text-lg: 14px;
+
+  --background: oklch(0.985 0.003 150);
+  --foreground: oklch(0.21 0.012 155);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.012 155);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.012 155);
+  --primary: oklch(0.45 0.11 152);
+  --primary-foreground: oklch(0.985 0.01 150);
+  --secondary: oklch(0.955 0.005 150);
+  --secondary-foreground: oklch(0.27 0.012 155);
+  --muted: oklch(0.962 0.004 150);
+  --muted-foreground: oklch(0.48 0.012 155);
+  --accent: oklch(0.945 0.025 152);
+  --accent-foreground: oklch(0.3 0.06 152);
+  --destructive: oklch(0.55 0.2 27);
+  --border: oklch(0.905 0.006 150);
+  --input: oklch(0.86 0.006 150);
+  --ring: oklch(0.55 0.12 152);
+  --chart-1: #8a908c;
+  --chart-2: #2f77c4;
+  --chart-3: #e8830c;
+  --chart-4: #8b5cc7;
+  --chart-5: #d1213f;
+  --sidebar: oklch(0.972 0.004 150);
+  --sidebar-foreground: oklch(0.21 0.012 155);
+  --sidebar-primary: oklch(0.45 0.11 152);
+  --sidebar-primary-foreground: oklch(0.985 0.01 150);
+  --sidebar-accent: oklch(0.945 0.025 152);
+  --sidebar-accent-foreground: oklch(0.3 0.06 152);
+  --sidebar-border: oklch(0.905 0.006 150);
+  --sidebar-ring: oklch(0.55 0.12 152);
+
+  /* data visualisation — heatmap ramp candidates, 5 stops low → high distance */
+  --viz-heat-grey-0: #ffffff;
+  --viz-heat-grey-1: #c4c7c5;
+  --viz-heat-grey-2: #888c8a;
+  --viz-heat-grey-3: #474b49;
+  --viz-heat-grey-4: #0b0d0c;
+  --viz-heat-indigo-0: #fbfbff;
+  --viz-heat-indigo-1: #c9cdf2;
+  --viz-heat-indigo-2: #8f8fe0;
+  --viz-heat-indigo-3: #5448b8;
+  --viz-heat-indigo-4: #1e1466;
+  --viz-heat-mako-0: #f3faf3;
+  --viz-heat-mako-1: #a8e0c4;
+  --viz-heat-mako-2: #3fa9a4;
+  --viz-heat-mako-3: #2c6a9c;
+  --viz-heat-mako-4: #231a4a;
+  --viz-gap: #f0b9b4;
+  --viz-variant: #e8830c;
+  --viz-selection: #1f7a47;
+  --viz-label: #1c211e;
+  --viz-tree: #2a302c;
+  --viz-leader: #b4bbb6;
+  --viz-ruler: #2f6f47;
+  --viz-gene: #3d6a8f;
+  --viz-t1: #9aa09c;
+  --viz-t2: #2f77c4;
+  --viz-t3: #e8830c;
+  --viz-sig: #d1213f;
+  --viz-sig-gold: #d9a400;
+  --viz-expected: #8b5cc7;
+  --viz-threshold: #8a908c;
+  /* accession groups — categorical, shared by both themes */
+  --group-1: #e5a50a;
+  --group-2: #8e5ba8;
+  --group-3: #f07f1a;
+  --group-4: #7db7e8;
+  --group-5: #cf2440;
+  --group-6: #b9a774;
+  --group-7: #17995c;
+  --group-8: #e890b1;
+  --group-9: #1f78b4;
+  --group-10: #f4937a;
+  --group-11: #6c5cb8;
+  --group-12: #b5477a;
+  --group-13: #d4c81e;
+  --group-14: #9a3a1e;
+  --group-15: #8db51a;
+  --group-16: #7a5630;
+  --group-17: #e4592a;
+  --group-18: #3f6b4a;
+  --group-19: #2bb3b1;
+}
+.dark {
+  --background: oklch(0.17 0.006 155);
+  --foreground: oklch(0.93 0.006 150);
+  --card: oklch(0.205 0.007 155);
+  --card-foreground: oklch(0.93 0.006 150);
+  --popover: oklch(0.235 0.008 155);
+  --popover-foreground: oklch(0.93 0.006 150);
+  --primary: oklch(0.72 0.14 152);
+  --primary-foreground: oklch(0.17 0.02 155);
+  --secondary: oklch(0.26 0.008 155);
+  --secondary-foreground: oklch(0.93 0.006 150);
+  --muted: oklch(0.245 0.007 155);
+  --muted-foreground: oklch(0.7 0.01 152);
+  --accent: oklch(0.3 0.035 152);
+  --accent-foreground: oklch(0.9 0.05 152);
+  --destructive: oklch(0.68 0.19 25);
+  --border: oklch(0.3 0.008 155);
+  --input: oklch(0.36 0.008 155);
+  --ring: oklch(0.65 0.13 152);
+  --chart-1: #7d847f;
+  --chart-2: #5aa2ee;
+  --chart-3: #f5a04a;
+  --chart-4: #b592ea;
+  --chart-5: #ff6b7d;
+  --sidebar: oklch(0.19 0.007 155);
+  --sidebar-foreground: oklch(0.93 0.006 150);
+  --sidebar-primary: oklch(0.72 0.14 152);
+  --sidebar-primary-foreground: oklch(0.17 0.02 155);
+  --sidebar-accent: oklch(0.3 0.035 152);
+  --sidebar-accent-foreground: oklch(0.9 0.05 152);
+  --sidebar-border: oklch(0.3 0.008 155);
+  --sidebar-ring: oklch(0.65 0.13 152);
+
+  --viz-heat-grey-0: #151716;
+  --viz-heat-grey-1: #474b49;
+  --viz-heat-grey-2: #888c8a;
+  --viz-heat-grey-3: #c4c7c5;
+  --viz-heat-grey-4: #ffffff;
+  --viz-heat-indigo-0: #14151c;
+  --viz-heat-indigo-1: #2f2a78;
+  --viz-heat-indigo-2: #5a55c8;
+  --viz-heat-indigo-3: #9a9cf0;
+  --viz-heat-indigo-4: #e6e8ff;
+  --viz-heat-mako-0: #121718;
+  --viz-heat-mako-1: #2b2a66;
+  --viz-heat-mako-2: #2f6f9e;
+  --viz-heat-mako-3: #45b3a4;
+  --viz-heat-mako-4: #d6f7dc;
+  --viz-gap: #6b2f33;
+  --viz-variant: #ffb020;
+  --viz-selection: #5fd08e;
+  --viz-label: #e4e9e5;
+  --viz-tree: #c9d0cb;
+  --viz-leader: #4a524d;
+  --viz-ruler: #7cc79a;
+  --viz-gene: #8fb8d9;
+  --viz-t1: #7d847f;
+  --viz-t2: #5aa2ee;
+  --viz-t3: #f5a04a;
+  --viz-sig: #ff6b7d;
+  --viz-sig-gold: #f2c230;
+  --viz-expected: #b592ea;
+  --viz-threshold: #8a908c;
+}
+/* --- tersect-theme.css: end --------------------------------------------- */
+
+@keyframes indeterminate {
+  from {
+    left: -40%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+}
+
+@layer components {
+  /* Small uppercase caption above a group of controls. */
+  .caption {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+}

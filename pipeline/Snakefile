@@ -1,0 +1,72 @@
+# Tersect Browser dataset pipeline.
+#
+#   tb-dataset build datasets/tomato-sl250.yaml      (see pipeline/README.md)
+#
+# Builds everything a dataset needs from a manifest (reference FASTA, gene
+# models, one VCF per accession) and publishes it last:
+#
+#   reference ─┬─ gene models ─┬─ genes table ──────────────┐
+#              │               └─ snpEff database ─┐        │
+#   samples ───┴─ normalise ─┬─ merge + annotate (per chromosome)
+#                            │        └─ variants table ────┼─ stage (ClickHouse)
+#                            ├─ Tersect index ─────────────────────────┐
+#                            └─ genome browser files ──────────────────┼─ publish
+#                                                                      │
+# Runs in the working directory <localDbPath>/pipeline/<dataset>; outputs are
+# only moved into place and made visible by `publish`. Re-running resumes:
+# finished steps are skipped, and a changed manifest re-runs what depends on
+# what changed.
+import json
+import os
+import shutil
+import sys
+import time
+
+sys.path.insert(0, workflow.basedir)
+from tbpipeline import (browser, failures, fetch, genomics, manifest as manifests,
+                        settings, store, tables)
+
+M = manifests.load(config['manifest'])
+SAMPLES = {s.name: s for s in M.samples}
+OUT = settings.dataset_dir(M.slug)
+STARTED = time.time()
+
+wildcard_constraints:
+    sample=r'[A-Za-z0-9][A-Za-z0-9._-]*',
+    chrom=r'[A-Za-z0-9][A-Za-z0-9._-]*'
+
+
+onstart:
+    # Rule bodies record their exceptions in failures/ (tbpipeline/failures.py).
+    failures.clear(os.getcwd())
+    store.record_build(M, 'running', samples=len(M.samples), finished_at=None, error=None)
+
+onsuccess:
+    store.record_build(M, 'succeeded', seconds=round(time.time() - STARTED))
+
+onerror:
+    # The first step that failed, in the pipeline's words; the builder service
+    # reads failures/ itself for the details.
+    recorded = failures.read(os.getcwd())
+    store.record_build(M, 'failed', seconds=round(time.time() - STARTED),
+                       error=recorded[0]['message'] if recorded else
+                       'see %s' % os.path.join(settings.work_dir(M.slug), 'logs'))
+
+
+def chromosomes(wildcards=None):
+    with open(checkpoints.reference.get().output.chroms) as handle:
+        return [c['name'] for c in json.load(handle)]
+
+
+def normalised(wildcards=None):
+    return expand('samples/{sample}.vcf.gz', sample=SAMPLES)
+
+
+rule all:
+    input: 'published.json'
+
+
+if M.from_vcfs:
+    include: 'rules/vcf.smk'
+else:
+    include: 'rules/index.smk'

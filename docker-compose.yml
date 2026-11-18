@@ -1,139 +1,241 @@
+# Tersect Browser development stack.
+#
+#   ./start_all.sh                 build everything, build datasets, start
+#                                  (and the dataset assistant's model on a Mac)
+#   DATASETS="" ./start_all.sh     start again later, without rebuilding datasets
+#   docker compose up -d           also starts again, but with the assistant off
+#                                  unless TB_ASSISTANT_URL is set
+#
+# Open http://localhost:4200/TersectBrowserGP/
+#
+# Data lives in ./test-data (gitignored): MongoDB in test-data/docker-db,
+# ClickHouse in test-data/clickhouse, dataset files in test-data/mongo-data.
+# Datasets are built with ./scripts/dataset (pipeline/README.md). The repository is bind-mounted at
+# /app, so backend and frontend source changes apply without rebuilding.
+
+x-app-env: &app-env
+  # Override tbconfig.json for the containers.
+  TB_MONGO_HOST: mongodb://tersect2:tersect20@database:27017
+  TB_DB_NAME: tersect_browser_gp
+  TB_LOCAL_DB_PATH: /app/test-data/mongo-data
+  TB_SERVER_HOST: http://localhost:4300/TersectBrowserGP
+  TB_CLICKHOUSE_HOST: clickhouse
+  TB_CLICKHOUSE_PORT: "8123"
+
 services:
+  # Analysis toolchain image the backend is built on. Built by start_all.sh.
   tersect-base:
-    image: tersect-base:latest            # tag used by FROM tersect-base
-    platform: linux/amd64                 # force amd64 build on Apple Silicon
+    image: tersect-base:latest
+    platform: linux/amd64
     build:
-        context: .
-        dockerfile: Dockerfile.base
-    command: ["true"]                     # no-op container
-    restart: "no"
-    profiles: ["build"]                   # optional: keeps it out of normal `up`
-    networks: [app-net]
+      context: .
+      dockerfile: Dockerfile.base
+    command: ["true"]
+    profiles: ["build"]
+
   database:
-    platform: linux/amd64                # keep 4.4 on amd64; OK on Apple Silicon
-    image: mongo:4.4
+    image: mongo:8.0
     restart: unless-stopped
-    command: ["mongod", "--bind_ip_all", "--dbpath", "/data/db"]
+    command: ["mongod", "--bind_ip_all"]
     environment:
-      # seed a root user so your bash sidecar can auth
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpass
-      MONGO_INITDB_DATABASE: tersect_browser_gp
     volumes:
-      - ./test-data/mongo-data:/data/db
-      - ./gp_data_copy:/app/gp_data_copy
+      - ./test-data/docker-db:/data/db
     ports:
-      - "27017:27017"
+      # Host access for debugging only; 27018 so a local mongod can keep 27017.
+      - "127.0.0.1:27018:27017"
     stop_grace_period: 60s
-
     healthcheck:
-      # mongo:4.4 uses `mongo` client, not `mongosh`
-      test: ["CMD", "mongo", "--quiet", "admin",
-             "-u", "root", "-p", "rootpass", "--authenticationDatabase", "admin",
-             "--eval", "db.adminCommand({ ping: 1 })"]
+      test: ["CMD", "mongosh", "--quiet", "-u", "root", "-p", "rootpass",
+             "--authenticationDatabase", "admin", "--eval", "db.adminCommand({ ping: 1 })"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
     networks: [app-net]
 
-  # one-shot: create your app user
+  # One-shot: create the application user (read/write on the app database).
   db_user_init:
-    image: mongo:4.4
-    platform: linux/amd64
+    image: mongo:8.0
     depends_on:
       database:
         condition: service_healthy
-    networks: [app-net]
-    command:
-    - bash
-    - -c
-    - >
-      echo "Waiting for Mongo to accept connections...";
-      until mongo --host database:27017 -u root -p rootpass --authenticationDatabase admin --quiet --eval 'db.runCommand({ ping: 1 })' >/dev/null; do
-        sleep 1;
-      done;
-      echo "Creating app user if needed...";
-      mongo --host database:27017 -u root -p rootpass --authenticationDatabase admin --quiet --eval '
-        const dbName="tersect_browser_gp";
-        const u="tersect2", p="tersect20";
-        const d=db.getSiblingDB(dbName);
-        if (!d.getUser(u)) {
-          d.createUser({ user:u, pwd:p, roles:[{ role:"readWrite", db:dbName }] });
+    entrypoint:
+      - mongosh
+      - --quiet
+      - --host
+      - database
+      - -u
+      - root
+      - -p
+      - rootpass
+      - --authenticationDatabase
+      - admin
+      - --eval
+      - |
+        const admin = db.getSiblingDB("admin");
+        if (!admin.getUser("tersect2")) {
+          admin.createUser({ user: "tersect2", pwd: "tersect20",
+                             roles: [{ role: "readWrite", db: "tersect_browser_gp" }] });
           print("User created");
         } else {
           print("User already exists");
         }
-      ';
-
     restart: "no"
-    profiles: ["init"]
+    profiles: ["init", "pipeline"]
+    networks: [app-net]
 
-  # one-shot: seed dataset (runs after db_user_init)
-  db_init:
-    platform: linux/amd64
+  # Variant search store (clickhouse/schema.sql). The schema and a read-only
+  # user for the backend are created on first start.
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: tersect
+      CLICKHOUSE_USER: tersect_admin
+      CLICKHOUSE_PASSWORD: tersect_admin
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      CLICKHOUSE_READER_USER: tersect_reader
+      CLICKHOUSE_READER_PASSWORD: tersect_reader
+    volumes:
+      - ./test-data/clickhouse:/var/lib/clickhouse
+      - ./clickhouse/schema.sql:/schema/schema.sql:ro
+      - ./clickhouse/users.sh:/docker-entrypoint-initdb.d/01-users.sh:ro
+      # Small-host settings: no wide telemetry logs, small caches.
+      - ./clickhouse/low-memory.xml:/etc/clickhouse-server/config.d/low-memory.xml:ro
+    ports:
+      # Host access for debugging only (HTTP interface).
+      - "127.0.0.1:8123:8123"
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "tersect_admin",
+             "--password", "tersect_admin", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks: [app-net]
+
+  # Dataset pipeline (pipeline/README.md). Run with scripts/dataset, e.g.
+  #   ./scripts/dataset build datasets/tomato-sl250.yaml
+  # Manifests may point at files under /app (this repository) or under
+  # /data, which is TB_DATA_DIR on the host (default ./test-data/datasets).
+  pipeline:
+    image: tersect-pipeline:latest
     build:
       context: .
-      dockerfile: Dockerfile.init
+      dockerfile: Dockerfile.pipeline
+    environment:
+      <<: *app-env
+      TB_CLICKHOUSE_USER: tersect_admin
+      TB_CLICKHOUSE_PASSWORD: tersect_admin
     volumes:
-        - ./test-data/mongo-data:/data/db
-        - ./test-data/gp_data_copy:/app/gp_data_copy
-        - ./extension/tersect-browser-extended:/app/extension/tersect-browser-extended
-    networks: [app-net]
-    profiles: ["init"]
-    restart: "no"
+      - ./:/app
+      - ${TB_DATA_DIR:-./test-data/datasets}:/data:ro
     depends_on:
       database:
+        condition: service_healthy
+      clickhouse:
         condition: service_healthy
       db_user_init:
         condition: service_completed_successfully
+    restart: "no"
+    profiles: ["pipeline"]
+    networks: [app-net]
 
-  backend:
-    platform: linux/amd64
-    image: tersect-browser-backend:latest
+  # Builder service (pipeline/tbpipeline/server): uploads, file inspection
+  # and dataset builds for the web UI, on port 4310 under /api. Builds run
+  # the pipeline inside this container. Uploads are stored under
+  # <localDbPath>/uploads; TB_SERVER_FOLDERS (colon-separated) are the
+  # folders users may pick files from, read in place.
+  builder:
+    image: tersect-pipeline:latest
     build:
       context: .
-      dockerfile: Dockerfile
-    ports:
-      - "4300:4300"
-    volumes:
-      - ./test-data/mongo-data:/data/db
-      - ./test-data/gp_data_copy:/app/gp_data_copy
-      - ./:/app
+      dockerfile: Dockerfile.pipeline
+    entrypoint: ["python", "-m", "tbpipeline.server"]
     environment:
-      # use explicit authSource to avoid surprises
-      MONGO_URL: mongodb://tersect2:tersect20@database:27017/tersect_browser_gp?authSource=tersect_browser_gp
-    networks: [app-net]
+      <<: *app-env
+      TB_CLICKHOUSE_USER: tersect_admin
+      TB_CLICKHOUSE_PASSWORD: tersect_admin
+      PYTHONPATH: /app/pipeline
+      TB_SERVER_FOLDERS: /data
+      # Manifests built from the UI may only point at uploads and the
+      # shared folders (keep in step with TB_SERVER_FOLDERS).
+      TB_PIPELINE_ALLOWED_ROOTS: /app/test-data/mongo-data/uploads:/data
+      # Dataset assistant (pipeline/README.md): off unless TB_ASSISTANT_URL is
+      # set, e.g. to a native Ollama on the host:
+      #   TB_ASSISTANT_URL=http://host.docker.internal:11434/v1 docker compose up -d builder
+      TB_ASSISTANT_URL: ${TB_ASSISTANT_URL:-}
+      TB_ASSISTANT_MODEL: ${TB_ASSISTANT_MODEL:-qwen3:14b}
+      # Prompt budget in characters; must fit the model server's context.
+      TB_ASSISTANT_CONTEXT_CHARS: ${TB_ASSISTANT_CONTEXT_CHARS:-14000}
+      TB_ASSISTANT_API_KEY: ${TB_ASSISTANT_API_KEY:-}
+    extra_hosts:
+      # host.docker.internal on Linux too (Docker Desktop provides it already).
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/app
+      - ${TB_DATA_DIR:-./test-data/datasets}:/data:ro
+    ports:
+      - "127.0.0.1:4310:4310"
     depends_on:
       database:
         condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      # Created by start_all.sh (profile "init"); required: false lets the
+      # builder start with a plain `docker compose up`.
+      db_user_init:
+        condition: service_completed_successfully
+        required: false
+    restart: unless-stopped
+    networks: [app-net]
 
-  extension:
-    image: tersect-browser-extension:latest
-    build:
-      context: ./extension/tersect-browser-extended
-    ports:
-      - "3200:3200"
-    depends_on:
-      - backend
-    networks:
-      - app-net
-
-  frontend:
-    image: tersect-browser-frontend:latest
+  backend:
+    image: tersect-browser-backend:latest
+    platform: linux/amd64
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: Dockerfile
+    environment:
+      <<: *app-env
+      TB_CLICKHOUSE_USER: tersect_reader
+      TB_CLICKHOUSE_PASSWORD: tersect_reader
+    ports:
+      - "4300:4300"
+    volumes:
+      - ./:/app
+      # Keep the image's Linux dependencies rather than the host's.
+      - /app/backend/node_modules
+    depends_on:
+      database:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [app-net]
+
+  # React frontend (web/).
+  web:
+    image: tersect-browser-web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    environment:
+      BACKEND_URL: http://backend:4300
+      BUILDER_URL: http://builder:4310
     ports:
       - "4200:4200"
-    networks:
-      - app-net
+    volumes:
+      # Source is live-reloaded; dependencies come from the image.
+      - ./web/src:/app/web/src
+      - ./web/public:/app/web/public
+      - ./web/index.html:/app/web/index.html
     depends_on:
       - backend
-      - extension
-    develop:
-      watch:
-        - action: rebuild
-          path: ./frontend
+    restart: unless-stopped
+    networks: [app-net]
 
 networks:
   app-net:

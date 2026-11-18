@@ -1,4 +1,4 @@
-biopython==1.81
+biopython==1.85
 hashids==1.2.0
-numpy==1.21.6
-pymongo==3.10.0
+numpy==2.0.*
+pymongo==4.10.*

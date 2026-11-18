@@ -2,40 +2,38 @@
     "name": "tersect-browser-backend",
     "version": "0.9.0",
     "license": "MIT",
+    "engines": {
+        "node": ">=26"
+    },
     "scripts": {
-        "start": "nodemon server-dev.ts -- --config ../tbconfig.json",
+        "start": "tsx watch server-dev.ts --config ../tbconfig.json",
         "lint": "tslint --project .",
+        "typecheck": "tsc --project . --noEmit",
         "build": "tsc --project . && ncp src/scripts ../dist/src/scripts && ncp node_modules ../dist/node_modules",
         "clean": "rimraf dist/ node_modules/"
     },
     "private": true,
     "dependencies": {
-        "cors": "^2.8.4",
-        "express": "^4.16.3",
-        "hashids": "^1.2.2",
-        "mongoose": "^5.3.1",
+        "@clickhouse/client": "^1.25.0",
+        "cors": "^2.8.6",
+        "express": "^4.22.3",
+        "hashids": "^2.3.0",
+        "mongoose": "^9.12.1",
         "p-limit": "^3.1.0",
-        "path": "^0.12.7",
-        "rxjs": "^6.4.0",
-        "split2": "^4.2.0",
-        "through2": "^4.0.2",
-        "tmp": "^0.1.0",
-        "yargs": "^14.2.0",
-        "zlib": "^1.0.5"
+        "rxjs": "^7.8.2",
+        "tmp": "^0.2.7",
+        "yargs": "^17.7.3"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.4",
-        "@types/express": "^4.16.0",
-        "@types/hashids": "^1.0.30",
-        "@types/mongodb": "3.1.10",
-        "@types/mongoose": "^5.5.17",
-        "@types/node": "^12.12.5",
-        "@types/tmp": "^0.1.0",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^4.17.25",
+        "@types/node": "^26.6.6",
+        "@types/tmp": "^0.2.6",
+        "@types/yargs": "^17.0.35",
         "ncp": "^2.0.0",
-        "nodemon": "^1.19.4",
-        "rimraf": "^3.0.0",
-        "ts-node": "^8.4.1",
-        "tslint": "^6.0.0-beta0",
-        "typescript": "^3.7.2"
+        "rimraf": "^6.1.4",
+        "tslint": "^6.1.3",
+        "tsx": "^4.23.15",
+        "typescript": "^6.0.3"
     }
 }

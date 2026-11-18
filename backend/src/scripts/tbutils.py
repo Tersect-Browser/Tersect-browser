@@ -1,4 +1,5 @@
 import csv
+import json
 import numpy
 import os
 import random
@@ -8,6 +9,27 @@ from hashids import Hashids
 
 def abspath(path):
     return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
+
+# Settings that can be overridden from the environment, so one tbconfig.json
+# serves both a local setup and the Docker containers. Must match
+# backend/src/load-config.ts.
+CONFIG_ENV_OVERRIDES = {
+    'TB_MONGO_HOST': 'mongoHost',
+    'TB_DB_NAME': 'dbName',
+    'TB_LOCAL_DB_PATH': 'localDbPath',
+    'TB_SERVER_HOST': 'serverHost',
+}
+
+def load_config(config_file):
+    with open(abspath(config_file), 'r') as cfg_file:
+        cfg = json.load(cfg_file)
+    for variable, key in CONFIG_ENV_OVERRIDES.items():
+        if os.environ.get(variable):
+            cfg[key] = os.environ[variable]
+    # A relative data path is taken relative to the config file.
+    cfg['localDbPath'] = os.path.join(os.path.dirname(abspath(config_file)),
+                                      os.path.expanduser(cfg['localDbPath']))
+    return cfg
 
 def randomHash(salt='', max_id=1000000000000):
     hashids = Hashids(salt=salt)

@@ -1,0 +1,17 @@
+#!/bin/bash
+# Tersect Browser: boot script. Written by Terraform
+# (deploy/terraform/modules/vm-bootstrap). It contains no secrets: the
+# machine fetches its configuration from the secret store with its own role.
+# Safe to run again (Compute Engine runs it at every boot, EC2 once).
+set -euo pipefail
+
+install -d -m 0755 /etc/tersect /usr/local/lib/tersect /opt/tersect
+%{ for path, file in files ~}
+
+cat > '${path}' <<'TERSECT_FILE_END'
+${trimsuffix(file.content, "\n")}
+TERSECT_FILE_END
+chmod ${file.mode} '${path}'
+%{ endfor ~}
+
+exec /usr/local/lib/tersect/setup.sh

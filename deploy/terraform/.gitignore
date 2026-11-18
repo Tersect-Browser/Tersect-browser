@@ -1,0 +1,18 @@
+# Provider plugins and module cache
+.terraform/
+# Lock files are not committed: the modules are used with both Terraform and
+# OpenTofu, whose registries produce different hashes.
+.terraform.lock.hcl
+
+# State holds every generated password
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Real settings stay local; the examples are committed
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+backend.tf
+*.tfplan

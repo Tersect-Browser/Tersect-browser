@@ -1,15 +1,43 @@
 import { fileSync } from "tmp";
-import * as path from 'path';
+import * as path from 'node:path';
 import { TreeDatabaseQuery, TreeQuery } from "../../../common/PheneticTree";
 import { DBMatrix } from "../models/dbmatrix";
 import { partitionQuery } from "../utils/partitioning";
-import { execPromise, formatRegion, mapToAppPath, writeAccessions } from "../utils/utils";
+import { formatRegion, mapToAppPath, runCommand, runCommandToFile, writeAccessions } from "../utils/utils";
 import { createRapidnjTree , createRapidnjTreePromise} from "../utils/dbutils";
 import { tbConfig } from "../load-config";
-import * as fs from "fs";
-import * as rimraf from "rimraf";
-import { promisify } from "util";
-import * as os from "os";
+import * as fs from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import * as os from "node:os";
+
+/**
+ * Delete temporary files, including the outputs of any tersect runs that
+ * completed. Stored (indexed) matrices are never passed here.
+ */
+async function removeFiles(files: string[],
+                           pending: Promise<string>[] = []): Promise<void> {
+    const settled = await Promise.allSettled(pending);
+    const produced = settled.flatMap(result =>
+        result.status === 'fulfilled' ? [result.value] : []);
+    await Promise.all([...files, ...produced].map(file =>
+        fs.promises.unlink(file).catch(() => {})));
+}
+
+/**
+ * Combine distance matrices for the selected accessions; resolves with the
+ * path of the merged matrix.
+ */
+function mergePhylip(tsiLocation: string, positive: string[],
+                     negative: string[], accessionFile: string,
+                     intervalSize: number): Promise<string> {
+    const script = path.join(__dirname, '../scripts/merge_phylip.py');
+    const args = [tsiLocation, ...positive, '-a', accessionFile,
+                  '--interval-size', String(intervalSize)];
+    if (negative.length) {
+        args.push('-n', ...negative);
+    }
+    return runCommand(script, args);
+}
 
 export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
     dbQuery: TreeDatabaseQuery) {
@@ -30,8 +58,8 @@ export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
         const outputFile = fileSync();
         const region = formatRegion(treeQuery.chromosomeName,
             interval.start, interval.end);
-        const command = `tersect dist ${tsiLocation} ${region} > ${outputFile.name}`;
-        const result = await execPromise(command);
+        await runCommandToFile('tersect', ['dist', tsiLocation, region],
+                               outputFile.name);
         // TODO: error handling on tersect result / promise rejection
         return outputFile.name;
     });
@@ -67,32 +95,17 @@ export function generateTree(tsiLocation: string, treeQuery: TreeQuery,
 
     const intervalSize = treeQuery.interval[1] - treeQuery.interval[0];
 
-    const fileToCleanup = []
+    const fileToCleanup: string[] = [];
 
     return Promise.all(inputFiles).then(([accFile, ...matrixFiles]) => {
-        const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
-            .join(' ');
-        const negative = matrixFiles.slice(positiveMatrixFiles.length,
-            matrixFiles.length).join(' ');
-        const script = path.join(__dirname, '../scripts/merge_phylip.py');
+        const positive = matrixFiles.slice(0, positiveMatrixFiles.length);
+        const negative = matrixFiles.slice(positiveMatrixFiles.length);
         fileToCleanup.push(accFile);
-        let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile} --interval-size ${intervalSize}`;
-        if (negative.length) {
-            mergeCommand = `${mergeCommand} -n ${negative}`;
-        }
-        return execPromise(mergeCommand);
+        return mergePhylip(tsiLocation, positive, negative, accFile,
+                           intervalSize);
     }).then((outputFilename: string) => {
         createRapidnjTree(dbQuery, outputFilename.trim());
-        fileToCleanup.forEach(f => {
-        fs.unlink(f, (err) => {
-            if (err) {
-                console.error(`Error deleting file ${f}:`, err);
-            } else {
-                console.log(`Deleted temporary file: ${f}`);
-            }
-        });
-    });
-    });
+    }).finally(() => removeFiles(fileToCleanup, tersectOutputFiles));
 
 }
 
@@ -115,8 +128,8 @@ export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuer
         const outputFile = fileSync();
         const region = formatRegion(treeQuery.chromosomeName,
             interval.start, interval.end);
-        const command = `tersect dist ${tsiLocation} ${region} > ${outputFile.name}`;
-        const result = await execPromise(command);
+        await runCommandToFile('tersect', ['dist', tsiLocation, region],
+                               outputFile.name);
         // TODO: error handling on tersect result / promise rejection
         return outputFile.name;
     });
@@ -143,9 +156,7 @@ export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuer
             negativeMatrixFiles.push(tersectOutputFiles[i]);
         }
     });
-    const mkdtempP = promisify(fs.mkdtemp);
-    const rimrafP = promisify(rimraf);
-    const tmpBase = await mkdtempP(path.join(os.tmpdir(), "accessions"));
+    const tmpBase = await mkdtemp(path.join(os.tmpdir(), "accessions"));
     const writtenAccessions = await writeAccessions(treeQuery.accessions, tmpBase);
     const resultOfNegativeMatrixFiles = await Promise.all(negativeMatrixFiles);
     const resultOfPositiveMatrixFiles = await Promise.all(positiveMatrixFiles);
@@ -161,25 +172,17 @@ export async function generateTreeAsync(tsiLocation: string, treeQuery: TreeQuer
     console.log("inputFiles", inputFiles);
     const [accFile, ...matrixFiles] = inputFiles;
     console.log("accFile", accFile);
-    const positive = matrixFiles.slice(0, positiveMatrixFiles.length)
-        .join(' ');
-    const negative = matrixFiles.slice(positiveMatrixFiles.length,
-        matrixFiles.length).join(' ');
-    const script = path.join(__dirname, '../scripts/merge_phylip.py');
-    let mergeCommand = `${script} ${tsiLocation} ${positive} -a ${accFile} --interval-size ${intervalSize}`;
-    if (negative.length) {
-        mergeCommand = `${mergeCommand} -n ${negative}`;
+    const positive = matrixFiles.slice(0, positiveMatrixFiles.length);
+    const negative = matrixFiles.slice(positiveMatrixFiles.length);
+    const merged: string[] = [];
+    try {
+        const outputFilename = (await mergePhylip(tsiLocation, positive,
+                                                  negative, accFile,
+                                                  intervalSize)).trim();
+        merged.push(outputFilename);
+        return await createRapidnjTreePromise(dbQuery, outputFilename);
+    } finally {
+        await rm(tmpBase, { recursive: true, force: true }).catch(() => {});
+        await removeFiles(merged, tersectOutputFiles);
     }
-    const outputFilename = await execPromise(mergeCommand) as string;
-    const response = await createRapidnjTreePromise(dbQuery, outputFilename?.trim());
-    console.log('Generated tree:', response);
-    const cleanup = async () => {
-        try {
-            await rimrafP(tmpBase);
-        } catch (e) {
-            console.error('Error cleaning up:', e);
-        }
-    };
-    await cleanup();
-    return response;
 }

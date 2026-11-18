@@ -1,4 +1,5 @@
-import argparse, glob, os, re, subprocess, sys
+import argparse, glob, os, re, shutil, subprocess, sys
+from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import pandas as pd
 
@@ -54,7 +55,6 @@ def run_phylonet(jar, nexus):
 
 
 def parse_logl(output):
-    print("Parsing logL from PhyloNet output...", output)
     m = re.search(r"^(-?\d+\.\d+):", output, re.MULTILINE)
     if not m:
         raise ValueError("Could not find logL")
@@ -92,11 +92,9 @@ def write_enewick(s: str, path: str):
 
 
 def run_julia_plot(enewick_path: str, out_image: str):
-    # Absolute path to Julia in the container (you can also just use "julia")
-    julia = "/usr/local/bin/julia"
-
-    # Resolve the script path robustly (adjust if your layout differs)
-    script = "/app/backend/src/scripts/plot_phylonet.jl"
+    julia = shutil.which("julia") or "/usr/local/bin/julia"
+    script = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          "plot_phylonet.jl")
 
     # Make sure depot is visible (already set in Dockerfile, but safe to enforce)
     # env = os.environ.copy()
@@ -166,20 +164,26 @@ def main():
     species_tree = read_species_tree(args.species_tree_path)
     write_trees_txt(trees, args.output_directory)
 
+    # One search per number of reticulations, all at once, single-threaded
+    # each (PhyloNet's own -pl threading made a search slower when measured).
+    # Each search's own output is kept, so the network reported is the one
+    # whose likelihood was compared (the search is randomised; running the
+    # best r again could return a different network).
+    counts = list(range(args.max_reticulations + 1))
+    nexus = {r: write_nexus(trees, r, args.output_directory, species_tree)
+             for r in counts}
+    with ThreadPoolExecutor(max_workers=len(counts)) as pool:
+        outputs = dict(zip(counts, pool.map(lambda r: run_phylonet("phylonet", nexus[r]), counts)))
+
     records = []
-    for r in range(args.max_reticulations + 1):
-        nex = write_nexus(trees, r, args.output_directory, species_tree)
-        out = run_phylonet("phylonet", nex)
-        logL = parse_logl(out)
+    for r in counts:
+        logL = parse_logl(outputs[r])
         records.append({"r": r, "logL": logL})
         print(f"r={r}  logL={logL:.6f}")
 
     df = pd.DataFrame(records).set_index("r")
-    best_r = df["logL"].idxmax()
-
-    # Re-run with best_r and dump full output
-    best_nex = write_nexus(trees, best_r, args.output_directory)
-    best_out = run_phylonet("phylonet", best_nex)
+    best_r = int(df["logL"].idxmax())
+    best_nex, best_out = nexus[best_r], outputs[best_r]
 
     enewick = extract_enewick(best_out)
     enewick_path = os.path.join(args.output_directory, "best_network.enewick")

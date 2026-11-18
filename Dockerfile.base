@@ -1,114 +1,85 @@
-# Dockerfile for Tersect backend application
-# ---------------------------
-# Stage 0: Julia + packages
-# ---------------------------
-FROM --platform=linux/amd64 julia:1.10-bullseye AS juliapkgs
+# Base image shared by the backend and the dataset seed job: the Tersect
+# toolchain plus everything the analysis scripts call.
+#
+# linux/amd64 because rapidNJ is built with SSE2 intrinsics. On Apple Silicon
+# this builds under emulation and the first build is slow (Julia packages).
 
-# Put the depot somewhere we can COPY later
-ENV JULIA_DEPOT_PATH=/opt/julia_depot
-
-# Preinstall Julia packages (no R needed here)
-RUN julia -e 'using Pkg; Pkg.add(["PhyloNetworks","PhyloPlots","Compose","Cairo"]); Pkg.precompile()'
-
-# Force-download the MbedTLS artifact (libmbedcrypto) into the depot
-RUN julia -e 'using MbedTLS_jll, Libdl; println("mbedcrypto=", Libdl.dlpath("libmbedcrypto"))'
-
-
-
-# --------------------------------
-# Stage 1: backend application
-# --------------------------------
-FROM --platform=linux/amd64 node:16-bullseye
+FROM --platform=linux/amd64 node:26-bookworm
 
 # 1) OS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git build-essential wget curl cmake flex bison \
-    python3 python3-venv bzip2 ca-certificates \
+    python3 python3-venv bzip2 ca-certificates file jq \
     gfortran libopenblas-dev liblapack-dev \
-    openjdk-11-jre-headless \
+    openjdk-17-jre-headless \
  && rm -rf /var/lib/apt/lists/*
 
-# 2) Legacy Python venv
+# 2) Python venv for the dataset scripts and merge_phylip.py
 RUN python3 -m venv /opt/venv
 ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="/opt/venv/bin:${PATH}"
-
-# 3) Pip requirements into the venv
 COPY backend/src/scripts/requirements.venv.txt /tmp/requirements.venv.txt
 RUN /opt/venv/bin/pip install --upgrade pip setuptools wheel \
  && /opt/venv/bin/pip install --no-cache-dir -r /tmp/requirements.venv.txt \
  && rm /tmp/requirements.venv.txt
 
-# 4) Build rapidNJ
+# 3) rapidNJ (phenetic trees)
 RUN git clone https://github.com/somme89/rapidNJ /tmp/rapidNJ \
  && cd /tmp/rapidNJ && make \
  && install -m755 ./bin/rapidnj /usr/local/bin/rapidnj \
  && rm -rf /tmp/rapidNJ
 
-# 5) Build Tersect
+# 4) Tersect
 RUN git clone https://github.com/tomkurowski/tersect.git /tmp/tersect \
  && mkdir /tmp/tersect/build \
  && cd /tmp/tersect/build \
  && cmake .. -DCMAKE_C_FLAGS="-fcommon" \
- && make -j$(nproc) \
+ && make -j"$(nproc)" \
  && make install \
  && rm -rf /tmp/tersect
 
-
-# 6) Micromamba + conda env (environment.yml includes r-base and any R pkgs )
+# 5) Conda env "tersect" (environment.yml): bcftools, htslib, samtools,
+#    ASTRAL (aster), and the Python/R stack used by the introgression scripts.
 ARG MAMBA_VERSION=1.5.8
 ENV MAMBA_ROOT_PREFIX=/opt/conda
 RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/${MAMBA_VERSION} \
   | tar -xvj -C /usr/local/bin --strip-components=1 bin/micromamba
-
 COPY environment.yml /tmp/environment.yml
 RUN micromamba create -y -n tersect -f /tmp/environment.yml && micromamba clean -a -y
 
-# Helper + shims; PATH order: shims -> venv -> conda
-RUN printf '%s\n' '#!/usr/bin/env bash' \
-    'exec micromamba run -n tersect "$@"' > /usr/local/bin/conda-run && chmod +x /usr/local/bin/conda-run
+# Lookup order: venv first (its python3 has numpy for merge_phylip.py), then
+# the conda env for bcftools, tabix, bgzip, samtools and astral.
+ENV PATH="/opt/venv/bin:/opt/conda/envs/tersect/bin:${PATH}"
 
-RUN mkdir -p /usr/local/conda-shims && \
-    printf '%s\n' '#!/usr/bin/env bash' 'exec micromamba run -n tersect bcftools "$@"' \
-      > /usr/local/conda-shims/bcftools && chmod +x /usr/local/conda-shims/bcftools && \
-    printf '%s\n' '#!/usr/bin/env bash' 'exec micromamba run -n tersect beagle "$@"' \
-      > /usr/local/conda-shims/beagle && chmod +x /usr/local/conda-shims/beagle
-
-ENV PATH="/usr/local/conda-shims:/opt/venv/bin:/opt/conda/envs/tersect/bin:${PATH}"
-
-# 7) PhyloNet JAR + wrapper
+# 6) PhyloNet
 ENV PHYLONET_HOME=/opt/phylonet
-RUN mkdir -p "$PHYLONET_HOME"
 COPY ./PhyloNet.jar ${PHYLONET_HOME}/PhyloNet.jar
 ENV PHYLONET_JAR=${PHYLONET_HOME}/PhyloNet.jar
 RUN printf '%s\n' '#!/usr/bin/env bash' \
     'exec java ${PHYLONET_JAVA_OPTS} -jar "${PHYLONET_JAR}" "$@"' \
     > /usr/local/bin/phylonet && chmod +x /usr/local/bin/phylonet
 
+# 7) Julia, for drawing PhyloNet networks (plot_phylonet.jl)
 ARG JULIA_VERSION=1.10.5
+ENV JULIA_DEPOT_PATH=/opt/julia_depot
 RUN set -eux; \
     curl -fsSL "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%.*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" \
       | tar -xz -C /opt; \
-    ln -s /opt/julia-${JULIA_VERSION} /opt/julia; \
-    ln -sf /opt/julia/bin/julia /usr/local/bin/julia; \
-    # sanity check: prove the binary runs here
-    /usr/local/bin/julia -e 'using InteractiveUtils; versioninfo()'
+    ln -s /opt/julia-${JULIA_VERSION} /opt/julia
 
-RUN R_HOME=$(/opt/conda/envs/tersect/bin/R RHOME) \
- && echo "R_HOME=$R_HOME" \
- && env -u LD_LIBRARY_PATH R_HOME="$R_HOME" /usr/local/bin/julia -e 'import Pkg; Pkg.add("RCall"); Pkg.build("RCall"); using RCall; println("RCall OK")'
+# PhyloPlots draws through R (RCall), using R from the conda env. R's
+# libraries need a newer libstdc++ than the one Julia bundles, so the julia
+# command preloads the conda env's and points RCall at R.
+RUN printf '%s\n' '#!/bin/sh' \
+    'CONDA_ENV=/opt/conda/envs/tersect' \
+    'export R_HOME="$CONDA_ENV/lib/R"' \
+    'export LD_LIBRARY_PATH="$R_HOME/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"' \
+    'export LD_PRELOAD="$CONDA_ENV/lib/libstdc++.so.6${LD_PRELOAD:+:$LD_PRELOAD}"' \
+    'exec /opt/julia/bin/julia "$@"' \
+    > /usr/local/bin/julia && chmod +x /usr/local/bin/julia
+RUN julia -e 'import Pkg; \
+      Pkg.add(["PhyloNetworks", "PhyloPlots", "Compose", "Cairo", "ArgParse", "RCall"]); \
+      Pkg.build("RCall"); Pkg.precompile(); \
+      using RCall; println("RCall OK, R ", rcopy(R"R.version.string"))' \
+ && chmod -R a+rwX "$JULIA_DEPOT_PATH"
 
-
-# after installing Julia:
-RUN env -u LD_LIBRARY_PATH /usr/local/bin/julia -e 'using InteractiveUtils; versioninfo()'
-
-# add packages without Conda’s LD_LIBRARY_PATH
-RUN env -u LD_LIBRARY_PATH /usr/local/bin/julia -e 'using Pkg; Pkg.add(["PhyloNetworks","PhyloPlots","Compose","Cairo", "ArgParse"]); Pkg.precompile()'
-
-# touch a JLL to materialize artifacts with the clean loader
-RUN env -u LD_LIBRARY_PATH /usr/local/bin/julia -e 'using MbedTLS_jll, Libdl; println("mbedcrypto=", Libdl.dlpath("libmbedcrypto"))'
-
-
-
-# 10) App code
 WORKDIR /app
