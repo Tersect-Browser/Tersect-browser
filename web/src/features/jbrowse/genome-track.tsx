@@ -43,23 +43,29 @@ function StripFrame({
       style={{ height: STRIP_HEIGHT }}
     >
       <div
-        className="flex shrink-0 flex-col justify-between border-r py-[5px] pr-1.5 pl-2.5"
+        className="relative flex shrink-0 flex-col justify-between border-r py-[5px] pr-1.5 pl-2.5"
         style={{ width: paneWidth }}
       >
-        <div className="flex items-center gap-[5px]">
-          <DnaIcon className="size-3 text-muted-foreground" />
-          <span className="font-semibold">Gene models</span>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="ml-auto text-muted-foreground"
-            aria-label="Hide gene track"
-            onClick={toggle}
-          >
-            <XIcon />
-          </Button>
+        {/* The close button is taken out of the flow so that at touch size
+            (44px) it does not stretch the title row. */}
+        <div className="flex min-h-5 items-center gap-[5px] pr-(--control-xs)">
+          <DnaIcon className="size-3 shrink-0 text-muted-foreground max-sm:hidden" />
+          <span className="truncate font-semibold">
+            <span className="max-sm:hidden">Gene models</span>
+            <span className="sm:hidden">Genes</span>
+          </span>
         </div>
-        <span className="truncate font-mono text-[10px] text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="absolute top-[5px] right-1.5 text-muted-foreground"
+          aria-label="Hide gene track"
+          onClick={toggle}
+        >
+          <XIcon />
+        </Button>
+        {/* Clear of the close button at touch size; no padding on desktop. */}
+        <span className="truncate pr-[max(0px,calc((var(--control-xs)-20px)*2))] font-mono text-t10 text-muted-foreground">
           {annotation ? `${annotation} · ` : ""}locked to heatmap
         </span>
       </div>

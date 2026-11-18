@@ -8,7 +8,7 @@ export interface SegmentedOption<T extends string> {
   disabled?: boolean
 }
 
-/** 24px segmented control (a radio group of buttons). */
+/** 24px segmented control (a radio group of buttons); 44px on touch. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -43,7 +43,7 @@ export function Segmented<T extends string>({
             disabled={option.disabled}
             onClick={() => onChange(option.value)}
             className={cn(
-              "flex items-center gap-1 px-2.5 text-[11px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-inset disabled:opacity-50 [&_svg]:size-3",
+              "flex items-center gap-1 px-[calc(10px+var(--pad-x))] text-t11 font-medium whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-inset disabled:opacity-50 [&_svg]:size-3",
               index > 0 && "border-l border-input",
               active
                 ? "bg-accent text-accent-foreground"

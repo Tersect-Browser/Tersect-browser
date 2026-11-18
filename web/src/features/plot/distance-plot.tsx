@@ -1,9 +1,10 @@
 import { CircleAlertIcon, DatabaseIcon } from "lucide-react"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react"
+import type { PointerEvent as ReactPointerEvent } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { usePlotPointer } from "@/features/plot/use-plot-pointer"
+import { touchGesture, usePlotPointer } from "@/features/plot/use-plot-pointer"
 import type { PlotDataStatus } from "@/hooks/use-plot-data"
 import { useVizTokens } from "@/hooks/use-viz-tokens"
 import { ceilTo, clamp, getAccessionLabel } from "@/lib/genome"
@@ -39,6 +40,13 @@ const PANE_WIDTH: Record<AccessionDisplayStyle, number> = {
   tree_linear: 340,
   tree_simple: 340,
 }
+/** On phones (HANDOFF-mobile 3.3) the pane gives the heatmap more room. */
+const PHONE_PANE_WIDTH: Record<AccessionDisplayStyle, number> = {
+  labels: 108,
+  tree_linear: 190,
+  tree_simple: 190,
+}
+const PHONE_QUERY = "(max-width: 639.98px)"
 /** The pane never takes more than this share of the plot. */
 const MAX_PANE_PROPORTION = 0.6
 const COLOR_TRACK_WIDTH = 6
@@ -84,8 +92,11 @@ function binGeometry(zoomLevel: number, rowHeight = 1 / ASPECT_RATIO) {
 }
 
 function paneWidthFor(style: AccessionDisplayStyle, containerWidth: number) {
+  const widths = window.matchMedia(PHONE_QUERY).matches
+    ? PHONE_PANE_WIDTH
+    : PANE_WIDTH
   return Math.round(
-    Math.min(PANE_WIDTH[style], containerWidth * MAX_PANE_PROPORTION)
+    Math.min(widths[style], containerWidth * MAX_PANE_PROPORTION)
   )
 }
 
@@ -118,6 +129,9 @@ export function DistancePlot({
     tokens?: unknown
   }>({})
   const dragStart = useRef({ x: 0, y: 0 })
+  /** Fingers on the plot, and the pinch they make when there are two. */
+  const touches = useRef(new Map<number, { x: number; y: number }>())
+  const pinch = useRef<{ distance: number; steps: number } | null>(null)
   const rowBase = useRef(1 / ASPECT_RATIO)
 
   const accessionStyle = usePlotStore((state) => state.accessionStyle)
@@ -446,54 +460,48 @@ export function DistancePlot({
     callbacks.current = { onClick, onHover }
   })
 
-  const scalePointer = usePlotPointer({
-    getTarget: getScaleTarget,
-    hoverDelay: 0,
-    dragCursor: "col-resize",
-    onDragStart: (start) => {
-      const canvas = scaleCanvasRef.current
-      const query = usePlotStore.getState().distanceBins?.query
-      if (!canvas || !query) {
-        return false
-      }
-      const toCanvasX = (clientX: number) =>
-        clientX - canvas.getBoundingClientRect().left
-      if (getScaleTarget({ x: toCanvasX(start.x) }).type === "background") {
-        return false
-      }
-
-      // Dragging along the ruler selects a region. It is tracked on the
-      // window so the selection can extend past the edges of the ruler.
-      const positionAt = (clientX: number, fallback: number) => {
-        const target = getScaleTarget({ x: toCanvasX(clientX) })
-        return target.type === "position" ? target.position : fallback
-      }
-      const onWindowMove = (event: MouseEvent) => {
-        const left = Math.min(start.x, event.clientX)
-        const right = Math.max(start.x, event.clientX)
+  /**
+   * A region selection along the ruler, from a viewport x coordinate. It may
+   * extend past the edges of the ruler.
+   */
+  const startRangeSelection = (startX: number) => {
+    const canvas = scaleCanvasRef.current
+    const query = usePlotStore.getState().distanceBins?.query
+    if (!canvas || !query) {
+      return null
+    }
+    const toCanvasX = (clientX: number) =>
+      clientX - canvas.getBoundingClientRect().left
+    if (getScaleTarget({ x: toCanvasX(startX) }).type === "background") {
+      return null
+    }
+    const positionAt = (clientX: number, fallback: number) => {
+      const target = getScaleTarget({ x: toCanvasX(clientX) })
+      return target.type === "position" ? target.position : fallback
+    }
+    return {
+      move: (point: { x: number; y: number }) => {
+        const left = Math.min(startX, point.x)
+        const right = Math.max(startX, point.x)
         const selection = {
           start: positionAt(left, query.interval[0]),
           end: positionAt(right, query.interval[1]),
         }
         usePlotStore.getState().setHighlight(selection)
         callbacks.current.onHover({
-          x: event.clientX,
-          y: event.clientY,
+          ...point,
           target: {
             type: "interval",
             startPosition: selection.start,
             endPosition: selection.end,
           },
         })
-      }
-      const onWindowUp = (event: MouseEvent) => {
-        window.removeEventListener("mousemove", onWindowMove)
-        window.removeEventListener("mouseup", onWindowUp)
+      },
+      end: (point: { x: number; y: number }) => {
         const selection = usePlotStore.getState().highlight
         if (selection) {
           callbacks.current.onClick({
-            x: event.clientX,
-            y: event.clientY,
+            ...point,
             target: {
               type: "interval",
               startPosition: selection.start,
@@ -501,16 +509,169 @@ export function DistancePlot({
             },
           })
         }
+      },
+    }
+  }
+  const touchRange = useRef<ReturnType<typeof startRangeSelection>>(null)
+
+  const scalePointer = usePlotPointer({
+    getTarget: getScaleTarget,
+    hoverDelay: 0,
+    dragCursor: "col-resize",
+    onDragStart: (start) => {
+      // Dragging along the ruler selects a region. It is tracked on the
+      // window so the selection can extend past the edges of the ruler.
+      const range = startRangeSelection(start.x)
+      if (!range) {
+        return false
+      }
+      const onWindowMove = (event: MouseEvent) =>
+        range.move({ x: event.clientX, y: event.clientY })
+      const onWindowUp = (event: MouseEvent) => {
+        window.removeEventListener("mousemove", onWindowMove)
+        window.removeEventListener("mouseup", onWindowUp)
+        range.end({ x: event.clientX, y: event.clientY })
       }
       window.addEventListener("mousemove", onWindowMove)
       window.addEventListener("mouseup", onWindowUp)
       // The window listeners take over from here.
       return false
     },
+    // Touch: a drag along the ruler pans sideways; long-press, then drag,
+    // selects a region.
+    onTouchPanStart: (start) => {
+      const state = usePlotStore.getState()
+      const { binWidth } = binGeometry(state.zoomLevel, rowBase.current)
+      dragStart.current = {
+        x: start.x / binWidth - state.plotPosition.x,
+        y: 0,
+      }
+    },
+    onTouchPan: (position) => {
+      const state = usePlotStore.getState()
+      const binView = views.current.bins
+      if (!binView) {
+        return
+      }
+      const { binWidth } = binGeometry(state.zoomLevel, rowBase.current)
+      state.setPlotPosition({
+        x: clamp(
+          Math.round(position.x / binWidth - dragStart.current.x),
+          1 - binView.colNum,
+          0
+        ),
+        y: state.plotPosition.y,
+      })
+    },
+    longPressRange: {
+      start: (start) => {
+        touchRange.current = startRangeSelection(start.x)
+        return touchRange.current !== null
+      },
+      move: (point) => touchRange.current?.move(point),
+      end: (point) => {
+        touchRange.current?.end(point)
+        touchRange.current = null
+      },
+    },
     onClick,
     onHover,
     onMove,
   })
+
+  /* -------------------------------------------------------------- pinch -- */
+
+  /**
+   * One zoom step that keeps the bin under a point (relative to the heatmap)
+   * where it is.
+   */
+  const zoomAround = (direction: 1 | -1, centre: { x: number; y: number }) => {
+    const before = usePlotStore.getState()
+    const from = binGeometry(before.zoomLevel, rowBase.current)
+    if (direction > 0) {
+      before.zoomIn()
+    } else {
+      before.zoomOut()
+    }
+    const after = usePlotStore.getState()
+    const binView = views.current.bins
+    if (after.zoomLevel === before.zoomLevel || !binView) {
+      return
+    }
+    const to = binGeometry(after.zoomLevel, rowBase.current)
+    const x = Math.max(0, centre.x)
+    const y = Math.max(0, centre.y)
+    after.setPlotPosition({
+      x: clamp(
+        Math.round(
+          x / to.binWidth - (x / from.binWidth - before.plotPosition.x)
+        ),
+        1 - binView.colNum,
+        0
+      ),
+      y: clamp(
+        Math.round(
+          y / to.binHeight - (y / from.binHeight - before.plotPosition.y)
+        ),
+        1 - binView.rowNum,
+        0
+      ),
+    })
+  }
+
+  const pinchDistance = () => {
+    const [a, b] = [...touches.current.values()]
+    return Math.hypot(a.x - b.x, a.y - b.y) || 1
+  }
+
+  const onTouchDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse") {
+      return
+    }
+    touches.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+    if (touches.current.size === 2) {
+      // Takes over from whatever the canvases were following.
+      touchGesture.pinches += 1
+      pinch.current = { distance: pinchDistance(), steps: 0 }
+      onMove()
+    }
+  }
+
+  const onTouchMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!touches.current.has(event.pointerId)) {
+      return
+    }
+    touches.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+    const container = containerRef.current
+    if (!pinch.current || touches.current.size !== 2 || !container) {
+      return
+    }
+    // Zoom moves in the toolbar's steps (×1.3 each).
+    const steps = Math.round(
+      Math.log(pinchDistance() / pinch.current.distance) / Math.log(1.3)
+    )
+    if (steps === pinch.current.steps) {
+      return
+    }
+    const [a, b] = [...touches.current.values()]
+    const bounds = container.getBoundingClientRect()
+    const centre = {
+      x: (a.x + b.x) / 2 - bounds.left - usePlotStore.getState().treeWidth,
+      y: (a.y + b.y) / 2 - bounds.top - SCALE_BAR_SIZE,
+    }
+    const direction = steps > pinch.current.steps ? 1 : -1
+    while (pinch.current.steps !== steps) {
+      zoomAround(direction, centre)
+      pinch.current.steps += direction
+    }
+  }
+
+  const onTouchEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    touches.current.delete(event.pointerId)
+    if (touches.current.size < 2) {
+      pinch.current = null
+    }
+  }
 
   /* ------------------------------------------------------------- render -- */
 
@@ -538,7 +699,19 @@ export function DistancePlot({
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden bg-background select-none"
+      // touch-none: the plot handles drags and pinches itself, so the page
+      // neither scrolls nor zooms under it.
+      className="relative h-full w-full touch-none overflow-hidden bg-background select-none [-webkit-touch-callout:none]"
+      onPointerDown={onTouchDown}
+      onPointerMove={onTouchMove}
+      onPointerUp={onTouchEnd}
+      onPointerCancel={onTouchEnd}
+      onContextMenu={(event) => {
+        // A long-press opens our menu, not the browser's.
+        if (Date.now() - touchGesture.lastTouch < 1000) {
+          event.preventDefault()
+        }
+      }}
       onWheel={(event) => {
         const state = usePlotStore.getState()
         if (event.deltaY > 0) {
@@ -551,13 +724,13 @@ export function DistancePlot({
     >
       {/* Corner */}
       <div
-        className="absolute top-0 left-0 flex items-center gap-1.5 border-r border-b bg-card px-2.5 text-[11px] text-muted-foreground"
+        className="absolute top-0 left-0 flex items-center gap-1.5 border-r border-b bg-card px-2.5 text-t11 text-muted-foreground"
         style={{ width: paneWidth, height: SCALE_BAR_SIZE }}
       >
         <span className="truncate font-semibold text-foreground">
           {STYLE_NAMES[accessionStyle]}
         </span>
-        <span className="font-mono">
+        <span className="font-mono max-sm:hidden">
           {orderedAccessions?.length ?? selectedCount}
         </span>
       </div>
@@ -609,7 +782,7 @@ export function DistancePlot({
       )}
 
       {isEmpty && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background px-4 text-center">
           <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <DatabaseIcon className="size-5" />
           </div>
@@ -626,7 +799,7 @@ export function DistancePlot({
 
       {(isLoading || hasErrors) && (
         <div
-          className="absolute inset-0 z-10 flex items-center justify-center bg-background/62"
+          className="absolute inset-0 z-10 flex items-center justify-center bg-background/62 px-3"
           role="status"
           aria-live="polite"
         >
@@ -643,9 +816,9 @@ export function DistancePlot({
               </div>
             </div>
           ) : (
-            <div className="flex w-60 flex-col items-center gap-2.5 rounded-xl border bg-card px-4 py-3.5 shadow-md">
+            <div className="flex w-60 max-w-full flex-col items-center gap-2.5 rounded-xl border bg-card px-4 py-3.5 shadow-md">
               <Spinner className="size-5" />
-              <div className="font-mono text-[11px]">{status.loadMessage}</div>
+              <div className="font-mono text-t11">{status.loadMessage}</div>
               <div className="h-[3px] w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className={cn(

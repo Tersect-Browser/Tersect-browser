@@ -96,7 +96,7 @@ export function AddGroupDialog({
             {(submitted || nameInUse) && nameError && (
               <span
                 id="group-name-error"
-                className="flex items-center gap-1 text-[11px] text-destructive"
+                className="flex items-center gap-1 text-t11 text-destructive"
               >
                 <CircleAlertIcon className="size-3" />
                 {nameError}
@@ -116,7 +116,7 @@ export function AddGroupDialog({
                 <option key={option} value={option} />
               ))}
             </datalist>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-t11 text-muted-foreground">
               Pick a category or type a new one.
             </span>
           </div>

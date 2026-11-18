@@ -78,7 +78,7 @@ export function AccessionsAddBar({
           <>
             <div className="flex flex-col gap-0.5">
               <p className="font-medium">Drop .vcf.gz files here</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-t11 text-muted-foreground">
                 One file per accession, or multi-sample files. Uploads resume if
                 interrupted.
               </p>
@@ -94,7 +94,7 @@ export function AccessionsAddBar({
               Drop more .vcf.gz files here, or
             </span>
             {browse}
-            <span className="flex-1" />
+            <span className="flex-1 max-sm:hidden" />
             {others}
             <Button variant="outline" size="sm" onClick={onSheet}>
               <FileSpreadsheetIcon /> Accession sheet
@@ -116,11 +116,11 @@ export function AccessionsAddBar({
       </div>
 
       {large && (
-        <div className="flex items-center gap-3 rounded-md border bg-card px-3 py-2">
+        <div className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 max-sm:flex-wrap">
           <FileSpreadsheetIcon className="size-4 shrink-0 text-muted-foreground" />
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 basis-40 flex-col">
             <span className="font-medium">Accession sheet</span>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-t11 text-muted-foreground">
               Fill labels, groups and extra info columns from a CSV or TSV,
               matched by accession name. Available once files are added.
             </span>

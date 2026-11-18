@@ -302,7 +302,7 @@ export function WizardPage() {
       >
         {step === "reference" && <StepReference key={key} fix={stepFix} />}
         {step === "accessions" && (
-          <div className="px-6 py-5">
+          <div className="px-4 pt-4 pb-7 sm:px-6 sm:py-5">
             <StepAccessions key={key} fix={stepFix} />
           </div>
         )}

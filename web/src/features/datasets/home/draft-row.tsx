@@ -16,7 +16,15 @@ import { deleteDraft } from "../api"
 import { DraftBadge } from "../build/status-badge"
 import { formatCount, formatWhen } from "../format"
 import { WIZARD_STEPS, type Draft } from "../types"
-import { ROW } from "./layout"
+import {
+  DESCRIPTION,
+  MENU_CELL,
+  PHONE_META,
+  ROW,
+  TOUCH_TARGET,
+  WIDE_CELL,
+  phoneMeta,
+} from "./layout"
 
 /** "Draft. Step 2 of 4, 12 accessions. Last edited today 14:02." */
 function describe(draft: Draft): string {
@@ -51,15 +59,22 @@ export function DraftRow({ draft }: { draft: Draft }) {
         >
           {name}
         </Link>
-        <span className="block truncate text-muted-foreground">{describe(draft)}</span>
+        <span className={DESCRIPTION}>{describe(draft)}</span>
+        <span className={PHONE_META}>
+          {phoneMeta(draft.form.reference.id, formatCount(accessions))}
+        </span>
       </span>
-      <span className="truncate font-mono">{draft.form.reference.id || "—"}</span>
-      <span className="text-right font-mono">{formatCount(accessions)}</span>
-      <span className="flex flex-col items-start gap-0.5">
+      <span className={`truncate font-mono ${WIDE_CELL}`}>
+        {draft.form.reference.id || "—"}
+      </span>
+      <span className={`text-right font-mono ${WIDE_CELL}`}>
+        {formatCount(accessions)}
+      </span>
+      <span className="flex items-center gap-2 max-sm:col-start-1 max-sm:row-start-2 sm:flex-col sm:items-start sm:gap-0.5">
         <DraftBadge />
         <Link
           to={to}
-          className="relative z-10 pl-1 text-[11px] text-primary hover:underline"
+          className={`relative z-10 pl-1 text-t11 text-primary hover:underline ${TOUCH_TARGET}`}
         >
           Resume
         </Link>
@@ -69,7 +84,7 @@ export function DraftRow({ draft }: { draft: Draft }) {
           <Button
             variant="ghost"
             size="icon-xs"
-            className="relative z-10"
+            className={MENU_CELL}
             aria-label={`Actions for draft ${name}`}
           >
             <EllipsisIcon />

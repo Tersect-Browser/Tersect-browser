@@ -120,7 +120,11 @@ function DialogBody({ target }: { target: GenomeDialogTarget }) {
     )
   }
   return (
-    <div className="overflow-hidden rounded-xl border bg-card">
+    <div
+      // JBrowse pans its tracks sideways itself; vertical drags are left to
+      // the dialog's own scroll.
+      className="touch-pan-y overflow-hidden rounded-xl border bg-card"
+    >
       {/* Rebuilt when the theme changes, so JBrowse follows the page. */}
       <AccessionGenomeView
         key={`${tokens.dark}:${tokens.primary}`}
@@ -155,7 +159,8 @@ export function GenomeDialog() {
         />
       </DialogPortal>
       <DialogContent
-        className="max-h-[90vh] w-[80vw] overflow-auto sm:max-w-none"
+        // Phones: the full width of the screen (HANDOFF-mobile 6).
+        className="max-h-[90vh] w-[80vw] overflow-auto overscroll-contain max-sm:right-0! max-sm:left-0! max-sm:rounded-b-none sm:max-w-none"
         // JBrowse's portals count as outside: only the backdrop dismisses.
         onInteractOutside={(event) => {
           const element = event.target as Element | null

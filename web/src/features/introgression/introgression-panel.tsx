@@ -48,6 +48,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useIsTouchLayout } from "@/hooks/use-breakpoint"
 import { formatLocus } from "@/lib/format"
 import { getAccessionLabel } from "@/lib/genome"
 import { cn } from "@/lib/utils"
@@ -67,7 +68,8 @@ type PanelMode = "docked" | "minimised" | "floating" | "maximised"
 
 /** Docked height and floating geometry (9.1). */
 const DOCKED_HEIGHT = 384
-const HEADER_HEIGHT = 29
+/** Header plus its border: 29px, or 45px at touch density. */
+const HEADER_HEIGHT = "calc(var(--c28) + 1px)"
 const MIN_FLOAT_WIDTH = 520
 
 /** Floating position and size, kept for the session. */
@@ -149,13 +151,13 @@ function TaxaPicker({
             {selected.map((value) => (
               <span
                 key={value}
-                className="inline-flex h-[18px] items-center gap-1 rounded-[3px] bg-secondary pr-1 pl-1.5 font-mono text-[11px] whitespace-nowrap text-secondary-foreground"
+                className="inline-flex h-(--c18) max-w-full items-center gap-1 rounded-[3px] bg-secondary pr-1 pl-1.5 font-mono text-t11 whitespace-nowrap text-secondary-foreground"
               >
-                {labelOf(value)}
+                <span className="truncate">{labelOf(value)}</span>
                 <button
                   type="button"
                   aria-label={`Remove ${labelOf(value)}`}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="-mr-1 flex h-full shrink-0 items-center px-1 text-muted-foreground hover:text-foreground max-lg:px-2.5 pointer-coarse:px-2.5"
                   onClick={(event) => {
                     event.stopPropagation()
                     onChange(selected.filter((other) => other !== value))
@@ -168,7 +170,10 @@ function TaxaPicker({
           </div>
         )}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-0">
+      <PopoverContent
+        align="start"
+        className="w-72 max-w-[calc(100vw-1.5rem)] p-0"
+      >
         <Command>
           <CommandInput placeholder="Filter accessions…" />
           <CommandList>
@@ -183,7 +188,7 @@ function TaxaPicker({
                     disabled={
                       limit > 1 && !isSelected && selected.length >= limit
                     }
-                    className="font-mono text-[11px]"
+                    className="font-mono text-t11"
                     onSelect={() => toggle(option.value)}
                   >
                     <CheckIcon
@@ -223,13 +228,13 @@ function FormField({
         {aside}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-t11 text-muted-foreground">{hint}</p>}
       {errors?.map(
         (error) =>
           error && (
             <p
               key={error}
-              className="flex items-center gap-1 text-[11px] text-destructive"
+              className="flex items-center gap-1 text-t11 text-destructive"
             >
               <CircleAlertIcon className="size-3" />
               {error}
@@ -252,7 +257,7 @@ function WindowButton({
         <Button
           variant="ghost"
           aria-label={label}
-          className={cn("size-[22px] rounded-[3px] p-0", className)}
+          className={cn("size-(--c22) rounded-[3px] p-0", className)}
           {...props}
         >
           {children}
@@ -275,12 +280,22 @@ function ServerImage({ src, title }: { src: string; title: string }) {
       <figcaption className="font-medium">{title}</figcaption>
       <div className="relative aspect-[2] overflow-hidden rounded-[4px] border bg-white">
         {!loaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
-        <img
-          src={src}
-          alt={title}
-          className="size-full object-contain"
-          onLoad={() => setLoaded(true)}
-        />
+        {/* On phones the image is small: tapping it opens it full size. */}
+        <a
+          href={src}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Open ${title} full size`}
+          className="block size-full sm:pointer-events-none"
+          tabIndex={-1}
+        >
+          <img
+            src={src}
+            alt={title}
+            className="size-full object-contain"
+            onLoad={() => setLoaded(true)}
+          />
+        </a>
       </div>
     </figure>
   )
@@ -296,6 +311,11 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
 
   /* ------------------------------------------------------ window state -- */
   const [mode, setMode] = useState<PanelMode>("docked")
+  // Touch layouts (below 1024px) show the panel full screen under the top
+  // bar, or minimised above the tab bar. The desktop mode and geometry are
+  // kept, so widening the window restores them.
+  const touch = useIsTouchLayout()
+  const beforeMinimise = useRef<PanelMode>("docked")
   const [geometry, setGeometry] = useState(floating)
   const [confirmClose, setConfirmClose] = useState(false)
   const drag = useRef<{ dx: number; dy: number } | null>(null)
@@ -332,7 +352,7 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
   // Remember the floating size after a corner resize.
   useEffect(() => {
     const element = sectionRef.current
-    if (!element || mode !== "floating") {
+    if (!element || mode !== "floating" || touch) {
       return
     }
     const observer = new ResizeObserver(() => {
@@ -341,10 +361,11 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
     })
     observer.observe(element)
     return () => observer.disconnect()
-  }, [mode])
+  }, [mode, touch])
 
   const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (
+      touch ||
       mode !== "floating" ||
       (event.target as HTMLElement).closest("button")
     ) {
@@ -430,40 +451,59 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
     target.interval[1]
   )
   const minimised = mode === "minimised"
+  const toggleMinimised = () => {
+    if (minimised) {
+      // On touch, expanding returns to the desktop mode it was minimised from.
+      setMode(touch ? beforeMinimise.current : "docked")
+    } else {
+      beforeMinimise.current = mode
+      setMode("minimised")
+    }
+  }
 
   return (
     <section
       ref={sectionRef}
       aria-label="Introgression analysis"
+      data-touch-minimised={touch && minimised ? "" : undefined}
       className={cn(
         "flex flex-col overflow-hidden bg-card text-card-foreground",
-        mode === "docked" && "relative shrink-0 border-b",
-        mode === "minimised" && "relative shrink-0 border-b",
-        mode === "floating" &&
-          "absolute z-30 resize rounded-2xl border shadow-[0_16px_48px_rgb(0_0_0/0.3)]",
-        mode === "maximised" && "absolute inset-0 z-30"
+        touch
+          ? minimised
+            ? "fixed inset-x-0 bottom-[calc(var(--tabbar)+env(safe-area-inset-bottom))] z-40 border-t shadow-[0_-4px_16px_rgb(0_0_0/0.12)]"
+            : "fixed inset-x-0 top-[calc(var(--topbar)+env(safe-area-inset-top)+1px)] bottom-[calc(var(--tabbar)+env(safe-area-inset-bottom))] z-40"
+          : [
+              mode === "docked" && "relative shrink-0 border-b",
+              mode === "minimised" && "relative shrink-0 border-b",
+              mode === "floating" &&
+                "absolute z-30 resize rounded-2xl border shadow-[0_16px_48px_rgb(0_0_0/0.3)]",
+              mode === "maximised" && "absolute inset-0 z-30",
+            ]
       )}
       style={
-        mode === "docked"
-          ? { height: DOCKED_HEIGHT }
-          : mode === "minimised"
-            ? { height: HEADER_HEIGHT }
-            : mode === "floating"
-              ? {
-                  left: geometry.x,
-                  top: geometry.y,
-                  width: geometry.width,
-                  height: geometry.height,
-                  minWidth: MIN_FLOAT_WIDTH,
-                  minHeight: HEADER_HEIGHT,
-                }
-              : undefined
+        touch
+          ? undefined
+          : mode === "docked"
+            ? { height: DOCKED_HEIGHT }
+            : mode === "minimised"
+              ? { height: HEADER_HEIGHT }
+              : mode === "floating"
+                ? {
+                    left: geometry.x,
+                    top: geometry.y,
+                    width: geometry.width,
+                    height: geometry.height,
+                    minWidth: MIN_FLOAT_WIDTH,
+                    minHeight: HEADER_HEIGHT,
+                  }
+                : undefined
       }
     >
       <header
         className={cn(
-          "flex h-7 shrink-0 items-center gap-1.5 border-b bg-muted pr-1 pl-2.5 select-none",
-          mode === "floating" && "cursor-move"
+          "flex h-(--c28) shrink-0 items-center gap-1.5 border-b bg-muted pr-1 pl-2.5 select-none",
+          touch && minimised && "border-b-0",
+          !touch && mode === "floating" && "cursor-move"
         )}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
@@ -473,34 +513,46 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
         <h2 className="font-semibold whitespace-nowrap">
           Introgression analysis
         </h2>
-        <span className="truncate font-mono text-[11px] text-muted-foreground">
+        <span className="truncate font-mono text-t11 text-muted-foreground max-sm:hidden">
           {locus}
         </span>
         {busy && (
-          <span className="flex items-center gap-[5px] font-medium whitespace-nowrap text-primary">
-            <Spinner className="size-3" />
-            {stageName}
+          <span className="flex min-w-0 items-center gap-[5px] font-medium whitespace-nowrap text-primary">
+            <Spinner className="size-3 shrink-0" />
+            <span className="truncate">{stageName}</span>
           </span>
         )}
         <span className="flex-1" />
         <WindowButton
           label={minimised ? "Expand" : "Minimise"}
-          onClick={() => setMode(minimised ? "docked" : "minimised")}
+          onClick={toggleMinimised}
         >
           {minimised ? <ChevronDownIcon /> : <MinusIcon />}
         </WindowButton>
-        <WindowButton
-          label={mode === "floating" ? "Dock" : "Float"}
-          onClick={() => setMode(mode === "floating" ? "docked" : "floating")}
-        >
-          {mode === "floating" ? <PanelTopIcon /> : <PictureInPicture2Icon />}
-        </WindowButton>
-        <WindowButton
-          label={mode === "maximised" ? "Restore" : "Maximise"}
-          onClick={() => setMode(mode === "maximised" ? "docked" : "maximised")}
-        >
-          {mode === "maximised" ? <Minimize2Icon /> : <Maximize2Icon />}
-        </WindowButton>
+        {!touch && (
+          <>
+            <WindowButton
+              label={mode === "floating" ? "Dock" : "Float"}
+              onClick={() =>
+                setMode(mode === "floating" ? "docked" : "floating")
+              }
+            >
+              {mode === "floating" ? (
+                <PanelTopIcon />
+              ) : (
+                <PictureInPicture2Icon />
+              )}
+            </WindowButton>
+            <WindowButton
+              label={mode === "maximised" ? "Restore" : "Maximise"}
+              onClick={() =>
+                setMode(mode === "maximised" ? "docked" : "maximised")
+              }
+            >
+              {mode === "maximised" ? <Minimize2Icon /> : <Maximize2Icon />}
+            </WindowButton>
+          </>
+        )}
         <WindowButton
           label="Close"
           className="hover:bg-destructive hover:text-white"
@@ -513,12 +565,13 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
       {/* Kept mounted when minimised so the form and results survive. */}
       <div
         className={cn(
-          "grid min-h-0 flex-1 grid-cols-[minmax(250px,1fr)_minmax(0,3fr)]",
+          // Phones: one column, form then results, scrolling together.
+          "grid min-h-0 flex-1 grid-cols-[minmax(250px,1fr)_minmax(0,3fr)] max-sm:grid-cols-1 max-sm:content-start max-sm:overflow-y-auto",
           minimised && "hidden"
         )}
       >
         <form
-          className="flex flex-col gap-[9px] overflow-auto border-r px-3 py-2.5"
+          className="flex min-w-0 flex-col gap-[9px] overflow-auto border-r px-3 py-2.5 max-sm:overflow-visible max-sm:border-r-0 max-sm:border-b max-sm:px-4 max-sm:py-3.5"
           onSubmit={(event) => {
             event.preventDefault()
             submit()
@@ -552,7 +605,7 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
             aside={
               <span
                 className={cn(
-                  "font-mono text-[11px] font-medium",
+                  "font-mono text-t11 font-medium",
                   quartetInvalid ? "text-destructive" : "text-muted-foreground"
                 )}
               >
@@ -651,9 +704,9 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
           </div>
         </form>
 
-        <div className="flex min-w-0 flex-col gap-2.5 overflow-auto px-3 py-2.5">
+        <div className="flex min-w-0 flex-col gap-2.5 overflow-auto px-3 py-2.5 max-sm:overflow-visible max-sm:px-4 max-sm:py-3.5">
           {!started && (
-            <div className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed text-muted-foreground">
+            <div className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-3 text-center text-muted-foreground">
               <ChartColumnIcon className="size-5" />
               Results will appear here after you run the analysis.
             </div>
@@ -673,13 +726,15 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
               className="flex gap-2 rounded-xl border border-destructive bg-destructive/8 px-2.5 py-2"
             >
               <CircleAlertIcon className="mt-px size-3.5 shrink-0 text-destructive" />
-              <div className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="font-semibold text-destructive">
                   Error: the{" "}
                   {JOB_STAGES[run.failedStage ?? run.stage]?.toLowerCase()}{" "}
                   stage failed
                 </span>
-                <span className="font-mono text-[11px]">{run.error}</span>
+                <span className="font-mono text-t11 wrap-anywhere">
+                  {run.error}
+                </span>
               </div>
             </div>
           )}
@@ -714,7 +769,7 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
                   Expected discordance
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="text-[10px] text-(--viz-sig)">★</span>
+                  <span className="text-t10 text-(--viz-sig)">★</span>
                   Significant block
                 </span>
               </div>
@@ -724,11 +779,11 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
 
           {run.phylonet && (
             <div className="flex flex-col gap-2 border-t pt-2">
-              <div className="flex items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <span className="font-semibold">PhyloNet</span>
                 {run.phylonet.phyloText && (
                   <a
-                    className="flex items-center gap-1 text-primary hover:underline"
+                    className="flex min-h-(--c20) items-center gap-1 whitespace-nowrap text-primary hover:underline"
                     href={run.phylonet.phyloText}
                     target="_blank"
                     rel="noreferrer"
@@ -739,7 +794,7 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
                   </a>
                 )}
               </div>
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-2.5">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-2.5">
                 {run.phylonet.phyloPlot && (
                   <ServerImage
                     src={run.phylonet.phyloPlot}
@@ -787,7 +842,8 @@ function IntrogressionWindow({ target }: { target: IntrogressionTarget }) {
 
 /**
  * Introgression analysis panel (section 9): docked under the toolbar by
- * default; it can be minimised, floated over the plot or maximised.
+ * default; it can be minimised, floated over the plot or maximised. Below
+ * 1024px it is full screen under the top bar, or minimised above the tab bar.
  */
 export function IntrogressionPanel() {
   const target = useUiStore((state) => state.introgressionTarget)

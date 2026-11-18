@@ -74,7 +74,7 @@ function inline(text: string): ReactNode[] {
       match[1] !== undefined ? (
         <code
           key={match.index}
-          className="rounded-[3px] bg-muted px-1 font-mono text-[11px] break-all"
+          className="rounded-[3px] bg-muted px-1 font-mono text-t11 break-all"
         >
           {match[1]}
         </code>

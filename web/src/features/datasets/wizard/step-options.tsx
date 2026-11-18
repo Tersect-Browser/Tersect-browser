@@ -57,7 +57,7 @@ function EffectCard({
           value={value}
           disabled={disabled}
           aria-describedby={`${id}-description`}
-          className="mt-px size-3.5"
+          className="mt-px size-[max(0.875rem,var(--cb))]"
         />
         <label
           htmlFor={id}
@@ -66,7 +66,7 @@ function EffectCard({
           <span className="font-medium">{title}</span>
           <span
             id={`${id}-description`}
-            className="text-[11px] text-muted-foreground"
+            className="text-t11 text-muted-foreground"
           >
             {description}
           </span>
@@ -81,7 +81,7 @@ function ReadOnlyOptions() {
   const form = useForm()
   const base = useWizardStore((s) => s.draft?.base_dataset ?? null)
   return (
-    <div className="flex max-w-[760px] flex-col gap-4 px-6 py-5">
+    <div className="flex max-w-[760px] flex-col gap-4 px-4 pt-4 pb-7 sm:px-6 sm:py-5">
       <LockedNote base={base} />
       <dl className="flex flex-col">
         <ReadOnlyRow label="Variant effects">{effectsLabel(form)}</ReadOnlyRow>
@@ -136,7 +136,7 @@ export function StepOptions({
   const effects = options.useIndex ? "none" : options.effects
 
   return (
-    <div className="flex max-w-[760px] flex-col gap-6 px-6 py-5">
+    <div className="flex max-w-[760px] flex-col gap-6 px-4 pt-4 pb-7 sm:px-6 sm:py-5">
       <SuggestedOptions />
       <Section title="Variant effects">
         <RadioGroup
@@ -177,7 +177,7 @@ export function StepOptions({
                   onChange={(event) =>
                     setOptions({ snpeffDb: event.target.value })
                   }
-                  className="h-(--control-sm) w-[200px] font-mono"
+                  className="h-(--control-sm) w-[200px] max-w-full font-mono"
                 />
               </div>
             )}
@@ -191,7 +191,7 @@ export function StepOptions({
           />
         </RadioGroup>
         {options.useIndex && (
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-t11 text-muted-foreground">
             Not used with an existing Tersect index.
           </p>
         )}
@@ -221,12 +221,15 @@ export function StepOptions({
             className="mt-px"
           />
           <div className="flex flex-col gap-0.5">
-            <label htmlFor="homozygous" className="font-medium">
+            <label
+              htmlFor="homozygous"
+              className="font-medium whitespace-nowrap"
+            >
               Homozygous only
             </label>
             <span
               id="homozygous-help"
-              className="text-[11px] text-muted-foreground"
+              className="text-t11 text-muted-foreground"
             >
               Count only homozygous alternative genotypes; heterozygous calls
               are left out of the distances.
@@ -241,7 +244,7 @@ export function StepOptions({
           aria-expanded={advanced}
           aria-controls="advanced-options"
           onClick={() => setAdvanced((open) => !open)}
-          className="flex items-center gap-1 self-start rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="flex items-center gap-1 self-start rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/30 max-lg:min-h-11 pointer-coarse:min-h-11"
         >
           <ChevronRightIcon
             className={cn(
@@ -267,7 +270,7 @@ export function StepOptions({
                 <label htmlFor="use-index" className="font-medium">
                   Use an existing Tersect index (.tsi) instead of VCFs
                 </label>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-t11 text-muted-foreground">
                   Accessions come from the samples in the index; step 2 lists
                   them for labels and groups.
                 </span>

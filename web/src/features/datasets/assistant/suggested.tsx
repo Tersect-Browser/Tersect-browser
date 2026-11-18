@@ -17,7 +17,7 @@ export function SuggestedBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex h-4 shrink-0 items-center rounded-[3px] bg-primary px-1 text-[9px] font-semibold tracking-[0.06em] text-primary-foreground uppercase",
+        "inline-flex h-4 shrink-0 items-center rounded-[3px] bg-primary px-1 text-t9 font-semibold tracking-[0.06em] text-primary-foreground uppercase",
         className
       )}
     >
@@ -41,7 +41,7 @@ export function SourceLine({
   tail?: ReactNode
 }) {
   return (
-    <p className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+    <p className="flex items-start gap-1.5 text-t11 text-muted-foreground">
       <FileTextIcon className="mt-px size-3 shrink-0" />
       <span className="min-w-0">
         {lead} Source: <span className="text-foreground">{source}</span>
@@ -86,7 +86,7 @@ export function SuggestedBlock({
         className
       )}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         <SuggestedBadge />
         <span className="min-w-0 truncate font-semibold">{title}</span>
       </div>
@@ -121,15 +121,12 @@ export function SuggestedValues({
   rows: { label: string; value: ReactNode; mono?: boolean }[]
 }) {
   return (
-    <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-2 gap-y-0.5 rounded-sm bg-card/70 px-2 py-1.5">
+    <dl className="grid grid-cols-[minmax(0,110px)_minmax(0,1fr)] gap-x-2 gap-y-0.5 rounded-sm bg-card/70 px-2 py-1.5">
       {rows.map((row) => (
         <div key={row.label} className="contents">
-          <dt className="text-[11px] text-muted-foreground">{row.label}</dt>
+          <dt className="text-t11 text-muted-foreground">{row.label}</dt>
           <dd
-            className={cn(
-              "min-w-0 truncate text-[11px]",
-              row.mono && "font-mono"
-            )}
+            className={cn("min-w-0 truncate text-t11", row.mono && "font-mono")}
           >
             {row.value}
           </dd>

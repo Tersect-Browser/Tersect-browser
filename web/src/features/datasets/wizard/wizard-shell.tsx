@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import {
   CheckIcon,
+  ChevronUpIcon,
   CircleAlertIcon,
   HardDriveIcon,
   SparklesIcon,
@@ -15,11 +16,13 @@ import {
 import type { ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useIsPhone } from "@/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
 
 import { storageQuery } from "../api"
@@ -80,12 +83,7 @@ function StepRail({
 }) {
   const setStep = useWizardStore((s) => s.setStep)
   const currentIndex = RAIL_STEPS.indexOf(current)
-  const issueSteps = useMemo(() => {
-    if (!draft) return new Set<WizardStep>()
-    return new Set(
-      inlineIssues(draft.form, draft.mode === "add").map((i) => i.step)
-    )
-  }, [draft])
+  const issueSteps = useIssueSteps(draft)
 
   return (
     <nav
@@ -119,7 +117,7 @@ function StepRail({
           const marker = (
             <span
               className={cn(
-                "relative flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-[10px] font-medium",
+                "relative flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-t10 font-medium",
                 done
                   ? "border-primary bg-primary text-primary-foreground"
                   : isCurrent
@@ -159,8 +157,8 @@ function StepRail({
             </>
           )
           const rowClass = cn(
-            "flex h-7 items-center gap-2 rounded-lg outline-none",
-            narrow ? "w-8 justify-center" : "w-full px-1.5",
+            "flex h-(--c28) items-center gap-2 rounded-lg outline-none",
+            narrow ? "w-(--c28) min-w-8 justify-center" : "w-full px-1.5",
             isCurrent && "bg-sidebar-accent text-sidebar-accent-foreground"
           )
           const accessibleName = `Step ${index + 1}: ${label}${flagged ? " (has problems)" : ""}`
@@ -208,6 +206,86 @@ function StepRail({
   )
 }
 
+/** Flagged steps: errors on steps already passed, and everywhere on Review. */
+function useIssueSteps(draft: Draft | null) {
+  return useMemo(() => {
+    if (!draft) return new Set<WizardStep>()
+    return new Set(
+      inlineIssues(draft.form, draft.mode === "add").map((i) => i.step)
+    )
+  }, [draft])
+}
+
+/**
+ * Phones: the rail becomes a six-segment bar under the header. Steps 1–4 stay
+ * tappable (each segment is a 44px target around its 4px bar).
+ */
+function StepSegments({
+  current,
+  locked,
+  draft,
+}: {
+  current: ShellStep
+  locked: boolean
+  draft: Draft | null
+}) {
+  const setStep = useWizardStore((s) => s.setStep)
+  const currentIndex = RAIL_STEPS.indexOf(current)
+  const issueSteps = useIssueSteps(draft)
+  return (
+    <nav aria-label="Wizard steps" className="shrink-0 border-b px-4">
+      <ol className="grid grid-cols-6 gap-[3px]">
+        {RAIL_STEPS.map((step, index) => {
+          const isCurrent = index === currentIndex
+          const flagged =
+            !locked &&
+            issueSteps.has(step as WizardStep) &&
+            (index < currentIndex || current === "review")
+          const reached = index <= currentIndex
+          const clickable = !locked && index < 4 && draft !== null
+          const label = `Step ${index + 1}: ${STEP_TITLES[step]}${flagged ? " (has problems)" : ""}`
+          const bar = (
+            <span
+              className={cn(
+                "block h-1 w-full rounded-[2px]",
+                flagged
+                  ? "bg-destructive"
+                  : reached
+                    ? "bg-primary"
+                    : "bg-secondary"
+              )}
+            />
+          )
+          return (
+            <li key={step}>
+              {clickable ? (
+                <button
+                  type="button"
+                  aria-label={label}
+                  aria-current={isCurrent ? "step" : undefined}
+                  onClick={() => setStep(step as WizardStep)}
+                  className="flex h-11 w-full items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                >
+                  {bar}
+                </button>
+              ) : (
+                <span
+                  role="img"
+                  aria-label={label}
+                  aria-current={isCurrent ? "step" : undefined}
+                  className="flex h-11 w-full items-center"
+                >
+                  {bar}
+                </span>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
+  )
+}
+
 function StorageBox({
   draft,
   narrow,
@@ -234,7 +312,7 @@ function StorageBox({
               tabIndex={0}
               aria-label={`Server storage: ${freeText}`}
               className={cn(
-                "flex size-7 items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                "flex size-(--c28) items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                 tooLarge ? "text-destructive" : "text-muted-foreground"
               )}
             >
@@ -272,16 +350,16 @@ function StorageBox({
           style={{ width: `${needShare * 100}%` }}
         />
       </div>
-      <div className="font-mono text-[11px]">{freeText}</div>
+      <div className="font-mono text-t11">{freeText}</div>
       {need != null && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-t11 text-muted-foreground">
           This dataset needs about{" "}
           <span className="font-mono text-foreground">{formatBytes(need)}</span>{" "}
           (an estimate from the file sizes).
         </p>
       )}
       {tooLarge && (
-        <p className="flex gap-1 text-[11px] text-destructive">
+        <p className="flex gap-1 text-t11 text-destructive">
           <CircleAlertIcon className="mt-px size-3 shrink-0" />
           That is more than the free space. Free some space before building.
         </p>
@@ -334,7 +412,7 @@ function SaveLine() {
     return (
       <div
         role="status"
-        className="flex items-center gap-1 text-[11px] text-destructive"
+        className="flex items-center gap-1 text-t11 text-destructive"
       >
         <CircleAlertIcon className="size-3 shrink-0" />
         Draft not saved.
@@ -350,7 +428,7 @@ function SaveLine() {
     )
   }
   return (
-    <div role="status" className="text-[11px] text-muted-foreground">
+    <div role="status" className="text-t11 text-muted-foreground">
       {saveState === "saving"
         ? "Saving draft…"
         : `Draft saved${updatedAt ? ` · ${formatWhen(updatedAt)}` : ""}`}
@@ -359,16 +437,25 @@ function SaveLine() {
 }
 
 function SummaryColumn({ draft }: { draft: Draft }) {
+  return (
+    <aside
+      aria-label="Dataset summary"
+      className="flex w-[236px] shrink-0 flex-col gap-3 overflow-y-auto border-l bg-card px-3 py-3"
+    >
+      <SummaryBody draft={draft} />
+    </aside>
+  )
+}
+
+/** The summary list and the save line: the column, or the sheet below 1200px. */
+function SummaryBody({ draft }: { draft: Draft }) {
   const { form, totals, groups, accessions } = useSummary(draft)
   const sequences = sequenceSummary(form)
   const percent =
     totals.size > 0 ? Math.round((totals.sent / totals.size) * 100) : 0
 
   return (
-    <aside
-      aria-label="Dataset summary"
-      className="flex w-[236px] shrink-0 flex-col gap-3 overflow-y-auto border-l bg-card px-3 py-3"
-    >
+    <>
       <dl className="flex flex-col gap-3">
         <SummaryItem label="Dataset">
           {form.name.trim() ? (
@@ -377,7 +464,7 @@ function SummaryColumn({ draft }: { draft: Draft }) {
             <Muted>Not named yet</Muted>
           )}
           {form.description.trim() && (
-            <div className="line-clamp-2 text-[11px] text-muted-foreground">
+            <div className="line-clamp-2 text-t11 text-muted-foreground">
               {form.description}
             </div>
           )}
@@ -388,7 +475,7 @@ function SummaryColumn({ draft }: { draft: Draft }) {
               <div className="truncate font-mono">
                 {form.reference.id || "—"}
               </div>
-              <div className="font-mono text-[11px] text-muted-foreground">
+              <div className="font-mono text-t11 text-muted-foreground">
                 {sequences ??
                   (form.reference.fasta ? "Reading the FASTA…" : "")}
               </div>
@@ -436,14 +523,14 @@ function SummaryColumn({ draft }: { draft: Draft }) {
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <div className="flex justify-between font-mono text-[11px]">
+              <div className="flex justify-between font-mono text-t11">
                 <span>
                   {totals.done} of {totals.files} files
                 </span>
                 <span>{percent}%</span>
               </div>
               {totals.pending && (
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-t11 text-muted-foreground">
                   {[
                     totals.uploading > 0 && formatTimeLeft(totals.secondsLeft),
                     totals.paused > 0 && `${totals.paused} paused`,
@@ -461,12 +548,17 @@ function SummaryColumn({ draft }: { draft: Draft }) {
       <div className="mt-auto border-t pt-2">
         <SaveLine />
       </div>
-    </aside>
+    </>
   )
 }
 
-/** One-line summary under the header below 1200px. */
+/**
+ * One-line summary under the header below 1200px. Tapping it opens the full
+ * summary (and the server storage, which the phone has no rail for) as a
+ * bottom sheet.
+ */
 function SummaryStrip({ draft }: { draft: Draft }) {
+  const [open, setOpen] = useState(false)
   const { form, totals, accessions } = useSummary(draft)
   const sequences = sequenceSummary(form)
   const saveState = useWizardStore((s) => s.saveState)
@@ -487,14 +579,35 @@ function SummaryStrip({ draft }: { draft: Draft }) {
         : "saved",
   ].filter(Boolean)
   return (
-    <div
-      aria-label="Dataset summary"
-      className="flex h-[26px] shrink-0 items-center border-b bg-card px-4 font-mono text-[11px] text-muted-foreground"
-    >
-      <span className="truncate" title={parts.join(" · ")}>
-        {parts.join(" · ")}
-      </span>
-    </div>
+    <>
+      <button
+        type="button"
+        aria-label="Dataset summary"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        className="flex h-(--c26) shrink-0 items-center gap-3 border-b bg-card px-4 text-left font-mono text-t11 text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-inset"
+      >
+        <span className="min-w-0 flex-1 truncate" title={parts.join(" · ")}>
+          {parts.join(" · ")}
+        </span>
+        <ChevronUpIcon className="size-3.5 shrink-0" aria-hidden />
+      </button>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent
+          aria-describedby={undefined}
+          className="max-h-[72dvh] pb-[calc(28px+env(safe-area-inset-bottom))]"
+        >
+          <DrawerTitle className="caption pb-3">Summary</DrawerTitle>
+          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+            <SummaryBody draft={draft} />
+            <div className="-mx-3">
+              <StorageBox draft={draft} narrow={false} />
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }
 
@@ -512,6 +625,7 @@ export function WizardShell(props: {
   const { current, locked, title, headerActions, footer, children } = props
   const [ref, width] = useWidth()
   const narrow = width !== null && width < NARROW_WIDTH
+  const phone = useIsPhone()
   const draft = useWizardStore((s) => s.draft)
   const assistant = useAssistantConfig()
   const assistantOpen = useWizardUi((s) => s.assistantOpen)
@@ -528,15 +642,17 @@ export function WizardShell(props: {
   return (
     <NarrowContext.Provider value={narrow}>
       <div ref={ref} className="flex h-full min-h-0">
-        <StepRail
-          current={current}
-          locked={locked}
-          draft={draft}
-          narrow={narrow}
-        />
+        {!phone && (
+          <StepRail
+            current={current}
+            locked={locked}
+            draft={draft}
+            narrow={narrow}
+          />
+        )}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-11 shrink-0 items-center gap-3 border-b px-4">
-            <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+          <header className="flex min-h-11 shrink-0 items-center gap-3 border-b px-4 py-1.5 max-sm:border-b-0 max-sm:pb-0">
+            <span className="shrink-0 font-mono text-t11 whitespace-nowrap text-muted-foreground">
               Step {stepNumber} of 6
             </span>
             <h1 className="min-w-0 truncate text-[15px] font-semibold">
@@ -558,6 +674,9 @@ export function WizardShell(props: {
               )}
             </div>
           </header>
+          {phone && (
+            <StepSegments current={current} locked={locked} draft={draft} />
+          )}
           {narrow && draft && <SummaryStrip draft={draft} />}
           <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
           {footer}

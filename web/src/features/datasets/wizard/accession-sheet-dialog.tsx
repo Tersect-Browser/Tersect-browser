@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 
 import type { AccessionRow } from "../types"
 import { useForm, useWizardStore } from "../wizard-store"
-import { plural } from "./accessions-shared"
+import { DOCKED_DIALOG, plural } from "./accessions-shared"
 
 /* ---------------------------------------------------------- parsing -- */
 
@@ -165,7 +165,7 @@ export function AccessionSheetDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[660px]">
+      <DialogContent className={cn("sm:max-w-[660px]", DOCKED_DIALOG)}>
         <DialogHeader>
           <DialogTitle>Accession sheet</DialogTitle>
           <DialogDescription>
@@ -259,7 +259,7 @@ function SheetForm({ onClose }: { onClose: () => void }) {
             type="button"
             aria-selected={tab === value}
             className={cn(
-              "h-5 rounded-[3px] px-2.5 text-[11px] focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none",
+              "h-(--c20) rounded-[3px] px-[calc(10px+var(--pad-x))] text-t11 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none",
               tab === value
                 ? "bg-card font-medium shadow-sm"
                 : "text-muted-foreground"
@@ -275,7 +275,7 @@ function SheetForm({ onClose }: { onClose: () => void }) {
         <Textarea
           aria-label="Sheet contents"
           spellCheck={false}
-          className="max-h-32 min-h-20 font-mono text-[11px] md:text-[11px]"
+          className="max-h-32 min-h-20 font-mono text-t11 md:text-t11"
           placeholder={
             "name\tlabel\tgroup\nLA1777\tS. habrochaites LA1777\tWild"
           }
@@ -297,7 +297,7 @@ function SheetForm({ onClose }: { onClose: () => void }) {
 
       {sheet && (
         <>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-t11 text-muted-foreground">
             Detected: {DELIMITER_NAMES[sheet.delimiter]},{" "}
             {sheet.header ? "header row" : "no header row"},{" "}
             {plural(sheet.rows.length, "row")}.
@@ -311,8 +311,8 @@ function SheetForm({ onClose }: { onClose: () => void }) {
         </>
       )}
 
-      <DialogFooter className="items-center sm:justify-between">
-        <span className="font-mono text-[11px] text-muted-foreground">
+      <DialogFooter className="items-center justify-between">
+        <span className="font-mono text-t11 text-muted-foreground">
           {sheet
             ? `${matched.size} of ${plural(accessions.length, "accession")} matched · ${plural(unused, "sheet row")} unused`
             : `${plural(accessions.length, "accession")} to match`}
@@ -402,8 +402,8 @@ function SheetPreview({
   matches: (AccessionRow | undefined)[]
 }) {
   return (
-    <div className="max-h-[260px] overflow-auto rounded-md border">
-      <table className="w-full min-w-max border-collapse text-[11px]">
+    <div className="max-h-[260px] min-w-0 overflow-auto rounded-md border max-sm:max-h-[36dvh]">
+      <table className="w-full min-w-max border-collapse text-t11">
         <thead className="sticky top-0 z-10 bg-popover">
           <tr className="border-b">
             {sheet.columns.map((column, i) => (
@@ -416,7 +416,7 @@ function SheetPreview({
                     size="sm"
                     aria-label={`Use of ${column}`}
                     className={cn(
-                      "h-5! min-w-28 text-[11px]",
+                      "h-(--c20)! min-w-28 text-t11",
                       roles[i] === "ignore" && "text-muted-foreground",
                       roles[i] === "name" && "border-ring"
                     )}
@@ -480,7 +480,7 @@ function SheetPreview({
         </tbody>
       </table>
       {sheet.rows.length > PREVIEW_ROWS && (
-        <p className="border-t px-2 py-1 text-[11px] text-muted-foreground">
+        <p className="border-t px-2 py-1 text-t11 text-muted-foreground">
           {plural(sheet.rows.length - PREVIEW_ROWS, "more row")} not shown
         </p>
       )}

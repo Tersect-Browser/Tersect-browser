@@ -1,10 +1,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { MoonIcon, SunIcon } from "lucide-react"
+import { MenuIcon, MoonIcon, SunIcon } from "lucide-react"
 import { Link, NavLink, Outlet, useNavigate } from "react-router"
 
 import { LogoMark } from "@/components/icons"
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { logout, sessionQuery, useSession } from "@/features/auth/session"
 import { getDatasets } from "@/lib/api"
 import { BASE_URL } from "@/lib/config"
@@ -52,10 +58,10 @@ function CurrentDataset() {
     (dataset) => dataset.dataset_id === datasetId
   )?.reference
   return (
-    <div className="flex min-w-0 items-center gap-2 border-l pl-3">
+    <div className="flex min-w-0 items-center gap-2 border-l pl-3 max-sm:hidden">
       <span className="truncate">{datasetId}</span>
       {assembly && (
-        <span className="rounded-sm border px-1.5 py-px font-mono text-[10px] text-muted-foreground">
+        <span className="rounded-sm border px-1.5 py-px font-mono text-t10 text-muted-foreground">
           {assembly}
         </span>
       )}
@@ -79,7 +85,7 @@ function NavItem({
       end={end}
       className={({ isActive }) =>
         cn(
-          "rounded-lg px-2 py-1 hover:bg-accent",
+          "rounded-lg px-2 py-1 whitespace-nowrap hover:bg-accent",
           isActive ? "text-foreground" : "text-muted-foreground"
         )
       }
@@ -89,28 +95,81 @@ function NavItem({
   )
 }
 
-function SignOut() {
+function useSignOut() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  return async () => {
+    await logout()
+    await queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey })
+    // Everything fetched from the builder was for the signed-in user.
+    queryClient.removeQueries({
+      predicate: ({ queryKey }) =>
+        queryKey[0] === "builder" &&
+        queryKey[1] !== "session" &&
+        queryKey[1] !== "config",
+    })
+    navigate("/")
+  }
+}
+
+function SignOut() {
+  const signOut = useSignOut()
   return (
     <button
       type="button"
-      className="rounded-lg px-2 py-1 text-muted-foreground hover:bg-accent"
-      onClick={async () => {
-        await logout()
-        await queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey })
-        // Everything fetched from the builder was for the signed-in user.
-        queryClient.removeQueries({
-          predicate: ({ queryKey }) =>
-            queryKey[0] === "builder" &&
-            queryKey[1] !== "session" &&
-            queryKey[1] !== "config",
-        })
-        navigate("/")
-      }}
+      className="rounded-lg px-2 py-1 whitespace-nowrap text-muted-foreground hover:bg-accent"
+      onClick={signOut}
     >
       Sign out
     </button>
+  )
+}
+
+/** The page links as a menu: phones have no room for them in the bar. */
+function PhoneNav({
+  canManage,
+  signedOut,
+  authenticated,
+}: {
+  canManage: boolean
+  signedOut: boolean
+  authenticated: boolean
+}) {
+  const signOut = useSignOut()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Menu">
+          <MenuIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-44">
+        <DropdownMenuItem asChild>
+          <Link to="/">Home</Link>
+        </DropdownMenuItem>
+        {canManage && (
+          <DropdownMenuItem asChild>
+            <Link to="/builds">Builds</Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem asChild>
+          <Link to="/about">About</Link>
+        </DropdownMenuItem>
+        {signedOut && (
+          <DropdownMenuItem asChild>
+            <Link to="/login">Sign in</Link>
+          </DropdownMenuItem>
+        )}
+        {authenticated && (
+          <DropdownMenuItem onSelect={signOut}>Sign out</DropdownMenuItem>
+        )}
+        <DropdownMenuItem asChild>
+          <a href={RESEARCH_GROUP_URL} target="_blank" rel="noreferrer">
+            Cranfield bioinformatics group
+          </a>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -119,28 +178,39 @@ export function AppShell() {
   const { session, canManage, signedOut } = useSession()
   return (
     <div className="flex h-full flex-col">
-      <header className="z-20 flex h-10 shrink-0 items-center gap-3 border-b bg-card px-3">
+      <header className="z-20 box-content flex h-(--topbar) shrink-0 items-center gap-3 border-b bg-card px-3 pt-[env(safe-area-inset-top)]">
         <Link to="/" className="flex shrink-0 items-center gap-2">
           <LogoMark className="size-[18px]" />
-          <span className="text-[13px] font-semibold">Tersect Browser</span>
+          <span className="text-t13 font-semibold whitespace-nowrap">
+            Tersect Browser
+          </span>
         </Link>
         <CurrentDataset />
         <nav className="ml-auto flex shrink-0 items-center gap-1 font-medium">
-          <NavItem to="/">Home</NavItem>
-          {canManage && (
-            <NavItem to="/builds" end={false}>
-              Builds
-            </NavItem>
-          )}
-          <NavItem to="/about">About</NavItem>
-          {signedOut && <NavItem to="/login">Sign in</NavItem>}
-          {session.authenticated && <SignOut />}
+          <div className="flex items-center gap-1 max-sm:hidden">
+            <NavItem to="/">Home</NavItem>
+            {canManage && (
+              <NavItem to="/builds" end={false}>
+                Builds
+              </NavItem>
+            )}
+            <NavItem to="/about">About</NavItem>
+            {signedOut && <NavItem to="/login">Sign in</NavItem>}
+            {session.authenticated && <SignOut />}
+          </div>
           <ThemeToggle />
+          <div className="sm:hidden">
+            <PhoneNav
+              canManage={canManage}
+              signedOut={signedOut}
+              authenticated={session.authenticated}
+            />
+          </div>
           <a
             href={RESEARCH_GROUP_URL}
             target="_blank"
             rel="noreferrer"
-            className="ml-1 flex items-center"
+            className="ml-1 flex items-center max-sm:hidden"
           >
             {/* The supplied logo is white on transparent. */}
             <img

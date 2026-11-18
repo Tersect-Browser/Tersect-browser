@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { JOB_STAGES } from "./types"
 
 /**
- * Four stages joined by lines, with the latest server status beneath.
+ * Four stages joined by lines (wrapping when narrow), with the latest server status beneath.
  * `stage` is the active stage (JOB_STAGES.length when all are done).
  */
 export function JobStepper({
@@ -21,7 +21,7 @@ export function JobStepper({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <ol className="flex items-center gap-1.5">
+      <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
         {JOB_STAGES.map((name, index) => {
           const failed = failedStage === index
           const done = !failed && index < stage
@@ -35,7 +35,7 @@ export function JobStepper({
               >
                 <span
                   className={cn(
-                    "flex size-[18px] items-center justify-center rounded-full border font-mono text-[10px] font-medium",
+                    "flex size-[18px] items-center justify-center rounded-full border font-mono text-t10 font-medium",
                     done && "border-primary bg-primary text-primary-foreground",
                     active && "border-primary text-primary",
                     failed && "border-destructive bg-destructive text-white",
@@ -71,7 +71,7 @@ export function JobStepper({
           )
         })}
       </ol>
-      <div className="font-mono text-[11px] text-muted-foreground">
+      <div className="font-mono text-t11 wrap-anywhere text-muted-foreground">
         {status}
       </div>
     </div>

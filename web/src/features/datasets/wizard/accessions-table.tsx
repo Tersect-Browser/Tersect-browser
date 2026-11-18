@@ -35,6 +35,34 @@ import {
 
 const COLUMNS = 7
 
+/**
+ * Touch layouts (HANDOFF-mobile 7.2): every accession row is a card. Written
+ * against the row's cells by position, so rows other components put in the
+ * table (assistant suggestions) get the same layout. Rows marked data-row lay
+ * themselves out.
+ */
+const CARDS = [
+  "max-lg:block",
+  "max-lg:[&>tr:not([data-row])]:grid",
+  "max-lg:[&>tr:not([data-row])]:h-auto",
+  "max-lg:[&>tr:not([data-row])]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]",
+  "max-lg:[&>tr:not([data-row])]:[grid-template-areas:'name_name_remove'_'label_group_remove'_'source_sample_remove'_'status_status_remove']",
+  "max-lg:[&>tr:not([data-row])]:items-center",
+  "max-lg:[&>tr:not([data-row])]:gap-y-[5px]",
+  "max-lg:[&>tr:not([data-row])]:px-1",
+  "max-lg:[&>tr:not([data-row])]:py-2",
+  "max-lg:[&>tr:not([data-row])>td]:min-w-0",
+  "max-lg:[&>tr:not([data-row])>td[colspan]]:col-span-full",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(1):not([colspan])]:[grid-area:name]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(2)]:[grid-area:label]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(3)]:[grid-area:group]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(4)]:[grid-area:source]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(5)]:[grid-area:sample]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(6)]:[grid-area:status]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(7)]:[grid-area:remove]",
+  "max-lg:[&>tr:not([data-row])>td:nth-child(7)]:self-start",
+].join(" ")
+
 export function updateRow(id: string, change: Partial<AccessionRow>) {
   useWizardStore.getState().update((form) => ({
     ...form,
@@ -148,7 +176,7 @@ function StatusCell({ status }: { status: Status }) {
   return (
     <span
       className={cn(
-        "flex min-w-0 items-center gap-1.5 text-[11px]",
+        "flex min-w-0 items-center gap-1.5 text-t11",
         status.tone === "destructive" && "text-destructive",
         status.tone === "muted" && "text-muted-foreground",
         status.tone === "busy" && "text-muted-foreground"
@@ -294,8 +322,8 @@ export function AccessionsTable({
 
   return (
     <div className="overflow-x-auto rounded-md border bg-card">
-      <table className="w-full min-w-[800px] table-fixed border-collapse">
-        <colgroup>
+      <table className="w-full table-fixed border-collapse max-lg:block lg:min-w-[800px]">
+        <colgroup className="max-lg:hidden">
           <col className="w-[20%]" />
           <col className="w-[20%]" />
           <col className="w-[140px]" />
@@ -304,7 +332,7 @@ export function AccessionsTable({
           <col className="w-[150px]" />
           <col className="w-7" />
         </colgroup>
-        <thead>
+        <thead className="max-lg:hidden">
           <tr className="h-6 border-b bg-muted/50 text-left">
             {["Name", "Label", "Group", "Source file", "Sample", "Status"].map(
               (h) => (
@@ -318,7 +346,7 @@ export function AccessionsTable({
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className={CARDS}>
           {prepend}
           {body}
           {empty && (
@@ -341,9 +369,9 @@ export function AccessionsTable({
 
 function LockedRow({ count }: { count: number }) {
   return (
-    <tr className="h-7 border-b bg-muted/60">
-      <td colSpan={COLUMNS} className="px-2">
-        <span className="flex items-center gap-2 text-muted-foreground">
+    <tr data-row="full" className="h-7 border-b bg-muted/60 max-lg:block">
+      <td colSpan={COLUMNS} className="px-2 max-lg:block max-lg:py-2">
+        <span className="flex items-center gap-2 text-muted-foreground max-lg:flex-wrap max-lg:gap-y-0.5">
           <LockIcon className="size-3 shrink-0" />
           <span className="font-mono text-foreground">
             {plural(count, "existing accession")}
@@ -383,35 +411,39 @@ function FileHeaderRow({
   return (
     <tr
       id={`acc-file-${vcf.id}`}
+      data-row="file"
       className={cn(
-        "h-6 border-b bg-muted/40",
+        "h-6 border-b bg-muted/40 max-lg:flex max-lg:h-auto max-lg:items-start",
         highlighted && "bg-accent ring-1 ring-ring ring-inset"
       )}
     >
-      <td colSpan={COLUMNS - 1} className="px-2">
-        <span className="flex min-w-0 items-center gap-2">
+      <td
+        colSpan={COLUMNS - 1}
+        className="px-2 max-lg:block max-lg:min-w-0 max-lg:flex-1 max-lg:py-2"
+      >
+        <span className="flex min-w-0 items-center gap-2 max-lg:flex-wrap max-lg:gap-y-1">
           <SourceIcon source={vcf.file.source} />
           <span
-            className="max-w-[40%] shrink-0 truncate font-mono font-medium"
+            className="min-w-0 truncate font-mono font-medium max-lg:flex-1 lg:max-w-[40%] lg:shrink-0"
             title={vcf.file.location}
           >
             {vcf.file.name}
           </span>
-          <span className="min-w-0 truncate text-[11px] text-muted-foreground">
+          <span className="min-w-0 truncate text-t11 text-muted-foreground max-lg:order-last max-lg:basis-full max-lg:whitespace-normal">
             Multi-sample file · {selected} of {plural(total, "sample")} selected
             · {where}
           </span>
           <Button
             variant="outline"
             size="xs"
-            className="ml-auto h-5"
+            className="h-(--c20) lg:ml-auto"
             onClick={onSelectSamples}
           >
             <ListChecksIcon /> Select samples
           </Button>
         </span>
       </td>
-      <td className="text-center">
+      <td className="text-center max-lg:block max-lg:px-1 max-lg:py-2">
         <Button
           variant="ghost"
           size="icon-xs"
@@ -508,7 +540,7 @@ function AccessionRowView({
             onChange={(group) => updateRow(row.id, { group })}
           />
         </td>
-        <td className="px-2">{source}</td>
+        <td className="px-2 max-lg:empty:hidden">{source}</td>
         <td className="truncate px-2 font-mono" title={row.sample}>
           {row.sample || <span className="text-muted-foreground">—</span>}
         </td>
@@ -541,11 +573,20 @@ function AccessionRowView({
         </td>
       </tr>
       {messages.length > 0 && (
-        <tr className={cn("border-b", highlighted && "bg-accent")}>
-          <td colSpan={COLUMNS} className={cn("px-2 pb-1", indent && "pl-6")}>
+        <tr
+          data-row="message"
+          className={cn("border-b max-lg:block", highlighted && "bg-accent")}
+        >
+          <td
+            colSpan={COLUMNS}
+            className={cn(
+              "px-2 pb-1 max-lg:block max-lg:pb-2",
+              indent && "pl-6"
+            )}
+          >
             <span
               id={errorId}
-              className="flex flex-wrap items-center gap-x-2 text-[11px] text-destructive"
+              className="flex flex-wrap items-center gap-x-2 text-t11 text-destructive"
             >
               {messages.map((m) => (
                 <span key={m.kind}>{m.message}</span>
@@ -554,7 +595,7 @@ function AccessionRowView({
                 <Button
                   variant="ghost"
                   size="xs"
-                  className="h-5 text-foreground"
+                  className="h-(--c20) text-foreground"
                   onClick={() => updateRow(row.id, { name: fix })}
                 >
                   <WandSparklesIcon /> Use{" "}
@@ -585,7 +626,7 @@ function CellInput({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       className={cn(
-        "h-5 w-full min-w-0 rounded-sm border border-transparent bg-transparent px-1.5 outline-none placeholder:text-muted-foreground hover:border-input focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30",
+        "h-(--c20) w-full min-w-0 rounded-sm border border-transparent bg-transparent px-1.5 outline-none placeholder:text-muted-foreground hover:border-input focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 max-lg:border-input",
         "aria-invalid:border-destructive aria-invalid:bg-destructive/[0.06] aria-invalid:focus-visible:ring-destructive/20",
         className
       )}

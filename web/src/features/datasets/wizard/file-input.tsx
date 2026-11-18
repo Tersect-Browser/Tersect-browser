@@ -46,7 +46,7 @@ export function StateBadge({
   return (
     <span
       className={cn(
-        "inline-flex h-[18px] shrink-0 items-center rounded-full px-1.5 text-[10px] font-medium whitespace-nowrap",
+        "inline-flex h-[18px] shrink-0 items-center rounded-full px-1.5 text-t10 font-medium whitespace-nowrap",
         tone === "accent" && "bg-accent text-accent-foreground",
         tone === "muted" && "bg-muted text-muted-foreground",
         tone === "destructive" && "bg-destructive/10 text-destructive"
@@ -127,25 +127,33 @@ function FileRow({
   const Icon = SOURCE_ICONS[source]
   return (
     <div className="flex flex-col gap-1 rounded-xl border bg-card px-2.5 py-2">
-      <div className="flex min-w-0 items-center gap-2">
+      {/* Phones: icon, name and actions on one line; location, then size and
+          state beneath. */}
+      <div className="flex min-w-0 items-center gap-2 max-sm:flex-wrap max-sm:gap-y-0.5">
         <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
         <span
-          className="min-w-0 shrink truncate font-mono font-medium"
+          className="min-w-0 shrink truncate font-mono font-medium max-sm:flex-1 max-sm:basis-0"
           title={name}
         >
           {name}
         </span>
         <span
-          className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground"
+          className="min-w-0 flex-1 truncate font-mono text-t11 text-muted-foreground max-sm:order-2 max-sm:flex-none max-sm:basis-full max-sm:pl-[22px]"
           title={location}
         >
           {location}
         </span>
-        <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+        <span className="shrink-0 font-mono text-t11 text-muted-foreground max-sm:order-3 max-sm:pl-[22px] max-sm:empty:hidden">
           {size != null ? formatBytes(size) : ""}
         </span>
-        {badge}
-        <div className="flex shrink-0 items-center">{actions}</div>
+        {badge && (
+          <span className="flex min-w-0 shrink-0 items-center max-sm:order-3 max-sm:shrink">
+            {badge}
+          </span>
+        )}
+        <div className="flex shrink-0 items-center max-sm:order-1">
+          {actions}
+        </div>
       </div>
       {children && (
         <div className="flex flex-col gap-1 pl-[22px]">{children}</div>
@@ -184,7 +192,7 @@ function UploadProgress({ item }: { item: UploadItem }) {
           style={{ width: `${percent}%` }}
         />
       </div>
-      <div className="font-mono text-[11px] text-muted-foreground">
+      <div className="font-mono text-t11 text-muted-foreground">
         {parts.join(" · ")}
       </div>
     </div>
@@ -201,7 +209,7 @@ const Message = ({
   <div
     role={tone === "destructive" ? "alert" : undefined}
     className={cn(
-      "flex items-start gap-1 text-[11px]",
+      "flex items-start gap-1 text-t11",
       tone === "destructive" ? "text-destructive" : "text-muted-foreground"
     )}
   >
@@ -670,7 +678,7 @@ export function FileInput({
             if (file) startUpload(file)
           }}
           className={cn(
-            "flex items-center justify-center gap-2 rounded-xl border border-dashed px-3 py-4 text-muted-foreground transition-colors",
+            "flex flex-wrap items-center justify-center gap-2 rounded-xl border border-dashed px-3 py-4 text-center text-muted-foreground transition-colors",
             dragging
               ? "border-primary bg-accent/60 text-foreground"
               : "border-input"
@@ -736,9 +744,9 @@ export function FileInput({
       )}
 
       {source === "server" && (
-        <div className="flex items-center gap-2 rounded-xl border border-dashed border-input px-3 py-3 text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-input px-3 py-3 text-muted-foreground">
           <FolderIcon className="size-3.5 shrink-0" aria-hidden />
-          <span className="flex-1">
+          <span className="min-w-0 flex-1 basis-40">
             Files in a folder the server shares are read in place.
           </span>
           <Button
@@ -752,7 +760,7 @@ export function FileInput({
       )}
 
       {error && <Message tone="destructive">{error}</Message>}
-      {help && <div className="text-[11px] text-muted-foreground">{help}</div>}
+      {help && <div className="text-t11 text-muted-foreground">{help}</div>}
 
       <ServerFolderDialog
         open={folderOpen}

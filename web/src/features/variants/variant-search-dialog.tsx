@@ -113,24 +113,25 @@ function GeneInput({
       {focused && options.length > 0 && (
         <ul
           role="listbox"
-          className="absolute top-full right-0 left-0 z-10 mt-1 max-h-48 overflow-auto rounded-xl border bg-popover p-[3px] shadow-[0_8px_24px_rgb(0_0_0/0.2)]"
+          // Above the field on phones: the dialog is docked to the bottom edge.
+          className="absolute top-full right-0 left-0 z-10 mt-1 max-h-48 overflow-auto rounded-xl border bg-popover p-[3px] shadow-[0_8px_24px_rgb(0_0_0/0.2)] max-sm:top-auto max-sm:bottom-full max-sm:mb-1"
         >
           {options.map((gene) => (
             <li
               key={gene.gene_id}
               role="option"
               aria-selected={false}
-              className="flex h-[22px] cursor-pointer items-center gap-2 rounded-[3px] px-1.5 hover:bg-accent hover:text-accent-foreground"
+              className="flex h-(--c22) cursor-pointer items-center gap-2 rounded-[3px] px-1.5 hover:bg-accent hover:text-accent-foreground"
               // mousedown so the choice lands before the input blurs
               onMouseDown={(event) => {
                 event.preventDefault()
                 onChange(gene.gene_id)
               }}
             >
-              <span className="shrink-0 font-mono text-[11px]">
+              <span className="shrink-0 font-mono text-t11">
                 {gene.gene_id}
               </span>
-              <span className="truncate text-[11px] text-muted-foreground">
+              <span className="truncate text-t11 text-muted-foreground">
                 {gene.description || gene.name}
               </span>
             </li>
@@ -192,7 +193,7 @@ function VariantSearchForm({
           <Slider
             min={1}
             max={size}
-            className="my-1"
+            className="my-1 max-lg:my-3 pointer-coarse:my-3"
             value={[Math.min(...range), Math.max(...range)]}
             onValueChange={(value) => setRange([value[0], value[1]])}
           />
@@ -227,7 +228,7 @@ function VariantSearchForm({
                 aria-checked={impact === level}
                 onClick={() => setImpact(level)}
                 className={cn(
-                  "font-mono text-[11px] font-medium outline-none focus-visible:bg-accent",
+                  "font-mono text-t11 font-medium whitespace-nowrap outline-none focus-visible:bg-accent",
                   index > 0 && "border-l border-input",
                   impact === level
                     ? "bg-accent text-accent-foreground"
@@ -241,7 +242,7 @@ function VariantSearchForm({
         </div>
       </fieldset>
 
-      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 text-t11 text-muted-foreground">
         <span className="h-px flex-1 bg-border" />
         or search by gene
         <span className="h-px flex-1 bg-border" />
@@ -254,7 +255,7 @@ function VariantSearchForm({
         </Label>
         <GeneInput value={gene} onChange={setGene} disabled={searching} />
         {byGene && (
-          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1 text-t11 text-muted-foreground">
             <InfoIcon className="size-3" />
             Searching the whole gene; the interval above is ignored.
           </span>
@@ -270,14 +271,14 @@ function VariantSearchForm({
 
       <Button
         type="submit"
-        className="h-[30px] w-full"
+        className="h-(--c30) w-full"
         disabled={searching || (!byGene && !rangeValid)}
       >
         {searching && <Spinner />}
         {searching ? "Searching…" : "Search for variants"}
       </Button>
       {searching && (
-        <span className="text-center text-[11px] text-muted-foreground">
+        <span className="text-center text-t11 text-muted-foreground">
           Large intervals can take tens of seconds. You can close this dialog;
           results will be highlighted when ready.
         </span>

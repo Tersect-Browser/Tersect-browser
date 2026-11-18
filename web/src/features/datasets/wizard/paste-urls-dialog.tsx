@@ -14,11 +14,12 @@ import {
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 import { checkUrls } from "../api"
 import { formatBytes } from "../format"
 import type { UrlCheck } from "../types"
-import { plural } from "./accessions-shared"
+import { DOCKED_DIALOG, plural } from "./accessions-shared"
 
 const CHECK_DELAY_MS = 700
 
@@ -39,7 +40,7 @@ export function PasteUrlsDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className={cn("sm:max-w-[520px]", DOCKED_DIALOG)}>
         <DialogHeader>
           <DialogTitle>Paste URLs</DialogTitle>
           <DialogDescription>
@@ -98,7 +99,7 @@ function PasteUrlsForm({
           id="paste-urls"
           autoFocus
           spellCheck={false}
-          className="max-h-40 min-h-24 font-mono text-[11px] md:text-[11px]"
+          className="max-h-40 min-h-24 font-mono text-t11 md:text-t11"
           placeholder="https://example.org/vcf/LA1777.vcf.gz"
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -106,7 +107,7 @@ function PasteUrlsForm({
       </div>
 
       {links.length > 0 && (
-        <div className="flex max-h-48 flex-col overflow-y-auto rounded-md border py-1">
+        <div className="flex max-h-48 shrink-0 flex-col overflow-y-auto rounded-md border py-1">
           {!settled ? (
             <div className="flex h-6 items-center gap-2 px-2.5 text-muted-foreground">
               <Spinner className="size-3" /> Checking{" "}
@@ -125,7 +126,7 @@ function PasteUrlsForm({
       )}
 
       {failed.length > 0 && (
-        <p className="text-[11px] text-destructive">
+        <p className="text-t11 text-destructive">
           {failed.length === 1
             ? "1 link was not found and will not be added."
             : `${failed.length} links were not found and will not be added.`}
@@ -161,7 +162,7 @@ function PasteUrlsForm({
 function CheckRow({ result }: { result: UrlCheck }) {
   return (
     <div
-      className="flex h-6 min-w-0 items-center gap-2 px-2.5 text-[11px]"
+      className="flex min-h-6 min-w-0 items-center gap-2 px-2.5 text-t11"
       title={result.url}
     >
       {result.ok ? (

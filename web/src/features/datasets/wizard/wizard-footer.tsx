@@ -75,7 +75,7 @@ function Reason({ id, children }: { id: string; children: string | null }) {
     <span
       id={id}
       role="status"
-      className="min-w-0 truncate text-[11px] text-muted-foreground"
+      className="min-w-0 truncate text-t11 text-muted-foreground max-sm:order-first max-sm:basis-full max-sm:whitespace-normal"
       title={children}
     >
       {children}
@@ -171,7 +171,8 @@ function ReviewActions({ draft }: { draft: Draft }) {
         onClick={() => download.mutate()}
       >
         {download.isPending ? <Spinner className="size-3" /> : <DownloadIcon />}
-        Download manifest (YAML)
+        {/* Phones: icon only, so the row fits beside Build dataset. */}
+        <span className="max-sm:sr-only">Download manifest (YAML)</span>
       </Button>
       {armed && !ready ? (
         <>
@@ -216,7 +217,7 @@ export function WizardFooter({ onCancel }: { onCancel: () => void }) {
   const reason = continueReason(step, draft.form, addMode)
 
   return (
-    <footer className="flex h-11 shrink-0 items-center gap-2 border-t bg-card px-4">
+    <footer className="flex min-h-11 shrink-0 items-center gap-2 border-t bg-card px-4 py-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] max-sm:flex-wrap max-sm:gap-y-1.5 max-sm:py-2 max-sm:pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
       {index > first ? (
         <Button
           variant="outline"
@@ -230,8 +231,11 @@ export function WizardFooter({ onCancel }: { onCancel: () => void }) {
       <Button variant="ghost" size="sm" onClick={onCancel}>
         Cancel
       </Button>
-      <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
-        {narrow && step === "review" ? "" : HINTS[step]}
+      {/* Phones have no room for the step's hint: only the spacer is kept. */}
+      <span className="min-w-0 flex-1 truncate text-t11 text-muted-foreground">
+        <span className="max-sm:hidden">
+          {narrow && step === "review" ? "" : HINTS[step]}
+        </span>
       </span>
       {step === "review" ? (
         <ReviewActions draft={draft} />

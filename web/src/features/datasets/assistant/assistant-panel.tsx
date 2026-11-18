@@ -20,7 +20,7 @@ import {
   XIcon,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import type { KeyboardEvent } from "react"
+import type { CSSProperties, KeyboardEvent } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
@@ -69,7 +69,41 @@ const STARTERS = [
   },
 ]
 
-/** Docked panel; the shell mounts it while open. */
+/** Below this the panel overlays the wizard instead of docking beside it. */
+const TOUCH_LAYOUT = "(max-width: 1023.98px)"
+
+/**
+ * Height of whatever covers the bottom of the layout viewport, in practice
+ * the on-screen keyboard. A fixed panel is lifted by this much so its
+ * composer stays visible (iOS does not resize the layout viewport).
+ */
+function useKeyboardInset(): number {
+  const [inset, setInset] = useState(0)
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+    const update = () =>
+      setInset(
+        Math.max(
+          0,
+          Math.round(window.innerHeight - viewport.height - viewport.offsetTop)
+        )
+      )
+    update()
+    viewport.addEventListener("resize", update)
+    viewport.addEventListener("scroll", update)
+    return () => {
+      viewport.removeEventListener("resize", update)
+      viewport.removeEventListener("scroll", update)
+    }
+  }, [])
+  return inset
+}
+
+/**
+ * The shell mounts it while open. Docked right of the wizard on desktop; a
+ * 380px overlay on tablets; full screen under the top bar on phones.
+ */
 export function AssistantPanel({
   step,
   narrow,
@@ -87,6 +121,7 @@ export function AssistantPanel({
   const [input, setInput] = useState("")
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
+  const keyboardInset = useKeyboardInset()
 
   const messages = conversation.messages
   const last = messages[messages.length - 1]
@@ -95,9 +130,10 @@ export function AssistantPanel({
   const running = current?.state === "running"
   const failed = current?.state === "error"
 
-  /* focus the input on open */
+  /* focus the input on open; not on touch layouts, where that would raise
+     the keyboard over the starter prompts */
   useEffect(() => {
-    inputRef.current?.focus()
+    if (!window.matchMedia(TOUCH_LAYOUT).matches) inputRef.current?.focus()
   }, [])
 
   /* "Ask the assistant" on a failed build: explain it, once */
@@ -159,9 +195,13 @@ export function AssistantPanel({
   return (
     <aside
       aria-label="Dataset assistant"
+      style={{ "--keyboard-inset": `${keyboardInset}px` } as CSSProperties}
       className={cn(
         "flex shrink-0 flex-col border-l bg-card",
-        narrow ? "w-[300px]" : "w-[340px]"
+        narrow ? "lg:w-[300px]" : "lg:w-[340px]",
+        // Tablet: overlay on the right. Phone: full screen under the top bar.
+        "max-lg:fixed max-lg:top-[calc(var(--topbar)+env(safe-area-inset-top))] max-lg:right-0 max-lg:bottom-(--keyboard-inset) max-lg:z-40 max-lg:w-[380px] max-lg:shadow-[-12px_0_40px_rgb(0_0_0/0.25)]",
+        "max-sm:left-0 max-sm:w-auto max-sm:border-l-0 max-sm:shadow-none"
       )}
     >
       <header className="flex h-11 shrink-0 items-center gap-2 border-b pr-2 pl-3">
@@ -192,7 +232,7 @@ export function AssistantPanel({
         </Button>
       </header>
 
-      <p className="flex shrink-0 gap-1.5 border-b bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground">
+      <p className="flex shrink-0 gap-1.5 border-b bg-muted/50 px-3 py-2 text-t11 text-muted-foreground">
         <ShieldCheckIcon className="mt-px size-3 shrink-0" />
         <span className="text-pretty">
           Runs on this server with a local open-weight model
@@ -244,11 +284,11 @@ export function AssistantPanel({
         )}
       </div>
 
-      <div className="flex shrink-0 flex-col gap-1.5 border-t px-3 pt-2 pb-3">
+      <div className="flex shrink-0 flex-col gap-1.5 border-t px-3 pt-2 pb-3 max-lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {running && (
           <div
             role="status"
-            className="flex min-h-6 items-center gap-1.5 text-[11px] text-muted-foreground"
+            className="flex min-h-6 items-center gap-1.5 text-t11 text-muted-foreground"
           >
             <Spinner className="size-3 shrink-0" aria-hidden />
             <span className="min-w-0 flex-1 truncate">
@@ -262,7 +302,7 @@ export function AssistantPanel({
         {failed && (
           <div
             role="alert"
-            className="flex items-start gap-1.5 rounded-md border border-destructive bg-destructive/8 px-2 py-1.5 text-[11px]"
+            className="flex items-start gap-1.5 rounded-md border border-destructive bg-destructive/8 px-2 py-1.5 text-t11"
           >
             <CircleAlertIcon className="mt-px size-3 shrink-0 text-destructive" />
             <span className="min-w-0 flex-1 break-words">
@@ -290,7 +330,7 @@ export function AssistantPanel({
             placeholder="Paste a DOI, a table or a question…"
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={onKeyDown}
-            className="block field-sizing-content max-h-40 min-h-[52px] w-full resize-none rounded-md border border-input bg-background py-1.5 pr-9 pl-2.5 text-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="block field-sizing-content max-h-40 min-h-[52px] w-full resize-none rounded-md border border-input bg-background py-1.5 pr-[calc(var(--control-sm)+12px)] pl-2.5 text-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
           />
           <Button
             size="icon-sm"
@@ -302,7 +342,7 @@ export function AssistantPanel({
             <ArrowUpIcon />
           </Button>
         </div>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-t10 text-muted-foreground max-sm:hidden">
           Enter sends · Shift+Enter for a new line
         </p>
       </div>
@@ -324,14 +364,12 @@ function Starters({ onPick }: { onPick: (prompt: string) => void }) {
             <button
               type="button"
               onClick={() => onPick(prompt)}
-              className="flex w-full items-start gap-2 rounded-md border bg-background px-2.5 py-2 text-left outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="flex min-h-(--c28) w-full items-start gap-2 rounded-md border bg-background px-2.5 py-2 text-left outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
             >
               <Icon className="mt-px size-3.5 shrink-0 text-primary" />
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="font-medium">{title}</span>
-                <span className="text-[11px] text-muted-foreground">
-                  {detail}
-                </span>
+                <span className="text-t11 text-muted-foreground">{detail}</span>
               </span>
             </button>
           </li>
@@ -366,7 +404,7 @@ function AssistantTurn({
         )
       )}
       {message.state === "stopped" && (
-        <p className="text-[11px] text-muted-foreground italic">Stopped.</p>
+        <p className="text-t11 text-muted-foreground italic">Stopped.</p>
       )}
     </div>
   )
@@ -421,7 +459,7 @@ function ThinkingBlock({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex w-fit items-center gap-1 rounded-sm text-[11px] text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+        className="flex w-fit items-center gap-1 rounded-sm text-t11 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30 max-lg:min-h-11 pointer-coarse:min-h-11"
       >
         <ChevronRightIcon
           className={cn("size-3 transition-transform", open && "rotate-90")}
@@ -437,7 +475,7 @@ function ThinkingBlock({
       {open && (
         <div
           ref={bodyRef}
-          className="max-h-60 overflow-y-auto border-l-2 pl-2.5 text-[11px] leading-relaxed whitespace-pre-wrap text-muted-foreground"
+          className="max-h-60 overflow-y-auto border-l-2 pl-2.5 text-t11 leading-relaxed whitespace-pre-wrap text-muted-foreground"
         >
           {part.text.trim()}
         </div>

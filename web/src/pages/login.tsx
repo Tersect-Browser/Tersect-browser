@@ -48,7 +48,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex h-full items-start justify-center overflow-auto px-6 pt-24">
+    <div className="flex h-full items-start justify-center overflow-auto px-4 pt-10 pb-[env(safe-area-inset-bottom)] sm:px-6 sm:pt-24">
       <form
         onSubmit={submit}
         className="flex w-full max-w-[320px] flex-col gap-4 rounded-xl border bg-card p-5"

@@ -10,6 +10,7 @@ import { DistancePlot } from "@/features/plot/distance-plot"
 import { PlotContextMenu } from "@/features/plot/plot-context-menu"
 import { PlotTooltip } from "@/features/plot/plot-tooltip"
 import { StatusBar } from "@/features/plot/status-bar"
+import { ToolbarTabBar } from "@/features/toolbar/tab-bar"
 import { Toolbar } from "@/features/toolbar/toolbar"
 import { VariantSearchDialog } from "@/features/variants/variant-search-dialog"
 import { usePlotData } from "@/hooks/use-plot-data"
@@ -87,11 +88,15 @@ function Browser() {
   const plotReady = status.errors.length === 0 && status.loadMessage === ""
 
   return (
-    <div className="flex h-full flex-col">
+    // Touch layouts (below 1024px): the toolbar is not a bar but a sheet over
+    // this container, opened from the tab bar at the bottom. In phone
+    // landscape the tab bar drops to 48px so the plot keeps some height.
+    <div className="relative flex h-full flex-col [@media(max-height:559.98px)]:[--tabbar:48px]">
       <Toolbar plotReady={plotReady} />
-      {/* Everything under the toolbar; the introgression panel floats over,
-          or when maximised covers, this area. */}
-      <div className="relative flex min-h-0 flex-1 flex-col">
+      {/* Everything under the toolbar (above the tab bar on touch); the
+          introgression panel floats over, or when maximised covers, this
+          area. */}
+      <div className="relative flex min-h-0 flex-1 flex-col has-[[data-touch-minimised]]:pb-[calc(var(--c28)+1px)]">
         <VariantResultsBanner />
         <IntrogressionPanel />
         {genomeTrackVisible && (
@@ -120,6 +125,7 @@ function Browser() {
         <VariantResultsTable />
         <StatusBar />
       </div>
+      <ToolbarTabBar />
 
       <PlotTooltip event={tooltip} />
       <PlotContextMenu />

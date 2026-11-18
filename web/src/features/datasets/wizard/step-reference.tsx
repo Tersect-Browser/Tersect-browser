@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useMediaQuery } from "@/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
 
 import { SuggestedReference } from "../assistant/suggested-blocks"
@@ -29,8 +30,12 @@ export const GFF_ACCEPT = ".gff,.gff3,.gff.gz,.gff3.gz"
 const NAME_MAX = 100
 /** Above this many selected sequences the amber alert suggests main chromosomes. */
 const MANY_SEQUENCES = 100
+/** Row heights of the chromosome list: the --row token, compact and touch. */
 const ROW_HEIGHT = 20
+const TOUCH_ROW_HEIGHT = 44
+const TOUCH_DENSITY = "(pointer: coarse), (max-width: 1023.98px)"
 const VISIBLE_ROWS = 16
+const TOUCH_VISIBLE_ROWS = 8
 
 /* ----------------------------------------------------------- layout -- */
 
@@ -65,7 +70,7 @@ export function Field({
         {aside && <span className="ml-auto">{aside}</span>}
       </div>
       {children}
-      {help && <div className="text-[11px] text-muted-foreground">{help}</div>}
+      {help && <div className="text-t11 text-muted-foreground">{help}</div>}
     </div>
   )
 }
@@ -94,7 +99,7 @@ export function InlineError({ children }: { children: ReactNode }) {
   return (
     <div
       role="alert"
-      className="flex items-start gap-1.5 rounded-lg border border-destructive bg-destructive/8 px-2 py-1.5 text-[11px]"
+      className="flex items-start gap-1.5 rounded-lg border border-destructive bg-destructive/8 px-2 py-1.5 text-t11"
     >
       <CircleAlertIcon className="mt-px size-3 shrink-0 text-destructive" />
       <span>{children}</span>
@@ -113,13 +118,13 @@ export function CautionNote({
   return (
     <div
       role="status"
-      className="flex items-center gap-2 rounded-xl border border-(--viz-variant) px-2.5 py-2"
+      className="flex flex-wrap items-center gap-2 rounded-xl border border-(--viz-variant) px-2.5 py-2"
       style={{
         background: "color-mix(in oklch, var(--viz-variant) 10%, var(--card))",
       }}
     >
       <TriangleAlertIcon className="size-3.5 shrink-0 text-(--viz-variant)" />
-      <div className="min-w-0 flex-1">{children}</div>
+      <div className="min-w-0 flex-1 basis-56">{children}</div>
       {action}
     </div>
   )
@@ -134,7 +139,7 @@ export function ReadOnlyRow({
   children: ReactNode
 }) {
   return (
-    <div className="grid grid-cols-[150px_1fr] items-baseline gap-2 py-0.5">
+    <div className="grid grid-cols-[110px_1fr] items-baseline gap-2 py-0.5 sm:grid-cols-[150px_1fr]">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="min-w-0 truncate font-mono">{children}</dd>
     </div>
@@ -179,12 +184,15 @@ function ChromosomeList({
   const collapsed = !expanded && sequences.length > MANY_SEQUENCES
   const rows = collapsed ? sequences.slice(0, MANY_SEQUENCES) : sequences
   const scrollRef = useRef<HTMLDivElement>(null)
+  const touch = useMediaQuery(TOUCH_DENSITY)
+  const rowHeight = touch ? TOUCH_ROW_HEIGHT : ROW_HEIGHT
+  const visibleRows = touch ? TOUCH_VISIBLE_ROWS : VISIBLE_ROWS
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length + (collapsed ? 1 : 0),
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => rowHeight,
     overscan: 12,
   })
 
@@ -225,9 +233,9 @@ function ChromosomeList({
         </CautionNote>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span
-          className="font-mono text-[11px] text-muted-foreground"
+          className="font-mono text-t11 whitespace-nowrap text-muted-foreground"
           aria-live="polite"
         >
           {sequenceSummary(form)} selected
@@ -257,7 +265,7 @@ function ChromosomeList({
         role="group"
         aria-label="Chromosomes to include"
         className="overflow-y-auto rounded-xl border bg-card py-1"
-        style={{ maxHeight: ROW_HEIGHT * VISIBLE_ROWS + 8 }}
+        style={{ maxHeight: rowHeight * visibleRows + 8 }}
       >
         <div
           className="relative"
@@ -265,7 +273,7 @@ function ChromosomeList({
         >
           {virtualizer.getVirtualItems().map((virtual) => {
             const style = {
-              height: ROW_HEIGHT,
+              height: rowHeight,
               transform: `translateY(${virtual.start}px)`,
             }
             if (virtual.index === rows.length) {
@@ -277,7 +285,7 @@ function ChromosomeList({
                 >
                   <button
                     type="button"
-                    className="text-[11px] text-primary underline-offset-2 hover:underline"
+                    className="h-full text-t11 text-primary underline-offset-2 hover:underline"
                     onClick={() => setExpanded(true)}
                   >
                     {formatCount(sequences.length - rows.length)} more sequences
@@ -292,7 +300,7 @@ function ChromosomeList({
             return (
               <div
                 key={sequence.name}
-                className="absolute inset-x-0 top-0 grid grid-cols-[16px_minmax(80px,180px)_90px_1fr] items-center gap-2 px-2.5 hover:bg-muted"
+                className="absolute inset-x-0 top-0 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-2.5 hover:bg-muted sm:grid-cols-[auto_minmax(80px,180px)_90px_1fr]"
                 style={style}
               >
                 <Checkbox
@@ -301,26 +309,29 @@ function ChromosomeList({
                   onCheckedChange={(checked) =>
                     toggle(sequence, checked === true)
                   }
-                  className="size-3.5"
+                  className="size-[max(0.875rem,var(--cb))]"
                 />
                 <label
                   htmlFor={id}
                   className={cn(
-                    "truncate font-mono text-[11px]",
+                    "flex h-full items-center truncate font-mono text-t11",
                     !on && "text-muted-foreground"
                   )}
                 >
                   {sequence.name}
                   {unplaced && (
-                    <span className="ml-1.5 font-sans text-[10px] text-muted-foreground">
+                    <span className="ml-1.5 font-sans text-t10 text-muted-foreground">
                       unplaced
                     </span>
                   )}
                 </label>
-                <span className="text-right font-mono text-[11px] text-muted-foreground">
+                <span className="text-right font-mono text-t11 text-muted-foreground">
                   {formatCount(sequence.length)}
                 </span>
-                <span className="h-1.5 rounded-[1px] bg-muted" aria-hidden>
+                <span
+                  className="h-1.5 rounded-[1px] bg-muted max-sm:hidden"
+                  aria-hidden
+                >
                   <span
                     className={cn(
                       "block h-full rounded-[1px]",
@@ -336,13 +347,13 @@ function ChromosomeList({
       </div>
 
       {hasUnplaced && unplacedSelected.length === 0 && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-t11 text-muted-foreground">
           Unplaced sequences (such as <span className="font-mono">ch00</span>{" "}
           and scaffolds) are left out by default.
         </p>
       )}
       {unplacedSelected.length > 0 && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-t11 text-muted-foreground">
           <span className="font-mono text-foreground">
             {unplacedSelected.slice(0, 3).join(", ")}
             {unplacedSelected.length > 3 &&
@@ -364,7 +375,7 @@ function ChromosomeList({
 function ReadOnlyReference({ form }: { form: WizardForm }) {
   const base = useWizardStore((s) => s.draft?.base_dataset ?? null)
   return (
-    <div className="flex max-w-[760px] flex-col gap-4 px-6 py-5">
+    <div className="flex max-w-[760px] flex-col gap-4 px-4 pt-4 pb-7 sm:px-6 sm:py-5">
       <LockedNote base={base} />
       <dl className="flex flex-col">
         <ReadOnlyRow label="Dataset">{form.name || base || "—"}</ReadOnlyRow>
@@ -499,7 +510,7 @@ export function StepReference({
   const fastaSize = form.reference.fasta?.size
 
   return (
-    <div className="flex max-w-[760px] flex-col gap-6 px-6 py-5">
+    <div className="flex max-w-[760px] flex-col gap-6 px-4 pt-4 pb-7 sm:px-6 sm:py-5">
       <ManifestUpload />
       <Section title="Dataset">
         <Field
@@ -509,7 +520,7 @@ export function StepReference({
           required
           aside={
             <span
-              className="font-mono text-[11px] text-muted-foreground"
+              className="font-mono text-t11 text-muted-foreground"
               aria-live="polite"
             >
               {form.name.length} / {NAME_MAX}
@@ -539,7 +550,7 @@ export function StepReference({
             }}
           />
           {nameInvalid && (
-            <div className="text-[11px] text-destructive">
+            <div className="text-t11 text-destructive">
               The name cannot contain control characters such as tabs or line
               breaks.
             </div>
@@ -579,7 +590,7 @@ export function StepReference({
           id="field-gff"
           label="Gene models (GFF3)"
           aside={
-            <span className="text-[11px] text-muted-foreground">Optional</span>
+            <span className="text-t11 text-muted-foreground">Optional</span>
           }
         >
           <FileInput

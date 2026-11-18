@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import type { PointerEvent as ReactPointerEvent } from "react"
 
 import { useVizTokens } from "@/hooks/use-viz-tokens"
 
@@ -15,6 +16,8 @@ const TITLES = [
   "BLT (Mann–Whitney U)",
   "Distance-weighted discordance",
 ]
+/** Narrowest a block is drawn; beyond that the chart scrolls sideways. */
+const MIN_BLOCK_WIDTH = 12
 /** Significance level drawn as the BLT threshold. */
 const ALPHA = 0.05
 
@@ -64,8 +67,12 @@ function tickStep(span: number, count: number) {
 export function IntrogressionChart({ data }: { data: ScanResponse }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [width, setWidth] = useState(0)
-  const [hover, setHover] = useState<number | null>(null)
+  const [frameWidth, setFrameWidth] = useState(0)
+  /** Hovered or tapped block, and whether its tooltip goes to the left. */
+  const [active, setActive] = useState<{ index: number; flip: boolean } | null>(
+    null
+  )
+  const hover = active?.index ?? null
   const tokens = useVizTokens()
 
   useEffect(() => {
@@ -73,7 +80,9 @@ export function IntrogressionChart({ data }: { data: ScanResponse }) {
     if (!element) {
       return
     }
-    const observer = new ResizeObserver(() => setWidth(element.clientWidth))
+    const observer = new ResizeObserver(() =>
+      setFrameWidth(element.clientWidth)
+    )
     observer.observe(element)
     return () => observer.disconnect()
   }, [])
@@ -110,6 +119,10 @@ export function IntrogressionChart({ data }: { data: ScanResponse }) {
       Math.max(...placed.map((p) => p.end)),
     ]
   }, [placed])
+  // At least MIN_BLOCK_WIDTH per block: wider than the frame, it scrolls.
+  const width = frameWidth
+    ? Math.max(frameWidth, LEFT + RIGHT + placed.length * MIN_BLOCK_WIDTH)
+    : 0
   const plotWidth = Math.max(1, width - LEFT - RIGHT)
   const x = (position: number) =>
     LEFT +
@@ -319,58 +332,97 @@ export function IntrogressionChart({ data }: { data: ScanResponse }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placed, width, hover, tokens, dwdMax, domainStart, domainEnd])
 
+  // A tapped block stays selected until the next tap outside the chart.
+  const selected = active !== null
+  useEffect(() => {
+    if (!selected) {
+      return
+    }
+    const dismiss = (event: PointerEvent) => {
+      if (event.target !== canvasRef.current) {
+        setActive(null)
+      }
+    }
+    document.addEventListener("pointerdown", dismiss)
+    return () => document.removeEventListener("pointerdown", dismiss)
+  }, [selected])
+
+  const pick = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const px = event.clientX - rect.left
+    const index = placed.findIndex((p) => px >= x(p.start) && px <= x(p.end))
+    if (index < 0) {
+      setActive(null)
+      return
+    }
+    // Keep the tooltip inside the visible part of a scrolled chart.
+    const frame = containerRef.current
+    const visibleRight = (frame?.scrollLeft ?? 0) + (frame?.clientWidth ?? 0)
+    const flip = x(placed[index].end) + 220 >= visibleRight
+    setActive((current) =>
+      current?.index === index && current.flip === flip
+        ? current
+        : { index, flip }
+    )
+  }
+
   const hovered = hover !== null ? placed[hover] : undefined
 
   return (
-    <div ref={containerRef} className="relative">
-      <canvas
-        ref={canvasRef}
-        className="block"
-        aria-label="Introgression scan results"
-        role="img"
-        onMouseMove={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect()
-          const px = event.clientX - rect.left
-          const found = placed.findIndex(
-            (p) => px >= x(p.start) && px <= x(p.end)
-          )
-          setHover(found >= 0 ? found : null)
-        }}
-        onMouseLeave={() => setHover(null)}
-      />
-      {hovered && (
-        <div
-          className="pointer-events-none absolute top-[30px] z-10 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-px rounded-[4px] border bg-popover px-2 py-1.5 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow-[0_4px_14px_rgb(0_0_0/0.2)]"
-          style={
-            x(hovered.end) + 220 < width
-              ? { left: x(hovered.end) + 8 }
-              : { right: width - x(hovered.start) + 8 }
-          }
-        >
-          <span className="col-span-2 font-sans font-semibold">
-            Block {hovered.index + 1}
-            {isSignificant(hovered.block) && " · significant"}
-          </span>
-          <span className="col-span-2 mb-[3px] text-muted-foreground">
-            {(hovered.start / 1e6).toFixed(2)} –{" "}
-            {(hovered.end / 1e6).toFixed(2)} Mb
-          </span>
-          <span>T1</span>
-          <span className="text-right">{hovered.t1.toFixed(3)}</span>
-          <span>T2</span>
-          <span className="text-right">{hovered.t2.toFixed(3)}</span>
-          <span>T3</span>
-          <span className="text-right">{hovered.t3.toFixed(3)}</span>
-          <span>BLT p</span>
-          <span className="text-right">
-            {hovered.block.p_blt?.toPrecision(2) ?? "–"}
-          </span>
-          <span>DWD</span>
-          <span className="text-right">
-            {hovered.block.obs_disc_frac?.toFixed(3) ?? "–"}
-          </span>
-        </div>
-      )}
+    <div ref={containerRef} className="overflow-x-auto overscroll-x-contain">
+      <div className="relative" style={{ width: width || undefined }}>
+        <canvas
+          ref={canvasRef}
+          className="block"
+          aria-label="Introgression scan results"
+          role="img"
+          onPointerDown={pick}
+          onPointerMove={(event) => {
+            // Touch moves are scrolling; the tooltip follows taps instead.
+            if (event.pointerType === "mouse") {
+              pick(event)
+            }
+          }}
+          onPointerLeave={(event) => {
+            if (event.pointerType === "mouse") {
+              setActive(null)
+            }
+          }}
+        />
+        {hovered && (
+          <div
+            className="pointer-events-none absolute top-[30px] z-10 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-px rounded-[4px] border bg-popover px-2 py-1.5 font-mono text-t11 whitespace-nowrap text-popover-foreground shadow-[0_4px_14px_rgb(0_0_0/0.2)]"
+            style={
+              active?.flip
+                ? { right: width - x(hovered.start) + 8 }
+                : { left: x(hovered.end) + 8 }
+            }
+          >
+            <span className="col-span-2 font-sans font-semibold">
+              Block {hovered.index + 1}
+              {isSignificant(hovered.block) && " · significant"}
+            </span>
+            <span className="col-span-2 mb-[3px] text-muted-foreground">
+              {(hovered.start / 1e6).toFixed(2)} –{" "}
+              {(hovered.end / 1e6).toFixed(2)} Mb
+            </span>
+            <span>T1</span>
+            <span className="text-right">{hovered.t1.toFixed(3)}</span>
+            <span>T2</span>
+            <span className="text-right">{hovered.t2.toFixed(3)}</span>
+            <span>T3</span>
+            <span className="text-right">{hovered.t3.toFixed(3)}</span>
+            <span>BLT p</span>
+            <span className="text-right">
+              {hovered.block.p_blt?.toPrecision(2) ?? "–"}
+            </span>
+            <span>DWD</span>
+            <span className="text-right">
+              {hovered.block.obs_disc_frac?.toFixed(3) ?? "–"}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
