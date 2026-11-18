@@ -92,7 +92,9 @@ def issue(user: str, now: float | None = None) -> tuple[str, int]:
     """A session token for `user` and its lifetime in seconds."""
     lifetime = int(_hours() * 3600)
     expires = int((now if now is not None else time.time()) + lifetime)
-    payload = base64.urlsafe_b64encode(json.dumps({'u': user, 'e': expires}).encode())
+    # No "=" padding: a cookie value with one is sent in quotes.
+    payload = base64.urlsafe_b64encode(
+        json.dumps({'u': user, 'e': expires}).encode()).rstrip(b'=')
     return '%s.%s' % (payload.decode(), _sign(payload)), lifetime
 
 
@@ -104,7 +106,7 @@ def verify(token: str | None, now: float | None = None) -> str | None:
     if not hmac.compare_digest(_sign(payload.encode()), signature):
         return None
     try:
-        data = json.loads(base64.urlsafe_b64decode(payload.encode()))
+        data = json.loads(base64.urlsafe_b64decode(payload + '=' * (-len(payload) % 4)))
         expires, user = float(data['e']), str(data['u'])
     except (ValueError, KeyError, TypeError):
         return None
@@ -120,7 +122,8 @@ def _cookie_value(scope) -> str | None:
             for part in value.decode('latin-1').split(';'):
                 key, _, found = part.strip().partition('=')
                 if key == COOKIE:
-                    return found
+                    # Some clients send the value back in the quotes it came in.
+                    return found.strip('"')
     return None
 
 
