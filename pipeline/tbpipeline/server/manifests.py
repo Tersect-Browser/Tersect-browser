@@ -8,6 +8,7 @@ once) plus a few checks that need the files, and written as YAML the way
 datasets/tomato-sl250.yaml is laid out.
 """
 import os
+import secrets
 import subprocess
 
 import yaml
@@ -337,3 +338,135 @@ def form_from(data, sequences=None):
             'indexSamples': None,
         },
     }
+
+
+# ------------------------------------------------- YAML -> whole form --
+
+MAX_YAML = 2_000_000     # characters; a manifest of thousands of accessions is far below
+
+
+class ManifestError(ValueError):
+    """An uploaded manifest that cannot be read as one."""
+
+
+def parse_yaml(text: str) -> dict:
+    """Manifest data from YAML text, with its shape checked just enough to
+    build a form from it. The wizard's own validation does the rest."""
+    if len(text) > MAX_YAML:
+        raise ManifestError('The file is too large to be a dataset manifest.')
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as error:
+        raise ManifestError('The file is not valid YAML: %s' % str(error).split('\n')[0])
+    if not isinstance(data, dict) or not isinstance(data.get('reference'), dict):
+        raise ManifestError('This is not a dataset manifest: it has no "reference" section. '
+                            'Use a file from "Download manifest".')
+    samples = data.get('samples')
+    if samples is not None and not (isinstance(samples, list)
+                                    and all(isinstance(s, dict) for s in samples)):
+        raise ManifestError('"samples" must be a list of accessions.')
+    if not samples and not data.get('index'):
+        raise ManifestError('The manifest has neither accessions ("samples") nor an "index".')
+    for key in ('annotation', 'tersect'):
+        if data.get(key) is not None and not isinstance(data[key], dict):
+            raise ManifestError('"%s" must be a section with settings.' % key)
+    return data
+
+
+def _usable(location):
+    """(FileRef, None) for a manifest location this server can use, else
+    (None, why not). URLs always are; a path only if the file is here, in a
+    folder the builder may read. A manifest from another machine names
+    uploads and folders of that machine."""
+    if not isinstance(location, str) or not location.strip():
+        return None, None
+    location = location.strip()
+    if manifests.is_url(location):
+        return file_ref(location), None
+    if location.startswith('file://'):
+        location = location[len('file://'):]
+    if not os.path.isabs(location):
+        return None, 'is a relative path'
+    ref = file_ref(location)
+    try:
+        files.resolve_ref(ref)
+    except ValueError:
+        return None, 'is not on this server'
+    return ref, None
+
+
+def form_from_manifest(data: dict):
+    """(WizardForm, notes) with every field of a manifest filled in: the
+    reverse of the form's toManifest (web/src/features/datasets/manifest.ts).
+
+    What only reading the files can tell (sequences, the samples and contigs
+    of each VCF) is left empty: the wizard reads them when the draft opens,
+    keeping the chromosomes, names and sample choices given here. Files the
+    manifest names by a path that is not on this server are left out, and
+    `notes` says which, so that they can be added again.
+    """
+    notes = []
+    form = form_from(data)
+    reference = data.get('reference') or {}
+    form['name'] = str(data.get('id') or '')
+    form['description'] = str(data.get('description') or '').strip()
+    form['reference']['id'] = str(reference.get('id') or '')
+    form['reference']['chromosomes'] = [str(c) for c in reference.get('chromosomes') or []]
+    for key, what in (('fasta', 'reference FASTA'), ('gff', 'gene models (GFF3)')):
+        ref, problem = _usable(reference.get(key))
+        form['reference'][key] = ref
+        if problem:
+            notes.append('The %s %s %s: choose it again in step 1.'
+                         % (what, os.path.basename(str(reference[key])), problem))
+
+    if data.get('index') and not data.get('samples'):
+        ref, problem = _usable(data['index'])
+        form['options']['useIndex'] = True
+        form['options']['index'] = ref
+        if problem:
+            notes.append('The Tersect index %s %s: choose it again in step 3.'
+                         % (os.path.basename(str(data['index'])), problem))
+        return form, notes
+
+    vcfs, by_location, rows, missing = [], {}, [], []
+    for sample in data.get('samples') or []:
+        name = str(sample.get('name') or '')
+        location = sample.get('vcf')
+        key = location if isinstance(location, str) else None
+        if key not in by_location:
+            ref, problem = _usable(location)
+            entry = None
+            if ref:
+                rename = sample.get('rename_contigs')
+                entry = {'id': 'vcf_' + secrets.token_hex(4), 'file': ref,
+                         'samples': None, 'contigs': None, 'hasGenotypes': None,
+                         'inspectError': None, 'selected': [],
+                         'renameContigs': {str(k): str(v) for k, v in rename.items()}
+                         if isinstance(rename, dict) and rename else None}
+                vcfs.append(entry)
+            by_location[key] = entry
+        vcf = by_location[key]
+        if vcf is None:
+            missing.append(name or os.path.basename(str(location or '?')))
+            continue
+        picked = str(sample.get('vcf_sample') or '')
+        if picked and picked not in vcf['selected']:
+            vcf['selected'].append(picked)
+        info = sample.get('info')
+        rows.append({'id': 'acc_' + secrets.token_hex(4), 'name': name,
+                     'label': str(sample.get('label') or name),
+                     'group': str(sample.get('group') or ''),
+                     'fileId': vcf['id'], 'sample': picked,
+                     'info': {str(k): str(v) for k, v in info.items()}
+                     if isinstance(info, dict) else {}})
+    form['vcfs'], form['accessions'] = vcfs, rows
+    if missing:
+        shown = ', '.join(missing[:8]) + (' and %d more' % (len(missing) - 8)
+                                          if len(missing) > 8 else '')
+        notes.append('%s left out because %s not on this server: %s. '
+                     'Add %s again in step 2.'
+                     % ('1 accession was' if len(missing) == 1
+                        else '%d accessions were' % len(missing),
+                        'its VCF is' if len(missing) == 1 else 'their VCFs are', shown,
+                        'it' if len(missing) == 1 else 'them'))
+    return form, notes
