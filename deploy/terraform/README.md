@@ -25,11 +25,24 @@ free allowance is large enough for a small deployment, is in
   pulls from with its own role.
 - Optionally, a GPU machine that also runs the dataset assistant's model.
 
-> **The app has no user accounts.** Anyone who gets past the login can start
-> builds and delete datasets. `allowed_cidrs` defaults to the whole internet,
-> which leaves the shared password as the only protection. Narrow it to your
-> institution's networks if you can, and give the password only to people you
-> would give delete rights to.
+> **There is one login, not user accounts.** Anyone who has the password can
+> start builds and delete datasets. `allowed_cidrs` defaults to the whole
+> internet, which leaves the shared password as the only protection. Narrow it
+> to your institution's networks if you can, and give the password only to
+> people you would give delete rights to.
+
+### A public site
+
+By default the password is asked for the whole site. With
+`public_site = true` anyone can browse the datasets, and the same login is
+asked only for managing them: the app shows a *Sign in* link, and the builder
+service refuses every request without a session (drafts, uploads, builds,
+deleting, the assistant, the server folder). The viewer does not use the
+builder, so nothing a visitor does needs it.
+
+What a public site still exposes to everyone: all listed datasets, and the
+analyses a visitor can start from the viewer (trees, introgression scans),
+which use the machine's CPU. There is no rate limit on those.
 
 ### What this is not
 
@@ -310,7 +323,8 @@ change.
 | You change | What happens | Interruption |
 |---|---|---|
 | `image_tag` | Bundle updated; machine pulls and recreates changed containers | seconds |
-| `basic_auth_password`, `basic_auth_username` | Bundle updated; the proxy is restarted | seconds |
+| `basic_auth_password`, `basic_auth_username` | Bundle updated; the proxy is restarted (with `public_site`: the builder, and everyone signed in is signed out) | seconds |
+| `public_site` | Bundle updated; proxy and builder restarted | seconds |
 | `allowed_cidrs` | Firewall changes at once; the proxy's own list follows within 5 minutes | seconds |
 | `domain_name`, `acme_email` | Bundle updated; proxy and backend recreated; firewall rule for port 80 | seconds, plus the time to get a certificate |
 | `assistant_model` | Bundle updated; the new model is downloaded | none for the site |

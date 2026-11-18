@@ -89,6 +89,8 @@ locals {
     mongo_root_password        = random_password.mongo_root.result
     clickhouse_admin_password  = random_password.clickhouse_admin.result
     clickhouse_reader_password = random_password.clickhouse_reader.result
+    admin_username             = var.public_site ? var.basic_auth_username : ""
+    admin_password             = var.public_site ? replace(local.basic_auth_password, "'", "\\'") : ""
     enable_assistant           = var.enable_assistant
     assistant_model            = var.assistant_model
     assistant_context_chars    = var.assistant_context_chars
@@ -123,7 +125,11 @@ locals {
       "clickhouse/schema.sql"     = { mode = "0644", content = file("${local.clickhouse_dir}/schema.sql") }
       "clickhouse/users.sh"       = { mode = "0755", content = file("${local.clickhouse_dir}/users.sh") }
       "clickhouse/low-memory.xml" = { mode = "0644", content = local.clickhouse_overrides }
-      "site.d/auth.caddy"         = { mode = "0644", content = local.auth_caddy }
+    },
+    # A public site has no password at the proxy: the builder asks for the
+    # login instead (TB_ADMIN_* in .env).
+    var.public_site ? {} : {
+      "site.d/auth.caddy" = { mode = "0644", content = local.auth_caddy }
     },
     local.restricted ? {
       "site.d/allowlist.caddy" = { mode = "0644", content = local.allowlist_caddy }

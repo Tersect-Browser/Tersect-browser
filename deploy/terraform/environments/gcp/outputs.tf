@@ -8,6 +8,11 @@ output "public_ip" {
   value       = module.vm.public_ip
 }
 
+output "public_site" {
+  description = "True when anyone may browse and the login only guards dataset management."
+  value       = module.config.public_site
+}
+
 output "username" {
   description = "User name of the shared login."
   value       = module.config.basic_auth_username

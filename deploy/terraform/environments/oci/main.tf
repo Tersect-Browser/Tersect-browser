@@ -24,6 +24,7 @@ module "config" {
   basic_auth_username = var.basic_auth_username
   basic_auth_password = var.basic_auth_password
   allowed_cidrs       = var.allowed_cidrs
+  public_site         = var.public_site
 
   # No GPU in the free allowance, so no local model.
   enable_assistant      = false
