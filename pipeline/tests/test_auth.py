@@ -127,6 +127,17 @@ def test_tokens_expire_and_cannot_be_forged(client, monkeypatch):
     assert auth.verify(token, now=1000) is None
 
 
+def test_the_cookie_needs_no_quoting_and_survives_it(client):
+    # A value with "=" or other special characters is sent in quotes, which
+    # the browser then sends back; the session must not depend on either.
+    response = login(client)
+    value = response.headers['set-cookie'].split(';')[0].split('=', 1)[1]
+    assert '"' not in value and '=' not in value
+    quoted = {'cookie': '%s="%s"' % (auth.COOKIE, value)}
+    fresh = TestClient(make_app())
+    assert fresh.get('/api/datasets', headers=quoted).status_code == 200
+
+
 def test_only_an_intact_cookie_counts(client):
     token, _ = auth.issue('curator')
     cookie = lambda value: {'cookie': '%s=%s' % (auth.COOKIE, value)}
