@@ -43,6 +43,12 @@ variable "cloud_settings" {
   }
 }
 
+variable "follow_images" {
+  description = "Also look, at every poll, for newer images under the tags the stack already runs, and restart the containers whose image changed. For deployments that follow a moving tag pushed by CI (for example \"develop\"); leave false when every release has its own tag."
+  type        = bool
+  default     = false
+}
+
 variable "config_poll_minutes" {
   description = "How often the machine checks the secret store for a changed configuration bundle."
   type        = number

@@ -1,0 +1,26 @@
+# Remote state for the Oracle Cloud deployment. Copy to backend.tf, fill in,
+# and run "terraform init".
+#
+# The state contains every generated password in clear text. Keep it in a
+# private bucket that only the operators can read, not on a laptop and never
+# in git. Object Storage encrypts at rest.
+#
+# Create the bucket once, by hand (it must exist before init), private and
+# with versioning: Storage, Buckets, Create bucket in the console, or
+#
+#   oci os bucket create --compartment-id <compartment ocid> \
+#     --name tersect-tfstate --versioning Enabled
+#
+# The "oci" backend needs Terraform 1.12 or newer and reads ~/.oci/config.
+# With an older Terraform, or with OpenTofu, use the "s3" backend against
+# Object Storage's S3-compatible endpoint instead (see Oracle's documentation:
+# "Using Object Storage for Terraform state files").
+
+terraform {
+  backend "oci" {
+    bucket    = "tersect-tfstate"
+    namespace = "mynamespace" # oci os ns get
+    key       = "tersect/oci/terraform.tfstate"
+    region    = "uk-london-1"
+  }
+}

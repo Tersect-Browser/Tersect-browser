@@ -6,6 +6,10 @@
 #                         successful run (the timer runs this)
 #   tersect-sync --boot   always (re)start the stack (tersect.service)
 #
+# With TERSECT_FOLLOW_IMAGES=1 the timer run also looks for newer images
+# under the tags the stack already runs (a moving tag such as "develop",
+# pushed by CI), and restarts the containers whose image changed.
+#
 # A run that fails leaves no mark, so the next timer tick tries again; that
 # is how a machine started before its images were pushed recovers.
 set -euo pipefail
@@ -28,6 +32,13 @@ compose() { docker compose --project-directory "$APP_DIR" "$@"; }
 env_value() {
     # Value of one KEY=value line of the .env file.
     sed -n "s/^$1=//p" "$APP_DIR/.env" | tail -n 1
+}
+
+image_ids() {
+    # One hash over the local ids of every image the stack names.
+    compose config --images 2>/dev/null | sort \
+        | xargs -r docker image inspect --format '{{.Id}}' 2>/dev/null \
+        | sha256sum | cut -d' ' -f1
 }
 
 site_config_hash() {
@@ -67,8 +78,21 @@ else
     exit 1
 fi
 
+follow=0
+if [ "${TERSECT_FOLLOW_IMAGES:-0}" = "1" ]; then
+    follow=1
+fi
+
+pulled=0
 if [ "$changed" -eq 0 ] && [ "$mode" != "--boot" ]; then
-    exit 0
+    [ "$follow" -eq 1 ] || exit 0
+    # The configuration is the same; the images behind its tags may not be.
+    cloud_registry_login || log "registry login failed; pulling may fail"
+    images_before=$(image_ids)
+    compose pull --quiet
+    [ "$(image_ids)" != "$images_before" ] || exit 0
+    log "newer images under the same tags; restarting what changed"
+    pulled=1
 fi
 
 # --- Apply -------------------------------------------------------------------
@@ -101,7 +125,7 @@ fi
 
 cloud_registry_login || log "registry login failed; pulling may fail"
 
-if [ "$changed" -eq 1 ]; then
+if [ "$changed" -eq 1 ] || { [ "$follow" -eq 1 ] && [ "$pulled" -eq 0 ]; }; then
     compose pull --quiet
 fi
 compose up -d --remove-orphans
@@ -121,7 +145,7 @@ fi
 if [ -n "$checksum" ]; then
     echo "$checksum" > "$APPLIED"
 fi
-if [ "$changed" -eq 1 ]; then
+if [ "$changed" -eq 1 ] || [ "$pulled" -eq 1 ]; then
     # Everything the stack needs is in use by now; drop the previous release.
     docker image prune -af >/dev/null 2>&1 || true
 fi
