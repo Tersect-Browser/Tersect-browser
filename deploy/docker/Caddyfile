@@ -18,6 +18,12 @@
 #                    for a domain, none for ":80". "tls internal": a
 #                    self-signed certificate (an IP address, no domain).
 #                    "tls you@example.org": certificate authority contact.
+#   TB_DEFAULT_SNI   the name to assume when a client sends none, which is
+#                    what browsers do for a bare IP address. Set it to the
+#                    site's address; without it Caddy finds no certificate
+#                    for such a connection and the handshake fails (the
+#                    machine's own address is a private one behind NAT, so
+#                    Caddy cannot tell from the connection).
 #   TB_BACKEND, TB_BUILDER   upstreams (default backend:4300, builder:4310).
 #
 # Access control lives in /etc/caddy/site.d/*.caddy, written by the
@@ -27,6 +33,7 @@
 # under /TersectBrowserGP/api/. Do not expose the site with neither.
 {
 	admin off
+	default_sni {$TB_DEFAULT_SNI:localhost}
 	# The allowlist snippet answers outsiders with `respond`. By default Caddy
 	# runs respond after the handle blocks below, which would already have
 	# served the request, so the allowlist would block nobody. Run it first,
