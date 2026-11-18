@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   DownloadIcon,
   EllipsisIcon,
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,12 +35,13 @@ import {
 
 import {
   addAccessionsDraft,
+  datasetFilesQuery,
   datasetManifestUrl,
   deleteDataset,
   rebuildDataset,
 } from "../api"
 import { DatasetStatusBadge, StatusBadge } from "../build/status-badge"
-import { formatCount } from "../format"
+import { formatBytes, formatCount } from "../format"
 import type { ManagedDataset } from "../types"
 import { ROW } from "./layout"
 import { useSetListed } from "./use-set-listed"
@@ -95,16 +97,25 @@ function DeleteDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
+  // Deleting the files is the default: kept files are invisible in the app
+  // and fill the disk.
+  const [withFiles, setWithFiles] = useState(true)
+  const files = useQuery({ ...datasetFilesQuery(dataset.id), enabled: open })
   const remove = useMutation({
-    mutationFn: () => deleteDataset(dataset.id),
-    onSuccess: () => {
-      toast.success(`${dataset.id} was deleted`)
+    mutationFn: () => deleteDataset(dataset.id, withFiles),
+    onSuccess: ({ freed }) => {
+      toast.success(
+        freed > 0
+          ? `${dataset.id} was deleted. Freed ${formatBytes(freed)}.`
+          : `${dataset.id} was deleted`
+      )
       onOpenChange(false)
     },
     onError: (e: Error) =>
       toast.error(`Could not delete ${dataset.id}: ${e.message}`),
     onSettled: () => invalidateDatasetLists(queryClient),
   })
+  const parts = files.data?.parts.filter((part) => part.bytes > 0) ?? []
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -114,9 +125,50 @@ function DeleteDialog({
           </AlertDialogTitle>
           <AlertDialogDescription className="text-xs">
             It will be removed from the browser, along with its shared links.
-            Files on disk are kept.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <div className="flex flex-col gap-2 rounded-md border bg-card p-2.5 text-xs">
+          <label className="flex items-start gap-2">
+            <Checkbox
+              className="mt-px"
+              checked={withFiles}
+              onCheckedChange={(checked) => setWithFiles(checked === true)}
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="font-medium">
+                Also delete its files from the server
+                {files.data && (
+                  <span className="font-mono font-normal text-muted-foreground">
+                    {" "}
+                    · frees {formatBytes(files.data.bytes)}
+                  </span>
+                )}
+              </span>
+              <span className="text-muted-foreground">
+                {withFiles
+                  ? "This cannot be undone. Files in server folders and annotation databases shared with other datasets are kept."
+                  : "Its files stay on the server and keep using disk space; they can only be removed by hand."}
+              </span>
+            </span>
+          </label>
+          {withFiles && parts.length > 0 && (
+            <ul className="ml-6 flex flex-col gap-0.5 text-muted-foreground">
+              {parts.map((part) => (
+                <li key={part.key} className="flex justify-between gap-3">
+                  <span>{part.label}</span>
+                  <span className="font-mono">{formatBytes(part.bytes)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {files.isError && (
+            <span className="ml-6 text-muted-foreground">
+              The size could not be worked out; deleting still works.
+            </span>
+          )}
+        </div>
+
         <AlertDialogFooter>
           <AlertDialogCancel size="sm">Cancel</AlertDialogCancel>
           <AlertDialogAction
@@ -129,7 +181,7 @@ function DeleteDialog({
               remove.mutate()
             }}
           >
-            Delete dataset
+            {withFiles ? "Delete dataset and files" : "Delete dataset"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

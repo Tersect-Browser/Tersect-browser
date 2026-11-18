@@ -4,7 +4,9 @@
     POST   /api/datasets/validate              {manifest} -> {errors: ValidationIssue[]}
     POST   /api/datasets/manifest.yaml         {manifest} -> YAML
     PATCH  /api/datasets/{id}                  {listed}: show in or hide from the public list
-    DELETE /api/datasets/{id}                  unpublish (tb-dataset remove)
+    GET    /api/datasets/{id}/files            what deleting it would free on disk
+    DELETE /api/datasets/{id}[?files=true]     unpublish (tb-dataset remove); with
+                                               files=true also delete its files
     POST   /api/datasets/{id}/add              Draft for adding accessions
     POST   /api/datasets/{id}/rebuild          {id} of a new build
     GET    /api/datasets/{id}/manifest.yaml    the manifest it was last built from
@@ -24,7 +26,7 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
 from .. import manifest as pipeline_manifest, settings, store
-from . import builds, drafts, manifests, progress
+from . import builds, cleanup, drafts, manifests, progress
 
 router = APIRouter()
 
@@ -146,12 +148,24 @@ def set_listed(dataset_id: str, body: ListedRequest):
     return {'id': dataset_id, 'listed': body.listed}
 
 
-@router.delete('/datasets/{dataset_id:path}', status_code=204)
-def delete_dataset(dataset_id: str):
+@router.get('/datasets/{dataset_id:path}/files')
+def dataset_files(dataset_id: str):
+    """What deleting the dataset with its files would free: the total and a
+    breakdown, for the confirmation dialog."""
+    return cleanup.measure(cleanup.plan(dataset_id))
+
+
+@router.delete('/datasets/{dataset_id:path}')
+def delete_dataset(dataset_id: str, files: bool = False):
+    """Remove a dataset from the browser. With files=true its files go too
+    (server/cleanup.py says which); otherwise they stay on disk, as with
+    `tb-dataset remove`. Returns the bytes freed."""
     active = builds.active_build(dataset_id)
     if active:
         raise HTTPException(409, 'A build of "%s" is %s; cancel it before deleting the dataset.'
                             % (dataset_id, active['status']))
+    # Planned before the records go: the plan reads this dataset's manifests.
+    doomed = cleanup.plan(dataset_id) if files else {}
     removed = store.remove_dataset(dataset_id)
     # Keep the build history, but stop listing the dataset.
     marked = builds.db()[builds.COLLECTION].update_many(
@@ -159,6 +173,7 @@ def delete_dataset(dataset_id: str):
         {'$set': {'dataset_removed': True}}).matched_count
     if not removed and not marked:
         raise HTTPException(404, 'No dataset "%s"' % dataset_id)
+    return {'freed': cleanup.remove(doomed)}
 
 
 def _sequences(slug):

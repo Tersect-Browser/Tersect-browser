@@ -168,6 +168,7 @@ in the pipeline image as the compose service `builder`, started by
 | `/api/drafts` | Wizard drafts (MongoDB `dataset_drafts`) |
 | `/api/datasets`, `/api/builds` | Published datasets and the build queue |
 | `PATCH /api/datasets/{id}` | `{listed}`: show the dataset in, or hide it from, the public dataset list (share links keep working) |
+| `GET /api/datasets/{id}/files`, `DELETE /api/datasets/{id}?files=true` | What deleting a dataset's files would free, and deleting them with it (`server/cleanup.py`: only what that dataset alone uses, including its snpEff database when no other dataset's build uses it; never server-folder files). Without `files=true`, and with `tb-dataset remove`, files stay on disk |
 | `POST /api/assistant` | Dataset assistant, server-sent events (below); 503 unless configured |
 
 **Files.** Uploads go to `<localDbPath>/uploads/<id>/<file name>` with

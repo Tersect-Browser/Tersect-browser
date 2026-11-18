@@ -221,11 +221,7 @@ export interface Draft {
 /* ------------------------------------------------------------ builds -- */
 
 export type BuildStatus =
-  | "queued"
-  | "running"
-  | "failed"
-  | "cancelled"
-  | "succeeded"
+  "queued" | "running" | "failed" | "cancelled" | "succeeded"
 
 export const BUILD_STAGES = [
   { key: "fetch", name: "Fetching files" },
@@ -310,6 +306,16 @@ export interface Build {
 }
 
 /* ---------------------------------------------------------- datasets -- */
+
+/** GET /api/datasets/:id/files: what deleting the dataset's files frees. */
+export interface DatasetFiles {
+  bytes: number
+  parts: {
+    key: "published" | "work" | "inputs" | "annotation"
+    label: string
+    bytes: number
+  }[]
+}
 
 export type DatasetStatus = "ready" | "building" | "failed"
 

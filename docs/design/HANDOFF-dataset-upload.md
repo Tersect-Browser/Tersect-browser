@@ -45,7 +45,7 @@ Implemented by the builder service (`pipeline/tbpipeline/server`), served under 
 - Columns: Dataset (name, description), Reference, Accessions, Status, actions menu.
 - Status badge, 20px pill: Ready (`--accent`), Building n% (`--secondary` with spinner and a 3px bar beneath), Failed (destructive tint), Draft (`--muted`, with a Resume link beneath).
 - Actions menu (`ellipsis`): Open, Add accessions, Rebuild, Download manifest, separator, Delete (destructive).
-- Delete: alert dialog naming the dataset. "It will be removed from the browser, along with its shared links. Files on disk are kept."
+- Delete: alert dialog naming the dataset. "It will be removed from the browser, along with its shared links." A checkbox, on by default, also deletes its files from the server and shows what that frees, with a breakdown (published dataset, build files and logs, downloads and uploads, variant effect database). Files in server folders are never deleted, nor a download, upload or variant effect database that another dataset or a draft still uses. (Originally "Files on disk are kept"; changed because kept files are invisible in the app and fill the disk.)
 - Empty state: dashed box, `database` icon, "No datasets yet", one line on what a dataset is, primary New dataset.
 - Ways into the wizard: New dataset → step 1 empty; Draft · Resume → the step last edited; Add accessions → step 2 in add mode (section 7).
 

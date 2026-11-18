@@ -9,6 +9,7 @@ import { BUILDER_API_URL } from "@/lib/config"
 import type {
   Build,
   BuilderConfig,
+  DatasetFiles,
   Draft,
   FileKind,
   FileRef,
@@ -56,7 +57,8 @@ function send<T>(
 ): Promise<T> {
   return request<T>(path, {
     method,
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    headers:
+      body === undefined ? undefined : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
     signal,
   })
@@ -83,8 +85,17 @@ export const storageQuery = queryOptions({
 
 /* ------------------------------------------------------------- files -- */
 
-export function inspectFile(file: FileRef, kind: FileKind, signal?: AbortSignal) {
-  return send<InspectResult>("POST", "/datasets/inspect", { file, kind }, signal)
+export function inspectFile(
+  file: FileRef,
+  kind: FileKind,
+  signal?: AbortSignal
+) {
+  return send<InspectResult>(
+    "POST",
+    "/datasets/inspect",
+    { file, kind },
+    signal
+  )
 }
 
 export function checkUrls(urls: string[], signal?: AbortSignal) {
@@ -155,8 +166,30 @@ export function setDatasetListed(datasetId: string, listed: boolean) {
   )
 }
 
-export function deleteDataset(datasetId: string) {
-  return send<void>("DELETE", `/datasets/${encodeURIComponent(datasetId)}`)
+/** What deleting the dataset with its files would free on the server. */
+export const datasetFilesQuery = (datasetId: string) =>
+  queryOptions({
+    queryKey: ["builder", "datasets", datasetId, "files"],
+    queryFn: ({ signal }) =>
+      request<DatasetFiles>(
+        `/datasets/${encodeURIComponent(datasetId)}/files`,
+        {
+          signal,
+        }
+      ),
+    staleTime: 0,
+  })
+
+/**
+ * Remove a dataset from the browser. With `files`, the server also deletes
+ * what only this dataset uses: its published and build files, and its own
+ * downloads and uploads. Files in server folders are never deleted.
+ */
+export function deleteDataset(datasetId: string, files: boolean) {
+  return send<{ freed: number }>(
+    "DELETE",
+    `/datasets/${encodeURIComponent(datasetId)}?files=${files ? "true" : "false"}`
+  )
 }
 
 /** Start a draft in add mode for a published dataset; returns the draft. */
@@ -203,7 +236,9 @@ export const buildsQuery = queryOptions({
   queryKey: ["builder", "builds"],
   queryFn: ({ signal }) => request<Build[]>("/builds", { signal }),
   refetchInterval: (query) =>
-    query.state.data?.some((b) => b.status === "running" || b.status === "queued")
+    query.state.data?.some(
+      (b) => b.status === "running" || b.status === "queued"
+    )
       ? 5000
       : false,
 })
@@ -219,7 +254,11 @@ export const buildQuery = (buildId: string) =>
 export const buildEventsUrl = (buildId: string) =>
   `${BUILDER_API_URL}/builds/${encodeURIComponent(buildId)}/events`
 
-export function startBuild(manifest: ManifestInput, draftId?: string, rebuildOf?: string) {
+export function startBuild(
+  manifest: ManifestInput,
+  draftId?: string,
+  rebuildOf?: string
+) {
   return send<{ id: string }>("POST", "/builds", {
     manifest,
     draft_id: draftId ?? null,
