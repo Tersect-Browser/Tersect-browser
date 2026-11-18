@@ -62,8 +62,8 @@ variable "basic_auth_username" {
   default     = "tersect"
 
   validation {
-    condition     = can(regex("^[A-Za-z0-9._-]{1,64}$", var.basic_auth_username))
-    error_message = "basic_auth_username may contain letters, digits, dot, underscore and hyphen."
+    condition     = can(regex("^[A-Za-z0-9._-][A-Za-z0-9._@-]{0,63}$", var.basic_auth_username))
+    error_message = "basic_auth_username may contain letters, digits, dot, underscore, hyphen and, after the first character, @."
   }
 }
 
