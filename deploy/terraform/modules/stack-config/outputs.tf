@@ -42,6 +42,11 @@ output "basic_auth_password" {
   sensitive   = true
 }
 
+output "public_site" {
+  description = "True when anyone may browse and the login only guards dataset management."
+  value       = var.public_site
+}
+
 output "access_restricted" {
   description = "True when allowed_cidrs limits who can connect."
   value       = local.restricted

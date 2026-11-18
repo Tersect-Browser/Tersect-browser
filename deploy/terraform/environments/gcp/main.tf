@@ -23,6 +23,7 @@ module "config" {
   basic_auth_username = var.basic_auth_username
   basic_auth_password = var.basic_auth_password
   allowed_cidrs       = var.allowed_cidrs
+  public_site         = var.public_site
 
   enable_assistant      = var.enable_assistant
   assistant_model       = var.assistant_model

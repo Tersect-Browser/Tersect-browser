@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { MoonIcon, SunIcon } from "lucide-react"
-import { Link, NavLink, Outlet } from "react-router"
+import { Link, NavLink, Outlet, useNavigate } from "react-router"
 
 import { LogoMark } from "@/components/icons"
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
+import { logout, sessionQuery, useSession } from "@/features/auth/session"
 import { getDatasets } from "@/lib/api"
 import { BASE_URL } from "@/lib/config"
 import { cn } from "@/lib/utils"
@@ -88,8 +89,34 @@ function NavItem({
   )
 }
 
+function SignOut() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  return (
+    <button
+      type="button"
+      className="rounded-lg px-2 py-1 text-muted-foreground hover:bg-accent"
+      onClick={async () => {
+        await logout()
+        await queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey })
+        // Everything fetched from the builder was for the signed-in user.
+        queryClient.removeQueries({
+          predicate: ({ queryKey }) =>
+            queryKey[0] === "builder" &&
+            queryKey[1] !== "session" &&
+            queryKey[1] !== "config",
+        })
+        navigate("/")
+      }}
+    >
+      Sign out
+    </button>
+  )
+}
+
 /** Top bar shared by every page. */
 export function AppShell() {
+  const { session, canManage, signedOut } = useSession()
   return (
     <div className="flex h-full flex-col">
       <header className="z-20 flex h-10 shrink-0 items-center gap-3 border-b bg-card px-3">
@@ -100,10 +127,14 @@ export function AppShell() {
         <CurrentDataset />
         <nav className="ml-auto flex shrink-0 items-center gap-1 font-medium">
           <NavItem to="/">Home</NavItem>
-          <NavItem to="/builds" end={false}>
-            Builds
-          </NavItem>
+          {canManage && (
+            <NavItem to="/builds" end={false}>
+              Builds
+            </NavItem>
+          )}
           <NavItem to="/about">About</NavItem>
+          {signedOut && <NavItem to="/login">Sign in</NavItem>}
+          {session.authenticated && <SignOut />}
           <ThemeToggle />
           <a
             href={RESEARCH_GROUP_URL}

@@ -11,10 +11,11 @@
 
 locals {
   settings = merge(var.cloud_settings, {
-    NAME         = var.name
-    DATA_DIR     = var.data_dir
-    DATA_DEVICES = join(" ", var.data_device_candidates)
-    POLL_MINUTES = tostring(var.config_poll_minutes)
+    NAME          = var.name
+    DATA_DIR      = var.data_dir
+    DATA_DEVICES  = join(" ", var.data_device_candidates)
+    POLL_MINUTES  = tostring(var.config_poll_minutes)
+    FOLLOW_IMAGES = var.follow_images ? "1" : "0"
   })
 
   deploy_env = join("", [

@@ -1,0 +1,58 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is ignored by git.
+
+tenancy_ocid = "ocid1.tenancy.oc1..aaaa..."
+region       = "uk-london-1" # your home region, for Always Free
+name         = "tersect"
+
+# compartment_ocid = "ocid1.compartment.oc1..aaaa..."   # default: the root compartment
+
+# The release to run, as pushed by
+#   deploy/scripts/push-images.sh --platform linux/arm64 <registry> <tag>
+image_tag = "1.0.0"
+
+# --- Deploy on every push (instead of image_tag above) ------------------------
+# .github/workflows/deploy-images.yml pushes arm64 images to the GitHub
+# Container Registry under the branch name whenever the branch changes. With
+# these lines the machine follows that tag and updates itself within minutes.
+# The three packages must be public (see the Terraform README).
+# follow_images = true
+# images = {
+#   web      = "ghcr.io/tersect-browser/tersect-web:develop"
+#   backend  = "ghcr.io/tersect-browser/tersect-backend:develop"
+#   pipeline = "ghcr.io/tersect-browser/tersect-pipeline:develop"
+# }
+
+# --- Address -----------------------------------------------------------------
+# With a domain the site gets a real certificate; point its A record at the
+# public_ip output. Without one it is served on the IP address with a
+# self-signed certificate.
+# domain_name = "tersect.example.org"
+# acme_email  = "you@example.org"
+
+# --- Who may connect ---------------------------------------------------------
+# The app has no accounts: anyone who gets in can start builds and delete
+# datasets. Narrow this to your networks if you can.
+# allowed_cidrs = ["203.0.113.0/24", "198.51.100.7/32"]
+
+# A public resource: anyone may browse, and the login below is only asked for
+# adding, changing and deleting datasets (Sign in, in the app).
+# public_site = true
+
+# basic_auth_username = "tersect"
+# basic_auth_password = "..."   # generated when omitted; better left out of files
+
+# --- Shell access (closed unless both are set) -------------------------------
+# ssh_public_key    = "ssh-ed25519 AAAA... you@laptop"
+# ssh_allowed_cidrs = ["198.51.100.7/32"]
+
+# --- Size (the defaults are the whole Always Free allowance) -----------------
+# ocpus               = 4
+# memory_gb           = 24
+# boot_volume_size_gb = 50
+# data_volume_size_gb = 150    # boot + data: 200 GB are free
+# availability_domain = "Uocm:UK-LONDON-1-AD-2"   # when the first one is out of capacity
+
+# --- Backups -----------------------------------------------------------------
+# backup_retention_days = 4    # five volume backups are free
+
+# tags = { project = "tersect", owner = "you" }

@@ -1,11 +1,15 @@
 """FastAPI application: one router per area."""
 from fastapi import FastAPI
 
-from . import assistant, builds, datasets, drafts, files, uploads
+from . import assistant, auth, builds, datasets, drafts, files, uploads
 
 app = FastAPI(title='Tersect Browser builder', docs_url='/api/docs',
               openapi_url='/api/openapi.json')
 
+# auth: /api/session, /api/login, /api/logout. With TB_ADMIN_PASSWORD set,
+#       everything else needs the session it gives (auth.Protect).
+app.add_middleware(auth.Protect)
+app.include_router(auth.router, prefix='/api')
 # files: /api/config, /api/storage, /api/server-files, /api/datasets/inspect,
 #        /api/datasets/check-urls
 app.include_router(files.router, prefix='/api')

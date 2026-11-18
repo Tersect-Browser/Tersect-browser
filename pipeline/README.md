@@ -194,6 +194,29 @@ it has finished. Results are cached by path, size and modification time.
 Other settings: `TB_MAX_UPLOAD` (bytes, no limit by default),
 `TB_BUILDER_PORT` (4310), and the assistant's below.
 
+### Login
+
+Off by default: the builder is open to whoever can reach it, which suits a
+laptop or a site behind one password. With `TB_ADMIN_PASSWORD` set
+(`server/auth.py`), every request needs a session except `GET /api/session`,
+`POST /api/login`, `POST /api/logout` and `GET /api/config`. This is decided
+in one middleware and by default, so a new route is protected without
+further thought. The browser's viewer talks to the backend only, so a site
+can be public for reading while adding, changing and deleting datasets asks
+for the login (the web app's *Sign in*).
+
+| Variable | |
+|---|---|
+| `TB_ADMIN_USER` | User name (default `admin`) |
+| `TB_ADMIN_PASSWORD` | Password; setting it switches the login on |
+| `TB_SESSION_HOURS` | Length of a session (default 12) |
+| `TB_SESSION_SECRET` | Signs the session cookie (default: derived from the password, so a new password ends every session) |
+
+The session is a signed, `HttpOnly`, `SameSite=Strict` cookie; there is no
+server-side store. Five wrong passwords from one address within five minutes
+block further attempts from it for the rest of that time. One login, not
+user accounts: everyone who has it can do everything.
+
 ### Dataset assistant
 
 An optional chat panel in the wizard (contract

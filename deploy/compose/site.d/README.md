@@ -13,4 +13,6 @@ by hand:
     @outside not remote_ip 203.0.113.0/24 198.51.100.7
     respond @outside "Forbidden" 403
 
-With no files here the site is open to anyone who can reach it.
+With no files here the site is open to anyone who can reach it. That is what
+a public site wants, together with `TB_ADMIN_PASSWORD` in `.env`: everybody
+can browse the datasets, and adding or changing them asks for that login.

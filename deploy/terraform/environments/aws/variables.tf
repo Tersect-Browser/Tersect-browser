@@ -67,6 +67,12 @@ variable "allowed_cidrs" {
   }
 }
 
+variable "public_site" {
+  description = "Let anyone browse the datasets without a password. The login is then asked only for adding, changing and deleting datasets."
+  type        = bool
+  default     = false
+}
+
 variable "basic_auth_username" {
   description = "User name of the shared login."
   type        = string

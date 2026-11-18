@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import { ArrowRightIcon, DatabaseIcon, HistoryIcon, PlusIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  DatabaseIcon,
+  HistoryIcon,
+  PlusIcon,
+} from "lucide-react"
 import { useEffect, useRef } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
@@ -15,6 +20,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useSession } from "@/features/auth/session"
 import { datasetsQuery, draftsQuery } from "@/features/datasets/api"
 import { DatasetRow } from "@/features/datasets/home/dataset-row"
 import { DraftRow } from "@/features/datasets/home/draft-row"
@@ -146,13 +152,22 @@ function useRedirectError() {
 
 export function HomePage() {
   useRedirectError()
-  const managed = useQuery(datasetsQuery)
-  const drafts = useQuery(draftsQuery)
-  const builderDown = managed.isError
+  // Visitors without the login see the published datasets and nothing to
+  // manage them with; the builder would refuse them anyway.
+  const { canManage, isPending: sessionPending } = useSession()
+  const managed = useQuery({ ...datasetsQuery, enabled: canManage })
+  const drafts = useQuery({ ...draftsQuery, enabled: canManage })
+  const builderDown = canManage && managed.isError
 
   const datasets = managed.data ?? []
-  const openDrafts = (drafts.data ?? []).filter((draft) => draft.build_id == null)
-  const empty = managed.isSuccess && datasets.length === 0 && openDrafts.length === 0
+  const openDrafts = (drafts.data ?? []).filter(
+    (draft) => draft.build_id == null
+  )
+  const empty =
+    canManage &&
+    managed.isSuccess &&
+    datasets.length === 0 &&
+    openDrafts.length === 0
 
   return (
     <div className="h-full overflow-auto">
@@ -177,9 +192,14 @@ export function HomePage() {
                 {BUILDER_DOWN} Datasets cannot be added or changed here.
               </span>
             )}
-            <span className="ml-auto flex gap-2">
+            <span className={canManage ? "ml-auto flex gap-2" : "hidden"}>
               {builderDown ? (
-                <Button size="sm" variant="outline" disabled title={BUILDER_DOWN}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled
+                  title={BUILDER_DOWN}
+                >
                   <HistoryIcon /> Builds
                 </Button>
               ) : (
@@ -204,7 +224,9 @@ export function HomePage() {
                 <span>Status</span>
                 <span className="sr-only">Actions</span>
               </div>
-              {builderDown ? (
+              {sessionPending ? (
+                <LoadingRows />
+              ) : builderDown || !canManage ? (
                 <PublishedList />
               ) : (
                 <>

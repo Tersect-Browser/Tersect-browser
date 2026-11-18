@@ -10,6 +10,7 @@ operation, is [terraform/README.md](terraform/README.md).
 | A single machine with Docker (your own server, or a trial on a laptop) | Tested: the stack below ran and built a dataset end to end. |
 | AWS | Ready to try. The Terraform validates and passes its tests, but **has not yet been applied to a real account**. |
 | Google Cloud | Ready to try, with the same caveat. |
+| Oracle Cloud (fits its Always Free allowance) | Ready to try, with the same caveat. Not covered step by step in this guide; see [terraform/README.md](terraform/README.md#first-deployment-oracle-cloud-always-free). |
 | HPC (Slurm + Apptainer) | Written, and exercised against a simulated cluster only: it has **never run on real Slurm or real Apptainer**. Not covered by this guide; see [hpc/README.md](hpc/README.md), starting with its "Before the first run" checklist. |
 
 Because the cloud modules have not met a real account yet, treat your first
@@ -78,8 +79,9 @@ On macOS with Homebrew: `brew install opentofu awscli` and
 ### The images take time the first time
 
 The backend image is built on `tersect-base`, a large image with the analysis
-toolchain (Julia, R, PhyloNet), for `linux/amd64` only. If you have run
-`./start_all.sh` on this computer, it already exists. If not, the first build
+toolchain (Julia, R, PhyloNet). AWS and Google Cloud run it as `linux/amd64`
+(Oracle Cloud's free machines need `linux/arm64`, see the Terraform README).
+If you have run `./start_all.sh` on this computer, the amd64 one already exists. If not, the first build
 takes a long time, and on an Apple Silicon Mac it runs under emulation and can
 take an hour or more. Plan for it; later releases reuse it.
 

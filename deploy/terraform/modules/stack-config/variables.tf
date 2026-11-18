@@ -79,6 +79,12 @@ variable "basic_auth_password" {
   }
 }
 
+variable "public_site" {
+  description = "Let anyone browse the datasets without a password. The shared login is then asked only for adding, changing and deleting datasets (a sign-in page in the app), not by the proxy for the whole site."
+  type        = bool
+  default     = false
+}
+
 variable "allowed_cidrs" {
   description = "Networks allowed to use the site, in CIDR notation. The default allows everyone; the cloud firewall and the proxy both enforce this list."
   type        = list(string)

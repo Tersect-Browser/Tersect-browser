@@ -1,7 +1,10 @@
-# Tersect Browser on AWS or Google Cloud
+# Tersect Browser on AWS, Google Cloud or Oracle Cloud
 
 Terraform that puts the production stack (`deploy/compose/docker-compose.yml`)
-on one virtual machine, on AWS or on Google Cloud. It works with Terraform
+on one virtual machine, on AWS, on Google Cloud or on Oracle Cloud. Most of
+this guide is written for the first two; what differs on Oracle Cloud, whose
+free allowance is large enough for a small deployment, is in
+[its own section](#first-deployment-oracle-cloud-always-free). It works with Terraform
 1.6 or newer and with OpenTofu (`tofu`); the commands below say `terraform`,
 `tofu` takes the same arguments.
 
@@ -22,11 +25,24 @@ on one virtual machine, on AWS or on Google Cloud. It works with Terraform
   pulls from with its own role.
 - Optionally, a GPU machine that also runs the dataset assistant's model.
 
-> **The app has no user accounts.** Anyone who gets past the login can start
-> builds and delete datasets. `allowed_cidrs` defaults to the whole internet,
-> which leaves the shared password as the only protection. Narrow it to your
-> institution's networks if you can, and give the password only to people you
-> would give delete rights to.
+> **There is one login, not user accounts.** Anyone who has the password can
+> start builds and delete datasets. `allowed_cidrs` defaults to the whole
+> internet, which leaves the shared password as the only protection. Narrow it
+> to your institution's networks if you can, and give the password only to
+> people you would give delete rights to.
+
+### A public site
+
+By default the password is asked for the whole site. With
+`public_site = true` anyone can browse the datasets, and the same login is
+asked only for managing them: the app shows a *Sign in* link, and the builder
+service refuses every request without a session (drafts, uploads, builds,
+deleting, the assistant, the server folder). The viewer does not use the
+builder, so nothing a visitor does needs it.
+
+What a public site still exposes to everyone: all listed datasets, and the
+analyses a visitor can start from the viewer (trees, introgression scans),
+which use the machine's CPU. There is no rate limit on those.
 
 ### What this is not
 
@@ -48,9 +64,12 @@ deploy/terraform/
     aws-vm/         VPC, security group, role, EC2, EBS, Elastic IP, Route 53, ECR, Secrets Manager, DLM
     gcp-vm/         network, firewall, service account, instance, disk, address, Cloud DNS,
                     Artifact Registry, Secret Manager, snapshot schedule
+    oci-vm/         VCN, security group, dynamic group and policy, instance, block volume,
+                    reserved address, Container Registry, config bucket, backup policy
   environments/
     aws/            what you run for AWS: providers, variables, outputs
     gcp/            the same for Google Cloud
+    oci/            the same for Oracle Cloud
 deploy/scripts/push-images.sh   builds and pushes the three images
 ```
 
@@ -90,8 +109,10 @@ Each module has its own README with every input and output. `hpc-slurm` and
 On your computer:
 
 - Terraform 1.6+ or OpenTofu 1.6+.
-- Docker, to build the images. The backend image is `linux/amd64` only; on an
-  Apple Silicon Mac the first build of `tersect-base` runs under emulation
+- Docker, to build the images. They are built for `linux/amd64` (AWS, Google
+  Cloud) or `linux/arm64` (Oracle Cloud's Ampere shapes). The first build of
+  the toolchain image `tersect-base` is slow, and slowest when the platform
+  is not your computer's: amd64 on an Apple Silicon Mac runs under emulation
   and can take an hour or more.
 - **AWS:** the AWS CLI v2 with credentials that may manage EC2, VPC, IAM, ECR,
   Secrets Manager, Data Lifecycle Manager (and Route 53 for a record), plus
@@ -180,6 +201,102 @@ Then the same three steps as on AWS: DNS (`dns_managed_zone` creates the
 record; otherwise point your domain at `public_ip`), wait, open the `url`.
 `connect_command` opens a shell through Identity-Aware Proxy.
 
+## First deployment: Oracle Cloud (Always Free)
+
+**Not yet applied to a real tenancy**: the configuration validates and passes
+its mocked test. Treat the first apply as the test.
+
+The defaults use the whole Always Free allowance: one Ampere A1 machine
+(arm64) with 4 OCPUs and 24 GB, a 50 GB system disk and a 150 GB data volume.
+Oracle's limits change; check them, and the notes in
+[modules/oci-vm/README.md](modules/oci-vm/README.md), before relying on them.
+
+Before you start:
+
+- An Oracle Cloud account, and an **API signing key** for your user in
+  `~/.oci/config` (console: Profile menu, My profile, API keys, Add API key;
+  it shows the lines to put in the file). Your user must be a tenancy
+  administrator: the deployment creates a dynamic group and a policy.
+- An **auth token** for your user (same page, Auth tokens), to push images.
+- The tenancy OCID (Profile menu, Tenancy) and your home region.
+
+```sh
+cd deploy/terraform/environments/oci
+cp terraform.tfvars.example terraform.tfvars      # edit: tenancy_ocid, region, image_tag, ...
+cp backend.tf.example backend.tf                  # optional but recommended
+terraform init
+terraform apply
+```
+
+If the apply stops with **"Out of host capacity"**, Oracle has no free A1
+machines in that availability domain at the moment. Set `availability_domain`
+to another one of the region if it has several, or apply again later; what
+was created so far is kept.
+
+Build and push the images **for arm64**. On an Apple Silicon Mac this is the
+computer's own platform, so the toolchain image builds without emulation:
+
+```sh
+cd ../../../..
+$(terraform -chdir=deploy/terraform/environments/oci output -raw registry_login)   # edit the user name; the password is the auth token
+deploy/scripts/push-images.sh --platform linux/arm64 \
+  "$(terraform -chdir=deploy/terraform/environments/oci output -raw registry)" 1.0.0
+```
+
+Then the same three steps as on AWS: DNS (point your domain's `A` record at
+`public_ip`; no record is created for you), wait, open the `url`.
+
+What differs from the other two clouds:
+
+- **Shell access is SSH**, and closed unless you set `ssh_public_key` and
+  `ssh_allowed_cidrs`; `connect_command` then prints the command. Changing
+  the key replaces the machine.
+- **The configuration bundle is an object in a private bucket**, not a
+  secret, and the login password is only in the Terraform state
+  (`terraform output -raw password`).
+- **A changed boot script replaces the machine** (data volume and address
+  stay), as on AWS.
+- **No dataset assistant**: there is no GPU in the allowance.
+- **Backups** are daily incremental volume backups, kept 4 days by default
+  because five are free. To restore, set `data_volume_backup_id` and
+  `terraform apply -replace=module.vm.oci_core_volume.data`.
+- **Idle machines can be reclaimed** by Oracle on an Always Free account;
+  upgrading the account to Pay As You Go lifts that and stays free inside the
+  allowance.
+- **If the site does not answer although the stack is up**, check the
+  machine's own firewall: Oracle's Ubuntu images ship iptables rules that
+  reject most incoming traffic. Docker normally places its rules in front of
+  them; `sudo iptables -L FORWARD -n --line-numbers` shows whether it did.
+
+### Deploying on every push
+
+Instead of a new `image_tag` per release, the machine can follow a moving tag
+that CI pushes. `.github/workflows/deploy-images.yml` does the pushing: on
+every push to `develop` it builds the three images for arm64 and pushes them
+to the GitHub Container Registry as `ghcr.io/<owner>/tersect-web:develop`,
+`-backend:develop` and `-pipeline:develop`. It has **not run yet**; it starts
+with the first push to `develop` that contains it.
+
+1. Let the workflow run once (merge to `develop`, or start it from the
+   Actions tab). The first run builds the toolchain image and takes long;
+   later runs reuse it.
+2. Make the four packages it created public (`tersect-web`,
+   `tersect-backend`, `tersect-pipeline` and `tersect-base`): on GitHub, the
+   organisation's Packages, the package, Package settings, Change visibility.
+   The machine pulls without a login, so private packages fail with "pull
+   access denied".
+3. In `terraform.tfvars`, set `follow_images = true` and `images` to the three
+   references (the example file has the lines), and apply.
+
+From then on a push to `develop` is live a few minutes after its workflow
+finishes: at every poll the machine pulls the tags it runs and restarts the
+containers whose image changed. A running dataset build is interrupted when
+the builder image changed. To go back, set `images` to the tags of an earlier
+commit (`develop-<short sha>`, pushed alongside) and apply.
+
+Changes under `deploy/terraform` are not deployed this way; they still need
+`terraform apply`.
+
 ## Day to day
 
 ### Releasing a new version
@@ -206,7 +323,8 @@ change.
 | You change | What happens | Interruption |
 |---|---|---|
 | `image_tag` | Bundle updated; machine pulls and recreates changed containers | seconds |
-| `basic_auth_password`, `basic_auth_username` | Bundle updated; the proxy is restarted | seconds |
+| `basic_auth_password`, `basic_auth_username` | Bundle updated; the proxy is restarted (with `public_site`: the builder, and everyone signed in is signed out) | seconds |
+| `public_site` | Bundle updated; proxy and builder restarted | seconds |
 | `allowed_cidrs` | Firewall changes at once; the proxy's own list follows within 5 minutes | seconds |
 | `domain_name`, `acme_email` | Bundle updated; proxy and backend recreated; firewall rule for port 80 | seconds, plus the time to get a certificate |
 | `assistant_model` | Bundle updated; the new model is downloaded | none for the site |
@@ -386,6 +504,8 @@ provider. It needs no credentials and creates nothing (Terraform or OpenTofu
 ```sh
 cd deploy/terraform/environments/aws && terraform init -backend=false && terraform test
 ```
+
+The same works in `environments/gcp` and `environments/oci`.
 
 ## Troubleshooting
 

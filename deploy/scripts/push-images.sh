@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Build the three images of the production stack (deploy/compose) for
-# linux/amd64 and push them to a registry.
+# Build the three images of the production stack (deploy/compose) for one
+# platform (linux/amd64 unless --platform says otherwise) and push them to a
+# registry.
 set -euo pipefail
 
 usage() {
     cat <<'USAGE'
 Usage: deploy/scripts/push-images.sh [options] REGISTRY [TAG]
 
-Builds the web, backend and pipeline images for linux/amd64 and pushes them as
+Builds the web, backend and pipeline images and pushes them as
 
     REGISTRY/web:TAG   REGISTRY/backend:TAG   REGISTRY/pipeline:TAG
 
@@ -15,12 +16,16 @@ REGISTRY  the registry and path in front of the image names: the "registry"
           output of the Terraform environments, or any registry you can push to.
             AWS ECR            123456789012.dkr.ecr.eu-west-2.amazonaws.com/tersect
             Artifact Registry  europe-west2-docker.pkg.dev/my-project/tersect
+            Oracle Cloud       uk-london-1.ocir.io/mynamespace/tersect
             other              ghcr.io/my-org/tersect
 TAG       the image tag. Default: `git describe --tags --always --dirty`.
           Use a new tag for every release: the deployment notices a release
           by its tag (image_tag in terraform.tfvars).
 
 Options:
+  --platform P     linux/amd64 (default) or linux/arm64. The machine that runs
+                   the stack decides: arm64 for Oracle Cloud's Ampere shapes,
+                   amd64 for the AWS and Google Cloud defaults.
   --no-login       do not log in to the registry (you already are)
   --build-only     build and tag, do not push
   --rebuild-base   rebuild the tersect-base image even when it exists
@@ -28,16 +33,18 @@ Options:
   -h, --help       show this text
 
 Login is automatic for ECR (needs the aws CLI and credentials) and Artifact
-Registry (needs gcloud and a login). For any other registry run
-`docker login` first.
+Registry (needs gcloud and a login). For any other registry, Oracle Cloud's
+included, run `docker login` first.
 
-The backend is built FROM the local image "tersect-base" (Dockerfile.base,
-linux/amd64 only). It is built first when missing; on Apple Silicon that runs
-under emulation and takes a long time once.
+The backend is built FROM a local toolchain image (Dockerfile.base):
+"tersect-base" for linux/amd64, "tersect-base:arm64" for linux/arm64. It is
+built first when missing, which takes a long time once, longest when the
+platform is not the one of this computer (it then runs under emulation).
 
 Examples:
   deploy/scripts/push-images.sh "$(terraform -chdir=deploy/terraform/environments/aws output -raw registry)" 1.0.0
   deploy/scripts/push-images.sh --only web ghcr.io/my-org/tersect
+  deploy/scripts/push-images.sh --platform linux/arm64 uk-london-1.ocir.io/mynamespace/tersect 1.0.0
 USAGE
 }
 
@@ -48,6 +55,7 @@ login=1
 push=1
 rebuild_base=0
 only="web,backend,pipeline"
+platform=linux/amd64
 positional=()
 
 while [ $# -gt 0 ]; do
@@ -56,6 +64,8 @@ while [ $# -gt 0 ]; do
         --no-login) login=0 ;;
         --build-only) push=0; login=0 ;;
         --rebuild-base) rebuild_base=1 ;;
+        --platform) [ $# -ge 2 ] || die "--platform needs a value"; platform="$2"; shift ;;
+        --platform=*) platform="${1#--platform=}" ;;
         --only) [ $# -ge 2 ] || die "--only needs a value"; only="$2"; shift ;;
         --only=*) only="${1#--only=}" ;;
         --) shift; positional+=("$@"); break ;;
@@ -99,7 +109,11 @@ done
 command -v docker >/dev/null 2>&1 || die "docker is not installed"
 docker info >/dev/null 2>&1 || die "the Docker daemon is not running"
 
-platform=linux/amd64
+case "$platform" in
+    linux/amd64) base_image=tersect-base ;;
+    linux/arm64) base_image=tersect-base:arm64 ;;
+    *) die "--platform must be linux/amd64 or linux/arm64, not $platform" ;;
+esac
 host="${registry%%/*}"
 
 # --- Login -------------------------------------------------------------------
@@ -128,10 +142,11 @@ fi
 # --- Build -------------------------------------------------------------------
 
 build() {
-    # build NAME DOCKERFILE
+    # build NAME DOCKERFILE [docker build options]
     local name="$1" dockerfile="$2"
+    shift 2
     step "Building $registry/$name:$tag ($dockerfile, $platform)"
-    docker build --platform "$platform" -f "$dockerfile" -t "$registry/$name:$tag" .
+    docker build --platform "$platform" "$@" -f "$dockerfile" -t "$registry/$name:$tag" .
 }
 
 wants() {
@@ -143,13 +158,13 @@ wants() {
 }
 
 if wants backend; then
-    if [ "$rebuild_base" -eq 1 ] || ! docker image inspect tersect-base >/dev/null 2>&1; then
-        step "Building tersect-base (Dockerfile.base, $platform); this is the slow one"
-        docker build --platform "$platform" -f Dockerfile.base -t tersect-base .
+    if [ "$rebuild_base" -eq 1 ] || ! docker image inspect "$base_image" >/dev/null 2>&1; then
+        step "Building $base_image (Dockerfile.base, $platform); this is the slow one"
+        docker build --platform "$platform" -f Dockerfile.base -t "$base_image" .
     fi
-    base_arch="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' tersect-base)"
-    [ "$base_arch" = "$platform" ] || die "the local tersect-base image is $base_arch, not $platform; run again with --rebuild-base"
-    build backend Dockerfile
+    base_arch="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$base_image")"
+    [ "$base_arch" = "$platform" ] || die "the local $base_image image is $base_arch, not $platform; run again with --rebuild-base"
+    build backend Dockerfile --build-arg "BASE_IMAGE=$base_image"
 fi
 if wants pipeline; then
     build pipeline Dockerfile.pipeline

@@ -1,0 +1,98 @@
+# Builds the three images of the production stack for linux/arm64 and pushes
+# them to the GitHub Container Registry under the name of the branch:
+#
+#   ghcr.io/<owner>/tersect-web:<branch>
+#   ghcr.io/<owner>/tersect-backend:<branch>
+#   ghcr.io/<owner>/tersect-pipeline:<branch>
+#
+# A deployment that follows that tag (follow_images in
+# deploy/terraform/environments/oci) notices the new images within a few
+# minutes and restarts what changed: pushing to the branch deploys it. Nothing
+# here connects to the machine and no cloud credentials are stored; the only
+# secret used is the token GitHub gives every run.
+#
+# Each image is also pushed under the commit, as <branch>-<short sha>, to be
+# able to go back to it.
+name: Deploy images
+
+on:
+  push:
+    branches: [develop]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "deploy/terraform/**"
+      - "deploy/hpc/**"
+  workflow_dispatch:
+
+# A newer push replaces a run that has not finished.
+concurrency:
+  group: deploy-images-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    # An arm64 machine: the images are built without emulation.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Names
+        id: names
+        run: |
+          owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          branch=$(printf '%s' "$GITHUB_REF_NAME" | tr '/' '-')
+          {
+            echo "prefix=ghcr.io/$owner/tersect"
+            echo "tag=$branch"
+            echo "commit_tag=$branch-${GITHUB_SHA::7}"
+            # The toolchain image changes rarely and takes long to build: it is
+            # kept in the registry under a hash of what it is made from.
+            echo "base=ghcr.io/$owner/tersect-base:arm64-$(cat Dockerfile.base environment.yml backend/src/scripts/requirements.venv.txt | sha256sum | cut -c1-16)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Log in to the registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Toolchain image (built only when its sources changed)
+        env:
+          BASE: ${{ steps.names.outputs.base }}
+        run: |
+          if docker manifest inspect "$BASE" >/dev/null 2>&1; then
+            echo "$BASE exists"
+          else
+            docker build --platform linux/arm64 -f Dockerfile.base -t "$BASE" .
+            docker push "$BASE"
+          fi
+
+      - name: Build
+        env:
+          PREFIX: ${{ steps.names.outputs.prefix }}
+          TAG: ${{ steps.names.outputs.tag }}
+          BASE: ${{ steps.names.outputs.base }}
+        run: |
+          docker build --platform linux/arm64 -f Dockerfile \
+            --build-arg "BASE_IMAGE=$BASE" -t "$PREFIX-backend:$TAG" .
+          docker build --platform linux/arm64 -f Dockerfile.pipeline -t "$PREFIX-pipeline:$TAG" .
+          docker build --platform linux/arm64 -f deploy/docker/web.Dockerfile -t "$PREFIX-web:$TAG" .
+
+      - name: Push
+        env:
+          PREFIX: ${{ steps.names.outputs.prefix }}
+          TAG: ${{ steps.names.outputs.tag }}
+          COMMIT_TAG: ${{ steps.names.outputs.commit_tag }}
+        run: |
+          for name in web backend pipeline; do
+            docker tag "$PREFIX-$name:$TAG" "$PREFIX-$name:$COMMIT_TAG"
+            docker push "$PREFIX-$name:$COMMIT_TAG"
+          done
+          # The moving tag last, and only when all three are there: the
+          # machine never sees half a release under it.
+          for name in web backend pipeline; do
+            docker push "$PREFIX-$name:$TAG"
+          done

@@ -77,6 +77,9 @@ services:
       TB_CLICKHOUSE_PASSWORD: ${CLICKHOUSE_ADMIN_PASSWORD}
       TB_SERVER_FOLDERS: /data/shared
       TB_PIPELINE_ALLOWED_ROOTS: /data/tersect/uploads:/data/shared
+      # With a password here the builder asks for a login; viewing stays open.
+      TB_ADMIN_USER: ${TB_ADMIN_USER:-}
+      TB_ADMIN_PASSWORD: ${TB_ADMIN_PASSWORD:-}
       TB_ASSISTANT_URL: ${TB_ASSISTANT_URL:-}
       TB_ASSISTANT_MODEL: ${TB_ASSISTANT_MODEL:-qwen3:14b}
       TB_ASSISTANT_CONTEXT_CHARS: ${TB_ASSISTANT_CONTEXT_CHARS:-24000}
