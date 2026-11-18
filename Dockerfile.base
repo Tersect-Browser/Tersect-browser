@@ -50,8 +50,10 @@ ARG MAMBA_VERSION=1.5.8
 ENV MAMBA_ROOT_PREFIX=/opt/conda
 ARG RAPIDNJ_ARM64_VERSION=2.3.3
 RUN case "${TARGETARCH:-amd64}" in arm64) platform=linux-aarch64 ;; *) platform=linux-64 ;; esac \
- && curl -Ls "https://micro.mamba.pm/api/micromamba/${platform}/${MAMBA_VERSION}" \
-  | tar -xvj -C /usr/local/bin --strip-components=1 bin/micromamba
+ && curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o /tmp/micromamba.tar.bz2 \
+      "https://micro.mamba.pm/api/micromamba/${platform}/${MAMBA_VERSION}" \
+ && tar -xjf /tmp/micromamba.tar.bz2 -C /usr/local/bin --strip-components=1 bin/micromamba \
+ && rm /tmp/micromamba.tar.bz2
 COPY environment.yml /tmp/environment.yml
 RUN if [ "${TARGETARCH:-amd64}" = "arm64" ]; then \
       micromamba create -y -n tersect -f /tmp/environment.yml "rapidnj=${RAPIDNJ_ARM64_VERSION}"; \

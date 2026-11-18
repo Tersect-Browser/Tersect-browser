@@ -18,9 +18,14 @@ RUN git clone https://github.com/tomkurowski/tersect.git /tmp/tersect \
 ARG MAMBA_VERSION=2.0.5
 ARG TARGETARCH
 ENV MAMBA_ROOT_PREFIX=/opt/conda
+# Downloaded to a file, with retries, and only then unpacked: piped straight
+# into tar, a download that was cut short looked like a corrupt archive and
+# failed the build.
 RUN case "${TARGETARCH:-amd64}" in arm64) platform=linux-aarch64 ;; *) platform=linux-64 ;; esac \
- && curl -fsSL "https://micro.mamba.pm/api/micromamba/${platform}/${MAMBA_VERSION}" \
-  | tar -xj -C /usr/local/bin --strip-components=1 bin/micromamba
+ && curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o /tmp/micromamba.tar.bz2 \
+      "https://micro.mamba.pm/api/micromamba/${platform}/${MAMBA_VERSION}" \
+ && tar -xjf /tmp/micromamba.tar.bz2 -C /usr/local/bin --strip-components=1 bin/micromamba \
+ && rm /tmp/micromamba.tar.bz2
 COPY pipeline/environment.yml /tmp/environment.yml
 RUN micromamba create -y -n pipeline -f /tmp/environment.yml && micromamba clean -a -y
 ENV PATH="/opt/conda/envs/pipeline/bin:${PATH}"
