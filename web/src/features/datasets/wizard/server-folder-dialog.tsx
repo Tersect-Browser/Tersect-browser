@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils"
 import { listServerFolder } from "../api"
 import { formatBytes } from "../format"
 import type { ServerEntry } from "../types"
-import { plural } from "./accessions-shared"
+import { DOCKED_DIALOG, plural } from "./accessions-shared"
 
 interface ServerFolderDialogProps {
   open: boolean
@@ -43,7 +43,9 @@ export function ServerFolderDialog({
 }: ServerFolderDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 p-0 sm:max-w-[540px]">
+      <DialogContent
+        className={cn("gap-0 p-0 sm:max-w-[540px]", DOCKED_DIALOG)}
+      >
         <DialogHeader className="border-b px-3.5 py-3">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -97,7 +99,7 @@ function FolderBrowser({
     <>
       <nav
         aria-label="Folder path"
-        className="flex min-w-0 flex-wrap items-center gap-0.5 border-b px-3 py-1.5 font-mono text-[11px]"
+        className="flex min-w-0 flex-wrap items-center gap-0.5 border-b px-3 py-1.5 font-mono text-t11"
       >
         <Crumb current={trail.length === 0} onClick={() => setTrail([])}>
           Shared folders
@@ -116,7 +118,7 @@ function FolderBrowser({
       </nav>
 
       <div
-        className="h-[300px] overflow-y-auto py-1"
+        className="h-[300px] overflow-y-auto py-1 max-sm:h-[38dvh]"
         role="listbox"
         aria-multiselectable={multiple}
       >
@@ -149,7 +151,7 @@ function FolderBrowser({
               <button
                 key={entry.path}
                 type="button"
-                className="flex h-6 w-full items-center gap-2 px-3 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                className="flex h-(--c24) w-full items-center gap-2 px-3 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                 onClick={() => setTrail([...trail, entry])}
               >
                 <span className="size-4 shrink-0" />
@@ -174,12 +176,12 @@ function FolderBrowser({
         )}
       </div>
 
-      <p className="border-t px-3.5 py-2 text-[11px] text-muted-foreground">
+      <p className="border-t px-3.5 py-2 text-t11 text-muted-foreground">
         Only folders the server is configured to share are listed. Files are
         read in place; nothing is uploaded or copied.
       </p>
-      <DialogFooter className="mx-0 mb-0 items-center sm:justify-between">
-        <span className="font-mono text-[11px] text-muted-foreground">
+      <DialogFooter className="mx-0 mb-0 items-center justify-between max-sm:bottom-0!">
+        <span className="font-mono text-t11 text-muted-foreground">
           {picked.length
             ? `${picked.length} selected · ${formatBytes(total)}`
             : "None selected"}
@@ -215,7 +217,7 @@ function Crumb({
       type="button"
       aria-current={current ? "location" : undefined}
       className={cn(
-        "max-w-[240px] truncate rounded-sm px-1 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none",
+        "max-w-[240px] truncate rounded-sm px-1 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none max-lg:min-h-11 pointer-coarse:min-h-11",
         current ? "font-medium text-foreground" : "text-muted-foreground"
       )}
       onClick={onClick}
@@ -247,7 +249,7 @@ function FileRow({
       aria-selected={checked}
       aria-disabled={!accepted}
       className={cn(
-        "flex h-6 items-center gap-2 px-3",
+        "flex h-(--c24) items-center gap-2 px-3",
         accepted ? "hover:bg-accent" : "text-muted-foreground opacity-60",
         checked && "bg-accent"
       )}
@@ -264,14 +266,14 @@ function FileRow({
       <label
         htmlFor={id}
         className={cn(
-          "min-w-0 flex-1 truncate font-mono",
+          "flex min-w-0 flex-1 items-center self-stretch font-mono",
           accepted && "cursor-pointer"
         )}
         title={entry.name}
       >
-        {entry.name}
+        <span className="truncate">{entry.name}</span>
       </label>
-      <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+      <span className="shrink-0 font-mono text-t11 text-muted-foreground">
         {formatBytes(entry.size)}
       </span>
     </div>

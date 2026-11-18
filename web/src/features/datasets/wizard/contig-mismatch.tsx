@@ -15,7 +15,12 @@ import { cn } from "@/lib/utils"
 import { hasContigMismatch, suggestRenameMap } from "../manifest"
 import type { VcfFile } from "../types"
 import { useForm, useWizardStore } from "../wizard-store"
-import { filesText, plural, rangeText } from "./accessions-shared"
+import {
+  filesText,
+  LIST_CHECKBOX,
+  plural,
+  rangeText,
+} from "./accessions-shared"
 
 const KEEP = "__keep"
 /** Contigs listed before "Show all"; the rest are usually scaffolds. */
@@ -124,9 +129,9 @@ function RenamedLine({
   const map = renamed[0]?.renameContigs ?? {}
   const pairs = Object.entries(map)
   return (
-    <div className="flex min-h-7 items-center gap-2 rounded-md border px-2.5 py-1 text-[11px]">
+    <div className="flex min-h-7 items-center gap-2 rounded-md border px-2.5 py-1 text-t11 max-sm:pr-1">
       <CircleCheckIcon className="size-3.5 shrink-0 text-primary" />
-      <span className="min-w-0 flex-1 truncate">
+      <span className="min-w-0 flex-1 truncate max-sm:whitespace-normal">
         Contigs renamed for{" "}
         <span className="font-mono">
           {filesText(renamed.map((f) => f.file.name))}
@@ -216,7 +221,7 @@ function RenameEditor({
               ? "Contig names do not match the reference"
               : "Rename map"}
           </p>
-          <p className="text-[11px] text-pretty">
+          <p className="text-t11 text-pretty">
             <span className="font-mono">
               {filesText(named.map((f) => f.file.name))}
             </span>{" "}
@@ -230,16 +235,19 @@ function RenameEditor({
         </div>
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-x-4 gap-y-1 rounded-md bg-card p-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-x-4 gap-y-1 rounded-md bg-card p-2 max-sm:gap-y-2.5">
         {contigs.map((contig) => (
-          <div key={contig} className="flex h-6 min-w-0 items-center gap-1.5">
+          <div
+            key={contig}
+            className="flex min-h-6 min-w-0 items-center gap-1.5 max-sm:flex-col max-sm:items-stretch max-sm:gap-1"
+          >
             <span
-              className="w-24 shrink-0 truncate font-mono text-[11px]"
+              className="w-24 shrink-0 truncate font-mono text-t11 max-sm:w-auto"
               title={contig}
             >
               {contig}
             </span>
-            <ArrowRightIcon className="size-3 shrink-0 text-muted-foreground" />
+            <ArrowRightIcon className="size-3 shrink-0 text-muted-foreground max-sm:hidden" />
             <Select
               value={map[contig] ?? KEEP}
               onValueChange={(value) => {
@@ -252,7 +260,7 @@ function RenameEditor({
               <SelectTrigger
                 size="sm"
                 aria-label={`Reference sequence for ${contig}`}
-                className="h-5! min-w-0 flex-1 font-mono text-[11px]"
+                className="h-(--c20)! min-w-0 flex-1 font-mono text-t11 max-sm:w-full max-sm:flex-none"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -288,16 +296,16 @@ function RenameEditor({
 
       <div className="flex flex-wrap items-center gap-3">
         {group.files.length > 1 && (
-          <label className="flex items-center gap-1.5 text-[11px]">
+          <label className="flex min-w-0 items-center gap-1.5 text-t11">
             <Checkbox
-              className="size-3.5"
+              className={LIST_CHECKBOX}
               checked={allFiles}
               onCheckedChange={(on) => setAllFiles(on === true)}
             />
             Apply to all {group.files.length} files with these contig names
           </label>
         )}
-        <span className="flex-1" />
+        <span className="flex-1 max-sm:hidden" />
         {!group.mismatch && (
           <Button variant="ghost" size="sm" onClick={onDone}>
             Cancel

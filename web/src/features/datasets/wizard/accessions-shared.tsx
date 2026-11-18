@@ -43,6 +43,17 @@ export function groupColor(
   return index < 0 ? undefined : `var(--group-${(index % GROUP_COUNT) + 1})`
 }
 
+/**
+ * Wizard dialogs on phones (HANDOFF-mobile 7.3): docked to the bottom edge
+ * with no side margin. The bottom margin, scrolling and sticky footer come
+ * from DialogContent.
+ */
+export const DOCKED_DIALOG =
+  "max-sm:right-0! max-sm:left-0! max-sm:grid-cols-[minmax(0,1fr)]"
+
+/** Checkbox in a dense list: 14px, the touch size on touch devices. */
+export const LIST_CHECKBOX = "size-[max(0.875rem,var(--cb))]"
+
 export function GroupSwatch({
   color,
   className,

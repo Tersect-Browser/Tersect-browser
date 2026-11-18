@@ -20,7 +20,7 @@ const LOCKED_IN_ADD = new Set<Proposal["kind"]>(["reference", "options"])
 
 function LinkLine({ link }: { link: LinkCheck }) {
   return (
-    <li className="flex min-w-0 items-center gap-1.5 text-[11px]">
+    <li className="flex min-w-0 items-center gap-1.5 text-t11">
       {link.ok ? (
         <CircleCheckIcon
           aria-label="Reachable"
@@ -43,7 +43,7 @@ function LinkLine({ link }: { link: LinkCheck }) {
       </span>
       <span
         className={cn(
-          "shrink-0 font-mono",
+          "max-w-[55%] shrink-0 truncate font-mono",
           link.ok ? "text-muted-foreground" : "text-destructive"
         )}
       >
@@ -94,7 +94,7 @@ export function ProposalCard({
           {proposal.title}
         </h3>
         {proposal.note && (
-          <p className="text-[11px] text-muted-foreground">{proposal.note}</p>
+          <p className="text-t11 text-muted-foreground">{proposal.note}</p>
         )}
       </div>
       {proposal.links.length > 0 && (
@@ -105,11 +105,11 @@ export function ProposalCard({
         </ul>
       )}
       {proposal.more && (
-        <p className="pl-[18px] text-[11px] text-muted-foreground">
+        <p className="pl-[18px] text-t11 text-muted-foreground">
           {proposal.more}
         </p>
       )}
-      <p className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+      <p className="flex items-start gap-1.5 text-t11 text-muted-foreground">
         <FileTextIcon className="mt-px size-3 shrink-0" />
         <span className="min-w-0">Source: {proposal.source}</span>
       </p>
@@ -129,12 +129,12 @@ export function ProposalCard({
             Dismiss
           </Button>
           {!proposal.applicable && (
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-t11 text-muted-foreground">
               Nothing in it can be used.
             </span>
           )}
           {proposal.applicable && locked && (
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-t11 text-muted-foreground">
               Step {step} is locked when adding accessions.
             </span>
           )}
@@ -142,7 +142,7 @@ export function ProposalCard({
       ) : (
         <p
           role="status"
-          className="flex items-center gap-1.5 border-t pt-1.5 text-[11px] text-muted-foreground"
+          className="flex items-center gap-1.5 border-t pt-1.5 text-t11 text-muted-foreground"
         >
           {state === "applied" || state === "accepted" ? (
             <CheckIcon className="size-3 shrink-0 text-primary" />
@@ -154,7 +154,7 @@ export function ProposalCard({
             <Button
               variant="link"
               size="xs"
-              className="ml-auto h-auto px-0 text-[11px]"
+              className="ml-auto h-auto px-0 text-t11 max-lg:min-h-11 max-lg:px-2 pointer-coarse:min-h-11 pointer-coarse:px-2"
               onClick={() =>
                 useWizardStore.getState().setStep(PROPOSAL_STEP[proposal.kind])
               }

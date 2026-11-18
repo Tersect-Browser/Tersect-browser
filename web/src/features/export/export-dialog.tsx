@@ -218,14 +218,18 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
               }
             >
               {STYLES.map((style) => (
-                <div key={style.value} className="flex items-center gap-2">
+                // The min-height is 0 at compact density and 44px on touch.
+                <div
+                  key={style.value}
+                  className="flex min-h-[calc((var(--cb)-12px)*5.5)] items-center gap-2"
+                >
                   <RadioGroupItem
                     value={style.value}
                     id={`export-style-${style.value}`}
                   />
                   <Label
                     htmlFor={`export-style-${style.value}`}
-                    className="font-normal"
+                    className="flex-1 self-stretch font-normal"
                   >
                     {style.label}
                   </Label>
@@ -271,6 +275,14 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
             />
             <ReadOnlySize label="Total width" value={totalSize.width} />
             <ReadOnlySize label="Total height" value={totalSize.height} />
+            {/* Phones: both on one line. */}
+            <div className="col-span-2 flex items-baseline gap-2 sm:hidden">
+              <span className="text-muted-foreground">Total size</span>
+              <span className="truncate font-mono text-sm">
+                {formatSize(totalSize.width)} × {formatSize(totalSize.height)}{" "}
+                px
+              </span>
+            </div>
           </div>
         </fieldset>
 
@@ -296,14 +308,16 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
   )
 }
 
+function formatSize(value: number) {
+  return Number.isFinite(value) ? value.toLocaleString("en-US") : "–"
+}
+
 /** A computed size: 14px mono with a px suffix. */
 function ReadOnlySize({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-0.5 max-sm:hidden">
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono text-sm">
-        {Number.isFinite(value) ? value.toLocaleString("en-US") : "–"} px
-      </span>
+      <span className="font-mono text-sm">{formatSize(value)} px</span>
     </div>
   )
 }

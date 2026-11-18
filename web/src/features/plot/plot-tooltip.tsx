@@ -53,7 +53,7 @@ export function PlotTooltip({ event }: { event: PlotPointerEvent | null }) {
   return (
     <div
       ref={ref}
-      className="pointer-events-none fixed z-50 rounded-md bg-foreground px-2 py-1 font-mono text-[11px] whitespace-nowrap text-background select-none"
+      className="pointer-events-none fixed z-50 rounded-md bg-foreground px-2 py-1 font-mono text-t11 whitespace-nowrap text-background select-none"
       style={position}
     >
       {describe(event.target).map((line) => (

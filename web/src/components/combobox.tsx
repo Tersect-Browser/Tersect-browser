@@ -9,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useMediaQuery } from "@/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
 
 export interface ComboboxOption {
@@ -17,7 +18,11 @@ export interface ComboboxOption {
 }
 
 const OPTION_HEIGHT = 24
+/** Row height with touch density (matches the CSS density switch). */
+const TOUCH_OPTION_HEIGHT = 44
+const TOUCH_DENSITY = "(pointer: coarse), (max-width: 1023.98px)"
 const MAX_VISIBLE_OPTIONS = 10
+const MAX_VISIBLE_TOUCH_OPTIONS = 5
 
 interface ComboboxProps {
   options: ComboboxOption[]
@@ -28,6 +33,12 @@ interface ComboboxProps {
   /** Short label shown before the value, inside the trigger. */
   prefix?: ReactNode
   className?: string
+  /** Extra classes for the option list popover (for example its width). */
+  contentClassName?: string
+  /** Preferred side of the trigger for the list; it flips when cramped. */
+  side?: "top" | "bottom"
+  /** Distance kept from the viewport edges, in px. */
+  collisionPadding?: number
   "aria-label"?: string
 }
 
@@ -45,11 +56,14 @@ function OptionList({
   onSelect: (value: string) => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const touch = useMediaQuery(TOUCH_DENSITY)
+  const optionHeight = touch ? TOUCH_OPTION_HEIGHT : OPTION_HEIGHT
+  const maxVisible = touch ? MAX_VISIBLE_TOUCH_OPTIONS : MAX_VISIBLE_OPTIONS
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: options.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => OPTION_HEIGHT,
+    estimateSize: () => optionHeight,
     overscan: 8,
   })
 
@@ -72,7 +86,7 @@ function OptionList({
       ref={scrollRef}
       role="listbox"
       className="overflow-y-auto p-1"
-      style={{ maxHeight: OPTION_HEIGHT * MAX_VISIBLE_OPTIONS + 8 }}
+      style={{ maxHeight: optionHeight * maxVisible + 8 }}
     >
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
@@ -111,6 +125,9 @@ export function Combobox({
   searchPlaceholder = "Search...",
   prefix,
   className,
+  contentClassName,
+  side,
+  collisionPadding,
   ...props
 }: ComboboxProps) {
   const [open, setOpen] = useState(false)
@@ -167,7 +184,12 @@ export function Combobox({
           <ChevronsUpDownIcon className="size-3 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 gap-0 p-0">
+      <PopoverContent
+        align="start"
+        side={side}
+        collisionPadding={collisionPadding}
+        className={cn("w-72 gap-0 p-0", contentClassName)}
+      >
         <div className="flex items-center gap-2 border-b px-2">
           <SearchIcon className="size-[13px] shrink-0 text-muted-foreground" />
           <input

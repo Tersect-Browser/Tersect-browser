@@ -123,14 +123,14 @@ function SummaryCard({
     >
       <div className="flex items-center gap-2">
         <h2 className="caption">{title}</h2>
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-t10 text-muted-foreground">
           Step {WIZARD_STEPS.indexOf(step) + 1}
         </span>
         {editable && (
           <Button
             variant="link"
             size="xs"
-            className="ml-auto h-auto px-0"
+            className="ml-auto h-auto px-0 max-lg:min-h-11 pointer-coarse:min-h-11"
             onClick={() => setStep(step)}
           >
             Edit
@@ -152,12 +152,10 @@ function Row({
   mono?: boolean
 }) {
   return (
-    <div className="grid grid-cols-[150px_1fr] items-baseline gap-2 py-px">
+    <div className="grid grid-cols-[110px_1fr] items-baseline gap-2 py-px sm:grid-cols-[150px_1fr]">
       <dt className="text-muted-foreground">{label}</dt>
       <dd
-        className={
-          mono ? "min-w-0 font-mono text-[11px] break-words" : "min-w-0"
-        }
+        className={mono ? "min-w-0 font-mono text-t11 break-words" : "min-w-0"}
       >
         {children}
       </dd>
@@ -252,7 +250,7 @@ function ValidationBlock({ form }: { form: WizardForm }) {
         <span className="flex-1">
           <span className="font-semibold">Validation passed</span>
           <span className="text-muted-foreground"> — Same checks as </span>
-          <span className="font-mono text-[11px]">tb-dataset validate</span>
+          <span className="font-mono text-t11">tb-dataset validate</span>
           <span className="text-muted-foreground">.</span>
         </span>
         {again}
@@ -277,19 +275,16 @@ function ValidationBlock({ form }: { form: WizardForm }) {
           return (
             <li
               key={`${issue.field}-${index}`}
-              className="grid grid-cols-[150px_1fr_auto] items-baseline gap-2 px-3 py-1"
+              className="grid grid-cols-1 items-baseline gap-x-2 gap-y-0.5 px-3 py-1 max-sm:py-2 sm:grid-cols-[150px_1fr_auto]"
             >
-              <span
-                className="truncate font-mono text-[11px]"
-                title={issue.field}
-              >
+              <span className="truncate font-mono text-t11" title={issue.field}>
                 {issue.field}
               </span>
               <span>{issue.message}</span>
               <Button
                 variant="link"
                 size="xs"
-                className="h-auto px-0"
+                className="h-auto justify-self-start px-0 max-lg:min-h-11 sm:justify-self-auto pointer-coarse:min-h-11"
                 onClick={() => go(link)}
               >
                 {link.label}
@@ -312,7 +307,7 @@ export function StepReview() {
   const { reference, options } = form
 
   return (
-    <div className="flex max-w-[760px] flex-col gap-4 px-6 py-5">
+    <div className="flex max-w-[760px] flex-col gap-4 px-4 pt-4 pb-7 sm:px-6 sm:py-5">
       <ValidationBlock form={form} />
 
       <SummaryCard title="Reference" step="reference" editable={!addMode}>
@@ -362,7 +357,7 @@ export function StepReview() {
                     aria-hidden
                   />
                   <span>{group.name}</span>
-                  <span className="font-mono text-[11px] text-muted-foreground">
+                  <span className="font-mono text-t11 text-muted-foreground">
                     {group.count}
                   </span>
                 </li>

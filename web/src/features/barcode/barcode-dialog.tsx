@@ -86,7 +86,7 @@ function BarcodeForm({
         barcode keeps them easier to assay.
       </p>
 
-      <div className="grid grid-cols-2 items-end gap-2.5">
+      <div className="grid grid-cols-2 items-end gap-2.5 max-sm:grid-cols-1">
         <div className="flex flex-col gap-1">
           <Label htmlFor="barcode-size">Barcode size (bp)</Label>
           <Input
@@ -128,7 +128,7 @@ function BarcodeForm({
         </Alert>
       ) : (
         done && (
-          <div className="flex items-center gap-2 rounded-xl border px-2.5 py-2">
+          <div className="flex items-center gap-2 rounded-xl border px-2.5 py-2 max-sm:flex-wrap">
             <CircleCheckIcon className="size-[15px] shrink-0 text-primary" />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="font-medium">
@@ -136,11 +136,11 @@ function BarcodeForm({
                   ? "Barcodes ready"
                   : `${result.count.toLocaleString("en-US")} barcode${result.count === 1 ? "" : "s"} found`}
               </span>
-              <span className="truncate font-mono text-[11px] text-muted-foreground">
+              <span className="truncate font-mono text-t11 text-muted-foreground">
                 {result.filename}
               </span>
             </div>
-            <Button asChild>
+            <Button asChild className="max-sm:w-full">
               <a href={result.url} download={result.filename}>
                 <DownloadIcon />
                 Download
@@ -157,6 +157,7 @@ function BarcodeForm({
         <Button
           type="submit"
           variant={done ? "outline" : "default"}
+          className="max-sm:flex-1"
           disabled={generate.isPending || !sizeValid}
         >
           {generate.isPending && <Spinner />}
@@ -181,7 +182,7 @@ export function BarcodeDialog() {
       open={target !== null}
       onOpenChange={(open) => !open && setTarget(null)}
     >
-      <DialogContent className="w-[40vw] min-w-[440px] sm:max-w-none">
+      <DialogContent className="sm:w-[40vw] sm:max-w-none sm:min-w-[440px]">
         <DialogHeader>
           <DialogTitle>Barcode Generator</DialogTitle>
         </DialogHeader>

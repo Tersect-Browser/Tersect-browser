@@ -101,3 +101,8 @@
   --viz-t1: #7d847f; --viz-t2: #5aa2ee; --viz-t3: #f5a04a;
   --viz-sig: #ff6b7d; --viz-sig-gold: #f2c230; --viz-expected: #b592ea; --viz-threshold: #8a908c;
 }
+
+/* Density. Compact for pointer devices; touch for phones and tablets.
+   In the app, switch on @media (pointer: coarse) rather than width. */
+:root, [data-density="compact"] { --c18:18px; --c20:20px; --c22:22px; --c24:24px; --c26:26px; --c28:28px; --c30:30px; --row:20px; --cb:12px; --t9:9.5px; --t10:10px; --t11:11px; --t12:12px; --t13:13px; --t14:14px; --pad-x:0px; }
+[data-density="touch"] { --c18:40px; --c20:44px; --c22:44px; --c24:44px; --c26:44px; --c28:44px; --c30:48px; --row:44px; --cb:20px; --t9:11px; --t10:12px; --t11:13px; --t12:15px; --t13:16px; --t14:17px; --pad-x:6px; }

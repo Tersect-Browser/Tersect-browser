@@ -61,7 +61,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border border-border bg-popover p-3.5 text-xs text-popover-foreground shadow-[0_16px_48px_rgb(0_0_0/0.3)] duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border border-border bg-popover p-3.5 text-xs text-popover-foreground shadow-[0_16px_48px_rgb(0_0_0/0.3)] duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 max-sm:top-auto max-sm:right-2 max-sm:bottom-[calc(0.5rem+env(safe-area-inset-bottom))] max-sm:left-2 max-sm:max-h-[90dvh] max-sm:w-auto max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:data-open:slide-in-from-bottom-4 max-sm:data-closed:slide-out-to-bottom-4",
           className
         )}
         {...props}
@@ -106,7 +106,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-3.5 -mb-3.5 flex flex-col-reverse gap-1.5 rounded-b-2xl border-t px-3.5 py-2.5 sm:flex-row sm:justify-end",
+        "-mx-3.5 -mb-3.5 flex flex-wrap justify-end gap-1.5 rounded-b-2xl border-t px-3.5 py-2.5 max-sm:sticky max-sm:bottom-3.5 max-sm:z-10 max-sm:bg-popover",
         className
       )}
       {...props}

@@ -122,8 +122,8 @@ export function SuggestedAccessionsBar() {
       )}
     >
       <SuggestedBadge />
-      <div className="flex min-w-[240px] flex-1 flex-col gap-0.5">
-        <p className="text-[11px]">
+      <div className="flex min-w-[min(240px,100%)] flex-1 flex-col gap-0.5">
+        <p className="text-t11">
           <span className="font-semibold">
             {plural(rows.length, "accession")} from the assistant
           </span>
@@ -136,7 +136,7 @@ export function SuggestedAccessionsBar() {
           </span>
         </p>
       </div>
-      <div className="ml-auto flex shrink-0 gap-1.5">
+      <div className="ml-auto flex flex-wrap justify-end gap-1.5">
         <Button
           variant="ghost"
           size="sm"
@@ -165,8 +165,8 @@ export function SuggestedAccessionRows() {
         <SuggestedRow key={`${row.name}-${i}`} row={row} />
       ))}
       {rows.length > shown.length && (
-        <tr className="h-6 border-b bg-accent/60">
-          <td colSpan={7} className="px-2 text-[11px] text-muted-foreground">
+        <tr className="h-(--c24) border-b bg-accent/60">
+          <td colSpan={7} className="px-2 text-t11 text-muted-foreground">
             and {plural(rows.length - shown.length, "more suggested accession")}
           </td>
         </tr>
@@ -177,7 +177,7 @@ export function SuggestedAccessionRows() {
 
 function SuggestedRow({ row }: { row: ProposedAccession }) {
   return (
-    <tr className="h-6 border-b bg-accent/60 text-[11px]">
+    <tr className="h-(--c24) border-b bg-accent/60 text-t11">
       <td className="truncate px-2 font-mono text-xs" title={row.name}>
         {row.name}
       </td>
@@ -237,7 +237,7 @@ export function SuggestedRenameMap() {
             onAccept={() => acceptRenameMap(draftId, proposal)}
             onDismiss={() => rejectSuggestion(draftId, proposal.id)}
           >
-            <p className="text-[11px]">
+            <p className="text-t11">
               {targets.length ? (
                 <>
                   For{" "}
@@ -263,7 +263,7 @@ export function SuggestedRenameMap() {
               {pairs.slice(0, 12).map(([from, to]) => (
                 <span
                   key={from}
-                  className="flex min-w-0 items-center gap-1.5 font-mono text-[11px]"
+                  className="flex min-w-0 items-center gap-1.5 font-mono text-t11"
                 >
                   <span className="truncate">{from}</span>
                   <ArrowRightIcon className="size-3 shrink-0 text-muted-foreground" />
@@ -271,7 +271,7 @@ export function SuggestedRenameMap() {
                 </span>
               ))}
               {pairs.length > 12 && (
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-t11 text-muted-foreground">
                   and {plural(pairs.length - 12, "more")}
                 </span>
               )}
@@ -314,7 +314,7 @@ export function SuggestedSheet() {
       }}
       onDismiss={() => rejectSuggestion(draftId, proposal.id)}
     >
-      <p className="text-[11px]">
+      <p className="text-t11">
         <span className="font-mono">
           {formatCount(matched)} of {plural(matches.length, "sheet row")}
         </span>{" "}
@@ -401,7 +401,7 @@ export function SuggestedOptions() {
         }))}
       />
       {needsGff && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-t11 text-muted-foreground">
           Build from GFF needs gene models: add a GFF3 file in step 1 first, or
           this step falls back to None.
         </p>

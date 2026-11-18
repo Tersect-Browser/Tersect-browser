@@ -24,7 +24,14 @@ import { useSession } from "@/features/auth/session"
 import { datasetsQuery, draftsQuery } from "@/features/datasets/api"
 import { DatasetRow } from "@/features/datasets/home/dataset-row"
 import { DraftRow } from "@/features/datasets/home/draft-row"
-import { GRID, ROW } from "@/features/datasets/home/layout"
+import {
+  DESCRIPTION,
+  GRID,
+  PHONE_META,
+  ROW,
+  WIDE_CELL,
+  phoneMeta,
+} from "@/features/datasets/home/layout"
 import type { DatasetPublic } from "@/lib/types"
 
 const BUILDER_DOWN = "The dataset builder is not running on this server."
@@ -42,9 +49,9 @@ function LoadingRows() {
   return [0, 1, 2].map((row) => (
     <div key={row} className={ROW}>
       <Skeleton className="h-4 w-48" />
-      <Skeleton className="h-4 w-16" />
-      <Skeleton className="ml-auto h-4 w-10" />
-      <Skeleton className="h-4 w-14" />
+      <Skeleton className={`h-4 w-16 ${WIDE_CELL}`} />
+      <Skeleton className={`ml-auto h-4 w-10 ${WIDE_CELL}`} />
+      <Skeleton className={`h-4 w-14 ${WIDE_CELL}`} />
       <span />
     </div>
   ))
@@ -117,17 +124,23 @@ function PublishedList() {
               {dataset.dataset_id}
             </span>
             {dataset.description && (
-              <span className="block truncate text-muted-foreground">
-                {dataset.description}
-              </span>
+              <span className={DESCRIPTION}>{dataset.description}</span>
             )}
+            <span className={PHONE_META}>
+              {phoneMeta(
+                dataset.reference,
+                dataset.accession_count?.toLocaleString("en-US")
+              )}
+            </span>
           </span>
-          <span className="truncate font-mono">{dataset.reference}</span>
-          <span className="text-right font-mono">
+          <span className={`truncate font-mono ${WIDE_CELL}`}>
+            {dataset.reference}
+          </span>
+          <span className={`text-right font-mono ${WIDE_CELL}`}>
             {dataset.accession_count?.toLocaleString("en-US")}
           </span>
-          <span />
-          <ArrowRightIcon className="size-[13px] text-muted-foreground" />
+          <span className={WIDE_CELL} />
+          <ArrowRightIcon className="size-[13px] justify-self-end text-muted-foreground sm:justify-self-auto" />
         </Link>
       ))}
     </>
@@ -171,7 +184,7 @@ export function HomePage() {
 
   return (
     <div className="h-full overflow-auto">
-      <div className="mx-auto flex max-w-[860px] flex-col gap-8 px-6 pt-14 pb-10">
+      <div className="mx-auto flex max-w-[860px] flex-col gap-8 px-4 pt-8 pb-[calc(2.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-14">
         <div className="flex flex-col gap-2">
           <h1 className="text-[26px] leading-tight font-semibold">
             Compare genomes along a chromosome
@@ -188,7 +201,7 @@ export function HomePage() {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="caption">Datasets</h2>
             {builderDown && (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-t11 text-muted-foreground">
                 {BUILDER_DOWN} Datasets cannot be added or changed here.
               </span>
             )}
@@ -217,7 +230,7 @@ export function HomePage() {
             <EmptyDatasets />
           ) : (
             <section className="overflow-hidden rounded-xl border bg-card">
-              <div className={`${GRID} caption border-b py-2`}>
+              <div className={`${GRID} caption border-b py-2 max-sm:hidden`}>
                 <span>Dataset</span>
                 <span>Reference</span>
                 <span className="text-right">Accessions</span>

@@ -160,7 +160,7 @@ export function StepAccessions({
   return (
     <div className="flex flex-col gap-3">
       {indexMode ? (
-        <p className="flex items-start gap-2 rounded-md border bg-card px-3 py-2 text-[11px] text-muted-foreground">
+        <p className="flex items-start gap-2 rounded-md border bg-card px-3 py-2 text-t11 text-muted-foreground">
           <InfoIcon className="mt-px size-3.5 shrink-0" />
           <span>
             The dataset is built from an existing Tersect index (step 3), so its
@@ -246,7 +246,7 @@ function CountLine({
   return (
     <span
       className={cn(
-        "font-mono text-[11px]",
+        "font-mono text-t11",
         short && count > 0 ? "text-destructive" : "text-muted-foreground"
       )}
     >

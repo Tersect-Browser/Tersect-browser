@@ -58,7 +58,7 @@ export function ColorPicker({ color, onConfirm, onCancel }: ColorPickerProps) {
         onChange={setDraft}
         style={{ width: "100%", height: 140 }}
       />
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1 max-sm:grid max-sm:grid-cols-5 max-sm:gap-2">
         {[undefined, ...presets].map((preset) => (
           <button
             key={preset ?? "none"}
@@ -71,7 +71,10 @@ export function ColorPicker({ color, onConfirm, onCancel }: ColorPickerProps) {
             )}
             onClick={() => setDraft(preset)}
           >
-            <ColorSwatch color={preset} className="block size-5" />
+            <ColorSwatch
+              color={preset}
+              className="block size-5 max-sm:h-8 max-sm:w-full"
+            />
           </button>
         ))}
       </div>

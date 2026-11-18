@@ -88,7 +88,7 @@ export function UploadsPanel({ className }: { className?: string }) {
       <button
         type="button"
         aria-expanded={open}
-        className="flex h-[30px] w-full items-center gap-2 px-2.5 text-left hover:bg-accent/50 focus-visible:bg-accent focus-visible:outline-none"
+        className="flex min-h-(--c30) w-full items-center gap-2 px-2.5 text-left hover:bg-accent/50 focus-visible:bg-accent focus-visible:outline-none"
         onClick={() => setOpen(!open)}
       >
         <ChevronDownIcon
@@ -98,12 +98,12 @@ export function UploadsPanel({ className }: { className?: string }) {
           )}
         />
         <span className="caption">Uploads</span>
-        <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground">
+        <span className="min-w-0 flex-1 truncate font-mono text-t11 text-muted-foreground max-sm:py-1 max-sm:whitespace-normal">
           {items.length > 0 && `${ofText(totals.sent, totals.size)} · `}
           {status}
         </span>
         {left && (
-          <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+          <span className="shrink-0 font-mono text-t11 text-muted-foreground max-sm:hidden">
             {left}
           </span>
         )}
@@ -112,7 +112,7 @@ export function UploadsPanel({ className }: { className?: string }) {
         <Progress
           aria-label="Overall upload progress"
           value={totals.size ? (totals.sent / totals.size) * 100 : 0}
-          className="h-[3px] rounded-none"
+          className="h-[3px] rounded-none max-sm:hidden"
         />
       )}
 
@@ -129,7 +129,7 @@ export function UploadsPanel({ className }: { className?: string }) {
           {tooBig && storage.data && (
             <div
               role="alert"
-              className="mx-2.5 mb-2 flex items-start gap-2 rounded-md border border-(--viz-variant) bg-(--viz-variant)/10 px-2.5 py-1.5 text-[11px]"
+              className="mx-2.5 mb-2 flex items-start gap-2 rounded-md border border-(--viz-variant) bg-(--viz-variant)/10 px-2.5 py-1.5 text-t11"
             >
               <TriangleAlertIcon className="mt-px size-3.5 shrink-0 text-(--viz-variant)" />
               <span>
@@ -139,7 +139,7 @@ export function UploadsPanel({ className }: { className?: string }) {
               </span>
             </div>
           )}
-          <p className="border-t px-2.5 py-1.5 text-[11px] text-muted-foreground">
+          <p className="border-t px-2.5 py-1.5 text-t11 text-muted-foreground">
             Uploads resume if the connection drops or the page is closed. You
             can keep filling in the form meanwhile; checksums are verified on
             the server.
@@ -149,6 +149,13 @@ export function UploadsPanel({ className }: { className?: string }) {
     </section>
   )
 }
+
+/**
+ * One line on tablet and desktop. On phones a grid: name, bar and status note
+ * stacked, with the two actions on the right (HANDOFF-mobile 7.2).
+ */
+const ROW =
+  "flex min-h-7 items-center gap-2 px-2.5 max-sm:grid max-sm:grid-cols-[14px_minmax(0,1fr)_auto_auto] max-sm:gap-x-2.5 max-sm:gap-y-[3px] max-sm:py-2 max-sm:pr-1 max-sm:[grid-template-areas:'icon_name_a1_a2'_'icon_bar_a1_a2'_'icon_note_a1_a2']"
 
 function StateIcon({ item }: { item: UploadItem }) {
   const className = "size-3.5 shrink-0"
@@ -229,10 +236,12 @@ function UploadRow({ item }: { item: UploadItem }) {
   const text = statusText(item)
 
   return (
-    <li className="flex h-7 items-center gap-2 px-2.5">
-      <StateIcon item={item} />
+    <li className={ROW}>
+      <span className="flex max-sm:[grid-area:icon]">
+        <StateIcon item={item} />
+      </span>
       <span
-        className="w-48 min-w-0 shrink truncate font-mono"
+        className="w-48 min-w-0 shrink truncate font-mono max-sm:w-auto max-sm:[grid-area:name]"
         title={item.name}
       >
         {item.name}
@@ -241,7 +250,7 @@ function UploadRow({ item }: { item: UploadItem }) {
         aria-label={`${item.name} progress`}
         value={percent(item)}
         className={cn(
-          "w-28 shrink-0",
+          "w-28 shrink-0 max-sm:w-auto max-sm:[grid-area:bar]",
           item.status === "failed" &&
             "*:data-[slot=progress-indicator]:bg-destructive",
           (item.status === "paused" || item.status === "needs-file") &&
@@ -250,7 +259,7 @@ function UploadRow({ item }: { item: UploadItem }) {
       />
       <span
         className={cn(
-          "min-w-0 flex-1 truncate font-mono text-[11px]",
+          "min-w-0 flex-1 truncate font-mono text-t11 max-sm:[grid-area:note]",
           item.status === "failed"
             ? "text-destructive"
             : "text-muted-foreground"
@@ -259,63 +268,66 @@ function UploadRow({ item }: { item: UploadItem }) {
       >
         {text}
       </span>
-      {item.status === "uploading" && (
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label={`Pause ${item.name}`}
-          onClick={() => pause(item.key)}
-        >
-          <PauseIcon />
-        </Button>
-      )}
-      {item.status === "paused" && (
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label={`Resume ${item.name}`}
-          onClick={() => resume(item.key)}
-        >
-          <PlayIcon />
-        </Button>
-      )}
-      {item.status === "failed" && (
-        <Button variant="ghost" size="xs" onClick={() => resume(item.key)}>
-          <RotateCwIcon /> Retry
-        </Button>
-      )}
-      {item.status === "needs-file" && (
-        <>
+      <span className="contents max-sm:flex max-sm:[grid-area:a1]">
+        {item.status === "uploading" && (
           <Button
             variant="ghost"
-            size="xs"
-            onClick={() => picker.current?.click()}
+            size="icon-xs"
+            aria-label={`Pause ${item.name}`}
+            onClick={() => pause(item.key)}
           >
-            Choose file
+            <PauseIcon />
           </Button>
-          <input
-            ref={picker}
-            type="file"
-            className="hidden"
-            aria-label={`Choose ${item.name} again`}
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              event.target.value = ""
-              if (!file) return
-              if (file.name !== item.name || file.size !== item.size) {
-                toast.error(
-                  `That is not ${item.name} (${formatBytes(item.size)}).`
-                )
-                return
-              }
-              resume(item.key, file)
-            }}
-          />
-        </>
-      )}
+        )}
+        {item.status === "paused" && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Resume ${item.name}`}
+            onClick={() => resume(item.key)}
+          >
+            <PlayIcon />
+          </Button>
+        )}
+        {item.status === "failed" && (
+          <Button variant="ghost" size="xs" onClick={() => resume(item.key)}>
+            <RotateCwIcon /> Retry
+          </Button>
+        )}
+        {item.status === "needs-file" && (
+          <>
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => picker.current?.click()}
+            >
+              Choose file
+            </Button>
+            <input
+              ref={picker}
+              type="file"
+              className="hidden"
+              aria-label={`Choose ${item.name} again`}
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                event.target.value = ""
+                if (!file) return
+                if (file.name !== item.name || file.size !== item.size) {
+                  toast.error(
+                    `That is not ${item.name} (${formatBytes(item.size)}).`
+                  )
+                  return
+                }
+                resume(item.key, file)
+              }}
+            />
+          </>
+        )}
+      </span>
       <Button
         variant="ghost"
         size="icon-xs"
+        className="max-sm:[grid-area:a2]"
         aria-label={`Remove ${item.name}`}
         onClick={() => removeUpload(item)}
       >
@@ -328,20 +340,20 @@ function UploadRow({ item }: { item: UploadItem }) {
 function LinkRow({ file }: { file: FileRef }) {
   const text = `URL · reachable · ${formatBytes(file.size)} · fetched during the build`
   return (
-    <li className="flex h-7 items-center gap-2 px-2.5">
+    <li className={ROW}>
       <LinkIcon
         aria-label="Link"
-        className="size-3.5 shrink-0 text-muted-foreground"
+        className="size-3.5 shrink-0 text-muted-foreground max-sm:[grid-area:icon]"
       />
       <span
-        className="w-48 min-w-0 shrink truncate font-mono"
+        className="w-48 min-w-0 shrink truncate font-mono max-sm:w-auto max-sm:[grid-area:name]"
         title={file.location}
       >
         {file.name}
       </span>
-      <span className="w-28 shrink-0" />
+      <span className="w-28 shrink-0 max-sm:hidden" />
       <span
-        className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground"
+        className="min-w-0 flex-1 truncate font-mono text-t11 text-muted-foreground max-sm:[grid-area:note]"
         title={text}
       >
         {text}

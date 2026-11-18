@@ -26,7 +26,9 @@ export function BuildLog({ log, live }: { log: Build["log"]; live: boolean }) {
   const onScroll = () => {
     const el = scroller.current
     if (!el) return
-    setFollowing(el.scrollHeight - el.scrollTop - el.clientHeight <= BOTTOM_SLACK)
+    setFollowing(
+      el.scrollHeight - el.scrollTop - el.clientHeight <= BOTTOM_SLACK
+    )
   }
 
   return (
@@ -36,7 +38,7 @@ export function BuildLog({ log, live }: { log: Build["log"]; live: boolean }) {
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen(!open)}
-        className="flex h-7 w-full items-center gap-1.5 px-2.5 text-left hover:bg-accent"
+        className="flex h-(--c28) w-full items-center gap-1.5 px-2.5 text-left hover:bg-accent"
       >
         <ChevronDownIcon
           className={cn(
@@ -46,7 +48,7 @@ export function BuildLog({ log, live }: { log: Build["log"]; live: boolean }) {
         />
         <span className="caption">Log</span>
         {live && open && following && (
-          <span className="ml-auto text-[11px] text-muted-foreground">
+          <span className="ml-auto text-t11 text-muted-foreground">
             Following
           </span>
         )}
@@ -59,7 +61,7 @@ export function BuildLog({ log, live }: { log: Build["log"]; live: boolean }) {
           role="log"
           aria-live={live ? "polite" : "off"}
           tabIndex={0}
-          className="max-h-[150px] overflow-auto border-t px-2.5 py-1.5 font-mono text-[11px] leading-[1.5] outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="max-h-[150px] overflow-auto border-t px-2.5 py-1.5 font-mono text-t11 leading-[1.5] outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
         >
           {log.length === 0 && (
             <div className="text-muted-foreground">No output yet.</div>

@@ -11,10 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
 
 import type { VcfFile } from "../types"
 import { rowsForVcf, useWizardStore } from "../wizard-store"
-import { plural, replaceFileRows } from "./accessions-shared"
+import {
+  DOCKED_DIALOG,
+  LIST_CHECKBOX,
+  plural,
+  replaceFileRows,
+} from "./accessions-shared"
 
 /** Make the chosen samples a file's rows, keeping edits to rows that stay. */
 export function selectSamples(vcfId: string, chosen: string[]) {
@@ -46,7 +52,7 @@ export function SelectSamplesDialog({
 }) {
   return (
     <Dialog open={vcf !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[380px]">
+      <DialogContent className={cn("sm:max-w-[380px]", DOCKED_DIALOG)}>
         <DialogHeader>
           <DialogTitle>Select samples</DialogTitle>
           {vcf && (
@@ -131,7 +137,7 @@ function SampleChecklist({
           {allShown ? "Clear" : "Select all"}
         </Button>
       </div>
-      <div className="max-h-[280px] overflow-y-auto rounded-md border py-1">
+      <div className="max-h-[280px] overflow-y-auto rounded-md border py-1 max-sm:max-h-[38dvh]">
         {shown.length === 0 ? (
           <p className="px-2.5 py-3 text-center text-muted-foreground">
             No sample matches.
@@ -142,27 +148,27 @@ function SampleChecklist({
             return (
               <div
                 key={sample}
-                className="flex h-5 items-center gap-2 px-2.5 hover:bg-accent"
+                className="flex h-(--c20) items-center gap-2 px-2.5 hover:bg-accent"
               >
                 <Checkbox
                   id={id}
-                  className="size-3.5"
+                  className={LIST_CHECKBOX}
                   checked={chosen.has(sample)}
                   onCheckedChange={(on) => toggle(sample, on === true)}
                 />
                 <label
                   htmlFor={id}
-                  className="min-w-0 flex-1 cursor-pointer truncate font-mono"
+                  className="flex min-w-0 flex-1 cursor-pointer items-center self-stretch font-mono"
                 >
-                  {sample}
+                  <span className="truncate">{sample}</span>
                 </label>
               </div>
             )
           })
         )}
       </div>
-      <DialogFooter className="items-center sm:justify-between">
-        <span className="font-mono text-[11px] text-muted-foreground">
+      <DialogFooter className="items-center justify-between">
+        <span className="font-mono text-t11 text-muted-foreground">
           {chosen.size} of {samples.length} selected
         </span>
         <div className="flex gap-1.5">

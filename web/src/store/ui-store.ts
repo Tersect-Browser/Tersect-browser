@@ -25,7 +25,12 @@ export interface IntrogressionTarget {
   interval: [number, number]
 }
 
+/** Toolbar group shown as a bottom sheet on touch layouts. */
+export type ToolbarSheet = "none" | "show" | "where" | "analysis" | "output"
+
 interface UiState {
+  /** Which toolbar sheet is open (touch layouts only). */
+  toolbarSheet: ToolbarSheet
   accessionSheetOpen: boolean
   genomeTrackVisible: boolean
   genomeDialogTarget: GenomeDialogTarget | null
@@ -41,6 +46,7 @@ interface UiState {
   introgressionCloseRequest: number
   contextMenu: PlotPointerEvent | null
 
+  setToolbarSheet: (sheet: ToolbarSheet) => void
   setAccessionSheetOpen: (open: boolean) => void
   toggleGenomeTrack: () => void
   setGenomeDialogTarget: (target: GenomeDialogTarget | null) => void
@@ -56,6 +62,7 @@ interface UiState {
 }
 
 const initialState = {
+  toolbarSheet: "none" as ToolbarSheet,
   accessionSheetOpen: false,
   genomeTrackVisible: false,
   genomeDialogTarget: null,
@@ -71,13 +78,27 @@ const initialState = {
 
 export const useUiStore = create<UiState>()((set) => ({
   ...initialState,
-  setAccessionSheetOpen: (accessionSheetOpen) => set({ accessionSheetOpen }),
+  setToolbarSheet: (toolbarSheet) => set({ toolbarSheet }),
+  // Opening accession selection or a dialog closes the toolbar sheet.
+  setAccessionSheetOpen: (accessionSheetOpen) =>
+    set((state) => ({
+      accessionSheetOpen,
+      toolbarSheet: accessionSheetOpen ? "none" : state.toolbarSheet,
+    })),
   toggleGenomeTrack: () =>
     set((state) => ({ genomeTrackVisible: !state.genomeTrackVisible })),
-  setGenomeDialogTarget: (genomeDialogTarget) => set({ genomeDialogTarget }),
-  setBarcodeTarget: (barcodeTarget) => set({ barcodeTarget }),
+  setGenomeDialogTarget: (genomeDialogTarget) =>
+    set((state) => ({
+      genomeDialogTarget,
+      toolbarSheet: genomeDialogTarget ? "none" : state.toolbarSheet,
+    })),
+  setBarcodeTarget: (barcodeTarget) =>
+    set((state) => ({
+      barcodeTarget,
+      toolbarSheet: barcodeTarget ? "none" : state.toolbarSheet,
+    })),
   openVariantSearch: (interval) =>
-    set({ variantSearch: { open: true, interval } }),
+    set({ variantSearch: { open: true, interval }, toolbarSheet: "none" }),
   closeVariantSearch: () => set({ variantSearch: { open: false } }),
   setVariantSearching: (variantSearching, error = null) =>
     set({ variantSearching, variantSearchError: error }),

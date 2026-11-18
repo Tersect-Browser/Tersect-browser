@@ -4,7 +4,12 @@ import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
 import { formatDuration } from "../format"
-import { BUILD_STAGES, type BuildStage, type StageKey, type StageStatus } from "../types"
+import {
+  BUILD_STAGES,
+  type BuildStage,
+  type StageKey,
+  type StageStatus,
+} from "../types"
 
 /** What each stage's sub-count counts (the server sends numbers only). */
 const UNITS: Record<StageKey, string> = {
@@ -22,8 +27,9 @@ function Marker({ status, number }: { status: StageStatus; number: number }) {
     <span
       aria-hidden
       className={cn(
-        "relative z-10 flex size-[18px] shrink-0 items-center justify-center rounded-full border bg-background font-mono text-[10px] font-medium",
-        status === "done" && "border-primary bg-primary text-primary-foreground",
+        "relative z-10 flex size-[18px] shrink-0 items-center justify-center rounded-full border bg-background font-mono text-t10 font-medium",
+        status === "done" &&
+          "border-primary bg-primary text-primary-foreground",
         status === "active" && "border-primary text-primary",
         status === "failed" && "border-destructive bg-destructive text-white",
         status === "cancelled" && "border-muted bg-muted text-muted-foreground",
@@ -90,11 +96,13 @@ export function BuildStepper({
             )}
             <Marker status={status} number={index + 1} />
             <div className="flex min-w-0 flex-1 flex-col gap-1 pt-px">
-              <div className="flex min-w-0 items-baseline gap-2">
+              {/* Phones: the name on its own line, then count and time. */}
+              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 sm:flex-nowrap">
                 <span
                   className={cn(
-                    "shrink-0",
-                    (status === "active" || status === "failed") && "font-semibold",
+                    "max-sm:basis-full sm:shrink-0",
+                    (status === "active" || status === "failed") &&
+                      "font-semibold",
                     status === "failed" && "text-destructive",
                     status === "todo" && "text-muted-foreground"
                   )}
@@ -103,12 +111,12 @@ export function BuildStepper({
                   <span className="sr-only">, {STATUS_LABEL[status]}</span>
                 </span>
                 {sub && (
-                  <span className="min-w-0 truncate font-mono text-[11px] text-muted-foreground">
+                  <span className="min-w-0 truncate font-mono text-t11 text-muted-foreground max-sm:flex-1">
                     {sub}
                   </span>
                 )}
                 {elapsed != null && (
-                  <span className="ml-auto shrink-0 font-mono text-[11px] text-muted-foreground">
+                  <span className="ml-auto shrink-0 font-mono text-t11 text-muted-foreground">
                     {formatDuration(elapsed)}
                   </span>
                 )}

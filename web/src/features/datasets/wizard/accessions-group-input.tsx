@@ -52,7 +52,7 @@ export function GroupInput({
           role="combobox"
           aria-expanded={open}
           aria-label={label}
-          className="flex h-5 w-full min-w-0 items-center gap-1.5 rounded-sm border border-transparent px-1.5 text-left hover:border-input focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none aria-expanded:border-ring"
+          className="flex h-(--c20) w-full min-w-0 items-center gap-1.5 rounded-sm border border-transparent px-1.5 text-left hover:border-input focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none aria-expanded:border-ring max-lg:border-input"
         >
           <GroupSwatch color={groupColor(groups, value)} />
           <span

@@ -69,7 +69,7 @@ function PipelineMessage({ error }: { error: BuildError }) {
     <p className="break-words">
       {parts.map((part, index) =>
         index % 2 === 1 ? (
-          <code key={index} className="font-mono text-[11px]">
+          <code key={index} className="font-mono text-t11">
             {part.replace(/^[`'"]|[`'"]$/g, "")}
           </code>
         ) : (
@@ -128,13 +128,11 @@ function FailedCard({ build }: { build: Build }) {
       <h3 className="font-semibold text-destructive">{stage} failed</h3>
       {error && <PipelineMessage error={error} />}
       {rows.length > 0 && (
-        <dl className="grid grid-cols-[6rem_1fr] gap-x-3 gap-y-0.5">
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 sm:grid-cols-[6rem_minmax(0,1fr)]">
           {rows.map(([label, value]) => (
             <div key={label} className="contents">
               <dt className="text-muted-foreground">{label}</dt>
-              <dd className="min-w-0 truncate font-mono text-[11px]">
-                {value}
-              </dd>
+              <dd className="min-w-0 truncate font-mono text-t11">{value}</dd>
             </div>
           ))}
         </dl>
@@ -173,7 +171,7 @@ function FailedCard({ build }: { build: Build }) {
           </Button>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-t11 text-muted-foreground">
         Finished steps are kept, so a retry resumes at {stage} and is fast.
       </p>
     </section>
@@ -196,7 +194,7 @@ function CancelledNote({ build }: { build: Build }) {
         Cancelled during {stage}. Finished steps are kept, so resuming starts at{" "}
         {stage}.
       </span>
-      <span className="flex gap-2">
+      <span className="flex flex-wrap gap-2">
         {build.draft_id && (
           <Button size="sm" variant="outline" asChild>
             <Link to={draftUrl(build.draft_id, { step: "review" })}>
@@ -218,9 +216,11 @@ function CancelledNote({ build }: { build: Build }) {
 
 function Figure({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-0.5 rounded-xl border bg-card px-3 py-2">
+    <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border bg-card px-3 py-2">
       <span className="caption">{label}</span>
-      <span className="font-mono text-[18px] leading-tight">{value}</span>
+      <span className="truncate font-mono text-[18px] leading-tight">
+        {value}
+      </span>
     </div>
   )
 }
@@ -314,7 +314,7 @@ function DoneCard({ build }: { build: Build }) {
           </a>
         </Button>
         {!viewId && !managed.isPending && !published.isPending && (
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-t11 text-muted-foreground">
             The dataset is not listed yet. It opens from Home once it is.
           </span>
         )}
@@ -347,7 +347,7 @@ function BuildHeader({ build, tick }: { build: Build; tick: number }) {
       <BuildStatusBadge build={build} />
       {elapsed != null && (
         <span
-          className="font-mono text-[11px] text-muted-foreground"
+          className="font-mono text-t11 text-muted-foreground"
           aria-label={`Elapsed ${formatDuration(elapsed)}`}
         >
           {formatDuration(elapsed)}
@@ -381,7 +381,7 @@ function BuildContent({
   const tick = useTick(running, receivedAt)
 
   return (
-    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-4 px-5 py-5">
+    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-4 px-5 py-5 max-sm:px-4 max-sm:pb-[calc(1.75rem+env(safe-area-inset-bottom))]">
       <BuildHeader build={build} tick={tick} />
 
       {build.status === "queued" && (
@@ -429,7 +429,7 @@ function BuildContent({
 
 function Loading() {
   return (
-    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-4 px-5 py-5">
+    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-4 px-5 py-5 max-sm:px-4">
       <Skeleton className="h-6 w-56" />
       {[0, 1, 2, 3, 4, 5, 6].map((row) => (
         <Skeleton key={row} className="h-[18px] w-full" />
@@ -467,7 +467,7 @@ export function BuildPage() {
     >
       {build.isPending && <Loading />}
       {build.isError && (
-        <div className="mx-auto flex max-w-[680px] flex-col items-start gap-2 px-5 py-8">
+        <div className="mx-auto flex max-w-[680px] flex-col items-start gap-2 px-5 py-8 max-sm:px-4">
           <div className="text-sm font-semibold">
             This build could not be loaded
           </div>

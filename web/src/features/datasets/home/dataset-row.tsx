@@ -43,7 +43,16 @@ import {
 import { DatasetStatusBadge, StatusBadge } from "../build/status-badge"
 import { formatBytes, formatCount } from "../format"
 import type { ManagedDataset } from "../types"
-import { ROW } from "./layout"
+import {
+  DESCRIPTION,
+  MENU_CELL,
+  PHONE_META,
+  ROW,
+  STATUS_CELL,
+  TOUCH_TARGET,
+  WIDE_CELL,
+  phoneMeta,
+} from "./layout"
 import { useSetListed } from "./use-set-listed"
 
 /** Refresh every list that shows datasets after one changes. */
@@ -67,7 +76,7 @@ function StatusCell({ dataset }: { dataset: ManagedDataset }) {
     <Link
       to={to}
       aria-label={label}
-      className="relative z-10 flex w-fit flex-col gap-[3px] rounded-full hover:opacity-80"
+      className={`relative z-10 flex w-fit flex-col gap-[3px] rounded-full hover:opacity-80 ${TOUCH_TARGET}`}
     >
       {badge}
       {dataset.status === "building" && (
@@ -223,7 +232,7 @@ function ActionsMenu({ dataset }: { dataset: ManagedDataset }) {
           <Button
             variant="ghost"
             size="icon-xs"
-            className="relative z-10"
+            className={MENU_CELL}
             aria-label={`Actions for ${dataset.id}`}
           >
             <EllipsisIcon />
@@ -339,16 +348,21 @@ export function DatasetRow({ dataset }: { dataset: ManagedDataset }) {
           </span>
         )}
         {dataset.description && (
-          <span className="block truncate text-muted-foreground">
-            {dataset.description}
-          </span>
+          <span className={DESCRIPTION}>{dataset.description}</span>
         )}
+        <span className={PHONE_META}>
+          {phoneMeta(dataset.reference, formatCount(dataset.accessions))}
+        </span>
       </span>
-      <span className="truncate font-mono">{dataset.reference}</span>
-      <span className="text-right font-mono">
+      <span className={`truncate font-mono ${WIDE_CELL}`}>
+        {dataset.reference}
+      </span>
+      <span className={`text-right font-mono ${WIDE_CELL}`}>
         {formatCount(dataset.accessions)}
       </span>
-      <StatusCell dataset={dataset} />
+      <span className={STATUS_CELL}>
+        <StatusCell dataset={dataset} />
+      </span>
       <ActionsMenu dataset={dataset} />
     </div>
   )

@@ -30,7 +30,7 @@ function CoordinateInput({ value, onCommit, ...props }: CoordinateInputProps) {
   return (
     <Input
       inputMode="numeric"
-      className="w-[92px] shrink-0 text-right font-mono"
+      className="w-[92px] shrink-0 text-right font-mono max-sm:w-[calc(50%-3px)] sm:max-lg:w-[116px] sm:pointer-coarse:w-[116px]"
       value={draft ?? formatPosition(value)}
       onChange={(event) => setDraft(event.target.value)}
       onFocus={(event) => event.target.select()}
@@ -58,7 +58,8 @@ interface IntervalControlProps {
 
 /**
  * A genomic interval as two coordinate inputs with a dual-thumb slider
- * between them. Inputs and slider stay in sync.
+ * between them. Inputs and slider stay in sync. On phones the slider takes
+ * its own row above the two inputs.
  */
 export function IntervalControl({
   value,
@@ -72,7 +73,12 @@ export function IntervalControl({
   const shown = dragging ?? value
 
   return (
-    <div className={cn("flex min-w-0 items-center gap-[5px]", className)}>
+    <div
+      className={cn(
+        "flex min-w-0 items-center gap-[5px] max-sm:flex-wrap max-sm:gap-1.5",
+        className
+      )}
+    >
       <CoordinateInput
         aria-label="Interval start"
         value={shown[0]}
@@ -80,7 +86,7 @@ export function IntervalControl({
       />
       <Slider
         aria-label="Interval"
-        className="min-w-16 flex-1"
+        className="min-w-16 flex-1 max-sm:order-first max-sm:h-7 max-sm:basis-full"
         min={min}
         max={max}
         value={shown}
