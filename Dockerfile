@@ -2,7 +2,11 @@
 # (docker-compose.yml), so source changes are picked up without rebuilding
 # (tsx watch). The image is also complete on its own: the production stack
 # (deploy/compose) runs it without a mount and overrides the command.
-FROM tersect-base
+#
+# BASE_IMAGE is the toolchain image (Dockerfile.base) of the same platform;
+# push-images.sh passes a separate one when it builds for linux/arm64.
+ARG BASE_IMAGE=tersect-base
+FROM ${BASE_IMAGE}
 
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./

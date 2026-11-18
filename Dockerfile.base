@@ -1,10 +1,14 @@
 # Base image shared by the backend and the dataset seed job: the Tersect
 # toolchain plus everything the analysis scripts call.
 #
-# linux/amd64 because rapidNJ is built with SSE2 intrinsics. On Apple Silicon
-# this builds under emulation and the first build is slow (Julia packages).
+# Builds for linux/amd64 and linux/arm64; the platform is chosen by the build
+# command (--platform). The scripts here build amd64 unless told otherwise
+# (TB_PLATFORM, push-images.sh --platform), which on Apple Silicon runs under
+# emulation and makes the first build slow (Julia packages). The two differ in
+# one place: rapidNJ, see step 3.
 
-FROM --platform=linux/amd64 node:26-bookworm
+FROM node:26-bookworm
+ARG TARGETARCH
 
 # 1) OS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -22,11 +26,14 @@ RUN /opt/venv/bin/pip install --upgrade pip setuptools wheel \
  && /opt/venv/bin/pip install --no-cache-dir -r /tmp/requirements.venv.txt \
  && rm /tmp/requirements.venv.txt
 
-# 3) rapidNJ (phenetic trees)
-RUN git clone https://github.com/somme89/rapidNJ /tmp/rapidNJ \
- && cd /tmp/rapidNJ && make \
- && install -m755 ./bin/rapidnj /usr/local/bin/rapidnj \
- && rm -rf /tmp/rapidNJ
+# 3) rapidNJ (phenetic trees). Its source uses SSE2 intrinsics, so it is only
+#    compiled on amd64; on arm64 the Bioconda build is installed in step 5.
+RUN if [ "${TARGETARCH:-amd64}" = "amd64" ]; then \
+      git clone https://github.com/somme89/rapidNJ /tmp/rapidNJ \
+   && cd /tmp/rapidNJ && make \
+   && install -m755 ./bin/rapidnj /usr/local/bin/rapidnj \
+   && rm -rf /tmp/rapidNJ; \
+    fi
 
 # 4) Tersect
 RUN git clone https://github.com/tomkurowski/tersect.git /tmp/tersect \
@@ -41,10 +48,17 @@ RUN git clone https://github.com/tomkurowski/tersect.git /tmp/tersect \
 #    ASTRAL (aster), and the Python/R stack used by the introgression scripts.
 ARG MAMBA_VERSION=1.5.8
 ENV MAMBA_ROOT_PREFIX=/opt/conda
-RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/${MAMBA_VERSION} \
+ARG RAPIDNJ_ARM64_VERSION=2.3.3
+RUN case "${TARGETARCH:-amd64}" in arm64) platform=linux-aarch64 ;; *) platform=linux-64 ;; esac \
+ && curl -Ls "https://micro.mamba.pm/api/micromamba/${platform}/${MAMBA_VERSION}" \
   | tar -xvj -C /usr/local/bin --strip-components=1 bin/micromamba
 COPY environment.yml /tmp/environment.yml
-RUN micromamba create -y -n tersect -f /tmp/environment.yml && micromamba clean -a -y
+RUN if [ "${TARGETARCH:-amd64}" = "arm64" ]; then \
+      micromamba create -y -n tersect -f /tmp/environment.yml "rapidnj=${RAPIDNJ_ARM64_VERSION}"; \
+    else \
+      micromamba create -y -n tersect -f /tmp/environment.yml; \
+    fi \
+ && micromamba clean -a -y
 
 # Lookup order: venv first (its python3 has numpy for merge_phylip.py), then
 # the conda env for bcftools, tabix, bgzip, samtools and astral.
@@ -62,7 +76,11 @@ RUN printf '%s\n' '#!/usr/bin/env bash' \
 ARG JULIA_VERSION=1.10.5
 ENV JULIA_DEPOT_PATH=/opt/julia_depot
 RUN set -eux; \
-    curl -fsSL "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%.*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" \
+    case "${TARGETARCH:-amd64}" in \
+      arm64) dir=aarch64; arch=aarch64 ;; \
+      *)     dir=x64;     arch=x86_64 ;; \
+    esac; \
+    curl -fsSL "https://julialang-s3.julialang.org/bin/linux/${dir}/${JULIA_VERSION%.*}/julia-${JULIA_VERSION}-linux-${arch}.tar.gz" \
       | tar -xz -C /opt; \
     ln -s /opt/julia-${JULIA_VERSION} /opt/julia
 
