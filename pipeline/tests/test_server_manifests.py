@@ -117,3 +117,134 @@ def test_file_checks_skip_private_urls(monkeypatch):
     data = {'reference': {'chromosomes': ['1']},
             'samples': [{'name': 'X', 'vcf': 'http://10.0.0.1/x.vcf.gz'}]}
     assert manifests.file_checks(data, read_header=lambda p: (_ for _ in ()).throw(AssertionError)) == []
+
+
+# ---------------------------------------------------- importing a manifest --
+
+RICE = """
+# Built by Tersect Browser
+id: Rice 3K test (IRGSP-1.0)
+description: Four accessions
+reference:
+  id: IRGSP-1.0
+  fasta: https://example.org/rice.fa.gz
+  gff: https://example.org/rice.gff3.gz
+  chromosomes: ['1', '2', '3']
+annotation:
+  snpeff: build
+tersect:
+  homozygous: true
+  types: snps
+samples:
+  - name: B001
+    label: Nipponbare line
+    group: japonica
+    vcf: https://example.org/B001.snp.vcf.gz
+    rename_contigs: {chr01: '1', chr02: '2'}
+    info: {Origin: PH}
+  - name: B002
+    label: B002
+    vcf: https://example.org/B002.snp.vcf.gz
+  - name: P1
+    label: Panel one
+    vcf: https://example.org/panel.vcf.gz
+    vcf_sample: S1
+  - name: P2
+    label: Panel two
+    vcf: https://example.org/panel.vcf.gz
+    vcf_sample: S2
+"""
+
+
+def test_a_manifest_fills_the_whole_form():
+    form, notes = manifests.form_from_manifest(manifests.parse_yaml(RICE))
+    assert notes == []
+    assert form['name'] == 'Rice 3K test (IRGSP-1.0)' and form['description'] == 'Four accessions'
+    reference = form['reference']
+    assert reference['id'] == 'IRGSP-1.0' and reference['chromosomes'] == ['1', '2', '3']
+    assert reference['fasta'] == {'source': 'url', 'location': 'https://example.org/rice.fa.gz',
+                                  'name': 'rice.fa.gz', 'size': None}
+    assert reference['gff']['name'] == 'rice.gff3.gz'
+    # Read from the files when the draft opens.
+    assert reference['sequences'] is None and reference['gffSeqids'] is None
+    assert form['options'] == {'effects': 'build', 'snpeffDb': '', 'types': 'snps',
+                               'homozygous': True, 'useIndex': False, 'index': None,
+                               'indexSamples': None}
+
+    # One file entry per VCF; the two accessions of the panel share theirs.
+    assert [v['file']['name'] for v in form['vcfs']] == [
+        'B001.snp.vcf.gz', 'B002.snp.vcf.gz', 'panel.vcf.gz']
+    first, second, panel = form['vcfs']
+    assert first['renameContigs'] == {'chr01': '1', 'chr02': '2'}
+    assert second['renameContigs'] is None and second['selected'] == []
+    assert panel['selected'] == ['S1', 'S2'] and panel['samples'] is None
+
+    rows = form['accessions']
+    assert [(r['name'], r['label'], r['group'], r['sample']) for r in rows] == [
+        ('B001', 'Nipponbare line', 'japonica', ''), ('B002', 'B002', '', ''),
+        ('P1', 'Panel one', '', 'S1'), ('P2', 'Panel two', '', 'S2')]
+    assert rows[0]['info'] == {'Origin': 'PH'} and rows[0]['fileId'] == first['id']
+    assert rows[2]['fileId'] == rows[3]['fileId'] == panel['id']
+    assert len({r['id'] for r in rows}) == 4
+
+
+def test_an_imported_form_gives_the_manifest_back():
+    """What the wizard would send for the imported form is the manifest."""
+    data = manifests.parse_yaml(RICE)
+    form, _ = manifests.form_from_manifest(data)
+    files_by_id = {v['id']: v for v in form['vcfs']}
+    samples = []
+    for row in form['accessions']:       # as toManifest (manifest.ts) does
+        vcf = files_by_id[row['fileId']]
+        samples.append({'name': row['name'], 'label': row['label'], 'group': row['group'],
+                        'vcf': vcf['file'], 'vcf_sample': row['sample'] or None,
+                        'info': row['info'] or None,
+                        'rename_contigs': vcf['renameContigs']})
+    again, issues = manifests.to_data({
+        'id': form['name'], 'description': form['description'],
+        'reference': {k: form['reference'][k] for k in ('id', 'fasta', 'gff', 'chromosomes')},
+        'annotation': {'snpeff': form['options']['effects']},
+        'tersect': {k: form['options'][k] for k in ('homozygous', 'types')},
+        'samples': samples}, resolve=lambda r: r['location'])
+    assert issues == []
+    assert yaml.safe_load(manifests.to_yaml(again)) == data
+
+
+def test_files_of_another_machine_are_left_out_and_named(monkeypatch, tmp_path):
+    here = tmp_path / 'shared' / 'here.vcf.gz'
+    here.parent.mkdir()
+    here.write_bytes(b'x')
+    monkeypatch.setenv('TB_SERVER_FOLDERS', str(here.parent))
+    monkeypatch.setattr(manifests.uploads, 'uploads_dir', lambda: str(tmp_path / 'uploads'))
+    text = RICE.replace('https://example.org/rice.fa.gz', '/app/elsewhere/rice.fa.gz') \
+               .replace('https://example.org/B001.snp.vcf.gz', '/app/elsewhere/B001.vcf.gz') \
+               .replace('https://example.org/B002.snp.vcf.gz', str(here))
+    form, notes = manifests.form_from_manifest(manifests.parse_yaml(text))
+    assert form['reference']['fasta'] is None and form['reference']['gff'] is not None
+    assert [r['name'] for r in form['accessions']] == ['B002', 'P1', 'P2']
+    assert form['vcfs'][0]['file']['source'] == 'server'
+    assert notes == [
+        'The reference FASTA rice.fa.gz is not on this server: choose it again in step 1.',
+        '1 accession was left out because its VCF is not on this server: B001. '
+        'Add it again in step 2.']
+
+
+def test_a_manifest_built_on_an_index():
+    form, notes = manifests.form_from_manifest(manifests.parse_yaml(
+        'id: Soy\nreference: {id: Wm82, fasta: "https://example.org/soy.fa.gz"}\n'
+        'index: https://example.org/soy.tsi\n'))
+    assert notes == [] and form['accessions'] == [] and form['vcfs'] == []
+    assert form['options']['useIndex'] is True
+    assert form['options']['index']['location'] == 'https://example.org/soy.tsi'
+
+
+def test_files_that_are_not_manifests_are_refused():
+    import pytest
+    for text, message in [
+            ('a: [1, 2', 'not valid YAML'),
+            ('just some words', 'not a dataset manifest'),
+            ('reference: {id: x}', 'neither accessions'),
+            ('reference: {id: x}\nsamples: {a: 1}', 'must be a list'),
+            ('x' * (manifests.MAX_YAML + 1), 'too large')]:
+        with pytest.raises(manifests.ManifestError, match=message):
+            manifests.parse_yaml(text)

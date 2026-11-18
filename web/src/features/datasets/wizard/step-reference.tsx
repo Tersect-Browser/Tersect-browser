@@ -428,12 +428,21 @@ export function StepReference({
       const sequences = result.sequences
       update((f) => {
         const main = mainChromosomes(sequences)
+        // A choice that came with the form (an imported manifest) is kept,
+        // as far as the FASTA has those sequences. Picking a file in this
+        // step empties the choice first, so then the main ones are selected.
+        const names = new Set(sequences.map((s) => s.name))
+        const chosen = f.reference.chromosomes.filter((c) => names.has(c))
         return {
           ...f,
           reference: {
             ...f.reference,
             sequences,
-            chromosomes: main.length ? main : sequences.map((s) => s.name),
+            chromosomes: chosen.length
+              ? chosen
+              : main.length
+                ? main
+                : sequences.map((s) => s.name),
             id:
               f.reference.id ||
               (f.reference.fasta

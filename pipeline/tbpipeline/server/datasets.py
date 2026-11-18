@@ -3,6 +3,8 @@
     GET    /api/datasets                       ManagedDataset[]
     POST   /api/datasets/validate              {manifest} -> {errors: ValidationIssue[]}
     POST   /api/datasets/manifest.yaml         {manifest} -> YAML
+    POST   /api/datasets/import                {yaml} -> {draft, notes}: a draft with
+                                               every field of a manifest filled in
     PATCH  /api/datasets/{id}                  {listed}: show in or hide from the public list
     GET    /api/datasets/{id}/files            what deleting it would free on disk
     DELETE /api/datasets/{id}[?files=true]     unpublish (tb-dataset remove); with
@@ -53,6 +55,24 @@ def validate(body: ManifestRequest):
 def manifest_yaml(body: ManifestRequest):
     data, _ = manifests.to_data(body.manifest, resolve=manifests.lenient_resolve)
     return _yaml_response(manifests.to_yaml(data), data.get('id') or 'manifest')
+
+
+class ImportRequest(BaseModel):
+    yaml: str
+
+
+@router.post('/datasets/import')
+def import_manifest(body: ImportRequest):
+    """A new draft filled in from a manifest (a file from "Download manifest",
+    or one written by hand): the way to repeat a build that worked, here or on
+    another server. Nothing is built; the draft opens in the wizard."""
+    try:
+        form, notes = manifests.form_from_manifest(manifests.parse_yaml(body.yaml))
+    except manifests.ManifestError as error:
+        raise HTTPException(400, str(error))
+    draft = drafts.create({'mode': 'new', 'base_dataset': None, 'base_accessions': None,
+                           'step': 'reference', 'form': form, 'build_id': None})
+    return {'draft': draft, 'notes': notes}
 
 
 # ------------------------------------------------------------ listing --

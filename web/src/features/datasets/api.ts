@@ -139,6 +139,13 @@ export async function manifestYaml(manifest: ManifestInput): Promise<string> {
   return response.text()
 }
 
+/**
+ * A new draft with every field filled in from a manifest (YAML text, as
+ * "Download manifest" gives it). `notes` says what could not be carried over.
+ */
+export const importManifest = (yaml: string) =>
+  send<{ draft: Draft; notes: string[] }>("POST", "/datasets/import", { yaml })
+
 /** Download URL of the manifest a dataset was last built from. */
 export const datasetManifestUrl = (datasetId: string) =>
   `${BUILDER_API_URL}/datasets/${encodeURIComponent(datasetId)}/manifest.yaml`
