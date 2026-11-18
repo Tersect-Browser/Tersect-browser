@@ -167,6 +167,11 @@ services:
       # set, e.g. to a native Ollama on the host:
       #   TB_ASSISTANT_URL=http://host.docker.internal:11434/v1 docker compose up -d builder
       TB_ASSISTANT_URL: ${TB_ASSISTANT_URL:-}
+      # Login for managing datasets (pipeline/README.md): off unless a
+      # password is set, e.g.
+      #   TB_ADMIN_PASSWORD=try-the-login docker compose up -d builder
+      TB_ADMIN_USER: ${TB_ADMIN_USER:-}
+      TB_ADMIN_PASSWORD: ${TB_ADMIN_PASSWORD:-}
       TB_ASSISTANT_MODEL: ${TB_ASSISTANT_MODEL:-qwen3:14b}
       # Prompt budget in characters; must fit the model server's context.
       TB_ASSISTANT_CONTEXT_CHARS: ${TB_ASSISTANT_CONTEXT_CHARS:-14000}
