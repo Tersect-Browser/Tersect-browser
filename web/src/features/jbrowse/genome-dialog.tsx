@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
@@ -137,11 +138,38 @@ export function GenomeDialog() {
   const setTarget = useUiStore((state) => state.setGenomeDialogTarget)
 
   return (
+    // Not modal: JBrowse opens its menus, track selector and dialogs in
+    // Material UI portals on <body>, outside the dialog content. A modal Radix
+    // dialog turns pointer events off for everything outside its content and
+    // pulls focus back into it, which leaves those menus dead.
     <Dialog
+      modal={false}
       open={target !== null}
       onOpenChange={(open) => !open && setTarget(null)}
     >
-      <DialogContent className="max-h-[90vh] w-[80vw] overflow-auto sm:max-w-none">
+      {/* Radix draws no overlay for a non-modal dialog. */}
+      <DialogPortal>
+        <div
+          data-genome-backdrop
+          className="fixed inset-0 z-50 animate-in bg-black/45 duration-100 fade-in-0"
+        />
+      </DialogPortal>
+      <DialogContent
+        className="max-h-[90vh] w-[80vw] overflow-auto sm:max-w-none"
+        // JBrowse's portals count as outside: only the backdrop dismisses.
+        onInteractOutside={(event) => {
+          const element = event.target as Element | null
+          if (!element?.closest?.("[data-genome-backdrop]")) {
+            event.preventDefault()
+          }
+        }}
+        // Escape closes an open JBrowse menu or dialog first.
+        onEscapeKeyDown={(event) => {
+          if (document.querySelector(".MuiModal-root")) {
+            event.preventDefault()
+          }
+        }}
+      >
         <DialogHeader className="flex-row items-center gap-2 pr-8">
           <ScanSearchIcon className="size-3.5 text-muted-foreground" />
           <DialogTitle className="font-mono">
