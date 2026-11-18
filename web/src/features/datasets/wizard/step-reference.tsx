@@ -21,6 +21,7 @@ import {
 import type { FileRef, InspectResult, SequenceInfo, WizardForm } from "../types"
 import { useForm, useWizardStore } from "../wizard-store"
 import { FileInput } from "./file-input"
+import { ManifestUpload } from "./manifest-upload"
 import { sequenceSummary } from "./wizard-helpers"
 
 export const FASTA_ACCEPT = ".fa,.fasta,.fna,.fa.gz,.fasta.gz,.fna.gz"
@@ -499,6 +500,7 @@ export function StepReference({
 
   return (
     <div className="flex max-w-[760px] flex-col gap-6 px-6 py-5">
+      <ManifestUpload />
       <Section title="Dataset">
         <Field
           id="field-name"

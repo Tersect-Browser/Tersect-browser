@@ -20,6 +20,7 @@ import type {
   StorageInfo,
   UrlCheck,
   ValidationIssue,
+  WizardForm,
 } from "./types"
 
 export const UPLOADS_URL = `${BUILDER_API_URL}/uploads`
@@ -140,11 +141,14 @@ export async function manifestYaml(manifest: ManifestInput): Promise<string> {
 }
 
 /**
- * A new draft with every field filled in from a manifest (YAML text, as
- * "Download manifest" gives it). `notes` says what could not be carried over.
+ * The wizard's form with every field filled in from a manifest (YAML text,
+ * as "Download manifest" gives it). `notes` says what could not be carried
+ * over. Nothing is stored: the wizard puts the form into its draft.
  */
 export const importManifest = (yaml: string) =>
-  send<{ draft: Draft; notes: string[] }>("POST", "/datasets/import", { yaml })
+  send<{ form: WizardForm; notes: string[] }>("POST", "/datasets/import", {
+    yaml,
+  })
 
 /** Download URL of the manifest a dataset was last built from. */
 export const datasetManifestUrl = (datasetId: string) =>

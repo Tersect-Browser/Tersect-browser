@@ -169,7 +169,7 @@ in the pipeline image as the compose service `builder`, started by
 | `/api/datasets`, `/api/builds` | Published datasets and the build queue |
 | `PATCH /api/datasets/{id}` | `{listed}`: show the dataset in, or hide it from, the public dataset list (share links keep working) |
 | `GET /api/datasets/{id}/files`, `DELETE /api/datasets/{id}?files=true` | What deleting a dataset's files would free, and deleting them with it (`server/cleanup.py`: only what that dataset alone uses, including its snpEff database when no other dataset's build uses it; never server-folder files). Without `files=true`, and with `tb-dataset remove`, files stay on disk |
-| `POST /api/datasets/import` | `{yaml}`: a new draft with every field filled in from a manifest (a file from "Download manifest", or one written by hand), and `notes` on what could not be carried over. Files named by a path that is not on this server are left out; URLs always carry over. Nothing is built |
+| `POST /api/datasets/import` | `{yaml}`: the wizard's form with every field filled in from a manifest (a file from "Download manifest", or one written by hand), and `notes` on what could not be carried over. Step 1 of the wizard offers it ("Upload manifest"). Files named by a path that is not on this server are left out; URLs always carry over. Nothing is built |
 | `POST /api/assistant` | Dataset assistant, server-sent events (below); 503 unless configured |
 
 **Files.** Uploads go to `<localDbPath>/uploads/<id>/<file name>` with

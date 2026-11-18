@@ -2,11 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 import {
   ArrowRightIcon,
   DatabaseIcon,
-  FileUpIcon,
   HistoryIcon,
   PlusIcon,
 } from "lucide-react"
-import { useEffect, useRef, useState, type ChangeEvent } from "react"
+import { useEffect, useRef } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 
@@ -22,11 +21,7 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSession } from "@/features/auth/session"
-import {
-  datasetsQuery,
-  draftsQuery,
-  importManifest,
-} from "@/features/datasets/api"
+import { datasetsQuery, draftsQuery } from "@/features/datasets/api"
 import { DatasetRow } from "@/features/datasets/home/dataset-row"
 import { DraftRow } from "@/features/datasets/home/draft-row"
 import { GRID, ROW } from "@/features/datasets/home/layout"
@@ -72,70 +67,6 @@ function NewDatasetButton({ disabled }: { disabled?: boolean }) {
   )
 }
 
-/** Manifests are a few KB; anything much larger is the wrong file. */
-const MAX_MANIFEST_BYTES = 2_000_000
-
-/**
- * Starts a dataset from a manifest file (YAML, as "Download manifest" gives
- * it): the wizard opens with every field filled in, to check and build.
- */
-function ImportManifestButton({ disabled }: { disabled?: boolean }) {
-  const navigate = useNavigate()
-  const input = useRef<HTMLInputElement>(null)
-  const [busy, setBusy] = useState(false)
-
-  async function onFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    // Lets the same file be chosen again after an error.
-    event.target.value = ""
-    if (!file) return
-    if (file.size > MAX_MANIFEST_BYTES) {
-      toast.error("This file is too large to be a dataset manifest.")
-      return
-    }
-    setBusy(true)
-    try {
-      const { draft, notes } = await importManifest(await file.text())
-      for (const note of notes) {
-        toast.warning(note, { duration: 30_000, closeButton: true })
-      }
-      navigate(`/datasets/drafts/${draft.id}`)
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "The manifest could not be read."
-      )
-      setBusy(false)
-    }
-  }
-
-  return (
-    <>
-      <input
-        ref={input}
-        type="file"
-        accept=".yaml,.yml,text/yaml,application/x-yaml"
-        className="hidden"
-        onChange={onFile}
-      />
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={disabled || busy}
-        title={
-          disabled
-            ? BUILDER_DOWN
-            : "Fill in a new dataset from a manifest file (YAML)"
-        }
-        onClick={() => input.current?.click()}
-      >
-        <FileUpIcon /> Import manifest
-      </Button>
-    </>
-  )
-}
-
 function EmptyDatasets() {
   return (
     <Empty className="rounded-xl border border-dashed">
@@ -149,8 +80,7 @@ function EmptyDatasets() {
           from their VCF files.
         </EmptyDescription>
       </EmptyHeader>
-      <EmptyContent className="flex-row justify-center">
-        <ImportManifestButton />
+      <EmptyContent>
         <NewDatasetButton />
       </EmptyContent>
     </Empty>
@@ -279,7 +209,6 @@ export function HomePage() {
                   </Link>
                 </Button>
               )}
-              <ImportManifestButton disabled={builderDown} />
               <NewDatasetButton disabled={builderDown} />
             </span>
           </div>
