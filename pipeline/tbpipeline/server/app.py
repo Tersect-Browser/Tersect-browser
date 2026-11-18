@@ -18,7 +18,7 @@ app.include_router(drafts.router, prefix='/api')
 app.include_router(datasets.router, prefix='/api')
 # builds: /api/builds[/{id}[/events|/cancel|/retry|/manifest.yaml]]
 app.include_router(builds.router, prefix='/api')
-# assistant: /api/assistant (SSE); absent unless TB_ASSISTANT_URL is set
+# assistant: /api/assistant (SSE), from proposer-llm; 503 unless TB_ASSISTANT_URL is set
 app.include_router(assistant.router, prefix='/api')
 
 

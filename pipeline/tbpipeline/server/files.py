@@ -652,10 +652,8 @@ def inspect(ref: dict, kind: str) -> dict:
 
 @router.get('/config')
 def get_config():
-    enabled = bool(os.environ.get('TB_ASSISTANT_URL', '').strip())
-    return {'assistant': enabled,
-            'assistant_model': (os.environ.get('TB_ASSISTANT_MODEL', '').strip() or 'qwen3:14b')
-            if enabled else None,
+    from . import assistant      # here, not at the top: it is optional (assistant.py)
+    return {'assistant': assistant.enabled(), 'assistant_model': assistant.model(),
             'max_upload': uploads.max_upload()}
 
 

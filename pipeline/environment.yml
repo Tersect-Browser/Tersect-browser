@@ -25,3 +25,6 @@ dependencies:
   - httpx=0.28.*         # URL checks
   - pypdf=7.*            # dataset assistant: papers as PDF
   - openpyxl=3.1.*       # dataset assistant: supplementary .xlsx tables
+  - pip
+  - pip:
+      - proposer-llm==0.1.0   # the dataset assistant (server/assistant.py)

@@ -196,8 +196,11 @@ Other settings: `TB_MAX_UPLOAD` (bytes, no limit by default),
 
 ### Dataset assistant
 
-An optional chat panel in the wizard (`server/assistant*.py`, contract
-`web/src/features/datasets/assistant/types.ts`). It reads papers, folder
+An optional chat panel in the wizard (contract
+`web/src/features/datasets/assistant/types.ts`). The assistant is the Tersect
+pack of [proposer-llm](https://github.com/daviddamilola/proposer), mounted by
+`server/assistant.py`; the loop, the tools and their tests live in that
+package. It reads papers, folder
 listings and supplementary tables and *proposes* form values; it cannot save,
 build or delete anything, and proposals only enter the manifest when the user
 accepts them in the form, through the usual validation. The server checks
@@ -209,7 +212,8 @@ It talks to any OpenAI-compatible chat completions endpoint with tool
 calling, meant to run on this machine or network so that no paper, file name
 or genotype goes to an outside model service (papers themselves are fetched
 from Crossref, Europe PMC or the publisher). Off unless `TB_ASSISTANT_URL`
-is set; the panel is then absent.
+is set (or the `proposer-llm` package is not installed); the panel is then
+absent.
 
 | Variable | |
 |---|---|
@@ -248,9 +252,10 @@ sectioned text, labelled so that the model can cite them.
 **Limits.** At most 12 rounds of tool calls per turn, 6 calls per round;
 malformed calls are answered with the validation error and the model may try
 again. Thinking is turned off and any `<think>` output is removed before it
-is streamed. Models that cannot call tools get a clear error. Tests use a
-fake model server: `pytest tests/test_assistant.py` (`TB_NETWORK_TESTS=1`
-also reads real papers and folders).
+is streamed. Models that cannot call tools get a clear error.
+`pytest tests/test_assistant.py` checks the mounting here (settings, the
+config endpoint, one turn against a fake model server); the assistant's own
+tests are in the proposer repository.
 
 ## Towards uploads from the UI
 
