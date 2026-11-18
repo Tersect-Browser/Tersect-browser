@@ -39,6 +39,8 @@ services:
     environment:
       TB_SITE_ADDRESS: ${TB_SITE_ADDRESS}
       TB_TLS_DIRECTIVE: ${TB_TLS_DIRECTIVE:-}
+      # For clients that send no server name (browsers, for an IP address).
+      TB_DEFAULT_SNI: ${TB_SITE_ADDRESS}
     ports:
       - "${TB_HTTP_PORT:-80}:80"
       - "${TB_HTTPS_PORT:-443}:443"
