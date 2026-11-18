@@ -133,6 +133,20 @@ run "follows_images_from_another_registry" {
   }
 }
 
+run "public_site" {
+  command = apply
+
+  variables {
+    public_site         = true
+    basic_auth_password = "it's a pass$word"
+  }
+
+  assert {
+    condition     = output.public_site
+    error_message = "A public site says so."
+  }
+}
+
 run "rejects_no_images_at_all" {
   command = plan
 

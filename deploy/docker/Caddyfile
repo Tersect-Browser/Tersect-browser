@@ -21,8 +21,10 @@
 #   TB_BACKEND, TB_BUILDER   upstreams (default backend:4300, builder:4310).
 #
 # Access control lives in /etc/caddy/site.d/*.caddy, written by the
-# deployment (see deploy/compose/site.d/): a password and an IP allowlist.
-# The app has no accounts, so do not expose it without them.
+# deployment (see deploy/compose/site.d/): a password for the whole site and
+# an IP allowlist. A public site leaves the password out and gives the
+# builder a login instead (TB_ADMIN_PASSWORD), which then guards everything
+# under /TersectBrowserGP/api/. Do not expose the site with neither.
 {
 	admin off
 	# The allowlist snippet answers outsiders with `respond`. By default Caddy
