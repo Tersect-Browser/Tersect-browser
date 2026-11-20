@@ -47,8 +47,10 @@
 
 	import /etc/caddy/site.d/*.caddy
 
-	# The app lives under its base path.
+	# The app lives under its base path. People type and paste that path
+	# without its final slash, which no block below matches.
 	redir / /TersectBrowserGP/ 302
+	redir /TersectBrowserGP /TersectBrowserGP/ 302
 
 	@builder path /TersectBrowserGP/api/*
 	handle @builder {

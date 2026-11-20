@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig, type Connect, type Plugin } from "vite"
 
 /**
  * The app shares tbconfig.json (repository root) with the backend. Only the
@@ -39,10 +39,34 @@ const proxied = [
   "/TersectBrowserGP/datafiles",
 ]
 
+/**
+ * Vite answers the base path without its final slash ("/TersectBrowserGP")
+ * with a 404. Send it to the app instead, as the production server does
+ * (deploy/docker/Caddyfile).
+ */
+function baseWithoutSlash(): Plugin {
+  const bare = base.replace(/\/$/, "")
+  const redirect: Connect.NextHandleFunction = (req, res, next) => {
+    const [path, query] = (req.url ?? "").split("?")
+    if (bare === "" || path !== bare) {
+      next()
+      return
+    }
+    res.statusCode = 302
+    res.setHeader("Location", query ? `${base}?${query}` : base)
+    res.end()
+  }
+  return {
+    name: "tb-base-without-slash",
+    configureServer: (server) => void server.middlewares.use(redirect),
+    configurePreviewServer: (server) => void server.middlewares.use(redirect),
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), baseWithoutSlash()],
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "./src"),
